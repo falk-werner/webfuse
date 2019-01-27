@@ -1,2 +1,24 @@
 # fuse-wsfs
-websocket filesystem based on libfuse
+
+fuse-wsfs combines libwebsockets and libfuse. It allows ot attach a remote filesystem via websockets.
+
+**Status**: Proof of concept
+
+# Build and run
+
+    cd fuse-wsfs
+    mkdir ./build
+    cd ./build
+    cmake ..
+    make
+    mkdir test
+    ./wsfs -s -f --document_root=`realpath ../src/app/www` --port=4711 test
+
+
+# Dependencies
+
+- [libfuse3](https://github.com/libfuse/libfuse/)
+- [libwebsockets](https://libwebsockets.org/)
+- [Jansson](https://jansson.readthedocs.io)
+
+
