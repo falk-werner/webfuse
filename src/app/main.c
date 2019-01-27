@@ -3,7 +3,7 @@
 #include <string.h>
 #include <stddef.h>
 
-#include "wsfs/fuse.h"
+#include "wsfs/fuse_wrapper.h"
 #include "wsfs/operations.h"
 #include "wsfs/server.h"
 
