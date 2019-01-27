@@ -12,14 +12,14 @@ void wsfs_response_parse(
 	json_t * response = json_loadb(buffer, length, 0, NULL);
 	if (NULL == response)
 	{
-		result->status = WSFS_BAD_PARSEERROR;
+		result->status = WSFS_BAD_FORMAT;
 		return;
 	}
 
 	json_t * id_holder = json_object_get(response, "id");
 	if ((NULL == id_holder) || (!json_is_integer(id_holder)))
 	{
-		result->status = WSFS_BAD_INVALIDID;
+		result->status = WSFS_BAD_FORMAT;
 		json_decref(response);
 		return;
 	}
@@ -33,7 +33,7 @@ void wsfs_response_parse(
 	}
 	else
 	{
-		result->status = WSFS_BAD_NODATA;
+		result->status = WSFS_BAD_FORMAT;
 
 		json_t * error = json_object_get(response, "error");
 		if (NULL != error)

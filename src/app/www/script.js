@@ -4,7 +4,25 @@ function startup()
 		this.root = root;
 	};
 
-	FileSystem.BAD_NO_ENTRY = -1;
+	FileSystem.GOOD = 0;
+	FileSystem.BAD  = 1;
+
+	FileSystem.BAD_NOTIMPLEMENTED = 2;
+	FileSystem.BAD_TIMEOUT        = 3;
+	FileSystem.BAD_FORMAT         = 4;
+
+	FileSystem.BAD_NOENTRY = 101;
+	FileSystem.BAD_NOACCESS = 102;
+
+	FileSystem.O_ACCMODE = 00003;
+	FileSystem.O_RDONLY  = 00000;
+	FileSystem.O_WRONLY  = 00001;
+	FileSystem.O_RDWR    = 00002;
+	FileSystem.O_CREAT   = 00100;
+	FileSystem.O_EXCL    = 00200;
+	FileSystem.O_TRUNK   = 01000;
+	FileSystem.O_APPEND  = 02000;
+	
 
 	FileSystem.prototype.getEntry = function(path) {
 		var items = path.split('/');
@@ -28,14 +46,14 @@ function startup()
 			return {
 				mode: entry.mode || 0755,
 				type: entry.type || 'file',
-				size: entry.size || 0,
+				size: entry.size || (entry.contents && entry.contents.length) || 0,
 				atime: entry.atime || 0,
 				mtime: entry.mtime || 0,
 				ctime: entry.ctime || 0
 			};
 		}
 		else {
-			return FileSystem.BAD_NO_ENTRY;
+			return FileSystem.BAD_NOENTRY;
 		}
 	};
 
@@ -52,9 +70,37 @@ function startup()
 			}
 		}
 		else {
-			result = FileSystem.BAD_NO_ENTRY;
+			result = FileSystem.BAD_NOENTRY;
 		}
 
+		return result;
+	};
+
+	FileSystem.prototype.open = function(path, mode) {
+		var result = FileSystem.BAD_NOENTRY;
+		var entry = this.getEntry(path);
+		
+		if (entry.type == "file") {
+			result = ((mode & FileSystem.O_ACCMODE) == FileSystem.O_RDONLY) ? true : FileSystem.BAD_NOACCESS;			
+		}
+	
+		return result;
+	};
+
+	FileSystem.prototype.read = function(path, offset, length) {
+		var result = FileSystem.BAD_NOENTRY;
+		var entry = this.getEntry(path);
+				
+		if (entry.type == "file") {
+			var end = Math.min(offset + length, entry.contents.length);
+			var data = (offset < entry.contents.length) ? entry.contents.substring(offset, end) : "";	
+			result = {
+				data: data,
+				format: "identity",
+				count: data.length
+			};
+		}
+	
 		return result;
 	};
 
@@ -62,7 +108,7 @@ function startup()
 		mode: 0755,
 		type: "dir",
 		entries: {
-			"hello": { mode: 0755, type: "file", size: 10, contents: "Hello, World!"}
+			"hello": { mode: 0755, type: "file", /* size: 10 , */contents: "Hello, World!"}
 		}
 	});
 
@@ -74,13 +120,13 @@ function startup()
 		console.log('close');
 	};
 	ws.onmessage = function(message) {
-		console.log(message);
 
 		try {
 			var request = JSON.parse(message.data);
 			var result = -42;
 			var response;
 
+			console.log(request);
 			if (("string" === typeof(request.method)) && 
 			    ("number" === typeof(request.id)) && 
                             (request.params)) {
@@ -91,6 +137,12 @@ function startup()
 						break;
 					case "readdir":
 						result = fs.readdir(request.params[0]);
+						break;
+					case "open":
+						result = fs.open(request.params[0], request.params[1]);
+						break;
+					case "read":
+						result = fs.read(request.params[0], request.params[1], request.params[2]);
 						break;
 					default:
 						break;
@@ -106,7 +158,7 @@ function startup()
 				ws.send(JSON.stringify(response));
 			}
 		}
-		catch (ex) { console.log(ex); }	
+		catch (ex) { console.log(ex, message); }	
 	};
 
 	var sendButton = document.getElementById('sendButton');

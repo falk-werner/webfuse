@@ -2,14 +2,14 @@
 #define _WSFS_STATUS_H
 
 #define WSFS_GOOD 0
-#define WSFS_BAD 1
+#define WSFS_BAD  1
+
+#define WSFS_BAD_NOTIMPLEMENTED 2
+#define WSFS_BAD_TIMEOUT        3
+#define WSFS_BAD_FORMAT         4
 
 #define WSFS_BAD_NOENTRY 101
-#define WSFS_BAD_TIMEOUT 102
-
-#define WSFS_BAD_PARSEERROR 200
-#define WSFS_BAD_INVALIDID  201
-#define WSFS_BAD_NODATA     202
+#define WSFS_BAD_NOACCESS 102
 
 typedef int wsfs_status;
 

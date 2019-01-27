@@ -32,7 +32,18 @@ extern wsfs_status wsfs_filesystem_readdir(
 	void * buffer,
 	wsfs_add_entry_fn * add_entry);
 
+extern wsfs_status wsfs_filesystem_open(
+	struct wsfs_filesystem * filesystem,
+	char const * path,
+	int flags);
 
+extern wsfs_status wsfs_filesystem_read(
+	struct wsfs_filesystem * filesystem,
+	char const * path,
+	char * buffer,
+	size_t buffer_size,
+	size_t offset,
+	size_t * read_count);
 
 #endif
 

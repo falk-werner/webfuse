@@ -19,6 +19,7 @@ static int wsfs_result_from_status(wsfs_status status)
 	{
 		case WSFS_GOOD: return 0;
 		case WSFS_BAD_NOENTRY: return -ENOENT;
+		case WSFS_BAD_NOACCESS: return -EACCES;
 		default: return -ENOENT;
 	}
 }
@@ -93,6 +94,38 @@ static int wsfs_operation_readdir(
 	return wsfs_result_from_status(status);
 }
 
+static int wsfs_operation_open(
+	char const *path,
+	struct fuse_file_info * file_info)
+{
+	struct wsfs_filesystem * filesystem = wsfs_get_filesystem();
+	wsfs_status const status = wsfs_filesystem_open(filesystem, path, file_info->flags);
+
+	return wsfs_result_from_status(status);
+}
+
+static int wsfs_operation_read(
+	const char * path,
+ 	char * buffer,
+	size_t buffer_size,
+	off_t  offset,
+	struct fuse_file_info * WSFS_UNUSED_PARAM(file_info))
+{
+	struct wsfs_filesystem * filesystem = wsfs_get_filesystem();
+
+	size_t count;
+	wsfs_status const status = wsfs_filesystem_read(filesystem, path, buffer, buffer_size, offset, &count);
+	if (WSFS_GOOD == status)
+	{
+		return count;
+	}
+	else
+	{
+		return wsfs_result_from_status(status);
+	}
+
+}
+
 void wsfs_operations_init(
 	struct fuse_operations * operations)
 {
@@ -101,5 +134,7 @@ void wsfs_operations_init(
 	operations->destroy = &wsfs_operation_destroy;
 	operations->getattr = &wsfs_operation_getattr;
 	operations->readdir = &wsfs_operation_readdir;
+	operations->open    = &wsfs_operation_open;
+	operations->read    = &wsfs_operation_read;
 }
 
