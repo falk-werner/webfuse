@@ -88,13 +88,27 @@ wsfs_status wsfs_filesystem_getattr(
 wsfs_status wsfs_filesystem_readdir(
 	struct wsfs_filesystem * filesystem,
 	char const * path,
-	void * WSFS_UNUSED_PARAM(buffer),
-	wsfs_add_entry_fn * WSFS_UNUSED_PARAM(add_entry))
+	void * buffer,
+	wsfs_add_entry_fn * add_entry)
 {
 	json_t * result = NULL;
 	wsfs_status const status = wsfs_jsonrpc_invoke(filesystem->rpc, &result, "readdir", "s", path);
 	if (NULL != result)
 	{
+		if (json_is_array(result)) 
+		{
+			bool has_capacity = true;
+			size_t const count = json_array_size(result);
+			for(size_t i = 0; (has_capacity) && (i < count); i++)
+			{
+				json_t * entry =json_array_get(result, i);
+				if (json_is_string(entry))
+				{
+					has_capacity = add_entry(buffer, json_string_value(entry));
+				}
+			}
+		}
+
 		json_decref(result);
 	}
 

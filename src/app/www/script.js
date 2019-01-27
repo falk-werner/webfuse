@@ -23,7 +23,7 @@ function startup()
 	}
 
 	FileSystem.prototype.getattr = function(path) {
-		entry = this.getEntry(path);
+		var entry = this.getEntry(path);
 		if (entry) {
 			return {
 				mode: entry.mode || 0755,
@@ -37,6 +37,25 @@ function startup()
 		else {
 			return FileSystem.BAD_NO_ENTRY;
 		}
+	};
+
+	FileSystem.prototype.readdir = function(path) {
+		var result, entry, subdir, i, len;
+
+		entry = this.getEntry(path);
+		if ((entry) && (entry.type == "dir")) {
+			result = [".", ".."];
+			for(subdir in entry.entries) {
+				if (entry.entries.hasOwnProperty(subdir)) {
+					result.push(subdir);
+				}				
+			}
+		}
+		else {
+			result = FileSystem.BAD_NO_ENTRY;
+		}
+
+		return result;
 	};
 
 	var fs = new FileSystem({
@@ -69,6 +88,9 @@ function startup()
 				{
 					case "getattr":
 						result = fs.getattr(request.params[0]);
+						break;
+					case "readdir":
+						result = fs.readdir(request.params[0]);
 						break;
 					default:
 						break;
