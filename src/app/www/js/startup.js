@@ -43,8 +43,7 @@ function onmessage(message) {
 function startup() {
     let connection = new Connection();
     let connectionView = new ConnectionView(connection);
-    let body = document.querySelector("body");
-    body.appendChild(connectionView.element);
+    document.getElementById('connection').appendChild(connectionView.element);
 
     let fs = new FileSystem({
         mode: 0755,
