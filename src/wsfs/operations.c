@@ -23,6 +23,7 @@ void wsfs_operations_init(
 	operations->getattr = &wsfs_operation_getattr;
 	operations->readdir = &wsfs_operation_readdir;
 	operations->open    = &wsfs_operation_open;
+	operations->release = &wsfs_operation_close;
 	operations->read    = &wsfs_operation_read;
 }
 

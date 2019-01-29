@@ -1,9 +1,9 @@
 #include "wsfs/operations.h"
 
 #include <string.h>
+#include <limits.h>
 #include <jansson.h>
 
-#include "wsfs/util.h"
 #include "wsfs/jsonrpc.h"
 
 #define WSFS_MAX_READ_LENGTH 4096
@@ -38,7 +38,7 @@ int wsfs_operation_read(
  	char * buffer,
 	size_t buffer_size,
 	off_t  offset,
-	struct fuse_file_info * WSFS_UNUSED_PARAM(file_info))
+	struct fuse_file_info * file_info)
 {
     struct fuse_context * context = fuse_get_context();
 	struct wsfs_jsonrpc * rpc = context->private_data;
@@ -46,7 +46,8 @@ int wsfs_operation_read(
 	int const length = (buffer_size <= WSFS_MAX_READ_LENGTH) ? (int) buffer_size : WSFS_MAX_READ_LENGTH;
 	int result = 0;
 	json_t * data = NULL;
-	wsfs_status status = wsfs_jsonrpc_invoke(rpc, &data, "read", "sii", path, (int) offset, length);
+    int handle = (file_info->fh & INT_MAX);
+	wsfs_status status = wsfs_jsonrpc_invoke(rpc, &data, "read", "siii", path, handle, (int) offset, length);
 	if (NULL != data)
 	{
 		json_t * data_holder = json_object_get(data, "data");

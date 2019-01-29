@@ -41,6 +41,7 @@ add_library(fuse-wsfs
 	src/wsfs/operation/getattr.c
 	src/wsfs/operation/readdir.c
 	src/wsfs/operation/open.c
+	src/wsfs/operation/close.c
 	src/wsfs/operation/read.c
 	src/wsfs/response_parser.c
 	src/wsfs/server.c

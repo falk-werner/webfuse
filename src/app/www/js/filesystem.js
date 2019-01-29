@@ -73,13 +73,18 @@ class FileSystem {
         let entry = this._getEntry(path);
 
 		if (entry.type == "file") {
-			result = ((mode & FileSystem.O_ACCMODE) == FileSystem.O_RDONLY) ? true : FileSystem.BAD_NOACCESS;			
+			result = ((mode & FileSystem.O_ACCMODE) == FileSystem.O_RDONLY) ? {handle: 1337} : FileSystem.BAD_NOACCESS;			
 		}
 	
 		return result;
     }
 
-    read(path, offset, length) {
+    close(path, handle, mode) {
+        // do nothing
+		return true;
+    }
+
+    read(path, handle, offset, length) {
 		let result = FileSystem.BAD_NOENTRY;
 		let entry = this._getEntry(path);
 				

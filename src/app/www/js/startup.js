@@ -49,7 +49,8 @@ function startup() {
         mode: 0755,
         type: "dir",
         entries: {
-            "hello": { mode: 0755, type: "file", /* size: 10 , */contents: "Hello, World!"}
+            "hello.txt"   : { mode: 0444, type: "file", contents: "Hello, World!"},
+            "say_hello.sh": { mode: 0555, type: "file", contents: "#!/bin/sh\necho hello\n"}
         }
     });
     let handler = new FileSystemHandler(fs, connection);

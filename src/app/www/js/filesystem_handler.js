@@ -23,17 +23,41 @@ class FileSystemHandler {
                 switch(request.method)
                 {
                     case "getattr":
-                        result = this._fs.getattr(request.params[0]);
-                        break;
+                    {
+                        const path = request.params[0];
+                        result = this._fs.getattr(path);
+                    }
+                    break;
                     case "readdir":
-                        result = this._fs.readdir(request.params[0]);
-                        break;
+                    {
+                        const path = request.params[0];
+                        result = this._fs.readdir(path);
+                    }
+                    break;
                     case "open":
-                        result = this._fs.open(request.params[0], request.params[1]);
-                        break;
+                    {
+                        const path = request.params[0];
+                        const mode = request.params[1];
+                        result = this._fs.open(path, mode);
+                    }
+                    break;
+                    case "close":
+                    {
+                        const path = request.params[0];
+                        const handle = request.params[1];
+                        const mode = request.params[2];
+                        result = this._fs.open(path, handle, mode);
+                    }
+                    break;
                     case "read":
-                        result = this._fs.read(request.params[0], request.params[1], request.params[2]);
-                        break;
+                    {
+                        const path = request.params[0];
+                        const handle = request.params[1];
+                        const offset = request.params[2];
+                        const length = request.params[3];
+                        result = this._fs.read(path, handle, offset, length);
+                    }
+                    break;
                     default:
                         break;
                 }

@@ -11,10 +11,19 @@ int wsfs_operation_open(
     struct wsfs_jsonrpc * rpc = context->private_data;
 
 	json_t * result = NULL;
-	wsfs_status const status = wsfs_jsonrpc_invoke(rpc, &result, "open", "si", path, file_info->flags);
+	wsfs_status status = wsfs_jsonrpc_invoke(rpc, &result, "open", "si", path, file_info->flags);
 	if (NULL != result)
 	{
-		// unused
+        json_t * handle_holder = json_object_get(result, "handle");
+        if ((NULL != handle_holder) && (json_is_integer(handle_holder))) 
+        {
+            file_info->fh = json_integer_value(handle_holder);
+        }
+        else
+        {
+            status = WSFS_BAD_FORMAT;
+        }        
+
 		json_decref(result);
 	}
 

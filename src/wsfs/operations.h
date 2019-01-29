@@ -23,6 +23,10 @@ extern int wsfs_operation_open(
 	char const *path,
 	struct fuse_file_info * file_info);
 
+extern int wsfs_operation_close(
+	char const *path,
+	struct fuse_file_info * file_info);
+
 extern int wsfs_operation_read(
 	const char * path,
  	char * buffer,
