@@ -13,6 +13,7 @@
 
 typedef int wsfs_status;
 
+extern int wsfs_status_to_rc(wsfs_status status);
 
 #endif
 
