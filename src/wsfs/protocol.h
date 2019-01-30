@@ -1,12 +1,19 @@
 #ifndef _WSFS_PROTOCOL_H
 #define _WSFS_PROTOCOL_H
 
+#ifndef __cplusplus
 #include <stdbool.h>
+#endif
+
 #include <libwebsockets.h>
 #include <pthread.h>
 
 struct wsfs_protocol;
 struct wsfs_server;
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 extern struct wsfs_protocol * wsfs_protocol_create(
 	struct wsfs_server * server);
@@ -31,6 +38,10 @@ extern bool wsfs_protocol_send(
 	char * message,
 	size_t length,
 	void * user_data);
+
+#ifdef __cplusplus
+}
+#endif
 
 
 #endif

@@ -1,7 +1,12 @@
 #ifndef _WSFS_SERVER_H
 #define _WSFS_SERVER_H
 
+#ifndef __cplusplus
 #include <stddef.h>
+#else
+#include <cstddef>
+using std::size_t;
+#endif
 
 struct wsfs_server;
 struct wsfs_jsonrpc;
@@ -14,6 +19,10 @@ struct wsfs_server_config
 	char * vhost_name;
 	int port;
 };
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 extern void wsfs_server_config_clear(
 	struct wsfs_server_config * config);
@@ -37,6 +46,10 @@ extern void wsfs_server_handle_message(
 	struct wsfs_server * server,
 	char const * message,
 	size_t length);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
 

@@ -13,7 +13,15 @@
 
 typedef int wsfs_status;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern int wsfs_status_to_rc(wsfs_status status);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
 

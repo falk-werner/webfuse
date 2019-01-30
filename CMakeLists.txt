@@ -72,6 +72,7 @@ pkg_check_modules(GTEST gtest_main)
 
 add_executable(alltests
 	test-src/test_response_parser.cc
+	test-src/test_server.cc
 )
 
 target_link_libraries(alltests PUBLIC fuse-wsfs ${EXTRA_LIBS} ${GTEST_LIBRARIES})

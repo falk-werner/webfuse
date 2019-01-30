@@ -3,6 +3,10 @@
 
 #include "wsfs/fuse_wrapper.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern void wsfs_operations_init(
 	struct fuse_operations * operations);
 
@@ -33,6 +37,10 @@ extern int wsfs_operation_read(
 	size_t buffer_size,
 	off_t  offset,
 	struct fuse_file_info * file_info);
+	
+#ifdef __cplusplus
+}
+#endif
 
 #endif
 
