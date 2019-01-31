@@ -50,7 +50,7 @@ class FileSystem {
 			};
         }
         else {
-            return FilesSystem.BAD_NOENTRY;
+            return FileSystem.BAD_NOENTRY;
         }
     }
 
