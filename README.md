@@ -18,6 +18,7 @@ fuse-wsfs combines libwebsockets and libfuse. It allows ot attach a remote files
 
 # Dependencies
 
+- [libuv](https://github.com/libuv/libuv)
 - [libfuse3](https://github.com/libfuse/libfuse/)
 - [libwebsockets](https://libwebsockets.org/)
 - [Jansson](https://jansson.readthedocs.io)

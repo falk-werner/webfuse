@@ -7,6 +7,7 @@ set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 
 find_package(PkgConfig REQUIRED)
+pkg_check_modules(LIBUV REQUIRED libuv)
 pkg_check_modules(FUSE3 REQUIRED fuse3)
 pkg_check_modules(LWS REQUIRED libwebsockets)
 pkg_check_modules(JANSSON REQUIRED jansson)
@@ -14,6 +15,7 @@ pkg_check_modules(JANSSON REQUIRED jansson)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -pedantic -Wextra")
 
 set(EXTRA_INCLUDE_DIRS
+	${LIBUV_INCLUDE_DIRS} 
 	${FUSE3_INCLUDE_DIRS} 
 	${LWS_INCLUDE_DIRS} 
 	${JANSSON_INCLUDE_DIRS}
@@ -21,6 +23,7 @@ set(EXTRA_INCLUDE_DIRS
 
 set(EXTRA_LIBS 
 	${EXTRA_LIBS}
+	${LIBUV_LIBRARIES}
 	${FUSE3_LIBRARIES}
 	${LWS_LIBRARIES}
 	${JANSSON_LIBRARIES}
@@ -28,6 +31,7 @@ set(EXTRA_LIBS
 )
 
 set(EXTRA_CFLAGS
+	${LIBUV_CFLAGS_OTHER}
 	${FUSE3_CFLAGS_OTHER}
 	${LWS_CFLAGS_OTHER}
 	${JANSSON_CFLAGS_OTHER}
