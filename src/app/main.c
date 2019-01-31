@@ -15,7 +15,7 @@ struct args
 {
 	struct wsfs_server_config config;
 	char * mount_point;
-	int show_help;
+	bool show_help;
 };
 
 static void show_help(void)
@@ -97,14 +97,18 @@ static int parse_arguments(int argc, char * argv[], struct args * args)
 		}
 	}
 
+	if ((EXIT_SUCCESS == result) && (!args->show_help))
+	{
+		if (NULL == args->mount_point)
+		{
+			fprintf(stderr, "error: missing mount point\n");
+			result = EXIT_FAILURE;
+		}
+	}
+
 	if (EXIT_SUCCESS != result)
 	{
 		args->show_help = true;
-	}
-
-	if ((!args->show_help) && (NULL == args->mount_point))
-	{
-		fprintf(stderr, "error: missing mount point\n");
 	}
 
 	return result;
