@@ -13,7 +13,7 @@ fuse-wsfs combines libwebsockets and libfuse. It allows ot attach a remote files
     make
     CTEST_OUTPUT_ON_FAILUE=1 make test
     mkdir test
-    ./wsfs -s -f --document_root=`realpath ../src/app/www` --port=4711 test
+    ./wsfs -m test --document_root=`realpath ../src/app/www` --port=4711
 
 
 # Dependencies
