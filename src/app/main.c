@@ -131,9 +131,6 @@ int main(int argc, char * argv[])
 	};
 
 	int result = parse_arguments(argc, argv, &args);
-
-	struct fuse_operations operations;
-	wsfs_operations_init(&operations);
 	
 	if (!args.show_help)
 	{
@@ -143,8 +140,7 @@ int main(int argc, char * argv[])
 			wsfs_server_start(server);
 			struct wsfs_jsonrpc * const rpc = wsfs_server_get_jsonrpc_service(server);
 
-			char * fuse_args[] = { "-s", "-f", args.mount_point, NULL };
-			result = fuse_main(3, fuse_args, &operations, rpc);
+			result = wsfs_operations_loop(args.mount_point, rpc);
 			wsfs_server_dispose(server);			
 		}
 		else

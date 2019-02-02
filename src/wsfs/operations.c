@@ -15,7 +15,7 @@ static void* wsfs_operation_init(
 	return context->private_data;
 }
 
-void wsfs_operations_init(
+static void wsfs_operations_init(
 	struct fuse_operations * operations)
 {
 	memset(operations, 0, sizeof(struct fuse_operations));
@@ -27,3 +27,15 @@ void wsfs_operations_init(
 	operations->read    = &wsfs_operation_read;
 }
 
+int wsfs_operations_loop(
+	char * mount_point,
+	struct wsfs_jsonrpc * rpc)
+{
+	struct fuse_operations operations;
+	wsfs_operations_init(&operations);
+
+	char * fuse_args[] = { "app", "-s", "-f", mount_point, NULL };
+	int const result = fuse_main(4, fuse_args, &operations, rpc);
+
+	return result;
+}

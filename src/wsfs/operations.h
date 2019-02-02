@@ -3,12 +3,15 @@
 
 #include "wsfs/fuse_wrapper.h"
 
+struct wsfs_jsonrpc;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-extern void wsfs_operations_init(
-	struct fuse_operations * operations);
+extern int wsfs_operations_loop(
+	char * mount_point,
+	struct wsfs_jsonrpc * rpc);
 
 extern int wsfs_operation_readdir(
 	char const * path,
