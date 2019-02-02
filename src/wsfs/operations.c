@@ -39,3 +39,20 @@ int wsfs_operations_loop(
 
 	return result;
 }
+
+int wsfs_operations_loop_ll(
+	char * WSFS_UNUSED_PARAM(mount_point),
+	struct wsfs_jsonrpc * WSFS_UNUSED_PARAM(rpc))
+{
+	struct fuse_lowlevel_ops operations;
+	memset(&operations, 0, sizeof(struct fuse_lowlevel_ops));
+	operations.lookup = &wsfs_operation_ll_lookup;
+	operations.getattr = &wsfs_operation_ll_getattr;
+	operations.readdir = &wsfs_operation_ll_readdir;
+	operations.open	= &wsfs_operation_ll_open;
+	operations.release = &wsfs_operation_ll_close;
+	operations.read	= &wsfs_operation_ll_read;
+
+
+	return 0;
+}
