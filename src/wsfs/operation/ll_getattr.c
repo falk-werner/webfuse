@@ -20,7 +20,8 @@ extern void wsfs_operation_ll_getattr (
     printf("getattr: inode=%lu\n", inode);
 
     struct fuse_ctx const * context = fuse_req_ctx(request);
-    struct wsfs_jsonrpc * rpc = fuse_req_userdata(request);
+    struct wsfs_operations_context * user_data = fuse_req_userdata(request);
+    struct wsfs_jsonrpc * rpc = user_data->rpc;
 
     struct stat buffer;
 	json_t * data = NULL;
@@ -64,7 +65,7 @@ extern void wsfs_operation_ll_getattr (
 
     if (WSFS_GOOD == status)
     {
-        fuse_reply_attr(request, &buffer, 1.0);
+        fuse_reply_attr(request, &buffer, user_data->timeout);
     }
     else
     {

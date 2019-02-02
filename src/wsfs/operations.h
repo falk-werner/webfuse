@@ -5,6 +5,12 @@
 
 struct wsfs_jsonrpc;
 
+struct wsfs_operations_context
+{
+	struct wsfs_jsonrpc * rpc;
+	double timeout;
+};
+
 #ifdef __cplusplus
 extern "C" {
 #endif

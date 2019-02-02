@@ -57,7 +57,11 @@ int wsfs_operations_loop_ll(
 	const int argc = 1;
 	char * argv[] = {"", NULL};
 	struct fuse_args args = FUSE_ARGS_INIT(argc, argv);
-	struct fuse_session * session = fuse_session_new(&args, &operations, sizeof(operations), rpc);
+	struct wsfs_operations_context context = {
+		.rpc = rpc,
+		.timeout = 1.0
+	};
+	struct fuse_session * session = fuse_session_new(&args, &operations, sizeof(operations), &context);
 	if (NULL != session)
 	{
 		fuse_set_signal_handlers(session);
