@@ -7,7 +7,6 @@
 #include <unistd.h>
 #include <getopt.h>
 
-#include "wsfs/fuse_wrapper.h"
 #include "wsfs/operations.h"
 #include "wsfs/server.h"
 
