@@ -48,6 +48,9 @@ extern void wsfs_jsonrpc_on_message(
 	size_t length,
 	void * user_data);
 
+
+extern int wsfs_json_get_int(json_t * object, char const * key, int default_value);
+
 #ifdef __cplusplus
 }
 #endif

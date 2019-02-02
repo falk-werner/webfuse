@@ -28,6 +28,12 @@ class FileSystemHandler {
                         result = this._fs.getattr(path);
                     }
                     break;
+                    case "getattr_ll":
+                    {
+                        const inode = request.params[0];
+                        result = this._fs.getattr(inode);
+                    }
+                    break;
                     case "readdir":
                     {
                         const path = request.params[0];

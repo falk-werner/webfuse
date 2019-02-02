@@ -20,21 +20,41 @@ class FileSystem {
 
     constructor(root) {
         this.root = root;
+        this._inodes = { };
+        
+        this._walk(this.root, (entry) => { this._inodes[entry.inode] = entry; });
+    }
+
+    _walk(node, callback) {
+        callback(node);
+
+        const entries = node.entries;
+        if (entries) {
+            for(let entry of Object.entries(entries)) {
+                this._walk(entry[1], callback);
+            }
+        }
     }
 
     _getEntry(path) {
-        let curItem = this.root;
+        if ("number" === typeof(path)) {
+            const inode = path;
+            return this._inodes[inode];
+        }
+        else {
+            let curItem = this.root;
 
-        for(let item of path.split('/')) {
-            if ('' !== item) {
-                curItem = curItem.entries && curItem.entries[item];
-                if (!curItem) {
-                    return null;
+            for(let item of path.split('/')) {
+                if ('' !== item) {
+                    curItem = curItem.entries && curItem.entries[item];
+                    if (!curItem) {
+                        return null;
+                    }
                 }
             }
-        }
 
-        return curItem;
+            return curItem;
+        }
     }
 
     getattr(path) {

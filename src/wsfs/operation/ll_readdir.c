@@ -2,6 +2,8 @@
 #include <errno.h>
 #include "wsfs/util.h"
 
+#include <stdio.h>
+
 void wsfs_operation_ll_readdir (
 	fuse_req_t request,
 	fuse_ino_t WSFS_UNUSED_PARAM(inode),
@@ -9,5 +11,6 @@ void wsfs_operation_ll_readdir (
 	off_t WSFS_UNUSED_PARAM(offset),
 	struct fuse_file_info * WSFS_UNUSED_PARAM(file_info))
 {
+    puts("readdir");
 	fuse_reply_err(request, ENOENT);
 }
