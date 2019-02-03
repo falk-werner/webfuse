@@ -139,7 +139,7 @@ int main(int argc, char * argv[])
 			wsfs_server_start(server);
 			struct wsfs_jsonrpc * const rpc = wsfs_server_get_jsonrpc_service(server);
 
-			result = wsfs_operations_loop(args.mount_point, rpc);
+			result = wsfs_operations_loop_ll(args.mount_point, rpc);
 			wsfs_server_dispose(server);			
 		}
 		else
