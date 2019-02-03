@@ -35,30 +35,10 @@ class FileSystem {
             }
         }
     }
-
-    _getEntry(path) {
-        if ("number" === typeof(path)) {
-            const inode = path;
-            return this._inodes[inode];
-        }
-        else {
-            let curItem = this.root;
-
-            for(let item of path.split('/')) {
-                if ('' !== item) {
-                    curItem = curItem.entries && curItem.entries[item];
-                    if (!curItem) {
-                        return null;
-                    }
-                }
-            }
-
-            return curItem;
-        }
-    }
-
+   
+    
     lookup(parent, name) {
-        const parentEntry = this._getEntry(parent);
+        const parentEntry = this._inodes[parent];
         const entry = (parentEntry && parentEntry.entries && parentEntry.entries[name]) || null;
         if (entry) {
 			return {
@@ -77,8 +57,8 @@ class FileSystem {
     }
 
 
-    getattr(path) {
-        let entry = this._getEntry(path);
+    getattr(inode) {
+        let entry = this._inodes[inode];
         if (entry) {
 			return {
 				mode: entry.mode || parseInt("755", 8),
@@ -94,9 +74,9 @@ class FileSystem {
         }
     }
 
-    readdir(path) {
+    readdir(inode) {
         let result = FileSystem.BAD_NOENTRY;
-        let entry = this._getEntry(path);
+        let entry = this._inodes[inode];
 
         if ((entry) && ("dir" === entry.type)) {
             result = [
@@ -113,9 +93,9 @@ class FileSystem {
         return result;
     }
 
-    open(path, mode) {
+    open(inode, mode) {
         let result = FileSystem.BAD_NOENTRY;
-        let entry = this._getEntry(path);
+        let entry = this._inodes[inode];
 
 		if (entry.type == "file") {
 			result = ((mode & FileSystem.O_ACCMODE) == FileSystem.O_RDONLY) ? {handle: 1337} : FileSystem.BAD_NOACCESS;			
@@ -124,14 +104,14 @@ class FileSystem {
 		return result;
     }
 
-    close(path, handle, mode) {
+    close(inode, handle, mode) {
         // do nothing
 		return true;
     }
 
-    read(path, handle, offset, length) {
+    read(inode, handle, offset, length) {
 		let result = FileSystem.BAD_NOENTRY;
-		let entry = this._getEntry(path);
+		let entry = this._inodes[inode];
 				
 		if (entry.type == "file") {
 			let end = Math.min(offset + length, entry.contents.length);

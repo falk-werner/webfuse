@@ -10,7 +10,7 @@
 #include "wsfs/jsonrpc.h"
 #include "wsfs/util.h"
 
-void wsfs_operation_ll_lookup (
+void wsfs_operation_lookup (
 	fuse_req_t request, 
 	fuse_ino_t parent, 
 	char const * name)

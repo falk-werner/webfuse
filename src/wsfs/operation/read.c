@@ -1,5 +1,6 @@
 #include "wsfs/operations.h"
 
+#include <errno.h>
 #include <string.h>
 #include <limits.h>
 #include <jansson.h>
@@ -33,21 +34,22 @@ static wsfs_status wsfs_fill_buffer(
 	return status;
 }
 
-int wsfs_operation_read(
-	const char * path,
- 	char * buffer,
-	size_t buffer_size,
-	off_t  offset,
+void wsfs_operation_read(
+	fuse_req_t request,
+	fuse_ino_t inode,
+    size_t size,
+    off_t offset,
 	struct fuse_file_info * file_info)
 {
-    struct fuse_context * context = fuse_get_context();
-	struct wsfs_jsonrpc * rpc = context->private_data;
+    struct wsfs_operations_context * user_data = fuse_req_userdata(request);
+    struct wsfs_jsonrpc * rpc = user_data->rpc;
 
-	int const length = (buffer_size <= WSFS_MAX_READ_LENGTH) ? (int) buffer_size : WSFS_MAX_READ_LENGTH;
-	int result = 0;
+	int const length = (size <= WSFS_MAX_READ_LENGTH) ? (int) size : WSFS_MAX_READ_LENGTH;
+	char * buffer = malloc(length);
+	size_t count = 0;
 	json_t * data = NULL;
     int handle = (file_info->fh & INT_MAX);
-	wsfs_status status = wsfs_jsonrpc_invoke(rpc, &data, "read", "siii", path, handle, (int) offset, length);
+	wsfs_status status = wsfs_jsonrpc_invoke(rpc, &data, "read", "iiii", inode, handle, (int) offset, length);
 	if (NULL != data)
 	{
 		json_t * data_holder = json_object_get(data, "data");
@@ -60,13 +62,9 @@ int wsfs_operation_read(
 		{
 			char const * const data = json_string_value(data_holder);
 			char const * const format = json_string_value(format_holder);
-			int const count = json_integer_value(count_holder);
+			count = (size_t) json_integer_value(count_holder);
 
-			status = wsfs_fill_buffer(buffer, buffer_size, format, data, count);
-			if (WSFS_GOOD == status)
-			{
-				result = count;
-			}
+			status = wsfs_fill_buffer(buffer, length, format, data, count);
 		}
 		else
 		{
@@ -76,10 +74,14 @@ int wsfs_operation_read(
 		json_decref(data);
 	}
 
-	if (WSFS_GOOD != status)
+	if (WSFS_GOOD == status)
 	{
-		result = wsfs_status_to_rc(status);
+		fuse_reply_buf(request, buffer, count);
 	}
-
-    return result;
+	else
+	{
+   		fuse_reply_err(request, ENOENT);
+	}
+	
+    free(buffer);
 }

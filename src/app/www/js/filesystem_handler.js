@@ -31,44 +31,38 @@ class FileSystemHandler {
                     break;
                     case "getattr":
                     {
-                        const path = request.params[0];
-                        result = this._fs.getattr(path);
-                    }
-                    break;
-                    case "getattr_ll":
-                    {
                         const inode = request.params[0];
                         result = this._fs.getattr(inode);
                     }
                     break;
                     case "readdir":
                     {
-                        const path = request.params[0];
-                        result = this._fs.readdir(path);
+                        const inode = request.params[0];
+                        result = this._fs.readdir(inode);
                     }
                     break;
                     case "open":
                     {
-                        const path = request.params[0];
+                        const inode = request.params[0];
                         const mode = request.params[1];
-                        result = this._fs.open(path, mode);
+                        result = this._fs.open(inode, mode);
                     }
                     break;
                     case "close":
                     {
-                        const path = request.params[0];
+                        const inode = request.params[0];
                         const handle = request.params[1];
                         const mode = request.params[2];
-                        result = this._fs.open(path, handle, mode);
+                        result = this._fs.open(inode, handle, mode);
                     }
                     break;
                     case "read":
                     {
-                        const path = request.params[0];
+                        const inode = request.params[0];
                         const handle = request.params[1];
                         const offset = request.params[2];
                         const length = request.params[3];
-                        result = this._fs.read(path, handle, offset, length);
+                        result = this._fs.read(inode, handle, offset, length);
                     }
                     break;
                     default:
