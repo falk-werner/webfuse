@@ -22,6 +22,13 @@ class FileSystemHandler {
                             (request.params)) {
                 switch(request.method)
                 {
+                    case "lookup":
+                    {
+                        const parent = request.params[0];
+                        const name = request.params[1];
+                        result = this._fs.lookup(parent, name);
+                    }
+                    break;
                     case "getattr":
                     {
                         const path = request.params[0];

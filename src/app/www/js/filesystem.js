@@ -57,6 +57,26 @@ class FileSystem {
         }
     }
 
+    lookup(parent, name) {
+        const parentEntry = this._getEntry(parent);
+        const entry = (parentEntry && parentEntry.entries && parentEntry.entries[name]) || null;
+        if (entry) {
+			return {
+                inode: entry.inode,
+				mode: entry.mode || parseInt("755", 8),
+				type: entry.type || 'file',
+				size: entry.size || (entry.contents && entry.contents.length) || 0,
+				atime: entry.atime || 0,
+				mtime: entry.mtime || 0,
+				ctime: entry.ctime || 0
+			};
+        }
+        else {
+            return FileSystem.BAD_NOENTRY;
+        }
+    }
+
+
     getattr(path) {
         let entry = this._getEntry(path);
         if (entry) {
@@ -79,9 +99,14 @@ class FileSystem {
         let entry = this._getEntry(path);
 
         if ((entry) && ("dir" === entry.type)) {
-            result = [".", ".."];
-            for(let subdir of Object.keys(entry.entries)) {
-                result.push(subdir);                
+            result = [
+                {name: '.', inode: entry.inode},
+                {name: '..', inode: 0}
+            ];
+            for(let subdir of Object.entries(entry.entries)) {
+                const name = subdir[0];
+                const inode = subdir[1].inode;
+                result.push({name: name, inode: inode});               
             }
         }
 

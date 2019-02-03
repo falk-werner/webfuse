@@ -27,9 +27,13 @@ int wsfs_operation_readdir(
 			for(size_t i = 0; (!buffer_full) && (i < count); i++)
 			{
 				json_t * entry =json_array_get(result, i);
-				if (json_is_string(entry))
+				if (json_is_object(entry))
 				{
-					buffer_full = filler(buffer, json_string_value(entry), NULL, 0, 0);
+					json_t * name_holder = json_object_get(entry, "name");
+					if ((NULL != name_holder) && (json_is_string(name_holder))) 
+					{
+						buffer_full = filler(buffer, json_string_value(name_holder), NULL, 0, 0);
+					}
 				}
 			}
 		}

@@ -1,9 +1,7 @@
 #include "wsfs/operations.h"
 
-
 #include <errno.h>
 #include <string.h>
-#include <stdio.h>
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -17,8 +15,6 @@ extern void wsfs_operation_ll_getattr (
 	fuse_ino_t inode,
 	struct fuse_file_info * WSFS_UNUSED_PARAM(file_info))
 {
-    printf("getattr: inode=%lu\n", inode);
-
     struct fuse_ctx const * context = fuse_req_ctx(request);
     struct wsfs_operations_context * user_data = fuse_req_userdata(request);
     struct wsfs_jsonrpc * rpc = user_data->rpc;
