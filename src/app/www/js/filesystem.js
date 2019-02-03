@@ -101,7 +101,7 @@ class FileSystem {
         if ((entry) && ("dir" === entry.type)) {
             result = [
                 {name: '.', inode: entry.inode},
-                {name: '..', inode: 0}
+                {name: '..', inode: entry.inode}
             ];
             for(let subdir of Object.entries(entry.entries)) {
                 const name = subdir[0];
