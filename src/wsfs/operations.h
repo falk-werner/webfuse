@@ -15,10 +15,6 @@ struct wsfs_operations_context
 extern "C" {
 #endif
 
-extern int wsfs_operations_loop(
-	char * mount_point,
-	struct wsfs_jsonrpc * rpc);
-
 extern void wsfs_operation_lookup (
 	fuse_req_t req, 
 	fuse_ino_t parent, 

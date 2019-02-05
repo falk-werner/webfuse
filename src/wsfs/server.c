@@ -2,53 +2,22 @@
 
 #include <stdlib.h>
 #include <stdbool.h>
-#include <string.h>
-#include <signal.h>
-
-#include <unistd.h>
-#include <pthread.h>
-
 #include <libwebsockets.h>
 
-#include "wsfs/util.h"
-#include "wsfs/protocol.h"
-#include "wsfs/jsonrpc.h"
+#include "wsfs/server_config.h"
+#include "wsfs/server_protocol_intern.h"
 
-#define WSFS_SERVICE_INTERVAL (1 * 1000)
+#define WSFS_SERVER_PROTOCOL_COUNT 3
+#define WSFS_SERVER_TIMEOUT (1 * 1000)
 
 struct wsfs_server
 {
-	pthread_t thread;
-	bool shutdown_flag;
-	pthread_mutex_t lock;
-	struct wsfs_server_config config;
-	struct wsfs_protocol * protocol;
-	struct wsfs_jsonrpc * rpc;
+    struct wsfs_server_config config;
+    struct wsfs_server_protocol protocol;
+    struct lws_protocols ws_protocols[WSFS_SERVER_PROTOCOL_COUNT];
+    struct lws_context * context;
+    volatile bool shutdown_requested;
 };
-
-static char * wsfs_strdup(char const * value)
-{
-	char * result = NULL;
-	if (NULL != value)
-	{
-		result = strdup(value);
-	}
-
-	return result;
-}
-
-
-static bool wsfs_server_isshutdown(
-	struct wsfs_server * server)
-{
-	bool result;
-
-	pthread_mutex_lock(&server->lock);
-	result = server->shutdown_flag;
-	pthread_mutex_unlock(&server->lock);
-
-	return result;
-}
 
 static bool wsfs_server_tls_enabled(
 	struct wsfs_server * server)
@@ -56,28 +25,14 @@ static bool wsfs_server_tls_enabled(
 	return ((server->config.key_path != NULL) && (server->config.cert_path != NULL));
 }
 
-static void wsfs_server_request_shutdown(
-	struct wsfs_server * server)
+static struct lws_context * wsfs_server_context_create(
+    struct wsfs_server * server)
 {
-	pthread_mutex_lock(&server->lock);
-	server->shutdown_flag = true;
-	pthread_mutex_unlock(&server->lock);
-}
-
-static void wsfs_ignore_signal(int WSFS_UNUSED_PARAM(signal_id))
-{
-}
-
-static void* wsfs_server_run(void * arg)
-{
-	struct wsfs_server * const server = arg;
-
-	struct lws_protocols protocols[] = 
-	{
-		{"http", lws_callback_http_dummy, 0, 0, 0, NULL, 0},
-		{ "fs", NULL, 0 , 0, 0, NULL, 0},
-		{ NULL, NULL, 0 , 0, 0, NULL, 0}
-	};
+    memset(server->ws_protocols, 0, sizeof(struct lws_protocols) * WSFS_SERVER_PROTOCOL_COUNT);
+    server->ws_protocols[0].name = "http";
+    server->ws_protocols[0].callback = lws_callback_http_dummy;
+    server->ws_protocols[1].name = "fs";
+    wsfs_server_protocol_init_lws(&server->protocol, &server->ws_protocols[1]);
 
 	struct lws_http_mount mount = 
 	{
@@ -99,13 +54,11 @@ static void* wsfs_server_run(void * arg)
 		.basic_auth_login_file = NULL
 	};
 
-	wsfs_protocol_init_lws(server->protocol, &protocols[1]);
-
 	struct lws_context_creation_info info;
 	memset(&info, 0, sizeof(info));
 	info.port = server->config.port;
 	info.mounts = &mount;
-	info.protocols = protocols;
+	info.protocols = server->ws_protocols;
 	info.vhost_name = server->config.vhost_name;
 	info.ws_ping_pong_interval = 10;
 	info.options = LWS_SERVER_OPTION_HTTP_HEADERS_SECURITY_BEST_PRACTICES_ENFORCE;
@@ -113,7 +66,7 @@ static void* wsfs_server_run(void * arg)
 	if (NULL == server->config.document_root)
 	{
 		// disable http
-		info.protocols = &(protocols[1]);
+		info.protocols = &server->ws_protocols[1];
 		info.mounts = NULL;
 	}
 
@@ -124,97 +77,48 @@ static void* wsfs_server_run(void * arg)
 		info.ssl_private_key_filepath = server->config.key_path;
 	}
 
-	struct lws_context * context = lws_create_context(&info);
-	if (NULL == context)
-	{
-		fprintf(stderr, "error: unable to start websocket server\n");
-		return NULL;
-	}
+	struct lws_context * const context = lws_create_context(&info);
+    return context;
 
-	int n = 0;
-	while ((0 <= n) && (!wsfs_server_isshutdown(server)))
-	{
-		wsfs_protocol_check(server->protocol);
-		n = lws_service(context, WSFS_SERVICE_INTERVAL);
-	}
-
-	lws_context_destroy(context);
-	return NULL;
-}
-
-static void wsfs_server_join(struct wsfs_server * server)
-{	
-	wsfs_server_request_shutdown(server);
-	pthread_join(server->thread, NULL);
 }
 
 struct wsfs_server * wsfs_server_create(
-	struct wsfs_server_config * config)
+    struct wsfs_server_config * config)
 {
-	signal(SIGUSR1, &wsfs_ignore_signal);
+    struct wsfs_server * server = malloc(sizeof(struct wsfs_server));
+    if (NULL != server)
+    {
+        server->shutdown_requested = false;
+        wsfs_server_config_clone(config, &server->config);
+        wsfs_server_protocol_init(&server->protocol, config->mount_point);
+        server->context = wsfs_server_context_create(server);
+    }   
 
-	struct wsfs_server * server = malloc(sizeof(struct wsfs_server));
-	if (NULL != server)
-	{
-		pthread_mutex_init(&server->lock, NULL);
-		server->shutdown_flag = false;
-		server->config.document_root = wsfs_strdup(config->document_root);
-		server->config.cert_path = wsfs_strdup(config->cert_path);
-		server->config.key_path = wsfs_strdup(config->key_path);
-		server->config.vhost_name = wsfs_strdup(config->vhost_name);
-		server->config.port = config->port;
-
-		server->rpc = wsfs_jsonrpc_create(&wsfs_protocol_message_create, &wsfs_protocol_send, NULL);
-		server->protocol = wsfs_protocol_create(server);
-		wsfs_jsonrpc_set_user_data(server->rpc, server->protocol);
-	}
-
-	return server;
+    return server; 
 }
 
 void wsfs_server_dispose(
-	struct wsfs_server * server)
+    struct wsfs_server * server)
 {
-	wsfs_server_join(server);
-	
-	wsfs_jsonrpc_dispose(server->rpc);
-	wsfs_protocol_dispose(server->protocol);
-	wsfs_server_config_clear(&server->config);
-	pthread_mutex_destroy(&server->lock);
-	free(server);
+    lws_context_destroy(server->context);
+    wsfs_server_protocol_cleanup(&server->protocol);
+    wsfs_server_config_cleanup(&server->config);
+    free(server);   
 }
 
-void wsfs_server_start(
-	struct wsfs_server * server)
+void wsfs_server_run(
+    struct wsfs_server * server)
 {
-	pthread_create(&server->thread, NULL, &wsfs_server_run, server);	
+    int n = 0;
+    while ((0 <= n) && (!server->shutdown_requested))
+    {
+        n = lws_service(server->context, WSFS_SERVER_TIMEOUT);
+    }
 }
 
-void wsfs_server_config_clear(struct wsfs_server_config * config)
+void wsfs_server_shutdown(
+    struct wsfs_server * server)
 {
-	free(config->document_root);
-	free(config->cert_path);
-	free(config->key_path);
-	free(config->vhost_name);
-}
-
-struct wsfs_jsonrpc * wsfs_server_get_jsonrpc_service(
-	struct wsfs_server * server)
-{
-	return server->rpc;
-}
-
-void wsfs_server_wakeup(
-	struct wsfs_server * server)
-{
-	pthread_kill(server->thread, SIGUSR1);
-}
-
-void wsfs_server_handle_message(
-	struct wsfs_server * server,
-	char const * message,
-	size_t length)
-{
-	wsfs_jsonrpc_on_message(message, length, server->rpc);
+    server->shutdown_requested = true;
 }
 

@@ -80,6 +80,8 @@ wsfs_status wsfs_jsonrpc_invoke(
 	...
 )
 {
+	return WSFS_BAD_NOTIMPLEMENTED;
+
 	// enqueue message
 	pthread_mutex_lock(&rpc->lock);
 	wsfs_status status = WSFS_BAD;

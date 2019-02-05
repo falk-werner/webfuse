@@ -3,19 +3,21 @@
 #include <string.h>
 #include <stddef.h>
 #include <stdbool.h>
+#include <signal.h>
 
 #include <unistd.h>
 #include <getopt.h>
 
-#include "wsfs/operations.h"
 #include "wsfs/server.h"
+#include "wsfs/server_config.h"
 
 struct args
 {
 	struct wsfs_server_config config;
-	char * mount_point;
 	bool show_help;
 };
+
+static struct wsfs_server * server;
 
 static void show_help(void)
 {
@@ -67,8 +69,8 @@ static int parse_arguments(int argc, char * argv[], struct args * args)
 				finished = true;
 				break;
 			case 'm':
-				free(args->mount_point);
-				args->mount_point = strdup(optarg);
+				free(args->config.mount_point);
+				args->config.mount_point = strdup(optarg);
 				break;
 			case 'd':
 				free(args->config.document_root);
@@ -98,7 +100,7 @@ static int parse_arguments(int argc, char * argv[], struct args * args)
 
 	if ((EXIT_SUCCESS == result) && (!args->show_help))
 	{
-		if (NULL == args->mount_point)
+		if (NULL == args->config.mount_point)
 		{
 			fprintf(stderr, "error: missing mount point\n");
 			result = EXIT_FAILURE;
@@ -113,19 +115,26 @@ static int parse_arguments(int argc, char * argv[], struct args * args)
 	return result;
 }
 
+static void on_interrupt(int signal_id)
+{
+	(void) signal_id;
+
+	wsfs_server_shutdown(server);
+}
+
 int main(int argc, char * argv[])
 {
 	struct args args =
 	{
 		.config = 
 		{
+			.mount_point = NULL,
 			.document_root = NULL,
 			.cert_path = NULL,
 			.key_path = NULL,
 			.vhost_name = strdup("localhost"),
 			.port = 8080,
 		},
-		.mount_point = NULL,
 		.show_help = 0
 	};
 
@@ -133,13 +142,11 @@ int main(int argc, char * argv[])
 	
 	if (!args.show_help)
 	{
-		struct wsfs_server * server = wsfs_server_create(&args.config);
+		signal(SIGINT, on_interrupt);
+		server = wsfs_server_create(&args.config);
 		if (NULL != server)
 		{
-			wsfs_server_start(server);
-			struct wsfs_jsonrpc * const rpc = wsfs_server_get_jsonrpc_service(server);
-
-			result = wsfs_operations_loop(args.mount_point, rpc);
+			wsfs_server_run(server);
 			wsfs_server_dispose(server);			
 		}
 		else
@@ -153,9 +160,7 @@ int main(int argc, char * argv[])
 		show_help();
 	}
 
-	wsfs_server_config_clear(&args.config);
-	free(args.mount_point);
-
+	wsfs_server_config_cleanup(&args.config);
 	return result;
 }
 

@@ -7,7 +7,6 @@ set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 
 find_package(PkgConfig REQUIRED)
-pkg_check_modules(LIBUV REQUIRED libuv)
 pkg_check_modules(FUSE3 REQUIRED fuse3)
 pkg_check_modules(LWS REQUIRED libwebsockets)
 pkg_check_modules(JANSSON REQUIRED jansson)
@@ -15,7 +14,7 @@ pkg_check_modules(JANSSON REQUIRED jansson)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -pedantic -Wextra")
 
 set(EXTRA_INCLUDE_DIRS
-	${LIBUV_INCLUDE_DIRS} 
+	"inc"
 	${FUSE3_INCLUDE_DIRS} 
 	${LWS_INCLUDE_DIRS} 
 	${JANSSON_INCLUDE_DIRS}
@@ -23,7 +22,6 @@ set(EXTRA_INCLUDE_DIRS
 
 set(EXTRA_LIBS 
 	${EXTRA_LIBS}
-	${LIBUV_LIBRARIES}
 	${FUSE3_LIBRARIES}
 	${LWS_LIBRARIES}
 	${JANSSON_LIBRARIES}
@@ -31,7 +29,6 @@ set(EXTRA_LIBS
 )
 
 set(EXTRA_CFLAGS
-	${LIBUV_CFLAGS_OTHER}
 	${FUSE3_CFLAGS_OTHER}
 	${LWS_CFLAGS_OTHER}
 	${JANSSON_CFLAGS_OTHER}
@@ -43,7 +40,7 @@ set(EXTRA_CFLAGS
 
 add_library(fuse-wsfs
 	src/wsfs/status.c
-	src/wsfs/operations.c
+	src/wsfs/filesystem.c
 	src/wsfs/operation/lookup.c
 	src/wsfs/operation/getattr.c
 	src/wsfs/operation/readdir.c
@@ -52,7 +49,8 @@ add_library(fuse-wsfs
 	src/wsfs/operation/read.c
 	src/wsfs/response_parser.c
 	src/wsfs/server.c
-	src/wsfs/protocol.c
+	src/wsfs/server_config.c
+	src/wsfs/server_protocol.c
 	src/wsfs/jsonrpc.c
 )
 
@@ -66,7 +64,7 @@ add_executable(wsfs
 )
 
 target_link_libraries(wsfs PUBLIC fuse-wsfs ${EXTRA_LIBS})
-target_include_directories(wsfs PUBLIC src ${EXTRA_INCLUDE_DIRS})
+target_include_directories(wsfs PUBLIC ${EXTRA_INCLUDE_DIRS})
 target_compile_options(wsfs PUBLIC ${EXTRA_CFLAGS})
 
 # tests
