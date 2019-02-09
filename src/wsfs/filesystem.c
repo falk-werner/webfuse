@@ -1,6 +1,6 @@
 #include "wsfs/filesystem.h"
 #include "wsfs/operations.h"
-#include "wsfs/jsonrpc.h"
+#include "wsfs/jsonrpc/server.h"
 
 #include <stddef.h>
 #include <string.h>
@@ -17,16 +17,19 @@ static struct fuse_lowlevel_ops const wsfs_filesystem_operations =
 };
 
 
-void wsfs_filesystem_init(
+bool wsfs_filesystem_init(
     struct wsfs_filesystem * filesystem,
+	struct wsfs_jsonrpc_server * rpc,
     char * mount_point)
 {
+	bool result = false;
+
 	char * argv[] = {"", NULL};
 	filesystem->args.argc = 1;
 	filesystem->args.argv = argv;
 	filesystem->args.allocated = 0;
 
-	filesystem->user_data.rpc = wsfs_jsonrpc_create(NULL, NULL, NULL);
+	filesystem->user_data.rpc = rpc;
 	filesystem->user_data.timeout = 1.0;
 	memset(&filesystem->buffer, 0, sizeof(struct fuse_buf));
 
@@ -37,9 +40,10 @@ void wsfs_filesystem_init(
         &filesystem->user_data);
 	if (NULL != filesystem->session)
 	{
-		fuse_session_mount(filesystem->session, mount_point);
+		result = (0 == fuse_session_mount(filesystem->session, mount_point));
 	}
 
+	return result;
 }
 
 void wsfs_filesystem_cleanup(

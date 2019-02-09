@@ -7,21 +7,26 @@
 #include <sys/stat.h>
 #include <unistd.h> 
 
-#include "wsfs/jsonrpc.h"
+#include "wsfs/jsonrpc/server.h"
+#include "wsfs/jsonrpc/util.h"
 #include "wsfs/util.h"
 
-extern void wsfs_operation_getattr (
-	fuse_req_t request,
-	fuse_ino_t inode,
-	struct fuse_file_info * WSFS_UNUSED_PARAM(file_info))
+struct wsfs_operation_getattr_context
 {
-    struct fuse_ctx const * context = fuse_req_ctx(request);
-    struct wsfs_operations_context * user_data = fuse_req_userdata(request);
-    struct wsfs_jsonrpc * rpc = user_data->rpc;
+	fuse_req_t request;
+	double timeout;
+	uid_t uid;
+	gid_t gid;
+};
+
+static void wsfs_operation_getattr_finished(
+	void * user_data,
+	wsfs_status status,
+	json_t const * data)
+{
+	struct wsfs_operation_getattr_context * context = user_data;
 
     struct stat buffer;
-	json_t * data = NULL;
-	wsfs_status status = wsfs_jsonrpc_invoke(rpc, &data, "getattr", "i", inode);
 	if (NULL != data)
 	{
 		json_t * mode_holder = json_object_get(data, "mode");
@@ -55,16 +60,34 @@ extern void wsfs_operation_getattr (
 		{
 	        status = WSFS_BAD_FORMAT;
 		}
-
-		json_decref(data);
 	}
 
     if (WSFS_GOOD == status)
     {
-        fuse_reply_attr(request, &buffer, user_data->timeout);
+        fuse_reply_attr(context->request, &buffer, context->timeout);
     }
     else
     {
-	    fuse_reply_err(request, ENOENT);
+	    fuse_reply_err(context->request, ENOENT);
     }
+
+	free(context);
+}
+
+void wsfs_operation_getattr (
+	fuse_req_t request,
+	fuse_ino_t inode,
+	struct fuse_file_info * WSFS_UNUSED_PARAM(file_info))
+{
+    struct fuse_ctx const * context = fuse_req_ctx(request);
+    struct wsfs_operations_context * user_data = fuse_req_userdata(request);
+    struct wsfs_jsonrpc_server * rpc = user_data->rpc;
+
+	struct wsfs_operation_getattr_context * getattr_context = malloc(sizeof(struct wsfs_operation_getattr_context));
+	getattr_context->request = request;
+	getattr_context->uid = context->uid;
+	getattr_context->gid = context->gid;
+	getattr_context->timeout = user_data->timeout;
+
+	wsfs_jsonrpc_server_invoke(rpc, &wsfs_operation_getattr_finished, getattr_context, "getattr", "i", inode);
 }

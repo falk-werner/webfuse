@@ -3,11 +3,11 @@
 
 #include "wsfs/fuse_wrapper.h"
 
-struct wsfs_jsonrpc;
+struct wsfs_jsonrpc_server;
 
 struct wsfs_operations_context
 {
-	struct wsfs_jsonrpc * rpc;
+	struct wsfs_jsonrpc_server * rpc;
 	double timeout;
 };
 

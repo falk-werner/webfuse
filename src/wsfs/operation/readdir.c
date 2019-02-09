@@ -8,11 +8,18 @@
 #include <sys/stat.h>
 #include <unistd.h> 
 
-#include "wsfs/jsonrpc.h"
+#include "wsfs/jsonrpc/server.h"
 #include "wsfs/util.h"
 
 
 #define WSFS_DIRBUFFER_INITIAL_SIZE 1024
+
+struct wsfs_operation_readdir_context
+{
+	fuse_req_t request;
+	size_t size;
+	off_t offset;
+};
 
 struct wsfs_dirbuffer
 {
@@ -64,21 +71,16 @@ static size_t min(size_t a, size_t b)
 	return (a < b) ? a : b;
 }
 
-void wsfs_operation_readdir (
-	fuse_req_t request,
-	fuse_ino_t inode,
-	size_t size,
-	off_t offset,
-	struct fuse_file_info * WSFS_UNUSED_PARAM(file_info))
+static void wsfs_operation_readdir_finished(
+	void * user_data,
+	wsfs_status status,
+	json_t const * result)
 {
-    struct wsfs_operations_context * user_data = fuse_req_userdata(request);
-    struct wsfs_jsonrpc * rpc = user_data->rpc;
+	struct wsfs_operation_readdir_context * context = user_data;
 
 	struct wsfs_dirbuffer buffer;
 	wsfs_dirbuffer_init(&buffer);
 
-	json_t * result = NULL;
-	wsfs_status const status = wsfs_jsonrpc_invoke(rpc, &result, "readdir", "i", inode);
 	if (NULL != result)
 	{
 		if (json_is_array(result)) 
@@ -98,32 +100,48 @@ void wsfs_operation_readdir (
 					{
 						char const * name = json_string_value(name_holder);
 						fuse_ino_t entry_inode = (fuse_ino_t) json_integer_value(inode_holder);
-						wsfs_dirbuffer_add(request, &buffer, name, entry_inode);	
+						wsfs_dirbuffer_add(context->request, &buffer, name, entry_inode);	
 					}
 				}
 			}
 		}
-
-		json_decref(result);
 	}
 
 	if (WSFS_GOOD == status)
 	{
-		if (((size_t) offset) < buffer.position)
+		if (((size_t) context->offset) < buffer.position)
 		{
-			fuse_reply_buf(request, &buffer.data[offset],
-				min(buffer.position - offset, size));
+			fuse_reply_buf(context->request, &buffer.data[context->offset],
+				min(buffer.position - context->offset, context->size));
 		}
 		else
 		{
-			fuse_reply_buf(request, NULL, 0);			
+			fuse_reply_buf(context->request, NULL, 0);			
 		}
 		
 	}
 	else
 	{
-		fuse_reply_err(request, ENOENT);
+		fuse_reply_err(context->request, ENOENT);
 	}
 
 	wsfs_dirbuffer_dispose(&buffer);
+	free(context);
+}
+
+void wsfs_operation_readdir (
+	fuse_req_t request,
+	fuse_ino_t inode,
+	size_t size,
+	off_t offset,
+	struct fuse_file_info * WSFS_UNUSED_PARAM(file_info))
+{
+    struct wsfs_operations_context * user_data = fuse_req_userdata(request);
+    struct wsfs_jsonrpc_server * rpc = user_data->rpc;
+	struct wsfs_operation_readdir_context * readdir_context = malloc(sizeof(struct wsfs_operation_readdir_context));
+	readdir_context->request = request;
+	readdir_context->size = size;
+	readdir_context->offset = offset;
+
+	 wsfs_jsonrpc_server_invoke(rpc, &wsfs_operation_readdir_finished, readdir_context, "readdir", "i", inode);
 }

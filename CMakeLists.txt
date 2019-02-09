@@ -41,17 +41,22 @@ set(EXTRA_CFLAGS
 add_library(fuse-wsfs
 	src/wsfs/status.c
 	src/wsfs/filesystem.c
+	src/wsfs/server.c
+	src/wsfs/message.c
+	src/wsfs/message_queue.c
 	src/wsfs/operation/lookup.c
 	src/wsfs/operation/getattr.c
 	src/wsfs/operation/readdir.c
 	src/wsfs/operation/open.c
 	src/wsfs/operation/close.c
 	src/wsfs/operation/read.c
-	src/wsfs/response_parser.c
-	src/wsfs/server.c
 	src/wsfs/server_config.c
 	src/wsfs/server_protocol.c
-	src/wsfs/jsonrpc.c
+	src/wsfs/jsonrpc/server.c
+	src/wsfs/jsonrpc/method.c
+	src/wsfs/jsonrpc/request.c
+	src/wsfs/jsonrpc/response.c
+	src/wsfs/jsonrpc/util.c
 )
 
 target_include_directories(fuse-wsfs PUBLIC src ${EXTRA_INCLUDE_DIRS})

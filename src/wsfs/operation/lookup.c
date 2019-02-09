@@ -1,5 +1,6 @@
 #include "wsfs/operations.h"
 
+#include <limits.h>
 #include <errno.h>
 #include <string.h>
 
@@ -7,21 +8,29 @@
 #include <sys/stat.h>
 #include <unistd.h> 
 
-#include "wsfs/jsonrpc.h"
+#include <stdlib.h>
+
+#include "wsfs/jsonrpc/server.h"
+#include "wsfs/jsonrpc/util.h"
 #include "wsfs/util.h"
 
-void wsfs_operation_lookup (
-	fuse_req_t request, 
-	fuse_ino_t parent, 
-	char const * name)
+struct wsfs_operation_lookup_context
 {
-    struct fuse_ctx const * context = fuse_req_ctx(request);
-    struct wsfs_operations_context * user_data = fuse_req_userdata(request);
-    struct wsfs_jsonrpc * rpc = user_data->rpc;
+	fuse_req_t request;
+	double timeout;
+	uid_t uid;
+	gid_t gid;
+};
 
+static void wsfs_operation_lookup_finished(
+	void * user_data,
+	wsfs_status status,
+	json_t const * data
+)
+{
+	struct wsfs_operation_lookup_context * context = user_data; 	
     struct fuse_entry_param buffer;
-	json_t * data = NULL;
-	wsfs_status status = wsfs_jsonrpc_invoke(rpc, &data, "lookup", "is", parent, name);
+
 	if (NULL != data)
 	{
 		json_t * inode_holder = json_object_get(data, "inode"); 
@@ -46,8 +55,8 @@ void wsfs_operation_lookup (
 			}
 
 
-			buffer.attr_timeout = user_data->timeout;
-			buffer.entry_timeout = user_data->timeout;
+			buffer.attr_timeout = context->timeout;
+			buffer.entry_timeout = context->timeout;
             buffer.attr.st_uid = context->uid;
             buffer.attr.st_gid = context->gid;
             buffer.attr.st_nlink = 1;
@@ -60,16 +69,35 @@ void wsfs_operation_lookup (
 		{
 	        status = WSFS_BAD_FORMAT;
 		}
-
-		json_decref(data);
 	}
 
     if (WSFS_GOOD == status)
     {
-        fuse_reply_entry(request, &buffer);
+        fuse_reply_entry(context->request, &buffer);
     }
     else
     {
-	    fuse_reply_err(request, ENOENT);
+	    fuse_reply_err(context->request, ENOENT);
     }
+
+	free(context);
+}
+
+void wsfs_operation_lookup (
+	fuse_req_t request, 
+	fuse_ino_t parent, 
+	char const * name)
+{
+    struct fuse_ctx const * context = fuse_req_ctx(request);
+    struct wsfs_operations_context * user_data = fuse_req_userdata(request);
+    struct wsfs_jsonrpc_server * rpc = user_data->rpc;
+
+	struct wsfs_operation_lookup_context * lookup_context = malloc(sizeof(struct wsfs_operation_lookup_context));
+	lookup_context->request = request;
+	lookup_context->uid = context->uid;
+	lookup_context->gid = context->gid;
+	lookup_context->timeout = user_data->timeout;
+
+	wsfs_jsonrpc_server_invoke(rpc, &wsfs_operation_lookup_finished, lookup_context, "lookup", "is", (int) (parent & INT_MAX), name);
+
 }

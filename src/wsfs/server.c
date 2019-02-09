@@ -17,6 +17,8 @@ struct wsfs_server
     struct lws_protocols ws_protocols[WSFS_SERVER_PROTOCOL_COUNT];
     struct lws_context * context;
     volatile bool shutdown_requested;
+	struct lws_http_mount mount;
+	struct lws_context_creation_info info;
 };
 
 static bool wsfs_server_tls_enabled(
@@ -34,50 +36,37 @@ static struct lws_context * wsfs_server_context_create(
     server->ws_protocols[1].name = "fs";
     wsfs_server_protocol_init_lws(&server->protocol, &server->ws_protocols[1]);
 
-	struct lws_http_mount mount = 
-	{
-		.mount_next = NULL,
-		.mountpoint = "/",
-		.origin = server->config.document_root,
-		.def = "index.html",
-		.protocol = NULL,
-		.cgienv = NULL,
-		.extra_mimetypes = NULL,
-		.interpret = NULL,
-		.cgi_timeout = 0,
-		.cache_max_age = 0,
-		.auth_mask = 0,
-		.cache_reusable = 0,
-		.cache_intermediaries = 0,
-		.origin_protocol = LWSMPRO_FILE,
-		.mountpoint_len = 1,
-		.basic_auth_login_file = NULL
-	};
+	memset(&server->mount, 0, sizeof(struct lws_http_mount));
+	server->mount.mount_next = NULL,
+	server->mount.mountpoint = "/",
+	server->mount.origin = server->config.document_root,
+	server->mount.def = "index.html",
+	server->mount.origin_protocol = LWSMPRO_FILE,
+	server->mount.mountpoint_len = 1,
 
-	struct lws_context_creation_info info;
-	memset(&info, 0, sizeof(info));
-	info.port = server->config.port;
-	info.mounts = &mount;
-	info.protocols = server->ws_protocols;
-	info.vhost_name = server->config.vhost_name;
-	info.ws_ping_pong_interval = 10;
-	info.options = LWS_SERVER_OPTION_HTTP_HEADERS_SECURITY_BEST_PRACTICES_ENFORCE;
+	memset(&server->info, 0, sizeof(struct lws_context_creation_info));
+	server->info.port = server->config.port;
+	server->info.mounts = &server->mount;
+	server->info.protocols = server->ws_protocols;
+	server->info.vhost_name = server->config.vhost_name;
+	server->info.ws_ping_pong_interval = 10;
+	server->info.options = LWS_SERVER_OPTION_HTTP_HEADERS_SECURITY_BEST_PRACTICES_ENFORCE;
 
 	if (NULL == server->config.document_root)
 	{
 		// disable http
-		info.protocols = &server->ws_protocols[1];
-		info.mounts = NULL;
+		server->info.protocols = &server->ws_protocols[1];
+		server->info.mounts = NULL;
 	}
 
 	if (wsfs_server_tls_enabled(server))
 	{
-		info.options |= LWS_SERVER_OPTION_DO_SSL_GLOBAL_INIT;
-		info.ssl_cert_filepath = server->config.cert_path;
-		info.ssl_private_key_filepath = server->config.key_path;
+		server->info.options |= LWS_SERVER_OPTION_DO_SSL_GLOBAL_INIT;
+		server->info.ssl_cert_filepath = server->config.cert_path;
+		server->info.ssl_private_key_filepath = server->config.key_path;
 	}
 
-	struct lws_context * const context = lws_create_context(&info);
+	struct lws_context * const context = lws_create_context(&server->info);
     return context;
 
 }
@@ -88,10 +77,17 @@ struct wsfs_server * wsfs_server_create(
     struct wsfs_server * server = malloc(sizeof(struct wsfs_server));
     if (NULL != server)
     {
-        server->shutdown_requested = false;
-        wsfs_server_config_clone(config, &server->config);
-        wsfs_server_protocol_init(&server->protocol, config->mount_point);
-        server->context = wsfs_server_context_create(server);
+        if (wsfs_server_protocol_init(&server->protocol, config->mount_point))
+		{
+			server->shutdown_requested = false;
+			wsfs_server_config_clone(config, &server->config);
+			server->context = wsfs_server_context_create(server);
+		}
+		else
+		{
+			free(server);
+			server = NULL;
+		}
     }   
 
     return server; 

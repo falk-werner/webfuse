@@ -1,8 +1,14 @@
 #ifndef _WSFS_FILESYSTEM_H
 #define _WSFS_FILESYSTEM_H
 
+#ifndef __cplusplus
+#include <stdbool.h>
+#endif
+
 #include "wsfs/fuse_wrapper.h"
 #include "wsfs/operations.h"
+
+struct wsfs_jsonrpc_server;
 
 struct wsfs_filesystem
 {
@@ -12,8 +18,14 @@ struct wsfs_filesystem
 	struct wsfs_operations_context user_data;
 };
 
-extern void wsfs_filesystem_init(
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
+extern bool wsfs_filesystem_init(
     struct wsfs_filesystem * filesystem,
+    struct wsfs_jsonrpc_server * rpc,
     char * mount_point);
 
 extern void wsfs_filesystem_cleanup(
@@ -24,5 +36,10 @@ extern int wsfs_filesystem_get_fd(
 
 extern void wsfs_filesystem_process_request(
     struct wsfs_filesystem * filesystem);
+
+#ifdef __cplusplus
+}
+#endif
+
 
 #endif

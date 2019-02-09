@@ -2,20 +2,20 @@
 #include <gtest/gtest.h>
 
 extern "C" {
-#include "wsfs/response_parser.h"
+#include "wsfs/jsonrpc/response.h"
 }
 
 static void wsfs_response_parse_str(
 	char const * buffer,
-	struct wsfs_response * response)
+	struct wsfs_jsonrpc_response * response)
 {
 	size_t length = strlen(buffer);
-	wsfs_response_parse(buffer, length, response);
+	wsfs_jsonrpc_response_init(response, buffer, length);
 }
 
 TEST(response_parser, test)
 {
-	struct wsfs_response response;
+	struct wsfs_jsonrpc_response response;
 
 	// invalid json
 	wsfs_response_parse_str("", &response);

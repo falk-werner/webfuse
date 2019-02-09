@@ -1,9 +1,9 @@
-#include "wsfs/response_parser.h"
+#include "wsfs/jsonrpc/response.h"
 
-void wsfs_response_parse(
-	char const * buffer,
-	size_t length,
-	struct wsfs_response * result)
+void wsfs_jsonrpc_response_init(
+	struct wsfs_jsonrpc_response * result,
+    char const * buffer,
+	size_t length)
 {
 	result->status = WSFS_BAD;
 	result->id = -1;
@@ -49,3 +49,11 @@ void wsfs_response_parse(
 	json_decref(response);
 }
 
+void wsfs_jsonrpc_response_cleanup(
+	struct wsfs_jsonrpc_response * response)
+{
+    if (NULL != response->result)
+    {
+        json_decref(response->result);
+    }
+}
