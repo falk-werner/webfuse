@@ -6,6 +6,7 @@
 
 #include "wsfs/jsonrpc/server.h"
 #include "wsfs/util.h"
+#include "wsfs/status.h"
 
 static void wsfs_operation_open_finished(
 	void * user_data,

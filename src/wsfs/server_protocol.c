@@ -11,8 +11,8 @@ static int wsfs_server_protocol_callback(
 	struct lws * wsi,
 	enum lws_callback_reasons reason,
 	void * WSFS_UNUSED_PARAM(user),
-	void * WSFS_UNUSED_PARAM(in),
-	size_t WSFS_UNUSED_PARAM(len))
+	void * in,
+	size_t len)
 {
     struct lws_protocols const * ws_protocol = lws_get_protocol(wsi);
     struct wsfs_server_protocol * protocol = ws_protocol->user;
@@ -56,6 +56,11 @@ static int wsfs_server_protocol_callback(
 			}
 		}
 		break;
+        case LWS_CALLBACK_RECEIVE:
+        {
+            wsfs_jsonrpc_server_onresult(&protocol->rpc, in, len);
+        }
+        break;
         case LWS_CALLBACK_RAW_RX_FILE:
         {
             wsfs_filesystem_process_request(&protocol->filesystem);

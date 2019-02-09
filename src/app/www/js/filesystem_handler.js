@@ -53,7 +53,7 @@ class FileSystemHandler {
                         const inode = request.params[0];
                         const handle = request.params[1];
                         const mode = request.params[2];
-                        result = this._fs.open(inode, handle, mode);
+                        this._fs.close(inode, handle, mode);
                     }
                     break;
                     case "read":
@@ -69,14 +69,17 @@ class FileSystemHandler {
                         break;
                 }
                 
-                if ("number" !== typeof(result)) {
-                    response = {result: result, id: request.id};
+                if ("number" == typeof(request.id))
+                {
+                    if ("number" !== typeof(result)) {
+                        response = {result: result, id: request.id};
+                    }
+                    else {
+                        response = {error: {code: result}, id: request.id};
+                    }
+                    console.log(response);
+                    this._connection.send(JSON.stringify(response));
                 }
-                else {
-                    response = {error: {code: result}, id: request.id};
-                }
-                console.log(response);
-                this._connection.send(JSON.stringify(response));
             }
         }
         catch (ex) { console.log(ex, message); }	

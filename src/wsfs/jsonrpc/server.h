@@ -50,7 +50,14 @@ extern void wsfs_jsonrpc_server_invoke(
 	struct wsfs_jsonrpc_server * server,
 	wsfs_jsonrpc_method_finished_fn * finished,
 	void * user_data,
-	char const * method,
+	char const * method_name,
+	char const * param_info,
+	...
+);
+
+extern void wsfs_jsonrpc_server_notify(
+	struct wsfs_jsonrpc_server * server,
+	char const * method_name,
 	char const * param_info,
 	...
 );

@@ -35,7 +35,10 @@ json_t * wsfs_jsonrpc_request_create(
 	
 
 	json_object_set_new(request, "params", params);
-	json_object_set_new(request, "id", json_integer(id));
-
+	if (0 != id)
+	{
+		json_object_set_new(request, "id", json_integer(id));
+	}
+	
 	return request;
 }

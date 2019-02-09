@@ -83,6 +83,11 @@ void wsfs_jsonrpc_server_invoke(
             {
                 if (!method->invoke(method->user_data, request))
                 {
+                    server->request.is_pending = false;
+                    server->request.finished = NULL;
+                    server->request.user_data = NULL;
+                    server->request.id = 0;
+
                     finished(user_data, WSFS_BAD, NULL);
                 }
                 json_decref(request);
@@ -97,8 +102,32 @@ void wsfs_jsonrpc_server_invoke(
     {
         finished(user_data, WSFS_BAD_BUSY, NULL);
     }
-    
 }
+
+extern void wsfs_jsonrpc_server_notify(
+	struct wsfs_jsonrpc_server * server,
+	char const * method_name,
+	char const * param_info,
+	...
+)
+{
+        struct wsfs_jsonrpc_method const * method = wsfs_jsonrpc_server_getmethod(server, method_name);
+        if (NULL != method)
+        {
+            
+            va_list args;
+            va_start(args, param_info);
+            json_t * request = wsfs_jsonrpc_request_create(method_name, 0, param_info, args);
+            va_end(args);
+            if (NULL != request)
+            {
+                method->invoke(method->user_data, request);
+                json_decref(request);
+            }
+        }
+
+}
+
 
 void wsfs_jsonrpc_server_onresult(
     struct wsfs_jsonrpc_server * server,
@@ -108,20 +137,17 @@ void wsfs_jsonrpc_server_onresult(
 	struct wsfs_jsonrpc_response response;
 	wsfs_jsonrpc_response_init(&response, message, length);
 
-	if (-1 != response.id)
-	{
-		if ((server->request.is_pending) && (response.id == server->request.id))
-		{
-            wsfs_jsonrpc_method_finished_fn * finished = server->request.finished;
-            void * user_data = server->request.user_data;
+    if ((server->request.is_pending) && (response.id == server->request.id))
+    {
+        wsfs_jsonrpc_method_finished_fn * finished = server->request.finished;
+        void * user_data = server->request.user_data;
 
-			server->request.is_pending = false;
-            server->request.id = 0;
-            server->request.user_data = NULL;
-            server->request.finished = NULL;
+        server->request.is_pending = false;
+        server->request.id = 0;
+        server->request.user_data = NULL;
+        server->request.finished = NULL;
 
-            finished(user_data, response.status, response.result);
-		}
+        finished(user_data, response.status, response.result);
     }
 
     wsfs_jsonrpc_response_cleanup(&response);
