@@ -5,4 +5,12 @@
 #define WSFS_API
 #endif
 
+#ifndef WSFS_EXPORT
+#ifdef __GNUC__
+#define WSFS_EXPORT __attribute__ ((visibility ("default")))
+#else
+#define WSFS_EXPORT
+#endif
+#endif
+
 #endif

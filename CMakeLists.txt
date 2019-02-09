@@ -1,5 +1,5 @@
-cmake_minimum_required (VERSION 2.8)
-project(fuse-wsfs)
+cmake_minimum_required (VERSION 3.0)
+project(fuse-wsfs VERSION 0.1.0 DESCRIPTION "Websocket filesystem based on libfuse")
 
 option(WITH_TESTS "enable unit tests" OFF)
 
@@ -38,7 +38,7 @@ set(EXTRA_CFLAGS
 
 # libfuse-wsfs
 
-add_library(fuse-wsfs
+set(FUSE_WSFS_SOURCES
 	src/wsfs/status.c
 	src/wsfs/filesystem.c
 	src/wsfs/server.c
@@ -62,8 +62,23 @@ add_library(fuse-wsfs
 	src/wsfs/jsonrpc/util.c
 )
 
+add_library(fuse-wsfs SHARED ${FUSE_WSFS_SOURCES})
+
+set_target_properties(fuse-wsfs PROPERTIES VERSION ${PROJECT_VERSION})
+set_target_properties(fuse-wsfs PROPERTIES SOVERSION 0)
+set_target_properties(fuse-wsfs PROPERTIES C_VISIBILITY_PRESET hidden)
+set_target_properties(fuse-wsfs PROPERTIES COMPILE_DEFINITIONS "WSFS_API=WSFS_EXPORT")
+
 target_include_directories(fuse-wsfs PUBLIC src ${EXTRA_INCLUDE_DIRS})
 target_compile_options(fuse-wsfs PUBLIC  ${EXTRA_CFLAGS})
+
+add_library(fuse-wsfs-static STATIC ${FUSE_WSFS_SOURCES})
+
+set_target_properties(fuse-wsfs-static PROPERTIES OUTPUT_NAME fuse-wsfs)
+
+target_include_directories(fuse-wsfs-static PUBLIC src ${EXTRA_INCLUDE_DIRS})
+target_compile_options(fuse-wsfs-static PUBLIC ${EXTRA_CFLAGS})
+
 
 # app
 
@@ -88,7 +103,7 @@ add_executable(alltests
 	test-src/test_timer.cc
 )
 
-target_link_libraries(alltests PUBLIC fuse-wsfs ${EXTRA_LIBS} ${GTEST_LIBRARIES})
+target_link_libraries(alltests PUBLIC fuse-wsfs-static ${EXTRA_LIBS} ${GTEST_LIBRARIES})
 target_include_directories(alltests PUBLIC src ${EXTRA_INCLUDE_DIRS} ${GTEST_INCLUDE_DIRS})
 target_compile_options(alltests PUBLIC ${EXTRA_CFLAGS} ${GTEST_CFLAGS})
 
