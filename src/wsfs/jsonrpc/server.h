@@ -13,6 +13,9 @@ using std::size_t;
 
 #include <jansson.h>
 #include "wsfs/jsonrpc/method.h"
+#include "wsfs/time/timeout_manager.h"
+#include "wsfs/time/timer.h"
+
 
 struct wsfs_jsonrpc_request
 {
@@ -20,6 +23,7 @@ struct wsfs_jsonrpc_request
     wsfs_jsonrpc_method_finished_fn * finished;
     void * user_data;
     int id;
+    struct wsfs_timer timer;
 };
 
 struct wsfs_jsonrpc_server
@@ -35,7 +39,8 @@ extern "C"
 #endif
 
 extern void wsfs_jsonrpc_server_init(
-    struct wsfs_jsonrpc_server * server);
+    struct wsfs_jsonrpc_server * server,
+    struct wsfs_timeout_manager * manager);
 
 extern void wsfs_jsonrpc_server_cleanup(
     struct wsfs_jsonrpc_server * server);

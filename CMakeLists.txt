@@ -44,6 +44,9 @@ add_library(fuse-wsfs
 	src/wsfs/server.c
 	src/wsfs/message.c
 	src/wsfs/message_queue.c
+	src/wsfs/time/timepoint.c
+	src/wsfs/time/timer.c
+	src/wsfs/time/timeout_manager.c
 	src/wsfs/operation/lookup.c
 	src/wsfs/operation/getattr.c
 	src/wsfs/operation/readdir.c
@@ -81,6 +84,8 @@ pkg_check_modules(GTEST gtest_main)
 add_executable(alltests
 	test-src/test_response_parser.cc
 	test-src/test_server.cc
+	test-src/test_timepoint.cc
+	test-src/test_timer.cc
 )
 
 target_link_libraries(alltests PUBLIC fuse-wsfs ${EXTRA_LIBS} ${GTEST_LIBRARIES})

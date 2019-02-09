@@ -5,9 +5,11 @@
 #include "wsfs/filesystem.h"
 #include "wsfs/message_queue.h"
 #include "wsfs/jsonrpc/server.h"
+#include "wsfs/time/timeout_manager.h"
 
 struct wsfs_server_protocol
 {
+    struct wsfs_timeout_manager timeout_manager;
     struct wsfs_filesystem filesystem;
     struct wsfs_jsonrpc_server rpc;
     struct wsfs_message_queue queue;

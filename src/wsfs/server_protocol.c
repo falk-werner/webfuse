@@ -17,6 +17,8 @@ static int wsfs_server_protocol_callback(
     struct lws_protocols const * ws_protocol = lws_get_protocol(wsi);
     struct wsfs_server_protocol * protocol = ws_protocol->user;
 
+    wsfs_timeout_manager_check(&protocol->timeout_manager);
+
     switch (reason)
     {
         case LWS_CALLBACK_PROTOCOL_INIT:
@@ -146,7 +148,9 @@ bool wsfs_server_protocol_init(
     protocol->wsi = NULL;
     wsfs_message_queue_init(&protocol->queue);
 
-    wsfs_jsonrpc_server_init(&protocol->rpc);
+    wsfs_timeout_manager_init(&protocol->timeout_manager);
+
+    wsfs_jsonrpc_server_init(&protocol->rpc, &protocol->timeout_manager);
     wsfs_jsonrpc_server_add(&protocol->rpc, "lookup", &wsfs_server_protocol_invoke, protocol);
     wsfs_jsonrpc_server_add(&protocol->rpc, "getattr", &wsfs_server_protocol_invoke, protocol);
     wsfs_jsonrpc_server_add(&protocol->rpc, "readdir", &wsfs_server_protocol_invoke, protocol);
@@ -154,7 +158,17 @@ bool wsfs_server_protocol_init(
     wsfs_jsonrpc_server_add(&protocol->rpc, "close", &wsfs_server_protocol_invoke, protocol);
     wsfs_jsonrpc_server_add(&protocol->rpc, "read", &wsfs_server_protocol_invoke, protocol);
 
-    return wsfs_filesystem_init(&protocol->filesystem, &protocol->rpc, mount_point);
+    bool const success = wsfs_filesystem_init(&protocol->filesystem, &protocol->rpc, mount_point);
+
+    // cleanup on error
+    if (!success)
+    {
+        wsfs_jsonrpc_server_cleanup(&protocol->rpc);
+        wsfs_timeout_manager_cleanup(&protocol->timeout_manager);
+        wsfs_message_queue_cleanup(&protocol->queue);
+    }
+
+    return success;
 }
 
 void wsfs_server_protocol_cleanup(
@@ -162,6 +176,7 @@ void wsfs_server_protocol_cleanup(
 {
     wsfs_filesystem_cleanup(&protocol->filesystem);
     wsfs_jsonrpc_server_cleanup(&protocol->rpc);
+    wsfs_timeout_manager_cleanup(&protocol->timeout_manager);
     wsfs_message_queue_cleanup(&protocol->queue);
     protocol->wsi = NULL;
 }

@@ -5,6 +5,8 @@
 #include "wsfs/jsonrpc/request.h"
 #include "wsfs/jsonrpc/response.h"
 
+#define WSFS_DEFAULT_TIMEOUT (10 * 1000)
+
 static struct wsfs_jsonrpc_method const * wsfs_jsonrpc_server_getmethod(
     struct wsfs_jsonrpc_server * server,
     char const * name)
@@ -18,16 +20,41 @@ static struct wsfs_jsonrpc_method const * wsfs_jsonrpc_server_getmethod(
     return method;
 }
 
+static void wsfs_jsonrpc_server_timeout(
+    struct wsfs_timer * timer)
+{
+    struct wsfs_jsonrpc_server * server = timer->user_data;
+
+    if (server->request.is_pending)
+    {
+        wsfs_jsonrpc_method_finished_fn * finished = server->request.finished;
+        void * user_data = server->request.user_data;
+
+        server->request.is_pending = false;
+        server->request.id = 0;
+        server->request.user_data = NULL;
+        server->request.finished = NULL;
+        wsfs_timer_cancel(&server->request.timer);
+
+        finished(user_data, WSFS_BAD_TIMEOUT, NULL);
+    }
+}
+
 void wsfs_jsonrpc_server_init(
-    struct wsfs_jsonrpc_server * server)
+    struct wsfs_jsonrpc_server * server,
+    struct wsfs_timeout_manager * timeout_manager)
 {
     server->methods = NULL;
     server->request.is_pending = false;
+    
+    wsfs_timer_init(&server->request.timer, timeout_manager);
 }
 
 void wsfs_jsonrpc_server_cleanup(
     struct wsfs_jsonrpc_server * server)
 {
+    wsfs_timer_cleanup(&server->request.timer);
+
     if (server->request.is_pending)
     {
         server->request.finished(server->request.user_data, WSFS_BAD, NULL);
@@ -74,6 +101,8 @@ void wsfs_jsonrpc_server_invoke(
             server->request.finished = finished;
             server->request.user_data = user_data;
             server->request.id = 42;
+            wsfs_timer_start(&server->request.timer, wsfs_timepoint_in_msec(WSFS_DEFAULT_TIMEOUT), 
+                    &wsfs_jsonrpc_server_timeout, server);
             
             va_list args;
             va_start(args, param_info);
@@ -87,6 +116,7 @@ void wsfs_jsonrpc_server_invoke(
                     server->request.finished = NULL;
                     server->request.user_data = NULL;
                     server->request.id = 0;
+                    wsfs_timer_cancel(&server->request.timer);
 
                     finished(user_data, WSFS_BAD, NULL);
                 }
@@ -146,6 +176,7 @@ void wsfs_jsonrpc_server_onresult(
         server->request.id = 0;
         server->request.user_data = NULL;
         server->request.finished = NULL;
+        wsfs_timer_cancel(&server->request.timer);
 
         finished(user_data, response.status, response.result);
     }

@@ -39,7 +39,7 @@ static void wsfs_operation_read_finished(void * user_data, wsfs_status status, j
 	fuse_req_t request = user_data;
 
 	char * buffer = NULL;	
-	size_t length;
+	size_t length = 0;
 	if (NULL != data)
 	{
 		json_t * data_holder = json_object_get(data, "data");
