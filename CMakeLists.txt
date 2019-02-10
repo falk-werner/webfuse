@@ -1,7 +1,8 @@
 cmake_minimum_required (VERSION 3.1)
 project(fuse-wsfs VERSION 0.1.0 DESCRIPTION "Websocket filesystem based on libfuse")
 
-option(WITH_TESTS "enable unit tests" OFF)
+option(WITH_TESTS   "enable unit tests" OFF)
+option(WITH_EXAMPLE "enable example"    OFF)
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
@@ -18,7 +19,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(C_WARNINGS -Wall -Wextra)
 
 set(EXTRA_INCLUDE_DIRS
-	"inc"
+	"include"
 	${FUSE3_INCLUDE_DIRS} 
 	${LWS_INCLUDE_DIRS} 
 	${JANSSON_INCLUDE_DIRS}
@@ -44,27 +45,27 @@ set(EXTRA_CFLAGS
 # libfuse-wsfs
 
 set(FUSE_WSFS_SOURCES
-	src/wsfs/status.c
-	src/wsfs/filesystem.c
-	src/wsfs/server.c
-	src/wsfs/message.c
-	src/wsfs/message_queue.c
-	src/wsfs/time/timepoint.c
-	src/wsfs/time/timer.c
-	src/wsfs/time/timeout_manager.c
-	src/wsfs/operation/lookup.c
-	src/wsfs/operation/getattr.c
-	src/wsfs/operation/readdir.c
-	src/wsfs/operation/open.c
-	src/wsfs/operation/close.c
-	src/wsfs/operation/read.c
-	src/wsfs/server_config.c
-	src/wsfs/server_protocol.c
-	src/wsfs/jsonrpc/server.c
-	src/wsfs/jsonrpc/method.c
-	src/wsfs/jsonrpc/request.c
-	src/wsfs/jsonrpc/response.c
-	src/wsfs/jsonrpc/util.c
+	lib/wsfs/status.c
+	lib/wsfs/filesystem.c
+	lib/wsfs/server.c
+	lib/wsfs/message.c
+	lib/wsfs/message_queue.c
+	lib/wsfs/time/timepoint.c
+	lib/wsfs/time/timer.c
+	lib/wsfs/time/timeout_manager.c
+	lib/wsfs/operation/lookup.c
+	lib/wsfs/operation/getattr.c
+	lib/wsfs/operation/readdir.c
+	lib/wsfs/operation/open.c
+	lib/wsfs/operation/close.c
+	lib/wsfs/operation/read.c
+	lib/wsfs/server_config.c
+	lib/wsfs/server_protocol.c
+	lib/wsfs/jsonrpc/server.c
+	lib/wsfs/jsonrpc/method.c
+	lib/wsfs/jsonrpc/request.c
+	lib/wsfs/jsonrpc/response.c
+	lib/wsfs/jsonrpc/util.c
 )
 
 add_library(fuse-wsfs SHARED ${FUSE_WSFS_SOURCES})
@@ -74,26 +75,30 @@ set_target_properties(fuse-wsfs PROPERTIES SOVERSION 0)
 set_target_properties(fuse-wsfs PROPERTIES C_VISIBILITY_PRESET hidden)
 set_target_properties(fuse-wsfs PROPERTIES COMPILE_DEFINITIONS "WSFS_API=WSFS_EXPORT")
 
-target_include_directories(fuse-wsfs PUBLIC src ${EXTRA_INCLUDE_DIRS})
+target_include_directories(fuse-wsfs PUBLIC lib ${EXTRA_INCLUDE_DIRS})
 target_compile_options(fuse-wsfs PUBLIC  ${EXTRA_CFLAGS})
 
 add_library(fuse-wsfs-static STATIC ${FUSE_WSFS_SOURCES})
 
 set_target_properties(fuse-wsfs-static PROPERTIES OUTPUT_NAME fuse-wsfs)
 
-target_include_directories(fuse-wsfs-static PUBLIC src ${EXTRA_INCLUDE_DIRS})
+target_include_directories(fuse-wsfs-static PUBLIC lib ${EXTRA_INCLUDE_DIRS})
 target_compile_options(fuse-wsfs-static PUBLIC ${EXTRA_CFLAGS})
 
 
 # app
 
+if(WITH_EXAMPLE)
+
 add_executable(wsfs
-	src/app/main.c
+	example/main.c
 )
 
 target_link_libraries(wsfs PUBLIC fuse-wsfs ${EXTRA_LIBS})
 target_include_directories(wsfs PUBLIC ${EXTRA_INCLUDE_DIRS})
 target_compile_options(wsfs PUBLIC ${EXTRA_CFLAGS})
+
+endif(WITH_EXAMPLE)
 
 # tests
 
@@ -102,14 +107,14 @@ if(WITH_TESTS)
 pkg_check_modules(GTEST gtest_main)
 
 add_executable(alltests
-	test-src/test_response_parser.cc
-	test-src/test_server.cc
-	test-src/test_timepoint.cc
-	test-src/test_timer.cc
+	test/test_response_parser.cc
+	test/test_server.cc
+	test/test_timepoint.cc
+	test/test_timer.cc
 )
 
 target_link_libraries(alltests PUBLIC fuse-wsfs-static ${EXTRA_LIBS} ${GTEST_LIBRARIES})
-target_include_directories(alltests PUBLIC src ${EXTRA_INCLUDE_DIRS} ${GTEST_INCLUDE_DIRS})
+target_include_directories(alltests PUBLIC lib ${EXTRA_INCLUDE_DIRS} ${GTEST_INCLUDE_DIRS})
 target_compile_options(alltests PUBLIC ${EXTRA_CFLAGS} ${GTEST_CFLAGS})
 
 enable_testing()
