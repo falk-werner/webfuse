@@ -3,6 +3,12 @@ language: cpp
 compiler:
   - gcc
 
+addons:
+    apt:
+        update: true
+        packages:
+          - valgrind
+
 before_install:
   - mkdir -p .deps
   - cd .deps
@@ -55,4 +61,4 @@ before_script:
 
 script:
   - make
-  - ./alltests
+  - valgrind ./alltests
