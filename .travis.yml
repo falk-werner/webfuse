@@ -18,10 +18,11 @@ before_install:
   - tar -xf v3.1.0.tar.gz
   - cd libwebsockets-3.1.0
   - mkdir .build
-  - cd build
+  - cd .build
   - cmake ..
   - make
   - sudo make install
+  - cd ..
   - cd ..
   - cd ..
 
