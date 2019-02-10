@@ -11,7 +11,8 @@ pkg_check_modules(FUSE3 REQUIRED fuse3)
 pkg_check_modules(LWS REQUIRED libwebsockets)
 pkg_check_modules(JANSSON REQUIRED jansson)
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -pedantic -Wextra")
+set(CMAKE_C_STANDARD 99)
+set(C_WARNINGS -Wall -Wextra)
 
 set(EXTRA_INCLUDE_DIRS
 	"inc"
@@ -29,6 +30,8 @@ set(EXTRA_LIBS
 )
 
 set(EXTRA_CFLAGS
+	${CMAKE_C_FLAGS}
+	${C_WARNINGS}
 	${FUSE3_CFLAGS_OTHER}
 	${LWS_CFLAGS_OTHER}
 	${JANSSON_CFLAGS_OTHER}
