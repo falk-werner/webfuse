@@ -4,7 +4,6 @@ compiler:
   - gcc
 
 before_install:
-  - sudo apt install libjansson-dev
   - mkdir -p .deps
   - cd .deps
   - wget -O use-3.1.1.tar.gz https://github.com/libfuse/libfuse/archive/fuse-3.1.1.tar.gz
