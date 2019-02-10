@@ -53,3 +53,4 @@ before_script:
 
 script:
   - make
+  - ./alltests
