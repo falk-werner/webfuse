@@ -12,11 +12,11 @@ To install dependencies, see below.
     cd fuse-wsfs
     mkdir ./build
     cd ./build
-    cmake .. -DWITH_TESTS=ON
+    cmake -DWITH_EXAMPLE=ON -DWITH_TESTS=ON ..
     make
     CTEST_OUTPUT_ON_FAILUE=1 make test
     mkdir test
-    ./wsfs -m test --document_root=`realpath ../src/app/www` --port=4711
+    ./wsfs -m test --document_root=`realpath ../exmaple/www` --port=4711
 
 
 # Dependencies

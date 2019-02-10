@@ -57,7 +57,7 @@ before_install:
 before_script:
   - mkdir .build
   - cd .build
-  - cmake -DCMAKE_BUILD_TYPE=Debug -DWITH_TESTS=ON ..
+  - cmake -DCMAKE_BUILD_TYPE=Debug -DWITH_EXAMPLE=ON -DWITH_TESTS=ON ..
 
 script:
   - make
