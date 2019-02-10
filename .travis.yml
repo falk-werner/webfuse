@@ -6,7 +6,7 @@ compiler:
 before_install:
   - mkdir -p .deps
   - cd .deps
-  - wget -O use-3.1.1.tar.gz https://github.com/libfuse/libfuse/archive/fuse-3.1.1.tar.gz
+  - wget -O fuse-3.1.1.tar.gz https://github.com/libfuse/libfuse/archive/fuse-3.1.1.tar.gz
   - tar -xf fuse-3.1.1.tar.gz
   - cd libfuse-fuse-3.1.1
   - ./makeconf.sh
