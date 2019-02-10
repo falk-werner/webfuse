@@ -1,4 +1,4 @@
-[![Travis Build Status](https://travis-ci.org/falk-werner/fuse-wsfs.svg)](https://travis-ci.org/falk-werner/fuse-wsfs)
+[![Travis Build Status](https://travis-ci.com/falk-werner/fuse-wsfs.svg)](https://travis-ci.com/falk-werner/fuse-wsfs)
 # fuse-wsfs
 
 fuse-wsfs combines libwebsockets and libfuse. It allows ot attach a remote filesystem via websockets.
