@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.0)
+cmake_minimum_required (VERSION 3.1)
 project(fuse-wsfs VERSION 0.1.0 DESCRIPTION "Websocket filesystem based on libfuse")
 
 option(WITH_TESTS "enable unit tests" OFF)
@@ -12,6 +12,9 @@ pkg_check_modules(LWS REQUIRED libwebsockets)
 pkg_check_modules(JANSSON REQUIRED jansson)
 
 set(CMAKE_C_STANDARD 99)
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 set(C_WARNINGS -Wall -Wextra)
 
 set(EXTRA_INCLUDE_DIRS
@@ -30,7 +33,6 @@ set(EXTRA_LIBS
 )
 
 set(EXTRA_CFLAGS
-	${CMAKE_C_FLAGS}
 	${C_WARNINGS}
 	${FUSE3_CFLAGS_OTHER}
 	${LWS_CFLAGS_OTHER}
