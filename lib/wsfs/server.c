@@ -7,6 +7,7 @@
 #include "wsfs/server_config.h"
 #include "wsfs/server_protocol_intern.h"
 
+#define WSFS_DISABLE_LWS_LOG 0
 #define WSFS_SERVER_PROTOCOL_COUNT 3
 #define WSFS_SERVER_TIMEOUT (1 * 1000)
 
@@ -30,6 +31,8 @@ static bool wsfs_server_tls_enabled(
 static struct lws_context * wsfs_server_context_create(
     struct wsfs_server * server)
 {
+	lws_set_log_level(WSFS_DISABLE_LWS_LOG, NULL);
+
     memset(server->ws_protocols, 0, sizeof(struct lws_protocols) * WSFS_SERVER_PROTOCOL_COUNT);
     server->ws_protocols[0].name = "http";
     server->ws_protocols[0].callback = lws_callback_http_dummy;
