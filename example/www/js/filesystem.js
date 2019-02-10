@@ -117,8 +117,8 @@ class FileSystem {
 			let end = Math.min(offset + length, entry.contents.length);
 			let data = (offset < entry.contents.length) ? entry.contents.substring(offset, end) : "";	
 			result = {
-				data: data,
-				format: "identity",
+				data: btoa(data),
+				format: "base64",
 				count: data.length
 			};
 		}

@@ -4,6 +4,7 @@
 #include <string.h>
 #include <limits.h>
 #include <jansson.h>
+#include <libwebsockets.h>
 
 #include "wsfs/jsonrpc/server.h"
 
@@ -24,6 +25,10 @@ static wsfs_status wsfs_fill_buffer(
 		if (0 == strcmp("identity", format))
 		{
 			memcpy(buffer, data, copy_count);
+		}
+		else if (0 == strcmp("base64", format))
+		{
+			lws_b64_decode_string(data, buffer, copy_count);
 		}
 		else
 		{

@@ -258,9 +258,10 @@ Read from an open file.
 
 #### Format
 
-| Format     | Description                                     |
-| ---------- | ----------------------------------------------- |
-| "identiy"  | Use data as is; note that json is UTF-8 encoded |
+| Format     | Description                                              |
+| ---------- | -------------------------------------------------------- |
+| "identiy"  | Use data as is; note that JSON strings are UTF-8 encoded |
+| "base64"   | data is base64 encoded                                   |
 
 # Build and run
 
