@@ -78,13 +78,23 @@ set_target_properties(fuse-wsfs PROPERTIES COMPILE_DEFINITIONS "WSFS_API=WSFS_EX
 target_include_directories(fuse-wsfs PUBLIC lib ${EXTRA_INCLUDE_DIRS})
 target_compile_options(fuse-wsfs PUBLIC  ${EXTRA_CFLAGS})
 
-add_library(fuse-wsfs-static STATIC ${FUSE_WSFS_SOURCES})
+file(WRITE "${PROJECT_BINARY_DIR}/libfuse-wsfs.pc"
+"prefix=\"${CMAKE_INSTALL_PREFIX}\"
+exec_prefix=\${prefix}
+libdir=\${exec_prefix}/lib${LIB_SUFFIX}
+includedir=\${prefix}/include
+Name: libfuse-wsfs
+Description: Websockets filesystem server library
+Version: ${PROJECT_VERSION}
 
-set_target_properties(fuse-wsfs-static PROPERTIES OUTPUT_NAME fuse-wsfs)
+Libs: -L\${libdir} -lfuse-wsfs -l${FUSE3_LIBRARIES} -l${LWS_LIBRARIES} -l${JANSSON_LIBRARIES}
+Cflags: -I\${includedir}"
+)
 
-target_include_directories(fuse-wsfs-static PUBLIC lib ${EXTRA_INCLUDE_DIRS})
-target_compile_options(fuse-wsfs-static PUBLIC ${EXTRA_CFLAGS})
-
+install(TARGETS fuse-wsfs DESTINATION lib${LIB_SUFFIX})
+install(FILES include/wsfs.h DESTINATION include)
+install(DIRECTORY include/wsfs DESTINATION include)
+install(FILES "${PROJECT_BINARY_DIR}/libfuse-wsfs.pc" DESTINATION lib${LIB_SUFFIX}/pkgconfig)
 
 # app
 
@@ -105,6 +115,14 @@ endif(WITH_EXAMPLE)
 if(WITH_TESTS)
 
 pkg_check_modules(GTEST gtest_main)
+
+add_library(fuse-wsfs-static STATIC ${FUSE_WSFS_SOURCES})
+
+set_target_properties(fuse-wsfs-static PROPERTIES OUTPUT_NAME fuse-wsfs)
+
+target_include_directories(fuse-wsfs-static PUBLIC lib ${EXTRA_INCLUDE_DIRS})
+target_compile_options(fuse-wsfs-static PUBLIC ${EXTRA_CFLAGS})
+
 
 add_executable(alltests
 	test/test_response_parser.cc
