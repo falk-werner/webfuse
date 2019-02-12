@@ -6,7 +6,11 @@
 
 fuse-wsfs combines libwebsockets and libfuse. It allows ot attach a remote filesystem via websockets.
 
-**Status**: Proof of concept  
+# Contents
+
+- [Workflow and API](#Workflow and API)
+- [Build and run](#Build and run)
+- [Dependencies](#Dependencies)
 
 # Workflow an API
 
