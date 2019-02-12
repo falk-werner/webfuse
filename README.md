@@ -12,7 +12,7 @@ fuse-wsfs combines libwebsockets and libfuse. It allows ot attach a remote files
 - [Build and run](#Build-and-run)
 - [Dependencies](#Dependencies)
 
-# Workflow an API
+# Workflow and API
 
     +---------------------+  +-------------+      +------+
     | Filesystem Provider |  | wsfs daemon |      | user |
