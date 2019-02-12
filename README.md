@@ -1,4 +1,7 @@
 [![Travis Build Status](https://travis-ci.com/falk-werner/fuse-wsfs.svg)](https://travis-ci.com/falk-werner/fuse-wsfs)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/d6c20d37bb3a456a9c0ee224001081b2)](https://www.codacy.com/app/falk.werner/fuse-wsfs?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=falk-werner/fuse-wsfs&amp;utm_campaign=Badge_Grade)
+[![Coverity Scan Build Status](https://scan.coverity.com/projects/17676/badge.svg)](https://scan.coverity.com/projects/falk-werner-fuse-wsfs)
+
 # fuse-wsfs
 
 fuse-wsfs combines libwebsockets and libfuse. It allows ot attach a remote filesystem via websockets.
