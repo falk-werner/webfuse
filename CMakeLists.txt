@@ -125,6 +125,7 @@ target_compile_options(fuse-wsfs-static PUBLIC ${EXTRA_CFLAGS})
 
 
 add_executable(alltests
+	test/msleep.cc
 	test/test_response_parser.cc
 	test/test_server.cc
 	test/test_timepoint.cc

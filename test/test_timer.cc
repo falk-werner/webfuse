@@ -1,12 +1,13 @@
 #include <gtest/gtest.h>
 
 #include <cstddef>
-#include <unistd.h>
 
+#include "msleep.hpp"
 #include "wsfs/time/timer.h"
 #include "wsfs/time/timeout_manager.h"
 
 using std::size_t;
+using wsfs_test::msleep;
 
 namespace
 {
@@ -39,7 +40,7 @@ TEST(timer, trigger)
 
     bool triggered = false;
     wsfs_timer_start(&timer, wsfs_timepoint_in_msec(250), &on_timeout, reinterpret_cast<void*>(&triggered));
-    usleep(500 * 1000);
+    msleep(500);
     wsfs_timeout_manager_check(&manager);
 
     ASSERT_TRUE(triggered);
@@ -58,7 +59,7 @@ TEST(timer, cancel)
 
     bool triggered = false;
     wsfs_timer_start(&timer, wsfs_timepoint_in_msec(250), &on_timeout, &triggered);
-    usleep(500 * 1000);
+    msleep(500);
     wsfs_timer_cancel(&timer);
     wsfs_timeout_manager_check(&manager);
 
@@ -86,7 +87,7 @@ TEST(timer, multiple_timers)
 
     for(size_t i = 0; i < count; i++)
     {
-        usleep(100 * 1000);
+        msleep(100);
         wsfs_timeout_manager_check(&manager);
     }
 

@@ -1,12 +1,14 @@
 #include <gtest/gtest.h>
-#include <unistd.h>
+
+#include "msleep.hpp"
 #include "wsfs/time/timepoint.h"
 
+using wsfs_test::msleep;
 
 TEST(timepoint, now)
 {
     wsfs_timepoint start = wsfs_timepoint_now();
-    usleep(42 * 1000);
+    msleep(42);
     wsfs_timepoint end = wsfs_timepoint_now();
 
     ASSERT_LT(start, end);

@@ -1,9 +1,8 @@
 #include <cstring>
 #include <gtest/gtest.h>
 
-extern "C" {
 #include "wsfs/jsonrpc/response.h"
-}
+
 
 static void wsfs_response_parse_str(
 	char const * buffer,
