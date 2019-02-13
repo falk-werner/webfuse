@@ -11,10 +11,10 @@ class Connection {
     connectTo(url) {
         if (this.ws) { this.close(); }
 
-        this.ws = new WebSocket(url, 'fs');        
+        this.ws = new WebSocket(url, "fs");        
         this.ws.onopen = () => { 
             this.isConnected = true;
-            this.onopen() 
+            this.onopen();
         };
         this.ws.onclose = () => { 
             this.isConnected = false;

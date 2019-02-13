@@ -44,7 +44,7 @@ class FileSystem {
 			return {
                 inode: entry.inode,
 				mode: entry.mode || parseInt("755", 8),
-				type: entry.type || 'file',
+				type: entry.type || "file",
 				size: entry.size || (entry.contents && entry.contents.length) || 0,
 				atime: entry.atime || 0,
 				mtime: entry.mtime || 0,
@@ -62,7 +62,7 @@ class FileSystem {
         if (entry) {
 			return {
 				mode: entry.mode || parseInt("755", 8),
-				type: entry.type || 'file',
+				type: entry.type || "file",
 				size: entry.size || (entry.contents && entry.contents.length) || 0,
 				atime: entry.atime || 0,
 				mtime: entry.mtime || 0,
@@ -80,13 +80,13 @@ class FileSystem {
 
         if ((entry) && ("dir" === entry.type)) {
             result = [
-                {name: '.', inode: entry.inode},
-                {name: '..', inode: entry.inode}
+                {name: ".", inode: entry.inode},
+                {name: "..", inode: entry.inode}
             ];
             for(let subdir of Object.entries(entry.entries)) {
                 const name = subdir[0];
                 const inode = subdir[1].inode;
-                result.push({name: name, inode: inode});               
+                result.push({name, inode});               
             }
         }
 
@@ -97,8 +97,8 @@ class FileSystem {
         let result = FileSystem.BAD_NOENTRY;
         let entry = this._inodes[inode];
 
-		if (entry.type == "file") {
-			result = ((mode & FileSystem.O_ACCMODE) == FileSystem.O_RDONLY) ? {handle: 1337} : FileSystem.BAD_NOACCESS;			
+		if (entry.type === "file") {
+			result = ((mode & FileSystem.O_ACCMODE) === FileSystem.O_RDONLY) ? {handle: 1337} : FileSystem.BAD_NOACCESS;			
 		}
 	
 		return result;
@@ -113,7 +113,7 @@ class FileSystem {
 		let result = FileSystem.BAD_NOENTRY;
 		let entry = this._inodes[inode];
 				
-		if (entry.type == "file") {
+		if (entry.type === "file") {
 			let end = Math.min(offset + length, entry.contents.length);
 			let data = (offset < entry.contents.length) ? entry.contents.substring(offset, end) : "";	
 			result = {

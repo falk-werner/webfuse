@@ -83,5 +83,5 @@ class FileSystemHandler {
             }
         }
         catch (ex) { console.log(ex, message); }	
-    };    
+    }   
 }

@@ -4,21 +4,21 @@ class ConnectionView {
         this.connection.onclose = () => { this.onConnectionClosed(); };
         this.connection.onopen = () => { this.onConnectionOpened(); };
 
-        this.element = document.createElement('div');
+        this.element = document.createElement("div");
 
-        let urlLabel = document.createElement('span');
-        urlLabel.textContent = 'URL:';
+        let urlLabel = document.createElement("span");
+        urlLabel.textContent = "URL:";
         this.element.appendChild(urlLabel);
         
-        this.urlTextbox = document.createElement('input');
-        this.urlTextbox.type = 'text';
+        this.urlTextbox = document.createElement("input");
+        this.urlTextbox.type = "text";
         this.urlTextbox.value = window.location.href.replace(/^http/, "ws");
         this.element.appendChild(this.urlTextbox);
 
-        this.connectButton = document.createElement('input');
-        this.connectButton.type = 'button';
-        this.connectButton.value = 'connect';
-        this.connectButton.addEventListener('click', () => { this.onConnectButtonClicked(); });
+        this.connectButton = document.createElement("input");
+        this.connectButton.type = "button";
+        this.connectButton.value = "connect";
+        this.connectButton.addEventListener("click", () => { this.onConnectButtonClicked(); });
         this.element.appendChild(this.connectButton);
     }
 
@@ -32,11 +32,11 @@ class ConnectionView {
         }
     }
     onConnectionOpened() {
-        this.connectButton.value = 'disconnect';
+        this.connectButton.value = "disconnect";
     }
 
     onConnectionClosed() {
-        this.connectButton.value = 'connect';
+        this.connectButton.value = "connect";
     }
 
 }
