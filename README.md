@@ -6,13 +6,13 @@
 
 fuse-wsfs combines libwebsockets and libfuse. It allows ot attach a remote filesystem via websockets.
 
-# Contents
+## Contents
 
-- [Workflow and API](#Workflow-and-API)
-- [Build and run](#Build-and-run)
-- [Dependencies](#Dependencies)
+-   [Workflow and API](#Workflow-and-API)
+-   [Build and run](#Build-and-run)
+-   [Dependencies](#Dependencies)
 
-# Workflow and API
+## Workflow and API
 
     +---------------------+  +-------------+      +------+
     | Filesystem Provider |  | wsfs daemon |      | user |
@@ -46,19 +46,19 @@ fuse-wsfs combines libwebsockets and libfuse. It allows ot attach a remote files
 With fuse-wsfs it is possible to implement remote filesystems based on websockets.
 A reference implementation of such a daemon is provided within the examples. The picture above describes the workflow:
 
-- The websocket filesystem daemon (*wsfs daemon*) mounts a filesystem on startup.  
-  It starts the websocket server and waits for incoming connections.
-- A remote filesystem provider connects to wsfs daemon via websocket protocol.  
-  The example includes such a provider implemented in HTML and JavaScript.
-- Whenever the user makes filesystem requests, such as *ls*, the request is redirected via wsfs daemon to the connected filesystem provider
+-   The websocket filesystem daemon (*wsfs daemon*) mounts a filesystem on startup.  
+    It starts the websocket server and waits for incoming connections.
+-   A remote filesystem provider connects to wsfs daemon via websocket protocol.  
+    The example includes such a provider implemented in HTML and JavaScript.
+-   Whenever the user makes filesystem requests, such as *ls*, the request is redirected via wsfs daemon to the connected filesystem provider
 
 Currently all requests are initiated by wsfs daemon and responded by filesystem provider. This may change in future, e.g. when authentication is supported.
 
-## Requests, responses and notifications
+### Requests, responses and notifications
 
 There are three types of messages, used for communication between wsfs daemon and filesystem provider. All message types are encoded in [JSON](https://www.json.org/) and strongly inspired by [JSON-RPC](https://www.jsonrpc.org/).
 
-### Request
+#### Request
 
 A request is used by a sender to invoke a method on the receiver. The sender awaits a response from the receiver. Since requests and responses can be sendet or answered in any order, an id is provided in each request to identify it.
 
@@ -74,11 +74,11 @@ A request is used by a sender to invoke a method on the receiver. The sender awa
 | params      | array     | method specific parameters        |
 | id          | integer   | id, which is repeated in response |
 
-### Response
+#### Response
 
 A response is used to answer a prior request. There are two kinds of responses:
 
-#### Successful Results
+##### Successful Results
 
     {
        "result": <result>,
@@ -90,7 +90,7 @@ A response is used to answer a prior request. There are two kinds of responses:
 | result      | any       | request specific result |
 | id          | integer   | id, same as request     |
 
-#### Error notifications
+##### Error notifications
 
     {
        "error": {
@@ -104,7 +104,7 @@ A response is used to answer a prior request. There are two kinds of responses:
 | code        | integer   | error code          |
 | id          | integer   | id, same as request |
 
-#### Error codes
+##### Error codes
 
 | Symbolic name      | Code      | Description            |
 | ------------------ | ---------:| ---------------------- |
@@ -117,7 +117,7 @@ A response is used to answer a prior request. There are two kinds of responses:
 | BAD_NOENTRY        | 101       | invalid entry          |
 | BAD_NOACCESS       | 102       | access not allowed     |
 
-### Notification
+#### Notification
 
 Notfications are used to inform a receiver about something. Unlike requests, notifications are not answered. Therefore, an id is not supplied.
 
@@ -131,9 +131,9 @@ Notfications are used to inform a receiver about something. Unlike requests, not
 | method_name | string    | name of the method to invoke      |
 | params      | array     | method specific parameters        |
 
-## Requests
+### Requests
 
-### lookup
+#### lookup
 
 Retrieve information about a filesystem entry by name.
 
@@ -160,7 +160,7 @@ Retrieve information about a filesystem entry by name.
 | mtime       | integer         | optional; unix time of last modification    |
 | ctime       | intefer         | optional; unix time of last metadata change |
 
-### getattr
+#### getattr
 
 Get file attributes.
 
@@ -184,7 +184,7 @@ Get file attributes.
 | mtime       | integer         | optional; unix time of last modification    |
 | ctime       | intefer         | optional; unix time of last metadata change |
 
-### readdir
+#### readdir
 
 Read directory contents.  
 Result is an array of name-inode pairs for each entry. The generic entries 
@@ -202,7 +202,7 @@ Result is an array of name-inode pairs for each entry. The generic entries
 | name        | integer         | name of the entry              |
 | inode       | integer         | inode of the entry             |
 
-### open
+#### open
 
 Open a file.
 
@@ -215,7 +215,7 @@ Open a file.
 | flags       | integer   | access mode flags (see below) |
 | handle      | integer   | handle of the file            |
 
-#### Flags
+##### Flags
 
 | Symbolic name | Code      | Description                 |
 | --------------| ---------:| --------------------------- |
@@ -228,8 +228,7 @@ Open a file.
 | O_TRUNK       | 0x200     | open file to trunkate       |
 | O_APPEND      | 0x400     | open file to append         |
 
-
-### close
+#### close
 
 Informs filesystem provider, that a file is closed.  
 Since `close` is a notification, it cannot fail.
@@ -242,7 +241,7 @@ Since `close` is a notification, it cannot fail.
 | handle      | integer   | handle of the file           |
 | flags       | integer   | access mode flags (see open) |
 
-### read
+#### read
 
 Read from an open file.
 
@@ -263,14 +262,14 @@ Read from an open file.
 | format      | string    | Encoding of data (see below)  |
 | count       | integer   | Actual number of bytes read   |
 
-#### Format
+##### Format
 
 | Format     | Description                                              |
 | ---------- | -------------------------------------------------------- |
 | "identiy"  | Use data as is; note that JSON strings are UTF-8 encoded |
 | "base64"   | data is base64 encoded                                   |
 
-# Build and run
+## Build and run
 
 To install dependencies, see below.
 
@@ -282,16 +281,16 @@ To install dependencies, see below.
     ./wsfs -m test --document_root=../exmaple/www --port=4711
 
 
-# Dependencies
+## Dependencies
 
-- [libfuse3](https://github.com/libfuse/libfuse/)
-- [libwebsockets](https://libwebsockets.org/)
-- [Jansson](https://jansson.readthedocs.io)
-- [GoogleTest](https://github.com/google/googletest) *(optional)*
+-   [libfuse3](https://github.com/libfuse/libfuse/)
+-   [libwebsockets](https://libwebsockets.org/)
+-   [Jansson](https://jansson.readthedocs.io)
+-   [GoogleTest](https://github.com/google/googletest) *(optional)*
 
-## Installation
+### Installation
 
-### libfuse
+#### libfuse
 
     wget -O fuse-3.1.1.tar.gz https://github.com/libfuse/libfuse/archive/fuse-3.1.1.tar.gz
     tar -xf fuse-3.1.1.tar.gz
@@ -301,7 +300,7 @@ To install dependencies, see below.
     make
     sudo make install
 
-### libwebsockets
+#### libwebsockets
 
     wget -O libwebsockets-3.1.0.tar.gz https://github.com/warmcat/libwebsockets/archive/v3.1.0.tar.gz
     tar -xf libwebsockets-3.1.0.tar.gz
@@ -312,7 +311,7 @@ To install dependencies, see below.
     make
     sudo make install
 
-### Jansson
+#### Jansson
 
 On many systems, libjansson can installed via apt:
     
@@ -329,7 +328,7 @@ Otherwise, it can be installed from source:
     make
     sudo make install
 
-### GoogleTest
+#### GoogleTest
 
 Installation of GoogleTest is optional fuse-wsfs library, but required to compile tests.
 
@@ -341,5 +340,3 @@ Installation of GoogleTest is optional fuse-wsfs library, but required to compil
     cmake ..
     make
     sudo make install
-
-
