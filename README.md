@@ -1,4 +1,5 @@
-[![Travis Build Status](https://travis-ci.com/falk-werner/fuse-wsfs.svg)](https://travis-ci.com/falk-werner/fuse-wsfs)
+
+[![Build Status](https://travis-ci.org/falk-werner/fuse-wsfs.svg?branch=master)](https://travis-ci.org/falk-werner/fuse-wsfs)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/d6c20d37bb3a456a9c0ee224001081b2)](https://www.codacy.com/app/falk.werner/fuse-wsfs?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=falk-werner/fuse-wsfs&amp;utm_campaign=Badge_Grade)
 
 # fuse-wsfs
