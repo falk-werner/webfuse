@@ -3,22 +3,11 @@ language: cpp
 compiler:
   - gcc
 
-env:
-  - secure: "yWViwwKTcNhFyfki7_k4hw"
-
 addons:
     apt:
       update: true
       packages:
         - valgrind
-    coverity_scan:
-      project:
-        name: falk-werner/fuse-wsfs
-        version: 0.1.0
-        description: websocket filesystem based on libfuse
-      build_command_prepend: "mkdir .coverity_build && cd .coverity_build && cmake -DCMAKE_BUILD_TYPE=Debug -DWITH_EXAMPLE=ON -DWITH_TESTS=ON .."
-      build_command: "make"
-      branch_pattern: coverity_scan
 
 before_install:
   - mkdir -p .deps
