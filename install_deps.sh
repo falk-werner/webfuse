@@ -17,6 +17,10 @@
 # <url>     - url of the project archive
 #
 # For examples, see below.
+#
+# Since <package>_ variables are not used directly, shellcheck will complain:
+# shellcheck disable=SC2034
+
 
 #######################################
 # Installs a cmake package.
