@@ -1,4 +1,3 @@
-
 [![Build Status](https://travis-ci.org/falk-werner/fuse-wsfs.svg?branch=master)](https://travis-ci.org/falk-werner/fuse-wsfs)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/d6c20d37bb3a456a9c0ee224001081b2)](https://www.codacy.com/app/falk.werner/fuse-wsfs?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=falk-werner/fuse-wsfs&amp;utm_campaign=Badge_Grade)
 
@@ -48,8 +47,10 @@ A reference implementation of such a daemon is provided within the examples. The
 
 -   The websocket filesystem daemon (*wsfs daemon*) mounts a filesystem on startup.  
     It starts the websocket server and waits for incoming connections.
+
 -   A remote filesystem provider connects to wsfs daemon via websocket protocol.  
     The example includes such a provider implemented in HTML and JavaScript.
+
 -   Whenever the user makes filesystem requests, such as *ls*, the request is redirected via wsfs daemon to the connected filesystem provider
 
 Currently all requests are initiated by wsfs daemon and responded by filesystem provider. This may change in future, e.g. when authentication is supported.
@@ -279,7 +280,6 @@ To install dependencies, see below.
     cmake -DWITH_EXAMPLE=ON ..
     mkdir test
     ./wsfs -m test --document_root=../exmaple/www --port=4711
-
 
 ## Dependencies
 
