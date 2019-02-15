@@ -24,7 +24,7 @@ static wsfs_status wsfs_fill_buffer(
 	{
 		if (0 == strcmp("identity", format))
 		{
-			memcpy(buffer, data, copy_count);
+			strncpy(buffer, data, copy_count);
 		}
 		else if (0 == strcmp("base64", format))
 		{
