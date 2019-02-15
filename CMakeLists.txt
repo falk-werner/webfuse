@@ -1,8 +1,8 @@
 cmake_minimum_required (VERSION 3.1)
 project(fuse-wsfs VERSION 0.1.0 DESCRIPTION "Websocket filesystem based on libfuse")
 
-option(WITH_TESTS   "enable unit tests" OFF)
-option(WITH_EXAMPLE "enable example"    OFF)
+option(WITHOUT_TESTS   "disable unit tests" OFF)
+option(WITHOUT_EXAMPLE "disable example"    OFF)
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
@@ -98,7 +98,7 @@ install(FILES "${PROJECT_BINARY_DIR}/libfuse-wsfs.pc" DESTINATION lib${LIB_SUFFI
 
 # app
 
-if(WITH_EXAMPLE)
+if(NOT WITHOUT_EXAMPLE)
 
 add_executable(wsfs
 	example/main.c
@@ -108,11 +108,11 @@ target_link_libraries(wsfs PUBLIC fuse-wsfs ${EXTRA_LIBS})
 target_include_directories(wsfs PUBLIC ${EXTRA_INCLUDE_DIRS})
 target_compile_options(wsfs PUBLIC ${EXTRA_CFLAGS})
 
-endif(WITH_EXAMPLE)
+endif(NOT WITHOUT_EXAMPLE)
 
 # tests
 
-if(WITH_TESTS)
+if(NOT WITHOUT_TESTS)
 
 pkg_check_modules(GTEST gtest_main)
 
@@ -139,4 +139,4 @@ target_compile_options(alltests PUBLIC ${EXTRA_CFLAGS} ${GTEST_CFLAGS})
 enable_testing()
 add_test(alltests alltests)
 
-endif(WITH_TESTS)
+endif(NOT WITHOUT_TESTS)

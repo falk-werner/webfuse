@@ -275,11 +275,21 @@ Read from an open file.
 To install dependencies, see below.
 
     cd fuse-wsfs
-    mkdir ./build
-    cd ./build
-    cmake -DWITH_EXAMPLE=ON ..
+    mkdir .build
+    cd .build
+    cmake ..
     mkdir test
     ./wsfs -m test --document_root=../exmaple/www --port=4711
+
+### Build options
+
+By default, unit tests and example application are enabled. You can disable them using the following cmake options:
+
+-    **WITHOUT_TESTS**: disable tests  
+     `cmake -DWITHOUT_TESTS=ON ..`
+
+-    **WITHOUT_EXAMPLE**: disable example
+     `cmake -DWITHOUD_EXAMPLE=ON ..`
 
 ## Dependencies
 
