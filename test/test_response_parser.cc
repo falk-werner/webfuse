@@ -1,15 +1,14 @@
-#include <cstring>
+#include <string>
 #include <gtest/gtest.h>
 
 #include "wsfs/jsonrpc/response.h"
 
 
 static void wsfs_response_parse_str(
-	char const * buffer,
+	std::string const & buffer,
 	struct wsfs_jsonrpc_response * response)
 {
-	size_t length = strlen(buffer);
-	wsfs_jsonrpc_response_init(response, buffer, length);
+	wsfs_jsonrpc_response_init(response, buffer.c_str(), buffer.size());
 }
 
 TEST(response_parser, test)
