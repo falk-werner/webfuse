@@ -285,11 +285,11 @@ To install dependencies, see below.
 
 By default, unit tests and example application are enabled. You can disable them using the following cmake options:
 
--    **WITHOUT_TESTS**: disable tests  
-     `cmake -DWITHOUT_TESTS=ON ..`
+-   **WITHOUT_TESTS**: disable tests  
+    `cmake -DWITHOUT_TESTS=ON ..`
 
--    **WITHOUT_EXAMPLE**: disable example
-     `cmake -DWITHOUD_EXAMPLE=ON ..`
+-   **WITHOUT_EXAMPLE**: disable example
+    `cmake -DWITHOUD_EXAMPLE=ON ..`
 
 ## Dependencies
 
