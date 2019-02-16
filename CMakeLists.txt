@@ -42,9 +42,9 @@ set(EXTRA_CFLAGS
 )
 
 
-# libfuse-wsfs
+# libwsfs
 
-set(FUSE_WSFS_SOURCES
+set(WSFS_SOURCES
 	lib/wsfs/status.c
 	lib/wsfs/filesystem.c
 	lib/wsfs/server.c
@@ -68,33 +68,33 @@ set(FUSE_WSFS_SOURCES
 	lib/wsfs/jsonrpc/util.c
 )
 
-add_library(fuse-wsfs SHARED ${FUSE_WSFS_SOURCES})
+add_library(wsfs SHARED ${WSFS_SOURCES})
 
-set_target_properties(fuse-wsfs PROPERTIES VERSION ${PROJECT_VERSION})
-set_target_properties(fuse-wsfs PROPERTIES SOVERSION 0)
-set_target_properties(fuse-wsfs PROPERTIES C_VISIBILITY_PRESET hidden)
-set_target_properties(fuse-wsfs PROPERTIES COMPILE_DEFINITIONS "WSFS_API=WSFS_EXPORT")
+set_target_properties(wsfs PROPERTIES VERSION ${PROJECT_VERSION})
+set_target_properties(wsfs PROPERTIES SOVERSION 0)
+set_target_properties(wsfs PROPERTIES C_VISIBILITY_PRESET hidden)
+set_target_properties(wsfs PROPERTIES COMPILE_DEFINITIONS "WSFS_API=WSFS_EXPORT")
 
-target_include_directories(fuse-wsfs PUBLIC lib ${EXTRA_INCLUDE_DIRS})
-target_compile_options(fuse-wsfs PUBLIC  ${EXTRA_CFLAGS})
+target_include_directories(wsfs PUBLIC lib ${EXTRA_INCLUDE_DIRS})
+target_compile_options(wsfs PUBLIC  ${EXTRA_CFLAGS})
 
-file(WRITE "${PROJECT_BINARY_DIR}/libfuse-wsfs.pc"
+file(WRITE "${PROJECT_BINARY_DIR}/libwsfs.pc"
 "prefix=\"${CMAKE_INSTALL_PREFIX}\"
 exec_prefix=\${prefix}
 libdir=\${exec_prefix}/lib${LIB_SUFFIX}
 includedir=\${prefix}/include
-Name: libfuse-wsfs
+Name: libwsfs
 Description: Websockets filesystem server library
 Version: ${PROJECT_VERSION}
 
-Libs: -L\${libdir} -lfuse-wsfs -l${FUSE3_LIBRARIES} -l${LWS_LIBRARIES} -l${JANSSON_LIBRARIES}
+Libs: -L\${libdir} -lwsfs -l${FUSE3_LIBRARIES} -l${LWS_LIBRARIES} -l${JANSSON_LIBRARIES}
 Cflags: -I\${includedir}"
 )
 
-install(TARGETS fuse-wsfs DESTINATION lib${LIB_SUFFIX})
+install(TARGETS wsfs DESTINATION lib${LIB_SUFFIX})
 install(FILES include/wsfs.h DESTINATION include)
 install(DIRECTORY include/wsfs DESTINATION include)
-install(FILES "${PROJECT_BINARY_DIR}/libfuse-wsfs.pc" DESTINATION lib${LIB_SUFFIX}/pkgconfig)
+install(FILES "${PROJECT_BINARY_DIR}/libwsfs.pc" DESTINATION lib${LIB_SUFFIX}/pkgconfig)
 
 #libwsfs-provider
 
@@ -135,13 +135,13 @@ install(FILES "${PROJECT_BINARY_DIR}/libwsfs-provider.pc" DESTINATION lib${LIB_S
 
 if(NOT WITHOUT_EXAMPLE)
 
-add_executable(wsfs
+add_executable(wsfsd
 	example/main.c
 )
 
-target_link_libraries(wsfs PUBLIC fuse-wsfs ${EXTRA_LIBS})
-target_include_directories(wsfs PUBLIC ${EXTRA_INCLUDE_DIRS})
-target_compile_options(wsfs PUBLIC ${EXTRA_CFLAGS})
+target_link_libraries(wsfsd PUBLIC wsfs ${EXTRA_LIBS})
+target_include_directories(wsfsd PUBLIC ${EXTRA_INCLUDE_DIRS})
+target_compile_options(wsfsd PUBLIC ${EXTRA_CFLAGS})
 
 endif(NOT WITHOUT_EXAMPLE)
 
@@ -151,12 +151,12 @@ if(NOT WITHOUT_TESTS)
 
 pkg_check_modules(GTEST gtest_main)
 
-add_library(fuse-wsfs-static STATIC ${FUSE_WSFS_SOURCES})
+add_library(wsfs-static STATIC ${WSFS_SOURCES})
 
-set_target_properties(fuse-wsfs-static PROPERTIES OUTPUT_NAME fuse-wsfs)
+set_target_properties(wsfs-static PROPERTIES OUTPUT_NAME wsfs)
 
-target_include_directories(fuse-wsfs-static PUBLIC lib ${EXTRA_INCLUDE_DIRS})
-target_compile_options(fuse-wsfs-static PUBLIC ${EXTRA_CFLAGS})
+target_include_directories(wsfs-static PUBLIC lib ${EXTRA_INCLUDE_DIRS})
+target_compile_options(wsfs-static PUBLIC ${EXTRA_CFLAGS})
 
 
 add_executable(alltests
@@ -167,7 +167,7 @@ add_executable(alltests
 	test/test_timer.cc
 )
 
-target_link_libraries(alltests PUBLIC fuse-wsfs-static ${EXTRA_LIBS} ${GTEST_LIBRARIES})
+target_link_libraries(alltests PUBLIC wsfs-static ${EXTRA_LIBS} ${GTEST_LIBRARIES})
 target_include_directories(alltests PUBLIC lib ${EXTRA_INCLUDE_DIRS} ${GTEST_INCLUDE_DIRS})
 target_compile_options(alltests PUBLIC ${EXTRA_CFLAGS} ${GTEST_CFLAGS})
 

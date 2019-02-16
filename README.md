@@ -279,7 +279,7 @@ To install dependencies, see below.
     cd .build
     cmake ..
     mkdir test
-    ./wsfs -m test --document_root=../exmaple/www --port=4711
+    ./wsfsd -m test --document_root=../exmaple/www --port=4711
 
 ### Build options
 

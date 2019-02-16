@@ -22,10 +22,10 @@ static struct wsfs_server * server;
 static void show_help(void)
 {
 	printf(
-		"wsfs, Copyright (c) 2019, Falk Werner\n"
+		"wsfsd, Copyright (c) 2019, Falk Werner\n"
 		"Websocket file system daemon\n"
 		"\n"
-		"Usage: wsfs [m <mount_point>] [-d <document_root] [-n <vhost_name>] [-p <port>]\n"
+		"Usage: wsfsd [m <mount_point>] [-d <document_root] [-n <vhost_name>] [-p <port>]\n"
 		"            [-c <server_cert_path> -k] [<server_key_path>]\n"
 		"\n"
 		"Options:\n"
