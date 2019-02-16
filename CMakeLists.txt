@@ -96,6 +96,41 @@ install(FILES include/wsfs.h DESTINATION include)
 install(DIRECTORY include/wsfs DESTINATION include)
 install(FILES "${PROJECT_BINARY_DIR}/libfuse-wsfs.pc" DESTINATION lib${LIB_SUFFIX}/pkgconfig)
 
+#libwsfs-provider
+
+set(WSFS_PROVIDER_SOURCES
+	lib/wsfsp/client.c
+)
+
+add_library(wsfs-provider SHARED ${WSFS_PROVIDER_SOURCES})
+
+set_target_properties(wsfs-provider PROPERTIES VERSION ${PROJECT_VERSION})
+set_target_properties(wsfs-provider PROPERTIES SOVERSION 0)
+set_target_properties(wsfs-provider PROPERTIES C_VISIBILITY_PRESET hidden)
+set_target_properties(wsfs-provider PROPERTIES COMPILE_DEFINITIONS "WSFSP_API=WSFSP_EXPORT")
+
+target_include_directories(wsfs-provider PUBLIC lib ${EXTRA_INCLUDE_DIRS})
+target_compile_options(wsfs-provider PUBLIC  ${EXTRA_CFLAGS})
+
+file(WRITE "${PROJECT_BINARY_DIR}/libwsfs-provider.pc"
+"prefix=\"${CMAKE_INSTALL_PREFIX}\"
+exec_prefix=\${prefix}
+libdir=\${exec_prefix}/lib${LIB_SUFFIX}
+includedir=\${prefix}/include
+Name: libwsfs-provider
+Description: Provider library for websockets filesystem
+Version: ${PROJECT_VERSION}
+
+Libs: -L\${libdir} -lwsfs-provider  -l${LWS_LIBRARIES} -l${JANSSON_LIBRARIES}
+Cflags: -I\${includedir}"
+)
+
+install(TARGETS wsfs-provider DESTINATION lib${LIB_SUFFIX})
+install(FILES include/wsfs_provider.h DESTINATION include)
+install(DIRECTORY include/wsfsp DESTINATION include)
+install(FILES "${PROJECT_BINARY_DIR}/libwsfs-provider.pc" DESTINATION lib${LIB_SUFFIX}/pkgconfig)
+
+
 # app
 
 if(NOT WITHOUT_EXAMPLE)
