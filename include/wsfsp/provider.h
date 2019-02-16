@@ -16,7 +16,7 @@ using std::size_t;
 
 
 struct wsfsp_request;
-struct wsfs_dirbuffer;
+struct wsfsp_dirbuffer;
 
 typedef void wsfsp_lookup_fn(
     struct wsfsp_request * request,
@@ -64,10 +64,10 @@ void * user_data);
 typedef void wsfsp_ontimer_fn(
     void * user_data);
 
-struct wsfsüp
+struct wsfsp_provider
 {
     wsfsp_connected_fn * connected;
-    wsfsp_disconnected_fn * connected;
+    wsfsp_disconnected_fn * disconnected;
     wsfsp_ontimer_fn * ontimer;
     wsfsp_lookup_fn * lookup;
     wsfsp_getattr_fn * getattr;
@@ -88,7 +88,7 @@ extern void wsfsp_respond_error(
 
 extern void wsfsp_respond_lookup(
     struct wsfsp_request * request,
-    struct wsfs_stat const * stat);
+    struct stat const * stat);
 
 extern void wsfsp_respond_getattr(
     struct wsfsp_request * request,

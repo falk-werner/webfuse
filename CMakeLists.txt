@@ -131,17 +131,31 @@ install(DIRECTORY include/wsfsp DESTINATION include)
 install(FILES "${PROJECT_BINARY_DIR}/libwsfs-provider.pc" DESTINATION lib${LIB_SUFFIX}/pkgconfig)
 
 
-# app
+# examples
 
 if(NOT WITHOUT_EXAMPLE)
 
+# daemon
+
 add_executable(wsfsd
-	example/main.c
+	example/daemon/main.c
 )
 
 target_link_libraries(wsfsd PUBLIC wsfs ${EXTRA_LIBS})
 target_include_directories(wsfsd PUBLIC ${EXTRA_INCLUDE_DIRS})
 target_compile_options(wsfsd PUBLIC ${EXTRA_CFLAGS})
+
+# provider
+
+add_executable(wsfs-provider-app
+	example/provider/main.c
+)
+
+set_target_properties(wsfs-provider-app PROPERTIES OUTPUT_NAME wsfs-provider)
+
+target_link_libraries(wsfs-provider-app PUBLIC wsfs-provider ${EXTRA_LIBS})
+target_include_directories(wsfs-provider-app PUBLIC ${EXTRA_INCLUDE_DIRS})
+target_compile_options(wsfs-provider-app PUBLIC ${EXTRA_CFLAGS})
 
 endif(NOT WITHOUT_EXAMPLE)
 
