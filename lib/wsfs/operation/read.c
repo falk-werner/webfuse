@@ -11,24 +11,23 @@
 #define WSFS_MAX_READ_LENGTH 4096
 
 static wsfs_status wsfs_fill_buffer(
-	char * buffer,
-	size_t buffer_size,
+	char * * buffer,
 	char const * format,
 	char const * data,
 	size_t count)
 {
 	wsfs_status status = WSFS_GOOD;
 
-	size_t const copy_count = (buffer_size < count) ? buffer_size : count;
-	if (0 < copy_count)
+	if (0 < count)
 	{
+		*buffer = malloc(count);
 		if (0 == strcmp("identity", format))
 		{
-			strncpy(buffer, data, copy_count);
+			memcpy(*buffer, data, count);
 		}
 		else if (0 == strcmp("base64", format))
 		{
-			lws_b64_decode_string(data, buffer, copy_count);
+			lws_b64_decode_string(data, *buffer, count);
 		}
 		else
 		{
@@ -58,9 +57,8 @@ static void wsfs_operation_read_finished(void * user_data, wsfs_status status, j
 			char const * const data = json_string_value(data_holder);
 			char const * const format = json_string_value(format_holder);
 			length = (size_t) json_integer_value(count_holder);
-			buffer = malloc(length);
 
-			status = wsfs_fill_buffer(buffer, length, format, data, length);
+			status = wsfs_fill_buffer(&buffer, format, data, length);
 		}
 		else
 		{
