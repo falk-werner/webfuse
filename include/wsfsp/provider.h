@@ -14,6 +14,7 @@ using std::size_t;
 #include <sys/stat.h>
 #include <unistd.h>
 
+#include "wsfsp/api.h"
 
 struct wsfsp_request;
 struct wsfsp_dirbuffer;
@@ -82,27 +83,27 @@ extern "C"
 {
 #endif
 
-extern void wsfsp_respond_error(
+extern WSFSP_API void wsfsp_respond_error(
     struct wsfsp_request * request,
     int status);
 
-extern void wsfsp_respond_lookup(
+extern WSFSP_API void wsfsp_respond_lookup(
     struct wsfsp_request * request,
     struct stat const * stat);
 
-extern void wsfsp_respond_getattr(
+extern WSFSP_API void wsfsp_respond_getattr(
     struct wsfsp_request * request,
     struct stat const * stat);
 
-extern void wsfsp_respond_readdir(
+extern WSFSP_API void wsfsp_respond_readdir(
     struct wsfsp_request * request,
     struct wsfsp_dirbuffer * dirbuffer);
 
-extern void wsfsp_respond_open(
+extern WSFSP_API void wsfsp_respond_open(
     struct wsfsp_request * request,
     uint32_t handle);
 
-extern void wsfsp_respond_read(
+extern WSFSP_API void wsfsp_respond_read(
     struct wsfsp_request * request,
     char const * data,
     size_t length);
