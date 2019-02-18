@@ -1,7 +1,7 @@
 #ifndef _WSFSP_CLIENT_PROTOCOL_H
 #define _WSFSP_CLIENT_PROTOCOL_H
 
-#include "wsfs/api.h"
+#include "wsfsp/api.h"
 
 struct wsfsp_client_protocol;
 struct wsfsp_provider;

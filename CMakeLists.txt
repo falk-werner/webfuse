@@ -100,7 +100,9 @@ install(FILES "${PROJECT_BINARY_DIR}/libwsfs.pc" DESTINATION lib${LIB_SUFFIX}/pk
 
 set(WSFS_PROVIDER_SOURCES
 	lib/wsfsp/client.c
+	lib/wsfsp/client_protocol.c
 	lib/wsfsp/provider.c
+	lib/wsfsp/provider_default.c
 )
 
 add_library(wsfs-provider SHARED ${WSFS_PROVIDER_SOURCES})
