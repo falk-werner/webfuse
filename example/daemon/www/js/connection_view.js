@@ -1,3 +1,5 @@
+/* exported ConnectionView */
+
 class ConnectionView {
     constructor(connection) {
         this.connection = connection;

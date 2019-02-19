@@ -1,3 +1,5 @@
+/* exported FileSystemHandler */
+/* eslint no-console: "off" */
 
 class FileSystemHandler {
 

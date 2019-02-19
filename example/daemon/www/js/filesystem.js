@@ -1,3 +1,6 @@
+/* exported FileSystem */
+/* eslint no-unused-vars: ["error", { "argsIgnorePattern": "^_" }] */
+
 class FileSystem {
     static get GOOD() { return 0; }
     static get BAD()  { return 1; }
@@ -104,7 +107,7 @@ class FileSystem {
 		return result;
     }
 
-    close(inode, handle, mode) {
+    close(_inode, _handle, _mode) {
         // do nothing
 		return true;
     }

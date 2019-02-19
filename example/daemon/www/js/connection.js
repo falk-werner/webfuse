@@ -1,3 +1,5 @@
+/* exported Connection */
+
 class Connection {
 
     constructor() {

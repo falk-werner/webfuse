@@ -2,7 +2,7 @@
   "name": "wsfs-provider",
   "version": "0.1.0",
   "description": "Provider for websocket filesystem (wsfs)",
-  "main": "filesystem.js",
+  "main": "startup.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

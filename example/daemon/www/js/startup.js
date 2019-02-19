@@ -1,3 +1,9 @@
+/* global Connection, ConnectionView, FileSystem, FileSystemHandler */
+
+function mode(value) {
+    return parseInt(value, 8);
+}
+
 function startup() {
     let connection = new Connection();
     let connectionView = new ConnectionView(connection);
@@ -5,16 +11,15 @@ function startup() {
 
     let fs = new FileSystem({
         inode: 1,
-        mode: 0755,
+        mode: mode("0755"),
         type: "dir",
         entries: {
-            "hello.txt"   : { inode: 2, mode: 0444, type: "file", contents: "Hello, World!"},
-            "say_hello.sh": { inode: 3, mode: 0555, type: "file", contents: "#!/bin/sh\necho hello\n"}
+            "hello.txt"   : { inode: 2, mode: mode("0444"), type: "file", contents: "Hello, World!"},
+            "say_hello.sh": { inode: 3, mode: mode("0555"), type: "file", contents: "#!/bin/sh\necho hello\n"}
         }
     });
+
     let handler = new FileSystemHandler(fs, connection);
-
-
 }
 
 window.onload = startup;
