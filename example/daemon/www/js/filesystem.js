@@ -1,7 +1,6 @@
-/* exported FileSystem */
 /* eslint no-unused-vars: ["error", { "argsIgnorePattern": "^_" }] */
 
-class FileSystem {
+export class FileSystem {
     static get GOOD() { return 0; }
     static get BAD()  { return 1; }
 

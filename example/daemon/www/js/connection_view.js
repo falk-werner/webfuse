@@ -1,6 +1,4 @@
-/* exported ConnectionView */
-
-class ConnectionView {
+export class ConnectionView {
     constructor(connection) {
         this.connection = connection;
         this.connection.onclose = () => { this.onConnectionClosed(); };

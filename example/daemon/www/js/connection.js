@@ -1,6 +1,4 @@
-/* exported Connection */
-
-class Connection {
+export class Connection {
 
     constructor() {
         this.ws = null;

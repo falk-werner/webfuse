@@ -1,7 +1,6 @@
-/* exported FileSystemHandler */
 /* eslint no-console: "off" */
 
-class FileSystemHandler {
+export class FileSystemHandler {
 
     constructor(filesystem, connection) {
         this._fs = filesystem;

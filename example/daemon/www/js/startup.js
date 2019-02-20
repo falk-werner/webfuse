@@ -1,4 +1,8 @@
-/* global Connection, ConnectionView, FileSystem, FileSystemHandler */
+import { Connection } from "./connection.js";
+import { ConnectionView } from "./connection_view.js";
+import { FileSystem } from "./filesystem.js";
+import { FileSystemHandler } from "./filesystem_handler.js";
+
 
 function mode(value) {
     return parseInt(value, 8);
