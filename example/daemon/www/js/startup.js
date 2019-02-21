@@ -1,7 +1,6 @@
-import { Connection } from "./connection.js";
+import { Client } from "./wsfs/client.js";
 import { ConnectionView } from "./connection_view.js";
-import { FileSystem } from "./filesystem.js";
-import { FileSystemHandler } from "./filesystem_handler.js";
+import { FileSystemProvider } from "./filesystem_provider.js";
 
 
 function mode(value) {
@@ -9,11 +8,7 @@ function mode(value) {
 }
 
 function startup() {
-    let connection = new Connection();
-    let connectionView = new ConnectionView(connection);
-    document.getElementById('connection').appendChild(connectionView.element);
-
-    let fs = new FileSystem({
+    let provider = new FileSystemProvider({
         inode: 1,
         mode: mode("0755"),
         type: "dir",
@@ -22,8 +17,10 @@ function startup() {
             "say_hello.sh": { inode: 3, mode: mode("0555"), type: "file", contents: "#!/bin/sh\necho hello\n"}
         }
     });
-
-    let handler = new FileSystemHandler(fs, connection);
+    let client = new Client(provider);
+    let connectionView = new ConnectionView(client);    
+    document.getElementById('connection').appendChild(connectionView.element);
+    provider.setView(connectionView);
 }
 
 window.onload = startup;

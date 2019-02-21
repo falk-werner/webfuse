@@ -1,8 +1,6 @@
 export class ConnectionView {
-    constructor(connection) {
-        this.connection = connection;
-        this.connection.onclose = () => { this.onConnectionClosed(); };
-        this.connection.onopen = () => { this.onConnectionOpened(); };
+    constructor(client) {
+        this.connection = client;
 
         this.element = document.createElement("div");
 
@@ -28,7 +26,7 @@ export class ConnectionView {
             this.connection.connectTo(url);
         }
         else {
-            this.connection.close();
+            this.connection.disconnect();
         }
     }
     onConnectionOpened() {

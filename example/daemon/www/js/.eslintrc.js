@@ -234,7 +234,7 @@ module.exports = {
         "quotes": "off",
         "radix": "error",
         "require-atomic-updates": "error",
-        "require-await": "error",
+        "require-await": "off",
         "require-jsdoc": "off",
         "require-unicode-regexp": "off",
         "rest-spread-spacing": "error",
