@@ -23,7 +23,7 @@ static wsfs_status wsfs_fill_buffer(
 		*buffer = malloc(count);
 		if (0 == strcmp("identity", format))
 		{
-			memcpy(*buffer, data, count);
+			memcpy(*buffer, data, count); /* Flawfinder: ignore */
 		}
 		else if (0 == strcmp("base64", format))
 		{
