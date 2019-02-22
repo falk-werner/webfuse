@@ -60,7 +60,8 @@ export class Client {
     }
 
     _invoke(method, params, id) {
-        this._invokeAsync(method, params).then((result) => {
+        this._invokeAsync(method, params).
+        then((result) => {
             const response = { result, id };
             this._ws.send(JSON.stringify(response));
         }).
@@ -100,46 +101,27 @@ export class Client {
         }
     }
 
-    async _lookup(params) {
-        const parent = params[0];
-        const name = params[1];
-        
+    async _lookup([parent, name]) {
         return this._provider.lookup(parent, name);
     }
 
-    async _getattr(params) {
-        const inode = params[0];
-
+    async _getattr([inode]) {
         return this._provider.getattr(inode);
     }
 
-    async _readdir(params) {
-        const inode = params[0];
-
+    async _readdir([inode]) {
         return this._provider.readdir(inode);
     }
 
-    async _open(params) {
-        const inode = params[0];
-        const mode = params[1];
-
+    async _open([inode, mode]) {
         return this._provider.open(inode, mode);
     }
 
-    _close(params) {
-        const inode = params[0];
-        const handle = params[1];
-        const mode = params[2];
-
+    _close([inode, handle, mode]) {
         this._provider.close(inode, handle, mode);
     }
 
-    async _read(params) {
-        const inode = params[0];
-        const handle = params[1];
-        const offset = params[2];
-        const length = params[3];
-
+    async _read([inode, handle, offset, length]) {
         const data = await this._provider.read(inode, handle, offset, length);
 
         if ("string" === typeof(data)) {
