@@ -14,18 +14,6 @@ export class FileSystemProvider extends Provider {
         this._walk(this.root, (entry) => { this._inodes[entry.inode] = entry; });
     }
 
-    setView(view) {
-        this._view = view;
-    }
-
-    connected() {
-        if (this._view) { this._view.onConnectionOpened(); }
-    }
-
-    disconnected() {
-        if (this._view) { this._view.onConnectionClosed(); }
-    }
-
     _walk(node, callback) {
         callback(node);
 

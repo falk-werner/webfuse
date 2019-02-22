@@ -1,10 +1,12 @@
 export class ConnectionView {
     constructor(client) {
-        this.connection = client;
+        this._client = client;
+        this._client.onopen = () => { this._onConnectionOpened(); };
+        this._client.onclose = () => { this._onConnectionClosed(); };
 
         this.element = document.createElement("div");
 
-        let urlLabel = document.createElement("span");
+        const urlLabel = document.createElement("span");
         urlLabel.textContent = "URL:";
         this.element.appendChild(urlLabel);
         
@@ -16,24 +18,25 @@ export class ConnectionView {
         this.connectButton = document.createElement("input");
         this.connectButton.type = "button";
         this.connectButton.value = "connect";
-        this.connectButton.addEventListener("click", () => { this.onConnectButtonClicked(); });
+        this.connectButton.addEventListener("click", () => { this._onConnectButtonClicked(); });
         this.element.appendChild(this.connectButton);
     }
 
-    onConnectButtonClicked() {
-        if (!this.connection.isConnected) {
+    _onConnectButtonClicked() {
+        if (!this._client.isConnected()) {
             let url = this.urlTextbox.value;
-            this.connection.connectTo(url);
+            this._client.connectTo(url);
         }
         else {
-            this.connection.disconnect();
+            this._client.disconnect();
         }
     }
-    onConnectionOpened() {
+
+    _onConnectionOpened() {
         this.connectButton.value = "disconnect";
     }
 
-    onConnectionClosed() {
+    _onConnectionClosed() {
         this.connectButton.value = "connect";
     }
 

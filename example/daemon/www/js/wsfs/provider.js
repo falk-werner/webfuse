@@ -4,14 +4,6 @@ import { BadState } from "./bad_state.js";
 
 export class Provider {
 
-    connected() {
-        // empty
-    }
-
-    disconnected() {
-        // empty
-    }
-
     async lookup(_parent, _name) {
         throw new BadState(BadState.NOT_IMPLEMENTED);
     }

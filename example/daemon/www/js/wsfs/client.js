@@ -6,21 +6,19 @@ export class Client {
     constructor(provider) {
         this._provider = provider;
         this._ws = null;
-        this.isConnected = false;
+        this.onopen = () => { };
+        this.onclose = () => { };
+        this.onerror = () => { };
     }
 
     connectTo(url) {
         this.disconnect();
 
         this._ws = new WebSocket(url, Client._PROTOCOL);
-        this._ws.onopen = () => {
-            this.isConnected = true;
-            this._provider.connected(); 
-        };
-        this._ws.onclose = () => {
-            this.isConnected = false;
-            this._provider.disconnected();
-        };
+        this._ws.onopen = this.onopen;
+        this._ws.onclose = this.onclose;
+        this._ws.onerror = this.onerror;
+
         this._ws.onmessage = (message) => {
             this._onmessage(message);
         };
@@ -29,7 +27,12 @@ export class Client {
     disconnect() {
         if (this._ws) {
             this._ws.close();
+            this._ws = null;
         }
+    }
+
+    isConnected() {
+        return ((this._ws) && (this._ws.readyState === WebSocket.OPEN));
     }
 
     _onmessage(message) {

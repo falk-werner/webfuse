@@ -8,7 +8,7 @@ function mode(value) {
 }
 
 function startup() {
-    let provider = new FileSystemProvider({
+    const provider = new FileSystemProvider({
         inode: 1,
         mode: mode("0755"),
         type: "dir",
@@ -17,10 +17,9 @@ function startup() {
             "say_hello.sh": { inode: 3, mode: mode("0555"), type: "file", contents: "#!/bin/sh\necho hello\n"}
         }
     });
-    let client = new Client(provider);
-    let connectionView = new ConnectionView(client);    
+    const client = new Client(provider);
+    const connectionView = new ConnectionView(client);    
     document.getElementById('connection').appendChild(connectionView.element);
-    provider.setView(connectionView);
 }
 
 window.onload = startup;
