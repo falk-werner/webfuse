@@ -1,5 +1,5 @@
-#ifndef _WSFS_TIME_TIMER_INTERN_H
-#define _WSFS_TIME_TIMER_INTERN_H
+#ifndef WSFS_TIME_TIMER_INTERN_H
+#define WSFS_TIME_TIMER_INTERN_H
 
 #ifndef __cplusplus
 #include <stdbool.h>

@@ -1,5 +1,5 @@
-#ifndef _WSFS_OPERATIONS
-#define _WSFS_OPERATIONS
+#ifndef WSFS_OPERATIONS
+#define WSFS_OPERATIONS
 
 #include "wsfs/fuse_wrapper.h"
 

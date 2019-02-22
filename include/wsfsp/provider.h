@@ -1,5 +1,5 @@
-#ifndef _WSFSp_H
-#define _WSFSp_H
+#ifndef WSFSP_PROVIDER_H
+#define WSFSP_PROVIDER_H
 
 #ifndef __cplusplus
 #include <stddef.h>

@@ -1,5 +1,5 @@
-#ifndef _WSFS_H
-#define _WSFS_H
+#ifndef WSFS_H
+#define WSFS_H
 
 #include "wsfs/api.h"
 #include "wsfs/server.h"

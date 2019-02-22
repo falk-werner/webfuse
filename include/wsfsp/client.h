@@ -1,5 +1,5 @@
-#ifndef _WSFSP_CLIENT_H
-#define _WSFSP_CLIENT_H
+#ifndef WSFSP_CLIENT_H
+#define WSFSP_CLIENT_H
 
 #include "wsfsp/api.h"
 

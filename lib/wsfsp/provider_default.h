@@ -1,5 +1,5 @@
-#ifndef _WSFSP_PROVIDER_DEFAULT_H
-#define _WSFSP_PROVIDER_DEFAULT_H
+#ifndef WSFSP_PROVIDER_DEFAULT_H
+#define WSFSP_PROVIDER_DEFAULT_H
 
 #include "wsfsp/provider.h"
 

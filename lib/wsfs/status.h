@@ -1,5 +1,5 @@
-#ifndef _WSFS_STATUS_H
-#define _WSFS_STATUS_H
+#ifndef WSFS_STATUS_H
+#define WSFS_STATUS_H
 
 #define WSFS_GOOD 0
 #define WSFS_BAD  1

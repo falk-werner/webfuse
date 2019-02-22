@@ -1,5 +1,5 @@
-#ifndef _WSFS_TIME_TIMEOUT_MANAGER_H
-#define _WSFS_TIME_TIMEOUT_MANAGER_H
+#ifndef WSFS_TIME_TIMEOUT_MANAGER_H
+#define WSFS_TIME_TIMEOUT_MANAGER_H
 
 struct wsfs_timer;
 struct wsfs_timeout_manager

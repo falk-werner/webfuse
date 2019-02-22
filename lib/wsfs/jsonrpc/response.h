@@ -1,5 +1,5 @@
-#ifndef _WSFS_JSONRPC_RESPONSE_H
-#define _WSFS_JSONRPC_RESPONSE_H
+#ifndef WSFS_JSONRPC_RESPONSE_H
+#define WSFS_JSONRPC_RESPONSE_H
 
 #ifndef __cplusplus
 #include <stddef.h>

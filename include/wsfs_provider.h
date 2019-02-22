@@ -1,5 +1,5 @@
-#ifndef _WSFSP_H
-#define _WSFSP_H
+#ifndef WSFSP_H
+#define WSFSP_H
 
 #include "wsfsp/api.h"
 #include "wsfsp/provider.h"

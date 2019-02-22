@@ -1,5 +1,5 @@
-#ifndef _WSFS_SERVER_CONFIG_H
-#define _WSFS_SERVER_CONFIG_H
+#ifndef WSFS_SERVER_CONFIG_H
+#define WSFS_SERVER_CONFIG_H
 
 #include "wsfs/api.h"
 

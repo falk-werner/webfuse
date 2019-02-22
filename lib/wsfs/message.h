@@ -1,5 +1,5 @@
-#ifndef _WSFS_MESSAGE_H
-#define _WSFS_MESSAGE_H
+#ifndef WSFS_MESSAGE_H
+#define WSFS_MESSAGE_H
 
 #ifndef __cplusplus
 #include <stddef.h>

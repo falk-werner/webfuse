@@ -1,5 +1,5 @@
-#ifndef _WSFS_SERVER_PROTOCOL_INTERN_H
-#define _WSFS_SERVER_PROTOCOL_INTERN_H
+#ifndef WSFS_SERVER_PROTOCOL_INTERN_H
+#define WSFS_SERVER_PROTOCOL_INTERN_H
 
 #include "wsfs/server_protocol.h"
 #include "wsfs/filesystem.h"

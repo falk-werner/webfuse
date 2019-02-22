@@ -1,5 +1,5 @@
-#ifndef _WSFS_JSON_UTIL_H
-#define _WSFS_JSON_UTIL_H
+#ifndef WSFS_JSON_UTIL_H
+#define WSFS_JSON_UTIL_H
 
 #include <jansson.h>
 
