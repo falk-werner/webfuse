@@ -10,6 +10,7 @@ struct wsfsp_url
     char * host;
     int port;
     char * path;
+    bool use_tls;
 };
 
 #ifdef __cplusplus

@@ -8,6 +8,7 @@ TEST(url, ParseWs)
     bool result = wsfsp_url_init(&url, "ws://localhost/");
     ASSERT_TRUE(result);
     ASSERT_EQ(80, url.port);
+    ASSERT_FALSE(url.use_tls);
     ASSERT_STREQ("localhost", url.host);
     ASSERT_STREQ("/", url.path);
 
@@ -20,6 +21,7 @@ TEST(url, ParswWss)
     bool result = wsfsp_url_init(&url, "wss://localhost/");
     ASSERT_TRUE(result);
     ASSERT_EQ(443, url.port);
+    ASSERT_TRUE(url.use_tls);
     ASSERT_STREQ("localhost", url.host);
     ASSERT_STREQ("/", url.path);
 
@@ -81,7 +83,7 @@ TEST(url, FailToParseMissingProtocol)
 TEST(url, FailToParseMissingPath)
 {
     struct wsfsp_url url;
-    bool result = wsfsp_url_init(&url, "wss://localhost");
+    bool result = wsfsp_url_init(&url, "ws://localhost");
     ASSERT_FALSE(result);
     ASSERT_EQ(0, url.port);
     ASSERT_EQ(nullptr, url.path);

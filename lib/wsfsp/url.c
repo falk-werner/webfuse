@@ -8,6 +8,7 @@ struct wsfsp_url_protocol
     char const * name;
     size_t name_length;
     int default_port;
+    bool use_tls;
 };
 
 static bool wsfsp_url_readprotocol(
@@ -16,8 +17,8 @@ static bool wsfsp_url_readprotocol(
 {
     static struct wsfsp_url_protocol const known_protocols[] =
     {
-        {"ws://", 5, 80},
-        {"wss://", 6, 443}
+        {"ws://", 5, 80, false},
+        {"wss://", 6, 443, true}
     };
     static size_t const count = (sizeof(known_protocols) / sizeof(known_protocols[0]));
 
@@ -28,6 +29,7 @@ static bool wsfsp_url_readprotocol(
         if (0 == strncmp(*data, protocol->name, protocol->name_length))
         {
             url->port = protocol->default_port;
+            url->use_tls = protocol->use_tls;
             *data = *data + protocol->name_length;
             found = true;
         }
