@@ -103,6 +103,7 @@ set(WSFS_PROVIDER_SOURCES
 	lib/wsfsp/client_protocol.c
 	lib/wsfsp/provider.c
 	lib/wsfsp/provider_default.c
+	lib/wsfsp/url.c
 )
 
 add_library(wsfs-provider SHARED ${WSFS_PROVIDER_SOURCES})
@@ -169,11 +170,14 @@ if(NOT WITHOUT_TESTS)
 pkg_check_modules(GTEST gtest_main)
 
 add_library(wsfs-static STATIC ${WSFS_SOURCES})
-
 set_target_properties(wsfs-static PROPERTIES OUTPUT_NAME wsfs)
-
 target_include_directories(wsfs-static PUBLIC lib ${EXTRA_INCLUDE_DIRS})
 target_compile_options(wsfs-static PUBLIC ${EXTRA_CFLAGS})
+
+add_library(wsfs-provider-static STATIC ${WSFS_PROVIDER_SOURCES})
+set_target_properties(wsfs-provider-static PROPERTIES OUTPUT_NAME wsfs-provider)
+target_include_directories(wsfs-provider-static PUBLIC lib ${EXTRA_INCLUDE_DIRS})
+target_compile_options(wsfs-provider-static PUBLIC ${EXTRA_CFLAGS})
 
 
 add_executable(alltests
@@ -182,9 +186,10 @@ add_executable(alltests
 	test/test_server.cc
 	test/test_timepoint.cc
 	test/test_timer.cc
+	test/test_url.cc
 )
 
-target_link_libraries(alltests PUBLIC wsfs-static ${EXTRA_LIBS} ${GTEST_LIBRARIES})
+target_link_libraries(alltests PUBLIC wsfs-static wsfs-provider-static ${EXTRA_LIBS} ${GTEST_LIBRARIES})
 target_include_directories(alltests PUBLIC lib ${EXTRA_INCLUDE_DIRS} ${GTEST_INCLUDE_DIRS})
 target_compile_options(alltests PUBLIC ${EXTRA_CFLAGS} ${GTEST_CFLAGS})
 
