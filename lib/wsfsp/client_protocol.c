@@ -10,11 +10,27 @@
 
 static int wsfsp_client_protocol_callback(
 	struct lws * WSFS_UNUSED_PARAM(wsi),
-	enum lws_callback_reasons WSFS_UNUSED_PARAM(reason),
+	enum lws_callback_reasons reason,
 	void * WSFS_UNUSED_PARAM(user),
 	void * WSFS_UNUSED_PARAM(in),
 	size_t WSFS_UNUSED_PARAM(len))
 {
+
+    switch (reason)
+    {
+    case LWS_CALLBACK_CLIENT_ESTABLISHED:
+        puts("established");
+        break;
+    case LWS_CALLBACK_CLIENT_CONNECTION_ERROR:
+        puts("error: client could not connect");
+        break;
+    case LWS_CALLBACK_CLIENT_CLOSED:
+        puts("client closed");
+        break;
+    default:
+        break;            
+    }
+
     return 0;
 }
 

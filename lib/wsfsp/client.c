@@ -8,7 +8,9 @@
 
 #include "wsfsp/provider.h"
 #include "wsfsp/client_protocol_intern.h"
+#include "wsfsp/url.h"
 
+#define WSFSP_PROTOCOL ("fs")
 #define WSFSP_DISABLE_LWS_LOG 0
 #define WSFSP_CLIENT_PROTOCOL_COUNT 2
 #define WSFSP_CLIENT_TIMEOUT (1 * 1000)
@@ -21,6 +23,7 @@ struct wsfsp_client
     struct lws_context_creation_info info;
     struct lws_protocols protocols[WSFSP_CLIENT_PROTOCOL_COUNT];
     struct lws_context * context;
+    struct lws * wsi;
 };
 
 
@@ -64,10 +67,26 @@ void wsfsp_client_connect(
     struct wsfsp_client * client,
     char const * url)
 {
-    (void) client;
-    (void) url;
+    struct wsfsp_url url_data;
+    bool const success = wsfsp_url_init(&url_data, url);
+    if (success)
+    {
+        struct lws_client_connect_info info;
+        memset(&info, 0, sizeof(struct lws_client_connect_info));
+        info.context = client->context;
+        info.port = url_data.port;
+        info.address = url_data.host;
+        info.path = url_data.path;
+        info.host = info.address;
+        info.origin = info.address;
+        info.ssl_connection = (url_data.use_tls) ? LCCSCF_USE_SSL : 0;
+        info.protocol = WSFSP_PROTOCOL;
+        info.pwsi = &client->wsi;
 
-    // ToDo: implement me
+        lws_client_connect_via_info(&info);
+
+        wsfsp_url_cleanup(&url_data);
+    }
 }
 
 void wsfsp_client_disconnect(
