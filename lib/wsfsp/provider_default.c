@@ -1,4 +1,5 @@
 #include "wsfsp/provider_default.h"
+#include "wsfsp/operation/error.h"
 
 void wsfsp_lookup_default(
     struct wsfsp_request * request,
@@ -27,11 +28,9 @@ void wsfsp_getattr_default(
 void wsfsp_readdir_default(
     struct wsfsp_request * request,
     ino_t directory,
-    struct wsfsp_dirbuffer * dirbuffer,
     void * user_data)
 {
     (void) directory;
-    (void) dirbuffer;
     (void) user_data;
 
     wsfsp_respond_error(request, -1);

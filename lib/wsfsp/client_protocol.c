@@ -4,31 +4,79 @@
 #include <string.h>
 
 #include <libwebsockets.h>
+#include <jansson.h>
 
 #include "wsfsp/provider_default.h"
+#include "wsfsp/provider_intern.h"
 #include "wsfs/util.h"
 
+static void wsfsp_client_protocol_respond(
+    json_t * response,
+    void * user_data)
+{
+    // ToDo: implment me
+    (void) user_data;
+
+    char * value = json_dumps(response, 0);
+    if (NULL != value)
+    {
+        puts(value);
+    }
+    free(value);
+}
+
+static void wsfsp_client_protocol_process_request(
+     struct wsfsp_client_protocol * protocol, 
+     char const * message,
+     size_t length)
+{
+    json_t * request = json_loadb(message, length, 0, NULL);
+    if (NULL != request)
+    {
+        struct wsfsp_invokation_context context =
+        {
+            .provider = &protocol->provider,
+            .user_data = protocol->user_data,
+            .request = &protocol->request
+        };
+
+        puts("wsfsp_provider_invoke");
+        wsfsp_provider_invoke(&context, request);
+        json_decref(request);
+    }
+}
+
+
 static int wsfsp_client_protocol_callback(
-	struct lws * WSFS_UNUSED_PARAM(wsi),
+	struct lws * wsi,
 	enum lws_callback_reasons reason,
 	void * WSFS_UNUSED_PARAM(user),
-	void * WSFS_UNUSED_PARAM(in),
-	size_t WSFS_UNUSED_PARAM(len))
+	void * in,
+	size_t len)
 {
+    struct lws_protocols const * ws_protocol = lws_get_protocol(wsi);     
+    struct wsfsp_client_protocol * protocol = (NULL != ws_protocol) ? ws_protocol->user: NULL;
 
-    switch (reason)
+    if (NULL != protocol)
     {
-    case LWS_CALLBACK_CLIENT_ESTABLISHED:
-        puts("established");
-        break;
-    case LWS_CALLBACK_CLIENT_CONNECTION_ERROR:
-        puts("error: client could not connect");
-        break;
-    case LWS_CALLBACK_CLIENT_CLOSED:
-        puts("client closed");
-        break;
-    default:
-        break;            
+        switch (reason)
+        {
+        case LWS_CALLBACK_CLIENT_ESTABLISHED:
+            puts("established");
+            protocol->provider.connected(protocol->user_data);
+            break;
+        case LWS_CALLBACK_CLIENT_CONNECTION_ERROR:
+            protocol->provider.disconnected(protocol->user_data);
+            break;
+        case LWS_CALLBACK_CLIENT_CLOSED:
+            protocol->provider.connected(protocol->user_data);        
+            break;
+        case LWS_CALLBACK_CLIENT_RECEIVE:
+            wsfsp_client_protocol_process_request(protocol, in, len);
+            break;
+        default:
+            break;            
+        }
     }
 
     return 0;
@@ -40,6 +88,9 @@ void wsfsp_client_protocol_init(
     struct wsfsp_provider const * provider,
     void * user_data)
 {
+    protocol->request.respond = &wsfsp_client_protocol_respond;
+    protocol->request.user_data = protocol;
+
     protocol->user_data = user_data;
     protocol->provider.lookup = (NULL != provider->lookup) ? provider->lookup : &wsfsp_lookup_default;
     protocol->provider.getattr = (NULL != provider->getattr) ? provider->getattr : &wsfsp_getattr_default;

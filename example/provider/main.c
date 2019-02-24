@@ -59,11 +59,9 @@ static void fs_getattr(
 static void fs_readdir(
     struct wsfsp_request * request,
     ino_t directory,
-    struct wsfsp_dirbuffer * dirbuffer,
     void * user_data)
 {
     (void) directory;
-    (void) dirbuffer;
     (void) user_data;
 
     puts("readdir");

@@ -22,7 +22,6 @@ extern void wsfsp_getattr_default(
 extern void wsfsp_readdir_default(
     struct wsfsp_request * request,
     ino_t directory,
-    struct wsfsp_dirbuffer * dirbuffer,
     void * user_data);
 
 extern void wsfsp_open_default(

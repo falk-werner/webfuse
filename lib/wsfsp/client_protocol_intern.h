@@ -3,9 +3,11 @@
 
 #include "wsfsp/client_protocol.h"
 #include "wsfsp/provider.h"
+#include "wsfsp/request.h"
 
 struct wsfsp_client_protocol
 {
+    struct wsfsp_request request;
     struct wsfsp_provider provider;
     void * user_data;
 };

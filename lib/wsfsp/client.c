@@ -40,7 +40,7 @@ struct wsfsp_client * wsfsp_client_create(
         wsfsp_client_protocol_init(&client->protocol, provider, user_data);
 
         memset(client->protocols, 0, sizeof(struct lws_protocols) * WSFSP_CLIENT_PROTOCOL_COUNT);
-        client->protocols[0].name = "fs-provider";
+        client->protocols[0].name = "fs";
         wsfsp_client_protocol_init_lws(&client->protocol, &client->protocols[0]);
 
         memset(&client->info, 0, sizeof(struct lws_context_creation_info));
