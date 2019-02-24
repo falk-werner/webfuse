@@ -2,6 +2,8 @@
 #define WSFSP_PROVIDER_INTERN_H
 
 #include "wsfsp/provider.h"
+#include "wsfsp/request.h"
+
 #include <jansson.h>
 
 struct wsfsp_invokation_context

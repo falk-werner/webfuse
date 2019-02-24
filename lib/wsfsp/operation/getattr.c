@@ -9,11 +9,19 @@ void wsfsp_getattr(
     json_t * params,
     int id)
 {
-    (void) context;
-    (void) params;
-    (void) id;
+    size_t const count = json_array_size(params);
+    if (1 == count)
+    {
+        json_t * inode_holder = json_array_get(params, 0);
 
-    puts("getattr");        
+        if ((NULL != inode_holder) && (json_is_integer(inode_holder)))
+        {
+            ino_t inode = (ino_t) json_integer_value(inode_holder);
+            struct wsfsp_request * request = wsfsp_request_create(context->request, id);
+
+            context->provider->getattr(request, inode, context->user_data);
+        }
+    }
 }
 
 void wsfsp_getattr_default(
