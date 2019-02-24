@@ -14,6 +14,11 @@ extern void wsfsp_readdir(
     json_t * params,
     int id);
 
+extern void wsfsp_readdir_default(
+    struct wsfsp_request * request,
+    ino_t directory,
+    void * user_data);
+
 #ifdef __cplusplus
 }
 #endif

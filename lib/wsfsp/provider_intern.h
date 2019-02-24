@@ -20,6 +20,15 @@ extern void wsfsp_provider_invoke(
     struct wsfsp_invokation_context * context,
     json_t * request);
 
+extern void wsfsp_connected_default(
+    void * user_data);
+
+extern void wsfsp_disconnected_default(
+    void * user_data);
+
+extern void wsfsp_ontimer_default(
+    void * user_data);
+
 #ifdef __cplusplus    
 }
 #endif

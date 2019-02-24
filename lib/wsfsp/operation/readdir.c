@@ -1,5 +1,6 @@
 #include "wsfsp/operation/readdir_intern.h"
 #include <stdio.h>
+#include "wsfsp/operation/error.h"
 
 void wsfsp_readdir(
     struct wsfsp_invokation_context * context,
@@ -11,6 +12,17 @@ void wsfsp_readdir(
     (void) id;
 
     puts("readdir");        
+}
+
+void wsfsp_readdir_default(
+    struct wsfsp_request * request,
+    ino_t directory,
+    void * user_data)
+{
+    (void) directory;
+    (void) user_data;
+
+    wsfsp_respond_error(request, -1);
 }
 
 void wsfsp_respond_readdir(

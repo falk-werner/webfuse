@@ -27,3 +27,17 @@ void wsfsp_close(
     }
 
 }
+
+void wsfsp_close_default(
+    ino_t inode,
+    uint32_t handle,
+    int flags,
+    void * user_data)
+{
+    (void) inode;
+    (void) handle;
+    (void) flags;
+    (void) user_data;
+
+    // empty
+}

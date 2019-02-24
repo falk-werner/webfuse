@@ -14,6 +14,12 @@ extern void wsfsp_close(
     json_t * params,
     int id);
 
+extern void wsfsp_close_default(
+    ino_t inode,
+    uint32_t handle,
+    int flags,
+    void * user_data);
+
 #ifdef __cplusplus
 }
 #endif

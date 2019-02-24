@@ -14,6 +14,14 @@ extern void wsfsp_read(
     json_t * params,
     int id);
 
+extern void wsfsp_read_default(
+    struct wsfsp_request * request,
+    ino_t inode,
+    uint32_t handle,
+    size_t offset,
+    size_t length,
+    void * user_data);
+
 #ifdef __cplusplus
 }
 #endif

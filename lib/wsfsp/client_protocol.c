@@ -6,8 +6,15 @@
 #include <libwebsockets.h>
 #include <jansson.h>
 
-#include "wsfsp/provider_default.h"
+
 #include "wsfsp/provider_intern.h"
+#include "wsfsp/operation/lookup_intern.h"
+#include "wsfsp/operation/getattr_intern.h"
+#include "wsfsp/operation/readdir_intern.h"
+#include "wsfsp/operation/open_intern.h"
+#include "wsfsp/operation/close_intern.h"
+#include "wsfsp/operation/read_intern.h"
+
 #include "wsfs/util.h"
 
 static void wsfsp_client_protocol_respond(

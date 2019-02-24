@@ -1,5 +1,6 @@
 #include "wsfsp/operation/lookup_intern.h"
 #include <stdio.h>
+#include "wsfsp/operation/error.h"
 
 void wsfsp_lookup(
     struct wsfsp_invokation_context * context,
@@ -20,5 +21,18 @@ void wsfsp_respond_lookup(
     (void) request;
     (void) stat;
 
+}
+
+void wsfsp_lookup_default(
+    struct wsfsp_request * request,
+    ino_t parent,
+    char const * name,
+    void * user_data)
+{
+    (void) parent;
+    (void) name;
+    (void) user_data;
+    
+    wsfsp_respond_error(request, -1);
 }
 

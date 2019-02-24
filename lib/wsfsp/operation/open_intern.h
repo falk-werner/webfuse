@@ -14,6 +14,12 @@ extern void wsfsp_open(
     json_t * params,
     int id);
 
+extern void wsfsp_open_default(
+    struct wsfsp_request * request,
+    ino_t inode,
+    int flags,
+    void * user_data);
+
 #ifdef __cplusplus
 }
 #endif

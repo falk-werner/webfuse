@@ -14,6 +14,12 @@ extern void wsfsp_lookup(
     json_t * params,
     int id);
 
+extern void wsfsp_lookup_default(
+    struct wsfsp_request * request,
+    ino_t parent,
+    char const * name,
+    void * user_data);
+
 #ifdef __cplusplus
 }
 #endif

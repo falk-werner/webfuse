@@ -72,3 +72,27 @@ void wsfsp_provider_invoke(
         wsfsp_provider_invoke_method(context, method, params, id);
     }
 }
+
+void wsfsp_connected_default(
+    void * user_data)
+{
+    (void) user_data;
+
+    // empty
+}
+
+void wsfsp_disconnected_default(
+    void * user_data)
+{
+    (void) user_data;
+
+    // empty
+}
+
+void wsfsp_ontimer_default(
+    void * user_data)
+{
+    (void) user_data;
+
+    // empty
+}

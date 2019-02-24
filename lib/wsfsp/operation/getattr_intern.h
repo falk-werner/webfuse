@@ -14,6 +14,11 @@ extern void wsfsp_getattr(
     json_t * params,
     int id);
 
+extern void wsfsp_getattr_default(
+    struct wsfsp_request * request,
+    ino_t inode,
+    void * user_data);
+
 #ifdef __cplusplus
 }
 #endif
