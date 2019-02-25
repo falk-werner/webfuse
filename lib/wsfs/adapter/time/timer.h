@@ -1,5 +1,5 @@
-#ifndef WSFS_TIMER_H
-#define WSFS_TIMER_H
+#ifndef WSFS_ADAPTER_TIME_TIMER_H
+#define WSFS_ADAPTER_TIME_TIMER_H
 
 #include "wsfs/adapter/time/timepoint.h"
 

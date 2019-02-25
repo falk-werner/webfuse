@@ -1,5 +1,5 @@
-#ifndef WSFSP_PROVIDER_INTERN_H
-#define WSFSP_PROVIDER_INTERN_H
+#ifndef WSFS_PROVIDER_PROVIDER_INTERN_H
+#define WSFS_PROVIDER_PROVIDER_INTERN_H
 
 #include "wsfs/provider/provider.h"
 #include "wsfs/provider/request.h"

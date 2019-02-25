@@ -1,5 +1,5 @@
-#ifndef WSFS_TIME_TIMEPOINT_H
-#define WSFS_TIME_TIMEPOINT_H
+#ifndef WSFS_ADAPTER_TIME_TIMEPOINT_H
+#define WSFS_ADAPTER_TIME_TIMEPOINT_H
 
 #ifndef __cplusplus
 #include <stdbool.h>

@@ -1,5 +1,5 @@
-#ifndef WSFSP_URL_H
-#define WSFSP_URL_H
+#ifndef WSFS_PROVIDER_URL_H
+#define WSFS_PROVIDER_URL_H
 
 #ifndef __cplusplus
 #include <stdbool.h>

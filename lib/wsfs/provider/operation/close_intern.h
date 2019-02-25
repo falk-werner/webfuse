@@ -1,5 +1,5 @@
-#ifndef WSFSP_OPERATION_CLOSE_INTERN_H
-#define WSFSP_OPERATION_CLOSE_INTERN_H
+#ifndef WSFS_PROVIDER_OPERATION_CLOSE_INTERN_H
+#define WSFS_PROVIDER_OPERATION_CLOSE_INTERN_H
 
 #include "wsfs/provider/operation/close.h"
 #include "wsfs/provider/provider_intern.h"

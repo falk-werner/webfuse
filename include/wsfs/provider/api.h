@@ -1,5 +1,5 @@
-#ifndef WSFSP_API_H
-#define WSFSP_API_H
+#ifndef WSFSP_PROVIDER_API_H
+#define WSFSP_PROVIDER_API_H
 
 #ifndef WSFSP_API
 #define WSFSP_API

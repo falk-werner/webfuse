@@ -1,5 +1,5 @@
-#ifndef WSFSP_CLIENT_PROTOCOL_INTERN_H
-#define WSFSP_CLIENT_PROTOCOL_INTERN_H
+#ifndef WSFS_PROVIDER_CLIENT_PROTOCOL_INTERN_H
+#define WSFS_PROVIDER_CLIENT_PROTOCOL_INTERN_H
 
 #include "wsfs/provider/client_protocol.h"
 #include "wsfs/provider/provider.h"

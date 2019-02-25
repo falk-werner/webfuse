@@ -1,5 +1,5 @@
-#ifndef WSFS_JSONRPC_REQUEST_H
-#define WSFS_JSONRPC_REQUEST_H
+#ifndef WSFS_ADAPTER_JSONRPC_REQUEST_H
+#define WSFS_ADAPTER_JSONRPC_REQUEST_H
 
 #ifndef __cplusplus
 #include <stdarg.h>

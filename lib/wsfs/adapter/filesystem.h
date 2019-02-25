@@ -1,5 +1,5 @@
-#ifndef WSFS_FILESYSTEM_H
-#define WSFS_FILESYSTEM_H
+#ifndef WSFS_ADAPTER_FILESYSTEM_H
+#define WSFS_ADAPTER_FILESYSTEM_H
 
 #ifndef __cplusplus
 #include <stdbool.h>

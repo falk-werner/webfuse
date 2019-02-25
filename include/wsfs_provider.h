@@ -1,5 +1,5 @@
-#ifndef WSFSP_H
-#define WSFSP_H
+#ifndef WSFS_PROVIDER_H
+#define WSFS_PROVIDER_H
 
 #include <wsfs/provider/api.h>
 #include <wsfs/provider/client.h>

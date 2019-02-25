@@ -1,5 +1,5 @@
-#ifndef WSFSP_PROVIDER_H
-#define WSFSP_PROVIDER_H
+#ifndef WSFS_PROVIDER_PROVIDER_H
+#define WSFS_PROVIDER_PROVIDER_H
 
 #include <wsfs/provider/operation/lookup.h>
 #include <wsfs/provider/operation/getattr.h>

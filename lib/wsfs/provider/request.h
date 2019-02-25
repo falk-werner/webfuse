@@ -1,5 +1,5 @@
-#ifndef WSFSP_REQUEST_H
-#define WSFSP_REQUEST_H
+#ifndef WSFS_PROVIDER_REQUEST_H
+#define WSFS_PROVIDER_REQUEST_H
 
 #include <jansson.h>
 #include "wsfs/provider/provider.h"

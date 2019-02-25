@@ -1,5 +1,5 @@
-#ifndef WSFSP_DIRBUFFER_H
-#define WSFSP_DIRBUFFER_H
+#ifndef WSFS_PROVIDER_DIRBUFFER_H
+#define WSFS_PROVIDER_DIRBUFFER_H
 
 #include <sys/types.h>
 #include <sys/stat.h>

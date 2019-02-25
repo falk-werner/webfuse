@@ -1,5 +1,5 @@
-#ifndef WSFSP_OPERATION_READDIR_INTERN_H
-#define WSFSP_OPERATION_READDIR_INTERN_H
+#ifndef WSFS_PROVIDER_OPERATION_READDIR_INTERN_H
+#define WSFS_PROVIDER_OPERATION_READDIR_INTERN_H
 
 #include "wsfs/provider/operation/readdir.h"
 #include "wsfs/provider/provider_intern.h"

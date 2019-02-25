@@ -1,5 +1,5 @@
-#ifndef WSFS_JSONRPC_METHOD_INTERN_H
-#define WSFS_JSONRPC_METHOD_INTERN_H
+#ifndef WSFS_ADAPTER_JSONRPC_METHOD_INTERN_H
+#define WSFS_ADAPTER_JSONRPC_METHOD_INTERN_H
 
 #include "wsfs/adapter/jsonrpc/method.h"
 
