@@ -17,6 +17,7 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(C_WARNINGS -Wall -Wextra)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 set(EXTRA_INCLUDE_DIRS
 	"include"
@@ -40,7 +41,12 @@ set(EXTRA_CFLAGS
 	${JANSSON_CFLAGS_OTHER}
 	"-pthread"
 )
+# libwsfs-common
 
+set(WSFS_COMMON_SOURCES
+	lib/wsfs/message.c
+	lib/wsfs/message_queue.c
+)
 
 # libwsfs-adapter
 
@@ -48,8 +54,6 @@ set(WSFS_ADAPTER_SOURCES
 	lib/wsfs/adapter/status.c
 	lib/wsfs/adapter/filesystem.c
 	lib/wsfs/adapter/server.c
-	lib/wsfs/adapter/message.c
-	lib/wsfs/adapter/message_queue.c
 	lib/wsfs/adapter/time/timepoint.c
 	lib/wsfs/adapter/time/timer.c
 	lib/wsfs/adapter/time/timeout_manager.c
@@ -68,7 +72,7 @@ set(WSFS_ADAPTER_SOURCES
 	lib/wsfs/adapter/jsonrpc/util.c
 )
 
-add_library(wsfs-adapter SHARED ${WSFS_ADAPTER_SOURCES})
+add_library(wsfs-adapter SHARED ${WSFS_ADAPTER_SOURCES} ${WSFS_COMMON_SOURCES})
 
 set_target_properties(wsfs-adapter PROPERTIES VERSION ${PROJECT_VERSION})
 set_target_properties(wsfs-adapter PROPERTIES SOVERSION 0)
@@ -80,6 +84,7 @@ target_compile_options(wsfs-adapter PUBLIC  ${EXTRA_CFLAGS})
 
 file(WRITE "${PROJECT_BINARY_DIR}/libwsfs-adapter.pc"
 "prefix=\"${CMAKE_INSTALL_PREFIX}\"
+
 exec_prefix=\${prefix}
 libdir=\${exec_prefix}/lib${LIB_SUFFIX}
 includedir=\${prefix}/include
@@ -113,7 +118,7 @@ set(WSFS_PROVIDER_SOURCES
 	lib/wsfs/provider/operation/read.c
 )
 
-add_library(wsfs-provider SHARED ${WSFS_PROVIDER_SOURCES})
+add_library(wsfs-provider SHARED ${WSFS_PROVIDER_SOURCES} ${WSFS_COMMON_SOURCES})
 
 set_target_properties(wsfs-provider PROPERTIES VERSION ${PROJECT_VERSION})
 set_target_properties(wsfs-provider PROPERTIES SOVERSION 0)
@@ -194,6 +199,7 @@ add_executable(alltests
 	test/test_timepoint.cc
 	test/test_timer.cc
 	test/test_url.cc
+	${WSFS_COMMON_SOURCES}
 )
 
 target_link_libraries(alltests PUBLIC wsfs-adapter-static wsfs-provider-static ${EXTRA_LIBS} ${GTEST_LIBRARIES})

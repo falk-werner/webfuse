@@ -1,4 +1,4 @@
-#include "wsfs/adapter/message.h"
+#include "wsfs/message.h"
 
 #include <stdlib.h>
 #include <libwebsockets.h>

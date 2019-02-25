@@ -3,9 +3,10 @@
 #include <stdlib.h>
 #include <libwebsockets.h>
 
-#include "wsfs/adapter/message.h"
-#include "wsfs/adapter/filesystem.h"
+#include "wsfs/message.h"
 #include "wsfs/util.h"
+
+#include "wsfs/adapter/filesystem.h"
 
 static int wsfs_server_protocol_callback(
 	struct lws * wsi,

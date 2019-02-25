@@ -1,9 +1,10 @@
 #ifndef WSFS_SERVER_PROTOCOL_INTERN_H
 #define WSFS_SERVER_PROTOCOL_INTERN_H
 
+#include "wsfs/message_queue.h"
+
 #include "wsfs/adapter/server_protocol.h"
 #include "wsfs/adapter/filesystem.h"
-#include "wsfs/adapter/message_queue.h"
 #include "wsfs/adapter/jsonrpc/server.h"
 #include "wsfs/adapter/time/timeout_manager.h"
 
