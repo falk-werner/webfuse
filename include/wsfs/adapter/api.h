@@ -1,15 +1,15 @@
 #ifndef WSFS_ADAPTER_API_H
 #define WSFS_ADAPTER_API_H
 
-#ifndef WSFS_API
-#define WSFS_API
+#ifndef WSFSA_API
+#define WSFSA_API
 #endif
 
-#ifndef WSFS_EXPORT
+#ifndef WSFSA_EXPORT
 #ifdef __GNUC__
-#define WSFS_EXPORT __attribute__ ((visibility ("default")))
+#define WSFSA_EXPORT __attribute__ ((visibility ("default")))
 #else
-#define WSFS_EXPORT
+#define WSFSA_EXPORT
 #endif
 #endif
 

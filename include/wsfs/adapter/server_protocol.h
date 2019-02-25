@@ -11,13 +11,13 @@ extern "C"
 {
 #endif
 
-extern WSFS_API struct wsfs_server_protocol * wsfs_server_protocol_create(
+extern WSFSA_API struct wsfs_server_protocol * wsfs_server_protocol_create(
     char * mount_point);
 
-extern WSFS_API void wsfs_server_protocol_dispose(
+extern WSFSA_API void wsfs_server_protocol_dispose(
     struct wsfs_server_protocol * protocol);
 
-extern WSFS_API void wsfs_server_protocol_init_lws(
+extern WSFSA_API void wsfs_server_protocol_init_lws(
     struct wsfs_server_protocol * protocol,
     struct lws_protocols * lws_protocol);
 

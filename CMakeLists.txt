@@ -77,7 +77,7 @@ add_library(wsfs-adapter SHARED ${WSFS_ADAPTER_SOURCES} ${WSFS_COMMON_SOURCES})
 set_target_properties(wsfs-adapter PROPERTIES VERSION ${PROJECT_VERSION})
 set_target_properties(wsfs-adapter PROPERTIES SOVERSION 0)
 set_target_properties(wsfs-adapter PROPERTIES C_VISIBILITY_PRESET hidden)
-set_target_properties(wsfs-adapter PROPERTIES COMPILE_DEFINITIONS "WSFS_API=WSFS_EXPORT")
+set_target_properties(wsfs-adapter PROPERTIES COMPILE_DEFINITIONS "WSFSA_API=WSFSA_EXPORT")
 
 target_include_directories(wsfs-adapter PUBLIC lib ${EXTRA_INCLUDE_DIRS})
 target_compile_options(wsfs-adapter PUBLIC  ${EXTRA_CFLAGS})

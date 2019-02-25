@@ -18,13 +18,13 @@ extern "C"
 {
 #endif
 
-extern WSFS_API void wsfs_server_config_init(
+extern WSFSA_API void wsfs_server_config_init(
     struct wsfs_server_config * config);
 
-extern WSFS_API void wsfs_server_config_cleanup(
+extern WSFSA_API void wsfs_server_config_cleanup(
     struct wsfs_server_config * config);
 
-extern WSFS_API void wsfs_server_config_clone(
+extern WSFSA_API void wsfs_server_config_clone(
 	struct wsfs_server_config * config,
 	struct wsfs_server_config * clone);
 
