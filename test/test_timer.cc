@@ -3,8 +3,8 @@
 #include <cstddef>
 
 #include "msleep.hpp"
-#include "wsfs/time/timer.h"
-#include "wsfs/time/timeout_manager.h"
+#include "wsfs/adapter/time/timer.h"
+#include "wsfs/adapter/time/timeout_manager.h"
 
 using std::size_t;
 using wsfs_test::msleep;

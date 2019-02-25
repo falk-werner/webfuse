@@ -1,7 +1,7 @@
 #include <string>
 #include <gtest/gtest.h>
 
-#include "wsfs/jsonrpc/response.h"
+#include "wsfs/adapter/jsonrpc/response.h"
 
 
 static void wsfs_response_parse_str(

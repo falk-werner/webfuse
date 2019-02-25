@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include "wsfsp/url.h"
+#include "wsfs/provider/url.h"
 
 TEST(url, ParseWs)
 {

@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 
 #include "msleep.hpp"
-#include "wsfs/time/timepoint.h"
+#include "wsfs/adapter/time/timepoint.h"
 
 using wsfs_test::msleep;
 

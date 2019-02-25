@@ -42,43 +42,43 @@ set(EXTRA_CFLAGS
 )
 
 
-# libwsfs
+# libwsfs-adapter
 
-set(WSFS_SOURCES
-	lib/wsfs/status.c
-	lib/wsfs/filesystem.c
-	lib/wsfs/server.c
-	lib/wsfs/message.c
-	lib/wsfs/message_queue.c
-	lib/wsfs/time/timepoint.c
-	lib/wsfs/time/timer.c
-	lib/wsfs/time/timeout_manager.c
-	lib/wsfs/operation/lookup.c
-	lib/wsfs/operation/getattr.c
-	lib/wsfs/operation/readdir.c
-	lib/wsfs/operation/open.c
-	lib/wsfs/operation/close.c
-	lib/wsfs/operation/read.c
-	lib/wsfs/server_config.c
-	lib/wsfs/server_protocol.c
-	lib/wsfs/jsonrpc/server.c
-	lib/wsfs/jsonrpc/method.c
-	lib/wsfs/jsonrpc/request.c
-	lib/wsfs/jsonrpc/response.c
-	lib/wsfs/jsonrpc/util.c
+set(WSFS_ADAPTER_SOURCES
+	lib/wsfs/adapter/status.c
+	lib/wsfs/adapter/filesystem.c
+	lib/wsfs/adapter/server.c
+	lib/wsfs/adapter/message.c
+	lib/wsfs/adapter/message_queue.c
+	lib/wsfs/adapter/time/timepoint.c
+	lib/wsfs/adapter/time/timer.c
+	lib/wsfs/adapter/time/timeout_manager.c
+	lib/wsfs/adapter/operation/lookup.c
+	lib/wsfs/adapter/operation/getattr.c
+	lib/wsfs/adapter/operation/readdir.c
+	lib/wsfs/adapter/operation/open.c
+	lib/wsfs/adapter/operation/close.c
+	lib/wsfs/adapter/operation/read.c
+	lib/wsfs/adapter/server_config.c
+	lib/wsfs/adapter/server_protocol.c
+	lib/wsfs/adapter/jsonrpc/server.c
+	lib/wsfs/adapter/jsonrpc/method.c
+	lib/wsfs/adapter/jsonrpc/request.c
+	lib/wsfs/adapter/jsonrpc/response.c
+	lib/wsfs/adapter/jsonrpc/util.c
 )
 
-add_library(wsfs SHARED ${WSFS_SOURCES})
+add_library(wsfs-adapter SHARED ${WSFS_ADAPTER_SOURCES})
 
-set_target_properties(wsfs PROPERTIES VERSION ${PROJECT_VERSION})
-set_target_properties(wsfs PROPERTIES SOVERSION 0)
-set_target_properties(wsfs PROPERTIES C_VISIBILITY_PRESET hidden)
-set_target_properties(wsfs PROPERTIES COMPILE_DEFINITIONS "WSFS_API=WSFS_EXPORT")
+set_target_properties(wsfs-adapter PROPERTIES VERSION ${PROJECT_VERSION})
+set_target_properties(wsfs-adapter PROPERTIES SOVERSION 0)
+set_target_properties(wsfs-adapter PROPERTIES C_VISIBILITY_PRESET hidden)
+set_target_properties(wsfs-adapter PROPERTIES COMPILE_DEFINITIONS "WSFS_API=WSFS_EXPORT")
 
-target_include_directories(wsfs PUBLIC lib ${EXTRA_INCLUDE_DIRS})
-target_compile_options(wsfs PUBLIC  ${EXTRA_CFLAGS})
+target_include_directories(wsfs-adapter PUBLIC lib ${EXTRA_INCLUDE_DIRS})
+target_compile_options(wsfs-adapter PUBLIC  ${EXTRA_CFLAGS})
 
-file(WRITE "${PROJECT_BINARY_DIR}/libwsfs.pc"
+file(WRITE "${PROJECT_BINARY_DIR}/libwsfs-adapter.pc"
 "prefix=\"${CMAKE_INSTALL_PREFIX}\"
 exec_prefix=\${prefix}
 libdir=\${exec_prefix}/lib${LIB_SUFFIX}
@@ -87,30 +87,30 @@ Name: libwsfs
 Description: Websockets filesystem server library
 Version: ${PROJECT_VERSION}
 
-Libs: -L\${libdir} -lwsfs -l${FUSE3_LIBRARIES} -l${LWS_LIBRARIES} -l${JANSSON_LIBRARIES}
+Libs: -L\${libdir} -lwsfs-adapter -l${FUSE3_LIBRARIES} -l${LWS_LIBRARIES} -l${JANSSON_LIBRARIES}
 Cflags: -I\${includedir}"
 )
 
-install(TARGETS wsfs DESTINATION lib${LIB_SUFFIX})
-install(FILES include/wsfs.h DESTINATION include)
-install(DIRECTORY include/wsfs DESTINATION include)
-install(FILES "${PROJECT_BINARY_DIR}/libwsfs.pc" DESTINATION lib${LIB_SUFFIX}/pkgconfig)
+install(TARGETS wsfs-adapter DESTINATION lib${LIB_SUFFIX})
+install(FILES include/wsfs_adapter.h DESTINATION include)
+install(DIRECTORY include/wsfs/adapter DESTINATION include/wsfs)
+install(FILES "${PROJECT_BINARY_DIR}/libwsfs-adapter.pc" DESTINATION lib${LIB_SUFFIX}/pkgconfig)
 
 #libwsfs-provider
 
 set(WSFS_PROVIDER_SOURCES
-	lib/wsfsp/url.c
-	lib/wsfsp/client.c
-	lib/wsfsp/client_protocol.c
-	lib/wsfsp/provider.c
-	lib/wsfsp/request.c
-	lib/wsfsp/operation/error.c
-	lib/wsfsp/operation/lookup.c
-	lib/wsfsp/operation/getattr.c
-	lib/wsfsp/operation/readdir.c
-	lib/wsfsp/operation/open.c
-	lib/wsfsp/operation/close.c
-	lib/wsfsp/operation/read.c
+	lib/wsfs/provider/url.c
+	lib/wsfs/provider/client.c
+	lib/wsfs/provider/client_protocol.c
+	lib/wsfs/provider/provider.c
+	lib/wsfs/provider/request.c
+	lib/wsfs/provider/operation/error.c
+	lib/wsfs/provider/operation/lookup.c
+	lib/wsfs/provider/operation/getattr.c
+	lib/wsfs/provider/operation/readdir.c
+	lib/wsfs/provider/operation/open.c
+	lib/wsfs/provider/operation/close.c
+	lib/wsfs/provider/operation/read.c
 )
 
 add_library(wsfs-provider SHARED ${WSFS_PROVIDER_SOURCES})
@@ -138,7 +138,7 @@ Cflags: -I\${includedir}"
 
 install(TARGETS wsfs-provider DESTINATION lib${LIB_SUFFIX})
 install(FILES include/wsfs_provider.h DESTINATION include)
-install(DIRECTORY include/wsfsp DESTINATION include)
+install(DIRECTORY include/wsfs/provider DESTINATION include/wsfs)
 install(FILES "${PROJECT_BINARY_DIR}/libwsfs-provider.pc" DESTINATION lib${LIB_SUFFIX}/pkgconfig)
 
 
@@ -152,7 +152,7 @@ add_executable(wsfsd
 	example/daemon/main.c
 )
 
-target_link_libraries(wsfsd PUBLIC wsfs ${EXTRA_LIBS})
+target_link_libraries(wsfsd PUBLIC wsfs-adapter ${EXTRA_LIBS})
 target_include_directories(wsfsd PUBLIC ${EXTRA_INCLUDE_DIRS})
 target_compile_options(wsfsd PUBLIC ${EXTRA_CFLAGS})
 
@@ -176,10 +176,10 @@ if(NOT WITHOUT_TESTS)
 
 pkg_check_modules(GTEST gtest_main)
 
-add_library(wsfs-static STATIC ${WSFS_SOURCES})
-set_target_properties(wsfs-static PROPERTIES OUTPUT_NAME wsfs)
-target_include_directories(wsfs-static PUBLIC lib ${EXTRA_INCLUDE_DIRS})
-target_compile_options(wsfs-static PUBLIC ${EXTRA_CFLAGS})
+add_library(wsfs-adapter-static STATIC ${WSFS_ADAPTER_SOURCES})
+set_target_properties(wsfs-adapter-static PROPERTIES OUTPUT_NAME wsfs-adapter)
+target_include_directories(wsfs-adapter-static PUBLIC lib ${EXTRA_INCLUDE_DIRS})
+target_compile_options(wsfs-adapter-static PUBLIC ${EXTRA_CFLAGS})
 
 add_library(wsfs-provider-static STATIC ${WSFS_PROVIDER_SOURCES})
 set_target_properties(wsfs-provider-static PROPERTIES OUTPUT_NAME wsfs-provider)
@@ -196,7 +196,7 @@ add_executable(alltests
 	test/test_url.cc
 )
 
-target_link_libraries(alltests PUBLIC wsfs-static wsfs-provider-static ${EXTRA_LIBS} ${GTEST_LIBRARIES})
+target_link_libraries(alltests PUBLIC wsfs-adapter-static wsfs-provider-static ${EXTRA_LIBS} ${GTEST_LIBRARIES})
 target_include_directories(alltests PUBLIC lib ${EXTRA_INCLUDE_DIRS} ${GTEST_INCLUDE_DIRS})
 target_compile_options(alltests PUBLIC ${EXTRA_CFLAGS} ${GTEST_CFLAGS})
 

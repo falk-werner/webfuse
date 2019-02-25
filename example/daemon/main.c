@@ -8,8 +8,7 @@
 #include <unistd.h>
 #include <getopt.h>
 
-#include "wsfs/server.h"
-#include "wsfs/server_config.h"
+#include <wsfs_adapter.h>
 
 struct args
 {

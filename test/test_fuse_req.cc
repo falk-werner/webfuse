@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include "wsfs/fuse_wrapper.h"
+#include "wsfs/adapter/fuse_wrapper.h"
 
 TEST(libfuse, fuse_req_t_size)
 {

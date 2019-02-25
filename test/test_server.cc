@@ -5,8 +5,8 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-#include "wsfs/server.h"
-#include "wsfs/server_config.h"
+#include "wsfs/adapter/server.h"
+#include "wsfs/adapter/server_config.h"
 
 
 TEST(server, create_dispose)
