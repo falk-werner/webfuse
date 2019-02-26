@@ -23,7 +23,6 @@ struct wsfsp_client
     struct lws_context_creation_info info;
     struct lws_protocols protocols[WSFSP_CLIENT_PROTOCOL_COUNT];
     struct lws_context * context;
-    struct lws * wsi;
 };
 
 
@@ -81,7 +80,7 @@ void wsfsp_client_connect(
         info.origin = info.address;
         info.ssl_connection = (url_data.use_tls) ? LCCSCF_USE_SSL : 0;
         info.protocol = WSFSP_PROTOCOL;
-        info.pwsi = &client->wsi;
+        info.pwsi = &client->protocol.wsi;
 
         lws_client_connect_via_info(&info);
 

@@ -16,6 +16,7 @@
 #include "wsfs/provider/operation/read_intern.h"
 
 #include "wsfs/util.h"
+#include "wsfs/message.h"
 
 static void wsfsp_client_protocol_respond(
     json_t * response,
@@ -81,9 +82,23 @@ static int wsfsp_client_protocol_callback(
         case LWS_CALLBACK_CLIENT_RECEIVE:
             wsfsp_client_protocol_process_request(protocol, in, len);
             break;
+        case LWS_CALLBACK_CLIENT_WRITEABLE:
+		{
+			if ((wsi == protocol->wsi) && (!wsfs_message_queue_empty(&protocol->queue)))
+			{                
+				struct wsfs_message * message = wsfs_message_queue_pop(&protocol->queue);
+				lws_write(wsi, (unsigned char*) message->data, message->length, LWS_WRITE_TEXT);
+				wsfs_message_dispose(message);
+			}
+		}
         default:
             break;            
         }
+
+        if ((wsi == protocol->wsi) && (!wsfs_message_queue_empty(&protocol->queue)))
+        {
+            lws_callback_on_writable(wsi);
+        }    
     }
 
     return 0;
@@ -95,6 +110,10 @@ void wsfsp_client_protocol_init(
     struct wsfsp_provider const * provider,
     void * user_data)
 {
+    wsfs_message_queue_init(&protocol->queue);
+
+    protocol->wsi = NULL;
+
     protocol->request.respond = &wsfsp_client_protocol_respond;
     protocol->request.user_data = protocol;
 
@@ -113,7 +132,7 @@ void wsfsp_client_protocol_init(
 void wsfsp_client_protocol_cleanup(
     struct wsfsp_client_protocol * protocol)
 {
-    (void) protocol;
+    wsfs_message_queue_cleanup(&protocol->queue);
 }
 
 struct wsfsp_client_protocol * wsfsp_client_protocol_create(

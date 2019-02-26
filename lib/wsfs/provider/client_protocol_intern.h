@@ -5,11 +5,15 @@
 #include "wsfs/provider/provider.h"
 #include "wsfs/provider/request.h"
 
+#include "wsfs/message_queue.h"
+
 struct wsfsp_client_protocol
 {
     struct wsfsp_request request;
     struct wsfsp_provider provider;
     void * user_data;
+    struct lws * wsi;
+    struct wsfs_message_queue queue;
 };
 
 #ifdef __cplusplus
