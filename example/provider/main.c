@@ -6,6 +6,22 @@
 
 #include "wsfs_provider.h"
 
+enum fs_entry_type
+{
+    FS_FILE,
+    FS_DIR
+};
+
+struct fs_entry
+{
+    ino_t parent;
+    ino_t inode;
+    char const * name;
+    int mode;
+    enum fs_entry_type type;
+    size_t content_length;
+    char const * content;
+};
 
 struct fs_dir 
 {
@@ -26,41 +42,25 @@ struct fs_file
 
 struct fs
 {
-    struct fs_dir const * directories;
-    struct fs_file const * files;
+    struct fs_entry const * entries;
 };
 
-static struct fs_dir const * fs_getdir(
+static struct fs_entry const * fs_getentry(
     struct fs * fs,
     ino_t inode)
 {
-    for (size_t i = 0; 0 != fs->directories[i].inode; i++)
+    for (size_t i = 0; 0 != fs->entries[i].inode; i++)
     {
-        struct fs_dir const * dir = &fs->directories[i];
-        if (inode == dir->inode)
+        struct fs_entry const * entry = &fs->entries[i];
+        if (inode == entry->inode)
         {
-            return dir;
+            return entry;
         }
     } 
 
     return NULL;
 }
 
-static struct fs_file const * fs_getfile(
-    struct fs * fs,
-    ino_t inode)
-{
-    for (size_t i = 0; 0 != fs->files[i].inode; i++)
-    {
-        struct fs_file const * f = &fs->files[i];
-        if (inode == f->inode)
-        {
-            return f;
-        }
-    } 
-
-    return NULL;
-}
 
 static void fs_lookup(
     struct wsfsp_request * request,
@@ -68,7 +68,14 @@ static void fs_lookup(
     char const * name,
     void * user_data)
 {
-    (void) parent;
+    struct fs * fs = (struct fs*) user_data;
+    struct fs_entry const * dir = fs_getentry(fs, parent);
+    if ((NULL != dir) && (FS_DIR == dir->type))
+    {
+
+    }
+    
+
     (void) name;
     (void) user_data;
 
@@ -83,26 +90,27 @@ static void fs_getattr(
     void * user_data)
 {
     struct fs * fs = (struct fs*) user_data;
-    struct fs_dir const * dir = fs_getdir(fs, inode);
-    struct fs_file const * f = fs_getfile(fs, inode);
+    struct fs_entry const * entry = fs_getentry(fs, inode);
 
-    if (NULL != dir)
+    if (NULL != entry)
     {
         struct stat stat;
         memset(&stat, 0, sizeof(stat));
 
-        stat.st_ino = inode;
-        stat.st_mode = S_IFDIR | 0555;
-        wsfsp_respond_getattr(request, &stat);
-    }
-    else if (NULL != f)
-    {
-        struct stat stat;
-        memset(&stat, 0, sizeof(stat));
+        stat.st_ino = entry->inode;
+        stat.st_mode = entry->mode;
 
-        stat.st_ino = inode;
-        stat.st_mode = S_IFREG | 0555;
-        stat.st_size = f->content_length;
+        if (FS_DIR == entry->type)
+        {
+            stat.st_mode |= S_IFDIR;
+        }
+
+        if (FS_FILE == entry->type)
+        {
+            stat.st_mode |= S_IFREG;
+            stat.st_size = entry->content_length;
+        }
+
         wsfsp_respond_getattr(request, &stat);
     }
     else
@@ -118,28 +126,19 @@ static void fs_readdir(
 {
     struct fs * fs = (struct fs*) user_data;
 
-    struct fs_dir const * dir = fs_getdir(fs, directory);
-    if (NULL != dir)
+    struct fs_entry const * dir = fs_getentry(fs, directory);
+    if ((NULL != dir) && (FS_DIR == dir->type))
     {
         struct wsfsp_dirbuffer * buffer = wsfsp_dirbuffer_create();
         wsfsp_dirbuffer_add(buffer, ".", dir->inode);
         wsfsp_dirbuffer_add(buffer, "..", dir->parent);
 
-        for(size_t i = 0; 0 != fs->directories[i].inode; i++)
+        for(size_t i = 0; 0 != fs->entries[i].inode; i++)
         {
-            struct fs_dir const * subdir = &fs->directories[i];
-            if (directory == subdir->parent)
+            struct fs_entry const * entry = &fs->entries[i];
+            if (directory == entry->parent)
             {
-                wsfsp_dirbuffer_add(buffer, subdir->name, subdir->inode);
-            }
-        }
-
-        for(size_t i = 0; 0 != fs->files[i].inode; i++)
-        {
-            struct fs_file const * f = &fs->files[i];
-            if (directory == f->parent)
-            {
-                wsfsp_dirbuffer_add(buffer, f->name, f->inode);
+                wsfsp_dirbuffer_add(buffer, entry->name, entry->inode);
             }
         }
 
@@ -206,29 +205,24 @@ int main(int argc, char* argv[])
     (void) argc;
     (void) argv;
 
-    static struct fs_dir const directories[]=
+    static struct fs_entry const entries[]=
     {
-        {.parent = 0, .inode = 1, .name = "<root>"},
-        {.parent = 0, .inode = 0, .name = NULL}
-    };
-
-    static struct fs_file const files[] =
-    {
+        {.parent = 0, .inode = 1, .name = "<root>", .mode = 0555, .type = FS_DIR},
         {
             .parent = 1,
             .inode = 2,
             .name = "hello.txt",
+            .mode = 0555,
+            .type = FS_FILE,
             .content="hello, world!",
             .content_length = 13,
-            .is_executable = false
         },
-        {.parent = 0, .inode = 0}
+        {.parent = 0, .inode = 0, .name = NULL}
     };
 
     struct fs fs =
     {
-        .directories = directories,
-        .files = files
+        .entries = entries
     };
 
     signal(SIGINT, &on_interrupt);
