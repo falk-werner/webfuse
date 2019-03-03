@@ -32,7 +32,7 @@ void wsfsp_dirbuffer_add(
     json_object_set_new(entry, "name", json_string(name));
     json_object_set_new(entry, "inode", json_integer(inode));
 
-    json_array_append(buffer->entries, entry);
+    json_array_append_new(buffer->entries, entry);
 }
 
 json_t * wsfsp_dirbuffer_take(
