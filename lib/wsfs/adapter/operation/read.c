@@ -10,32 +10,32 @@
 
 #define WSFS_MAX_READ_LENGTH 4096
 
-static wsfs_status wsfs_fill_buffer(
-	char * * buffer,
-	char const * format,
+static char * wsfs_fill_buffer(
 	char const * data,
-	size_t count)
+	char const * format,
+	size_t count,
+	wsfs_status * status)
 {
-	wsfs_status status = WSFS_GOOD;
+	*status = WSFS_GOOD;
+	char * buffer = malloc(count + 1);
 
-	if (0 < count)
+	if ((NULL != buffer) && (0 < count))
 	{
-		*buffer = malloc(count);
 		if (0 == strcmp("identity", format))
 		{
-			memcpy(*buffer, data, count); /* Flawfinder: ignore */
+			memcpy(buffer, data, count); /* Flawfinder: ignore */
 		}
 		else if (0 == strcmp("base64", format))
 		{
-			lws_b64_decode_string(data, *buffer, count);
+			lws_b64_decode_string(data, buffer, count + 1);
 		}
 		else
 		{
-			status = WSFS_BAD;
+			*status = WSFS_BAD;
 		}
 	}
 
-	return status;
+	return buffer;
 }
 
 static void wsfs_operation_read_finished(void * user_data, wsfs_status status, json_t const * data)
@@ -50,15 +50,15 @@ static void wsfs_operation_read_finished(void * user_data, wsfs_status status, j
 		json_t * format_holder = json_object_get(data, "format");
 		json_t * count_holder = json_object_get(data, "count");
 
-		if ((NULL != data_holder) && (json_is_string(data_holder)) &&
-             	    (NULL != format_holder) && (json_is_string(format_holder)) &&
-             	    (NULL != count_holder) && (json_is_integer(count_holder)))
+		if (json_is_string(data_holder) &&
+        	json_is_string(format_holder) &&
+            json_is_integer(count_holder))
 		{
 			char const * const data = json_string_value(data_holder);
 			char const * const format = json_string_value(format_holder);
 			length = (size_t) json_integer_value(count_holder);
 
-			status = wsfs_fill_buffer(&buffer, format, data, length);
+			buffer = wsfs_fill_buffer(data, format, length, &status);
 		}
 		else
 		{
