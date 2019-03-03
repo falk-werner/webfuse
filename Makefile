@@ -89,8 +89,8 @@ $(OUT)/docker/%: $(PROJECT_ROOT)/docker/%.dockerfile $(PROJECT_RESOURCES) | $(OU
 $(OUT)/%/CMakeCache.txt: $(PROJECT_ROOT)/CMakeLists.txt $(OUT)/docker/% | $(OUT_DIRS)
 	$(SILENT)$(DOCKER) run $(DOCKER_RUNFLAGS) \
 	  --volume '$(realpath $(PROJECT_ROOT)):/tmp' \
-	  --volume '$(realpath $(dir $@)):/tmp/out' \
-	  --workdir /tmp/out \
+	  --volume '$(realpath $(dir $@)):/tmp/$(notdir $(OUT))' \
+	  --workdir '/tmp/$(notdir $(OUT))' \
 	  $*:$(VERSION) \
 	  cmake -GNinja $(CMAKEFLAGS) .. && touch $@
 
@@ -102,8 +102,8 @@ check-%: compile-%;
 compile-%: $(OUT)/%/CMakeCache.txt
 	$(SILENT)$(DOCKER) run $(DOCKER_RUNFLAGS) \
 	  --volume '$(realpath $(PROJECT_ROOT)):/tmp' \
-	  --volume '$(realpath $(dir $^)):/tmp/out' \
-	  --workdir /tmp/out \
+	  --volume '$(realpath $(dir $<)):/tmp/$(notdir $(OUT))' \
+	  --workdir '/tmp/$(notdir $(OUT))' \
 	  $*:$(VERSION) \
 	  ninja -j$(NPROC) $(GLOAS)
 
