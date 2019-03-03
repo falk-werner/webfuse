@@ -203,6 +203,11 @@ static void fs_open(
     }
 }
 
+static size_t min(size_t const a, size_t const b)
+{
+    return (a < b) ? a : b;
+}
+
 static void fs_read(
     struct wsfsp_request * request,
     ino_t inode,
@@ -211,13 +216,28 @@ static void fs_read(
     size_t length,
     void * user_data)
 {
-    (void) inode;
     (void) handle;
-    (void) offset;
-    (void) length;
-    (void) user_data;
 
-    wsfsp_respond_error(request, -1);
+    struct fs * fs = (struct fs*) user_data;
+    struct fs_entry const * entry = fs_getentry(fs, inode);
+    if ((NULL != entry) && (FS_FILE == entry->type))
+    {
+        if (entry->content_length > offset)
+        {
+            size_t const remaining = entry->content_length - offset;
+            size_t const count = min(remaining, length);
+
+            wsfsp_respond_read(request, &entry->content[offset], count);
+        }
+        else
+        {
+            wsfsp_respond_error(request, -1);
+        }        
+    }
+    else
+    {
+        wsfsp_respond_error(request, -1);
+    }
 }
 
 static struct wsfsp_provider fs_provider =
