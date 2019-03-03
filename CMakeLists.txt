@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.1)
+cmake_minimum_required (VERSION 3.10)
 project(fuse-wsfs VERSION 0.1.0 DESCRIPTION "Websocket filesystem based on libfuse")
 
 option(WITHOUT_TESTS   "disable unit tests" OFF)
@@ -180,6 +180,7 @@ endif(NOT WITHOUT_EXAMPLE)
 if(NOT WITHOUT_TESTS)
 
 pkg_check_modules(GTEST gtest_main)
+include(GoogleTest)
 
 add_library(wsfs-adapter-static STATIC ${WSFS_ADAPTER_SOURCES})
 set_target_properties(wsfs-adapter-static PROPERTIES OUTPUT_NAME wsfs-adapter)
@@ -207,6 +208,6 @@ target_include_directories(alltests PUBLIC lib ${EXTRA_INCLUDE_DIRS} ${GTEST_INC
 target_compile_options(alltests PUBLIC ${EXTRA_CFLAGS} ${GTEST_CFLAGS})
 
 enable_testing()
-add_test(alltests alltests)
+gtest_discover_tests(alltests TEST_PREFIX alltests:)
 
 endif(NOT WITHOUT_TESTS)
