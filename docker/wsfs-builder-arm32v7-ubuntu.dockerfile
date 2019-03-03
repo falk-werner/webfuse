@@ -13,8 +13,6 @@ RUN set -x \
        build-essential \
        cmake \
        ninja-build \
-       gcc-multilib \
-       g++-multilib \
        pkg-config
 
 ARG NPROC=1
