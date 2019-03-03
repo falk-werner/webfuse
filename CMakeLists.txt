@@ -109,7 +109,6 @@ set(WSFS_PROVIDER_SOURCES
 	lib/wsfs/provider/client_protocol.c
 	lib/wsfs/provider/provider.c
 	lib/wsfs/provider/request.c
-	lib/wsfs/provider/operation/error.c
 	lib/wsfs/provider/operation/lookup.c
 	lib/wsfs/provider/operation/getattr.c
 	lib/wsfs/provider/operation/readdir.c

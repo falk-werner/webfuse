@@ -28,6 +28,10 @@ extern struct wsfsp_request * wsfsp_request_create(
 extern void wsfsp_request_dispose(
     struct wsfsp_request * request);
 
+extern void wsfsp_respond(
+    struct wsfsp_request * request,
+    json_t * result);
+
 #ifdef __cplusplus    
 }
 #endif

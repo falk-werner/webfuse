@@ -23,59 +23,49 @@ static int wsfs_server_protocol_callback(
     switch (reason)
     {
         case LWS_CALLBACK_PROTOCOL_INIT:
-        {            
-            lws_sock_file_fd_type fd;
-            fd.filefd = wsfs_filesystem_get_fd(&protocol->filesystem);
-            if (!lws_adopt_descriptor_vhost(lws_get_vhost(wsi), LWS_ADOPT_RAW_FILE_DESC, fd, ws_protocol->name, NULL))
-            {
-                puts("error: unable to adopt fd");
+            {            
+                lws_sock_file_fd_type fd;
+                fd.filefd = wsfs_filesystem_get_fd(&protocol->filesystem);
+                if (!lws_adopt_descriptor_vhost(lws_get_vhost(wsi), LWS_ADOPT_RAW_FILE_DESC, fd, ws_protocol->name, NULL))
+                {
+                    fprintf(stderr, "error: unable to adopt fd");
+                }
             }
-        }
-        break;
+            break;
 		case LWS_CALLBACK_ESTABLISHED:
-		{
 			if (NULL == protocol->wsi)
 			{
                 protocol->wsi = wsi;
 			}
-		}
-		break;
+    		break;
 		case LWS_CALLBACK_CLOSED:
-		{
 			if (wsi == protocol->wsi)
             {
                 protocol->wsi = NULL;
                 wsfs_message_queue_cleanup(&protocol->queue);
             }
-		}
-        break;
+            break;
 		case LWS_CALLBACK_SERVER_WRITEABLE:
-		{
 			if ((wsi == protocol->wsi) && (!wsfs_message_queue_empty(&protocol->queue)))
 			{                
 				struct wsfs_message * message = wsfs_message_queue_pop(&protocol->queue);
 				lws_write(wsi, (unsigned char*) message->data, message->length, LWS_WRITE_TEXT);
 				wsfs_message_dispose(message);
-			}
-		}
-		break;
-        case LWS_CALLBACK_RECEIVE:
-        {
-            wsfs_jsonrpc_server_onresult(&protocol->rpc, in, len);
-        }
-        break;
-        case LWS_CALLBACK_RAW_RX_FILE:
-        {
-            wsfs_filesystem_process_request(&protocol->filesystem);
-        }
-        break;
-        default:
-        break;
-    }
 
-    if ((wsi == protocol->wsi) && (!wsfs_message_queue_empty(&protocol->queue)))
-    {
-        lws_callback_on_writable(wsi);
+                if (!wsfs_message_queue_empty(&protocol->queue))
+                {
+                    lws_callback_on_writable(wsi);
+                }
+			}
+    		break;
+        case LWS_CALLBACK_RECEIVE:
+            wsfs_jsonrpc_server_onresult(&protocol->rpc, in, len);
+            break;
+        case LWS_CALLBACK_RAW_RX_FILE:
+            wsfs_filesystem_process_request(&protocol->filesystem);
+            break;
+        default:
+            break;
     }
 
     return 0;
@@ -90,21 +80,15 @@ static bool wsfs_server_protocol_invoke(
 
     if (NULL != protocol->wsi)
     {
-        size_t length = json_dumpb(request, NULL, 0, JSON_COMPACT);
-        if (0 < length)
-        {	
-            struct wsfs_message * message = wsfs_message_create(length);
-            json_dumpb(request, message->data, length, JSON_COMPACT);
-
+        struct wsfs_message * message = wsfs_message_create(request);
+        if (NULL != message)
+        {
             wsfs_message_queue_push(&protocol->queue, message);
             lws_callback_on_writable(protocol->wsi);
-
-            // ToDo: add timeout
 
             result = true;
         }
     }
-    
 
     return result;
 }

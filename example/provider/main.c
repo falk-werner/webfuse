@@ -30,6 +30,38 @@ struct fs
     struct fs_file const * files;
 };
 
+static struct fs_dir const * fs_getdir(
+    struct fs * fs,
+    ino_t inode)
+{
+    for (size_t i = 0; 0 != fs->directories[i].inode; i++)
+    {
+        struct fs_dir const * dir = &fs->directories[i];
+        if (inode == dir->inode)
+        {
+            return dir;
+        }
+    } 
+
+    return NULL;
+}
+
+static struct fs_file const * fs_getfile(
+    struct fs * fs,
+    ino_t inode)
+{
+    for (size_t i = 0; 0 != fs->files[i].inode; i++)
+    {
+        struct fs_file const * f = &fs->files[i];
+        if (inode == f->inode)
+        {
+            return f;
+        }
+    } 
+
+    return NULL;
+}
+
 static void fs_lookup(
     struct wsfsp_request * request,
     ino_t parent,
@@ -44,15 +76,42 @@ static void fs_lookup(
     wsfsp_respond_error(request, -1);
 }
 
+
 static void fs_getattr(
     struct wsfsp_request * request,
     ino_t inode,
     void * user_data)
 {
-    (void) inode;
-    (void) user_data;
-
     puts("getattr");
+    struct fs * fs = (struct fs*) user_data;
+
+    struct fs_dir const * dir = fs_getdir(fs, inode);
+    if (NULL != dir)
+    {
+        puts("found: dir");
+        struct stat stat;
+        memset(&stat, 0, sizeof(stat));
+
+        stat.st_ino = inode;
+        stat.st_mode = S_IFDIR | 0555;
+        wsfsp_respond_getattr(request, &stat);
+        return;
+    }
+
+    struct fs_file const * f = fs_getfile(fs, inode);
+    {
+        puts("found: file");
+        struct stat stat;
+        memset(&stat, 0, sizeof(stat));
+
+        stat.st_ino = inode;
+        stat.st_mode = S_IFREG | 0555;
+        stat.st_size = f->content_length;
+        wsfsp_respond_getattr(request, &stat);
+        return;
+    }
+
+    puts("getattr: not found");
     wsfsp_respond_error(request, -1);
 }
 

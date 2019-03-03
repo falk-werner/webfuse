@@ -29,15 +29,10 @@ void wsfsp_close(
 }
 
 void wsfsp_close_default(
-    ino_t inode,
-    uint32_t handle,
-    int flags,
-    void * user_data)
+    ino_t WSFS_UNUSED_PARAM(inode),
+    uint32_t WSFS_UNUSED_PARAM(handle),
+    int WSFS_UNUSED_PARAM(flags),
+    void * WSFS_UNUSED_PARAM(user_data))
 {
-    (void) inode;
-    (void) handle;
-    (void) flags;
-    (void) user_data;
-
     // empty
 }

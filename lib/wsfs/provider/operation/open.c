@@ -1,6 +1,7 @@
 #include "wsfs/provider/operation/open_intern.h"
 #include <stdio.h>
 #include "wsfs/provider/operation/error.h"
+#include "wsfs/util.h"
 
 void wsfsp_open(
     struct wsfsp_invokation_context * context,
@@ -16,14 +17,10 @@ void wsfsp_open(
 
 void wsfsp_open_default(
     struct wsfsp_request * request,
-    ino_t inode,
-    int flags,
-    void * user_data)
+    ino_t WSFS_UNUSED_PARAM(inode),
+    int WSFS_UNUSED_PARAM(flags),
+    void * WSFS_UNUSED_PARAM(user_data))
 {
-    (void) inode;
-    (void) flags;
-    (void) user_data;
-
     wsfsp_respond_error(request, -1);
 }
 

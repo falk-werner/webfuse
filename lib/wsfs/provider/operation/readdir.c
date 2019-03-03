@@ -1,27 +1,35 @@
 #include "wsfs/provider/operation/readdir_intern.h"
+
 #include <stdio.h>
+
 #include "wsfs/provider/operation/error.h"
+#include "wsfs/util.h"
 
 void wsfsp_readdir(
     struct wsfsp_invokation_context * context,
     json_t * params,
     int id)
 {
-    (void) context;
-    (void) params;
-    (void) id;
+    size_t const count = json_array_size(params);
+    if (1 == count)
+    {
+        json_t * inode_holder = json_array_get(params, 0);
 
-    puts("readdir");        
+        if ((NULL != inode_holder) && (json_is_integer(inode_holder)))
+        {
+            ino_t inode = (ino_t) json_integer_value(inode_holder);
+            struct wsfsp_request * request = wsfsp_request_create(context->request, id);
+
+            context->provider->readdir(request, inode, context->user_data);
+        }
+    }
 }
 
 void wsfsp_readdir_default(
     struct wsfsp_request * request,
-    ino_t directory,
-    void * user_data)
+    ino_t WSFS_UNUSED_PARAM(directory),
+    void * WSFS_UNUSED_PARAM(user_data))
 {
-    (void) directory;
-    (void) user_data;
-
     wsfsp_respond_error(request, -1);
 }
 
@@ -33,5 +41,6 @@ void wsfsp_respond_readdir(
     (void) dirbuffer;
 
     // ToDo: implement me
+    wsfsp_respond_error(request, -1);
 }
 
