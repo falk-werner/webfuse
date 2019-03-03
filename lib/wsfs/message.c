@@ -5,12 +5,6 @@
 
 extern struct wsfs_message * wsfs_message_create(json_t const * value)
 {
-#if 0
-    char * msg = json_dumps(value, JSON_COMPACT);
-    puts(msg);
-    free(msg);
-#endif
-
     struct wsfs_message * message = NULL;
     size_t const length = json_dumpb(value, NULL, 0, JSON_COMPACT);
 
