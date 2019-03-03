@@ -4,6 +4,9 @@
 #include <signal.h>
 #include <stdbool.h>
 
+#include <sys/stat.h>
+#include <fcntl.h>
+
 #include "wsfs_provider.h"
 
 enum fs_entry_type
@@ -180,12 +183,24 @@ static void fs_open(
     int flags,
     void * user_data)
 {
-    (void) inode;
-    (void) flags;
-    (void) user_data;
+    struct fs * fs = (struct fs*) user_data;
 
-    puts("open");
-    wsfsp_respond_error(request, -1);
+    struct fs_entry const * entry = fs_getentry(fs, inode);
+    if ((NULL != entry) && (FS_FILE == entry->type))
+    {
+        if (O_RDONLY == (flags & O_ACCMODE))
+        {
+            wsfsp_respond_open(request, 0U);
+        }
+        else
+        {
+            wsfsp_respond_error(request, -1);
+        }        
+    }
+    else
+    {
+        wsfsp_respond_error(request, -1);
+    }
 }
 
 static void fs_read(
