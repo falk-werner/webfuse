@@ -1,5 +1,8 @@
 #include "wsfs/provider/operation/lookup_intern.h"
+
 #include <stdio.h>
+#include <stdbool.h>
+
 #include "wsfs/provider/operation/error.h"
 #include "wsfs/util.h"
 
@@ -30,10 +33,28 @@ void wsfsp_respond_lookup(
     struct wsfsp_request * request,
     struct stat const * stat)
 {
-    (void) request;
-    (void) stat;
+    bool const is_file = (0 != (stat->st_mode & S_IFREG));
+    bool const is_dir = (0 != (stat->st_mode & S_IFDIR));
 
-    wsfsp_respond_error(request, -1);
+    json_t * result = json_object();
+    json_object_set_new(result, "inode", json_integer(stat->st_ino));
+    json_object_set_new(result, "mode", json_integer(stat->st_mode & 0777));    
+    json_object_set_new(result, "atime", json_integer(stat->st_atime));
+    json_object_set_new(result, "mtime", json_integer(stat->st_mtime));
+    json_object_set_new(result, "ctime", json_integer(stat->st_ctime));
+
+    if (is_file)
+    {
+        json_object_set_new(result, "type", json_string("file"));
+        json_object_set_new(result, "size", json_integer(stat->st_size));
+    }
+
+    if (is_dir)
+    {
+        json_object_set_new(result, "type", json_string("dir"));
+    }
+
+    wsfsp_respond(request, result);    
 }
 
 void wsfsp_lookup_default(

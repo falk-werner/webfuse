@@ -61,6 +61,43 @@ static struct fs_entry const * fs_getentry(
     return NULL;
 }
 
+static struct fs_entry const * fs_getentry_byname(
+    struct fs * fs,
+    ino_t parent,
+    char const * name)
+{
+    for( size_t i = 0; 0 != fs->entries[i].inode; i++)
+    {
+        struct fs_entry const * entry = &fs->entries[i];
+        if ((parent == entry->parent) && (0 == strcmp(name, entry->name)))
+        {
+            return entry;
+        }
+    }
+
+    return NULL;
+}
+
+static void fs_stat(
+    struct fs_entry const * entry,
+    struct stat * stat)
+{
+        memset(stat, 0, sizeof(struct stat));
+
+        stat->st_ino = entry->inode;
+        stat->st_mode = entry->mode;
+
+        if (FS_DIR == entry->type)
+        {
+            stat->st_mode |= S_IFDIR;
+        }
+
+        if (FS_FILE == entry->type)
+        {
+            stat->st_mode |= S_IFREG;
+            stat->st_size = entry->content_length;
+        }
+}
 
 static void fs_lookup(
     struct wsfsp_request * request,
@@ -69,18 +106,18 @@ static void fs_lookup(
     void * user_data)
 {
     struct fs * fs = (struct fs*) user_data;
-    struct fs_entry const * dir = fs_getentry(fs, parent);
-    if ((NULL != dir) && (FS_DIR == dir->type))
+    struct fs_entry const * entry = fs_getentry_byname(fs, parent, name);
+    if (NULL != entry)
     {
+        struct stat stat;
+        fs_stat(entry, &stat);
 
+        wsfsp_respond_lookup(request, &stat);
     }
-    
-
-    (void) name;
-    (void) user_data;
-
-    puts("lookup");
-    wsfsp_respond_error(request, -1);
+    else
+    {
+        wsfsp_respond_error(request, -1);
+    }
 }
 
 
@@ -95,21 +132,7 @@ static void fs_getattr(
     if (NULL != entry)
     {
         struct stat stat;
-        memset(&stat, 0, sizeof(stat));
-
-        stat.st_ino = entry->inode;
-        stat.st_mode = entry->mode;
-
-        if (FS_DIR == entry->type)
-        {
-            stat.st_mode |= S_IFDIR;
-        }
-
-        if (FS_FILE == entry->type)
-        {
-            stat.st_mode |= S_IFREG;
-            stat.st_size = entry->content_length;
-        }
+        fs_stat(entry, &stat);
 
         wsfsp_respond_getattr(request, &stat);
     }
@@ -131,7 +154,7 @@ static void fs_readdir(
     {
         struct wsfsp_dirbuffer * buffer = wsfsp_dirbuffer_create();
         wsfsp_dirbuffer_add(buffer, ".", dir->inode);
-        wsfsp_dirbuffer_add(buffer, "..", dir->parent);
+        wsfsp_dirbuffer_add(buffer, "..", dir->inode);
 
         for(size_t i = 0; 0 != fs->entries[i].inode; i++)
         {
