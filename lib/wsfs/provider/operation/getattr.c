@@ -1,6 +1,5 @@
 #include "wsfs/provider/operation/getattr_intern.h"
 
-#include <stdio.h>
 #include <stdbool.h>
 
 #include "wsfs/provider/operation/error.h"

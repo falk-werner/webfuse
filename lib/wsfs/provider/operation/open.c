@@ -1,5 +1,4 @@
 #include "wsfs/provider/operation/open_intern.h"
-#include <stdio.h>
 #include "wsfs/provider/operation/error.h"
 #include "wsfs/provider/request.h"
 #include "wsfs/util.h"

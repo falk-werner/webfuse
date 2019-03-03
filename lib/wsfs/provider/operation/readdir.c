@@ -1,7 +1,4 @@
 #include "wsfs/provider/operation/readdir_intern.h"
-
-#include <stdio.h>
-
 #include "wsfs/provider/operation/error.h"
 #include "wsfs/provider/dirbuffer_intern.h"
 #include "wsfs/provider/request.h"
