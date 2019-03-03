@@ -3,6 +3,8 @@
 #include <stdio.h>
 
 #include "wsfs/provider/operation/error.h"
+#include "wsfs/provider/dirbuffer_intern.h"
+#include "wsfs/provider/request.h"
 #include "wsfs/util.h"
 
 void wsfsp_readdir(
@@ -37,10 +39,7 @@ void wsfsp_respond_readdir(
     struct wsfsp_request * request,
     struct wsfsp_dirbuffer * dirbuffer)
 {
-    (void) request;
-    (void) dirbuffer;
-
-    // ToDo: implement me
-    wsfsp_respond_error(request, -1);
+    json_t * result = wsfsp_dirbuffer_take(dirbuffer);
+    wsfsp_respond(request, result);
 }
 

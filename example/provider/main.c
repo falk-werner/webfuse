@@ -82,25 +82,21 @@ static void fs_getattr(
     ino_t inode,
     void * user_data)
 {
-    puts("getattr");
     struct fs * fs = (struct fs*) user_data;
-
     struct fs_dir const * dir = fs_getdir(fs, inode);
+    struct fs_file const * f = fs_getfile(fs, inode);
+
     if (NULL != dir)
     {
-        puts("found: dir");
         struct stat stat;
         memset(&stat, 0, sizeof(stat));
 
         stat.st_ino = inode;
         stat.st_mode = S_IFDIR | 0555;
         wsfsp_respond_getattr(request, &stat);
-        return;
     }
-
-    struct fs_file const * f = fs_getfile(fs, inode);
+    else if (NULL != f)
     {
-        puts("found: file");
         struct stat stat;
         memset(&stat, 0, sizeof(stat));
 
@@ -108,11 +104,11 @@ static void fs_getattr(
         stat.st_mode = S_IFREG | 0555;
         stat.st_size = f->content_length;
         wsfsp_respond_getattr(request, &stat);
-        return;
     }
-
-    puts("getattr: not found");
-    wsfsp_respond_error(request, -1);
+    else
+    {
+        wsfsp_respond_error(request, -1);
+    }
 }
 
 static void fs_readdir(
@@ -120,11 +116,40 @@ static void fs_readdir(
     ino_t directory,
     void * user_data)
 {
-    (void) directory;
-    (void) user_data;
+    struct fs * fs = (struct fs*) user_data;
 
-    puts("readdir");
-    wsfsp_respond_error(request, -1);
+    struct fs_dir const * dir = fs_getdir(fs, directory);
+    if (NULL != dir)
+    {
+        struct wsfsp_dirbuffer * buffer = wsfsp_dirbuffer_create();
+        wsfsp_dirbuffer_add(buffer, ".", dir->inode);
+        wsfsp_dirbuffer_add(buffer, "..", dir->parent);
+
+        for(size_t i = 0; 0 != fs->directories[i].inode; i++)
+        {
+            struct fs_dir const * subdir = &fs->directories[i];
+            if (directory == subdir->parent)
+            {
+                wsfsp_dirbuffer_add(buffer, subdir->name, subdir->inode);
+            }
+        }
+
+        for(size_t i = 0; 0 != fs->files[i].inode; i++)
+        {
+            struct fs_file const * f = &fs->files[i];
+            if (directory == f->parent)
+            {
+                wsfsp_dirbuffer_add(buffer, f->name, f->inode);
+            }
+        }
+
+        wsfsp_respond_readdir(request, buffer);
+        wsfsp_dirbuffer_dispose(buffer);
+    }
+    else
+    {
+        wsfsp_respond_error(request, -1);
+    }
 }
 
 static void fs_open(

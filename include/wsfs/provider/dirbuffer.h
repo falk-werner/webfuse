@@ -14,7 +14,7 @@ extern "C"
 {
 #endif
 
-extern WSFSP_API struct wsfsp_dirbuffer * wsfsp_dirbuffer_init(void);
+extern WSFSP_API struct wsfsp_dirbuffer * wsfsp_dirbuffer_create(void);
 
 extern WSFSP_API void wsfsp_dirbuffer_dispose(
     struct wsfsp_dirbuffer * buffer);
