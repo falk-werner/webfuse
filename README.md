@@ -328,7 +328,7 @@ By default, unit tests and example application are enabled. You can disable them
 -   [Jansson](https://jansson.readthedocs.io)
 -   [GoogleTest](https://github.com/google/googletest) *(optional)*
 
-### Installation
+### Installation from source
 
 #### libfuse
 
@@ -353,12 +353,6 @@ By default, unit tests and example application are enabled. You can disable them
 
 #### Jansson
 
-On many systems, libjansson can installed via apt:
-    
-    sudo apt install libjansson-dev
-
-Otherwise, it can be installed from source:
-    
     wget -O libjansson-2.12.tar.gz https://github.com/akheron/jansson/archive/v2.12.tar.gz
     tar -xf libjansson-2.12.tar.gz
     cd jansson-2.12
