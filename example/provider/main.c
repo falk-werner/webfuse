@@ -26,23 +26,6 @@ struct fs_entry
     char const * content;
 };
 
-struct fs_dir 
-{
-    ino_t parent;
-    ino_t inode;
-    char const * name;
-};
-
-struct fs_file
-{
-    ino_t parent;
-    ino_t inode;
-    char const * name;
-    char const * content;
-    size_t content_length;
-    bool is_executable;
-};
-
 struct fs
 {
     struct fs_entry const * entries;
