@@ -43,7 +43,7 @@ void wsfsp_read_default(
     size_t WSFS_UNUSED_PARAM(length),
     void * WSFS_UNUSED_PARAM(user_data))
 {
-    wsfsp_respond_error(request, -1);
+    wsfsp_respond_error(request, WSFS_BAD_NOENTRY);
 }
 
 void wsfsp_respond_read(
@@ -69,7 +69,7 @@ void wsfsp_respond_read(
         }
         else
         {
-            wsfsp_respond_error(request, -1);
+            wsfsp_respond_error(request, WSFS_BAD);
         }
     }
     else

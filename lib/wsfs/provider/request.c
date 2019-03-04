@@ -40,7 +40,7 @@ extern void wsfsp_respond(
 
 void wsfsp_respond_error(
     struct wsfsp_request * request,
-    int status)
+    wsfs_status status)
 {
     json_t * response = json_object();
     json_t * error = json_object();

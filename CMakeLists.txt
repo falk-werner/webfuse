@@ -46,12 +46,14 @@ set(EXTRA_CFLAGS
 set(WSFS_COMMON_SOURCES
 	lib/wsfs/message.c
 	lib/wsfs/message_queue.c
+	lib/wsfs/status.c
 )
+
+install(FILES include/wsfs/status.h DESTINATION include/wsfs)
 
 # libwsfs-adapter
 
 set(WSFS_ADAPTER_SOURCES
-	lib/wsfs/adapter/status.c
 	lib/wsfs/adapter/filesystem.c
 	lib/wsfs/adapter/server.c
 	lib/wsfs/adapter/time/timepoint.c

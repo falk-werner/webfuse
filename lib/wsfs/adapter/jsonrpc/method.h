@@ -6,7 +6,7 @@
 #endif
 
 #include <jansson.h>
-#include "wsfs/adapter/status.h"
+#include "wsfs/status.h"
 
 
 typedef bool wsfs_jsonrpc_method_invoke_fn(

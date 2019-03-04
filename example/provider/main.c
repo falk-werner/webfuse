@@ -102,7 +102,7 @@ static void fs_lookup(
     }
     else
     {
-        wsfsp_respond_error(request, -1);
+        wsfsp_respond_error(request, WSFS_BAD_NOENTRY);
     }
 }
 
@@ -124,7 +124,7 @@ static void fs_getattr(
     }
     else
     {
-        wsfsp_respond_error(request, -1);
+        wsfsp_respond_error(request, WSFS_BAD_NOENTRY);
     }
 }
 
@@ -156,7 +156,7 @@ static void fs_readdir(
     }
     else
     {
-        wsfsp_respond_error(request, -1);
+        wsfsp_respond_error(request, WSFS_BAD_NOENTRY);
     }
 }
 
@@ -177,12 +177,12 @@ static void fs_open(
         }
         else
         {
-            wsfsp_respond_error(request, -1);
+            wsfsp_respond_error(request, WSFS_BAD_NOACCESS);
         }        
     }
     else
     {
-        wsfsp_respond_error(request, -1);
+        wsfsp_respond_error(request, WSFS_BAD_NOENTRY);
     }
 }
 
@@ -214,12 +214,12 @@ static void fs_read(
         }
         else
         {
-            wsfsp_respond_error(request, -1);
+            wsfsp_respond_error(request, WSFS_BAD);
         }        
     }
     else
     {
-        wsfsp_respond_error(request, -1);
+        wsfsp_respond_error(request, WSFS_BAD_NOENTRY);
     }
 }
 
