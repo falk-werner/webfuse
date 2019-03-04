@@ -108,6 +108,7 @@ install(FILES "${PROJECT_BINARY_DIR}/libwsfs-adapter.pc" DESTINATION lib${LIB_SU
 set(WSFS_PROVIDER_SOURCES
 	lib/wsfs/provider/url.c
 	lib/wsfs/provider/client.c
+	lib/wsfs/provider/client_config.c
 	lib/wsfs/provider/client_protocol.c
 	lib/wsfs/provider/provider.c
 	lib/wsfs/provider/request.c

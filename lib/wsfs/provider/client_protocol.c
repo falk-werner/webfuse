@@ -7,14 +7,7 @@
 #include <jansson.h>
 
 
-#include "wsfs/provider/provider_intern.h"
-#include "wsfs/provider/operation/lookup_intern.h"
-#include "wsfs/provider/operation/getattr_intern.h"
-#include "wsfs/provider/operation/readdir_intern.h"
-#include "wsfs/provider/operation/open_intern.h"
-#include "wsfs/provider/operation/close_intern.h"
-#include "wsfs/provider/operation/read_intern.h"
-
+#include "wsfs/provider/provider.h"
 #include "wsfs/util.h"
 #include "wsfs/message.h"
 
@@ -117,15 +110,7 @@ void wsfsp_client_protocol_init(
     protocol->request.user_data = protocol;
 
     protocol->user_data = user_data;
-    protocol->provider.lookup = (NULL != provider->lookup) ? provider->lookup : &wsfsp_lookup_default;
-    protocol->provider.getattr = (NULL != provider->getattr) ? provider->getattr : &wsfsp_getattr_default;
-    protocol->provider.readdir = (NULL != provider->readdir) ? provider->readdir : &wsfsp_readdir_default;
-    protocol->provider.open = (NULL != provider->open) ? provider->open : &wsfsp_open_default;
-    protocol->provider.close = (NULL != provider->close) ? provider->close : &wsfsp_close_default;
-    protocol->provider.read = (NULL != provider->read) ? provider->read : &wsfsp_read_default;
-    protocol->provider.connected = (NULL != provider->connected) ? provider->connected : &wsfsp_connected_default;
-    protocol->provider.disconnected = (NULL != provider->disconnected) ? provider->disconnected : &wsfsp_disconnected_default;
-    protocol->provider.ontimer = (NULL != provider->ontimer) ? provider->ontimer : &wsfsp_ontimer_default;
+    wsfsp_provider_init_from_prototype(&protocol->provider, provider);
 }
 
 void wsfsp_client_protocol_cleanup(

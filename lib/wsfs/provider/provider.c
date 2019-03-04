@@ -1,4 +1,4 @@
-#include "wsfs/provider/provider_intern.h"
+#include "wsfs/provider/provider.h"
 
 #include <stdbool.h>
 #include <string.h>
@@ -53,6 +53,35 @@ static void wsfsp_provider_invoke_method(
             break;
         }
     }
+}
+
+void wsfsp_provider_init(
+    struct wsfsp_provider * provider)
+{
+    provider->lookup = &wsfsp_lookup_default;
+    provider->getattr = &wsfsp_getattr_default;
+    provider->readdir = &wsfsp_readdir_default;
+    provider->open = &wsfsp_open_default;
+    provider->close = &wsfsp_close_default;
+    provider->read = &wsfsp_read_default;
+    provider->connected = &wsfsp_connected_default;
+    provider->disconnected = &wsfsp_disconnected_default;
+    provider->ontimer = &wsfsp_ontimer_default;
+}
+
+void wsfsp_provider_init_from_prototype(
+    struct wsfsp_provider * provider,
+    struct wsfsp_provider const * prototype)
+{
+    provider->lookup =  prototype->lookup;
+    provider->getattr = prototype->getattr;
+    provider->readdir =  prototype->readdir;
+    provider->open =  prototype->open;
+    provider->close =  prototype->close;
+    provider->read = prototype->read;
+    provider->connected =  prototype->connected;
+    provider->disconnected = prototype->disconnected;
+    provider->ontimer = prototype->ontimer;
 }
 
 void wsfsp_provider_invoke(

@@ -8,6 +8,7 @@
 
 #include "wsfs/provider/provider.h"
 #include "wsfs/provider/client_protocol_intern.h"
+#include "wsfs/provider/client_config_intern.h"
 #include "wsfs/provider/url.h"
 
 #define WSFSP_PROTOCOL ("fs")
@@ -18,17 +19,17 @@
 struct wsfsp_client
 {
     volatile bool is_running;
-    struct wsfsp_provider provider;
     struct wsfsp_client_protocol protocol;
     struct lws_context_creation_info info;
     struct lws_protocols protocols[WSFSP_CLIENT_PROTOCOL_COUNT];
     struct lws_context * context;
+    char * key_path;
+    char * cert_path;
 };
 
 
 struct wsfsp_client * wsfsp_client_create(
-    struct wsfsp_provider * provider,
-    void * user_data)
+    struct wsfsp_client_config * config)
 {
  	lws_set_log_level(WSFSP_DISABLE_LWS_LOG, NULL);
    
@@ -36,7 +37,7 @@ struct wsfsp_client * wsfsp_client_create(
     if (NULL != client)
     {
         client->is_running = true;
-        wsfsp_client_protocol_init(&client->protocol, provider, user_data);
+        wsfsp_client_protocol_init(&client->protocol, &config->provider, config->user_data);
 
         memset(client->protocols, 0, sizeof(struct lws_protocols) * WSFSP_CLIENT_PROTOCOL_COUNT);
         client->protocols[0].name = "fs";
@@ -47,6 +48,11 @@ struct wsfsp_client * wsfsp_client_create(
         client->info.protocols = client->protocols;
         client->info.uid = -1;
         client->info.gid = -1;
+
+        if ((NULL != config->cert_path) && (NULL != config->key_path))
+        {
+            
+        }
 
         client->context = lws_create_context(&client->info);
     }
@@ -95,17 +101,6 @@ void wsfsp_client_disconnect(
 
     // ToDo: implement me
 }
-
-void wsfsp_client_settimeout(
-    struct wsfsp_client * client,
-    unsigned int timepoint)
-{
-    (void) client;
-    (void) timepoint;
-
-    // ToDo: implement me
-}
-
 
 void wsfsp_client_run(
     struct wsfsp_client * client)

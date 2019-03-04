@@ -5,8 +5,8 @@
 
 #include <wsfs/provider/api.h>
 #include <wsfs/provider/client.h>
+#include <wsfs/provider/client_config.h>
 #include <wsfs/provider/client_protocol.h>
-#include <wsfs/provider/provider.h>
 #include <wsfs/provider/dirbuffer.h>
 
 #include <wsfs/provider/operation/error.h>
