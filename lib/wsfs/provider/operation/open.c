@@ -22,7 +22,7 @@ void wsfsp_open(
 
             struct wsfsp_request * request = wsfsp_request_create(context->request, id);
 
-            context->provider->open(request, inode, flags, context->user_data);
+            context->provider->open(request, inode, flags, context->user_data); /* Flawfinder: ignore */
         }
     }
 }

@@ -30,7 +30,7 @@ void wsfsp_read(
             size_t length = json_integer_value(length_holder);
             struct wsfsp_request * request = wsfsp_request_create(context->request, id);
 
-            context->provider->read(request, inode, handle, offset, length, context->user_data);
+            context->provider->read(request, inode, handle, offset, length, context->user_data); /* Flawfinder: ignore */
         }
     } 
 }
