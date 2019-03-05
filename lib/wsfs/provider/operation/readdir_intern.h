@@ -2,7 +2,7 @@
 #define WSFS_PROVIDER_OPERATION_READDIR_INTERN_H
 
 #include "wsfs/provider/operation/readdir.h"
-#include "wsfs/provider/provider_intern.h"
+#include "wsfs/provider/provider.h"
 
 #ifdef __cplusplus
 extern "C"

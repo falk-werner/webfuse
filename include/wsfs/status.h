@@ -1,5 +1,5 @@
-#ifndef WSFS_ADAPTER_STATUS_H
-#define WSFS_ADAPTER_STATUS_H
+#ifndef WSFS_STATUS_H
+#define WSFS_STATUS_H
 
 #define WSFS_GOOD 0
 #define WSFS_BAD  1
@@ -14,17 +14,4 @@
 
 typedef int wsfs_status;
 
-#ifdef __cplusplus
-extern "C" {
 #endif
-
-extern int wsfs_status_to_rc(wsfs_status status);
-
-extern char const * wsfs_status_tostring(wsfs_status status);
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif
-

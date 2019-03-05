@@ -1,4 +1,4 @@
-#include "wsfs/adapter/status.h"
+#include "wsfs/status_intern.h"
 
 #include <errno.h>
 

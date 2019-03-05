@@ -9,7 +9,7 @@ using std::size_t;
 #endif
 
 #include <jansson.h>
-#include "wsfs/adapter/status.h"
+#include "wsfs/status.h"
 
 struct wsfs_jsonrpc_response
 {

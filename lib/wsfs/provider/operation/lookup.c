@@ -1,6 +1,5 @@
 #include "wsfs/provider/operation/lookup_intern.h"
 
-#include <stdio.h>
 #include <stdbool.h>
 
 #include "wsfs/provider/operation/error.h"
@@ -63,6 +62,6 @@ void wsfsp_lookup_default(
     char const * WSFS_UNUSED_PARAM(name),
     void * WSFS_UNUSED_PARAM(user_data))
 {
-    wsfsp_respond_error(request, -1);
+    wsfsp_respond_error(request, WSFS_BAD_NOENTRY);
 }
 

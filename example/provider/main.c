@@ -4,7 +4,19 @@
 #include <signal.h>
 #include <stdbool.h>
 
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <getopt.h>
+
 #include "wsfs_provider.h"
+
+struct config
+{
+    char * url;
+    struct wsfsp_client_config * client_config;
+    bool show_help;
+};
 
 enum fs_entry_type
 {
@@ -23,27 +35,92 @@ struct fs_entry
     char const * content;
 };
 
-struct fs_dir 
-{
-    ino_t parent;
-    ino_t inode;
-    char const * name;
-};
-
-struct fs_file
-{
-    ino_t parent;
-    ino_t inode;
-    char const * name;
-    char const * content;
-    size_t content_length;
-    bool is_executable;
-};
-
 struct fs
 {
     struct fs_entry const * entries;
 };
+
+static void show_help()
+{
+    printf(
+        "wsfs-provider, Copyright (c) 2019 fuse-wsfs authors <https://github.com/falk-werner/fuse-wsfs>\n"
+        "Example for websocket file system provider\n"
+        "\n"
+        "Usage: wsfs-provider -u <url> [-k <key_path>] [-c <cert_path>]\n"
+        "\n"
+        "Options:\n"
+        "\t-u, --url       URL of WSFS server (required)\n"
+        "\t-k, --key_path  Path to private key of provider (default: not set, TLS disabled)\n"
+        "\t-c, --cert_path Path to certificate of provider (defautl: not set, TLS disabled)\n"
+        "\t-h, --help      prints this message\n"
+        "\n"
+        "Example:\n"
+        "\twsfs-provider -u ws://localhost:8080/\n"
+        "\n"
+    );
+}
+
+static int parse_arguments(
+    int argc,
+    char* argv[],
+    struct config * config)
+{
+    static struct option const options[] =
+    {
+        {"url", required_argument, NULL, 'u'},
+        {"key_path", required_argument, NULL, 'k'},
+        {"cert_path", required_argument, NULL, 'c'},
+        {"help", no_argument, NULL, 'h'},
+        {NULL, 0, NULL, 0}
+    };
+
+    int result = EXIT_SUCCESS;
+    bool finished = false;
+    while (!finished)
+    {
+        int option_index = 0;
+        int const c = getopt_long(argc, argv, "u:k:c:h", options, &option_index);
+
+        switch (c)
+        {
+            case -1:
+                finished = true;
+                break;
+            case 'h':
+                config->show_help = true;
+                finished = true;
+                break;
+            case 'u':
+                free(config->url);
+                config->url = strdup(optarg);
+                break;
+            case 'k':
+                wsfsp_client_config_set_keypath(config->client_config, optarg);
+                break;
+            case 'c':
+                wsfsp_client_config_set_certpath(config->client_config, optarg);
+                break;
+            default:
+                fprintf(stderr, "error: unknown argument\n");
+                finished = true;
+                result = EXIT_FAILURE;
+                break;
+        }
+
+        if (NULL == config->url)
+        {
+            fprintf(stderr, "error: missing required argument \"-u\"\n");
+            result = EXIT_FAILURE;
+        }
+
+        if (result != EXIT_SUCCESS)
+        {
+            config->show_help = true;
+        }
+    }
+
+    return result;
+}
 
 static struct fs_entry const * fs_getentry(
     struct fs * fs,
@@ -116,7 +193,7 @@ static void fs_lookup(
     }
     else
     {
-        wsfsp_respond_error(request, -1);
+        wsfsp_respond_error(request, WSFS_BAD_NOENTRY);
     }
 }
 
@@ -138,7 +215,7 @@ static void fs_getattr(
     }
     else
     {
-        wsfsp_respond_error(request, -1);
+        wsfsp_respond_error(request, WSFS_BAD_NOENTRY);
     }
 }
 
@@ -170,7 +247,7 @@ static void fs_readdir(
     }
     else
     {
-        wsfsp_respond_error(request, -1);
+        wsfsp_respond_error(request, WSFS_BAD_NOENTRY);
     }
 }
 
@@ -180,12 +257,29 @@ static void fs_open(
     int flags,
     void * user_data)
 {
-    (void) inode;
-    (void) flags;
-    (void) user_data;
+    struct fs * fs = (struct fs*) user_data;
 
-    puts("open");
-    wsfsp_respond_error(request, -1);
+    struct fs_entry const * entry = fs_getentry(fs, inode);
+    if ((NULL != entry) && (FS_FILE == entry->type))
+    {
+        if (O_RDONLY == (flags & O_ACCMODE))
+        {
+            wsfsp_respond_open(request, 0U);
+        }
+        else
+        {
+            wsfsp_respond_error(request, WSFS_BAD_NOACCESS);
+        }        
+    }
+    else
+    {
+        wsfsp_respond_error(request, WSFS_BAD_NOENTRY);
+    }
+}
+
+static size_t min(size_t const a, size_t const b)
+{
+    return (a < b) ? a : b;
 }
 
 static void fs_read(
@@ -196,23 +290,29 @@ static void fs_read(
     size_t length,
     void * user_data)
 {
-    (void) inode;
     (void) handle;
-    (void) offset;
-    (void) length;
-    (void) user_data;
 
-    wsfsp_respond_error(request, -1);
+    struct fs * fs = (struct fs*) user_data;
+    struct fs_entry const * entry = fs_getentry(fs, inode);
+    if ((NULL != entry) && (FS_FILE == entry->type))
+    {
+        if (entry->content_length > offset)
+        {
+            size_t const remaining = entry->content_length - offset;
+            size_t const count = min(remaining, length);
+
+            wsfsp_respond_read(request, &entry->content[offset], count);
+        }
+        else
+        {
+            wsfsp_respond_error(request, WSFS_BAD);
+        }        
+    }
+    else
+    {
+        wsfsp_respond_error(request, WSFS_BAD_NOENTRY);
+    }
 }
-
-static struct wsfsp_provider fs_provider =
-{
-    .lookup = &fs_lookup,
-    .getattr = &fs_getattr,
-    .readdir = &fs_readdir,
-    .open = &fs_open,
-    .read = &fs_read 
-};
 
 static struct wsfsp_client * client;
 
@@ -225,36 +325,57 @@ static void on_interrupt(int signal_id)
 
 int main(int argc, char* argv[])
 {
-    (void) argc;
-    (void) argv;
+    struct config config;
+    config.url = NULL;
+    config.show_help = false;
+    config.client_config = wsfsp_client_config_create();
+    int result = parse_arguments(argc, argv, &config);
 
-    static struct fs_entry const entries[]=
+    if (EXIT_SUCCESS == result)
     {
-        {.parent = 0, .inode = 1, .name = "<root>", .mode = 0555, .type = FS_DIR},
+        static struct fs_entry const entries[]=
         {
-            .parent = 1,
-            .inode = 2,
-            .name = "hello.txt",
-            .mode = 0555,
-            .type = FS_FILE,
-            .content="hello, world!",
-            .content_length = 13,
-        },
-        {.parent = 0, .inode = 0, .name = NULL}
-    };
+            {.parent = 0, .inode = 1, .name = "<root>", .mode = 0555, .type = FS_DIR},
+            {
+                .parent = 1,
+                .inode = 2,
+                .name = "hello.txt",
+                .mode = 0555,
+                .type = FS_FILE,
+                .content="hello, world!",
+                .content_length = 13,
+            },
+            {.parent = 0, .inode = 0, .name = NULL}
+        };
 
-    struct fs fs =
+        struct fs fs =
+        {
+            .entries = entries
+        };
+
+        signal(SIGINT, &on_interrupt);
+
+        wsfsp_client_config_set_userdata(config.client_config, &fs);
+        wsfsp_client_config_set_onlookup(config.client_config, &fs_lookup);
+        wsfsp_client_config_set_ongetattr(config.client_config, &fs_getattr);
+        wsfsp_client_config_set_onreaddir(config.client_config, &fs_readdir);
+        wsfsp_client_config_set_onopen(config.client_config, &fs_open);
+        wsfsp_client_config_set_onread(config.client_config, &fs_read);
+
+        client = wsfsp_client_create(config.client_config);
+        wsfsp_client_connect(client, config.url);
+
+        wsfsp_client_run(client);
+
+        wsfsp_client_dispose(client);
+    }   
+
+    if (config.show_help)
     {
-        .entries = entries
-    };
+        show_help();
+    }
 
-    signal(SIGINT, &on_interrupt);
-
-    client = wsfsp_client_create(&fs_provider, &fs);
-    wsfsp_client_connect(client, "ws://localhost:8080/");
-
-    wsfsp_client_run(client);
-
-    wsfsp_client_dispose(client);
-    return EXIT_SUCCESS;
+    free(config.url);
+    wsfsp_client_config_dispose(config.client_config);
+    return result;
 }
