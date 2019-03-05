@@ -226,7 +226,7 @@ Open a file.
 | O_RDWR        | 0x002     | open for reading an writing |
 | O_CREAT       | 0x040     | create (a new) file         |
 | O_EXCL        | 0x080     | open file exclusivly        |
-| O_TRUNK       | 0x200     | open file to trunkate       |
+| O_TRUNC       | 0x200     | open file to truncate       |
 | O_APPEND      | 0x400     | open file to append         |
 
 #### close
