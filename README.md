@@ -7,11 +7,31 @@ fuse-wsfs combines libwebsockets and libfuse. It allows ot attach a remote files
 
 ## Contents
 
--   [Workflow and API](#Workflow-and-API)
+-   [Motication](#Motivation)
+-   [Concept](#Concept)
+-   [Similar Projects](#Similar Projects)
+-   [Workflow and API](#API)
 -   [Build and run](#Build-and-run)
 -   [Dependencies](#Dependencies)
 
-## Workflow and API
+## Motivation
+
+Many embedded devices, such as smart home or [IoT](https://en.wikipedia.org/wiki/Internet_of_things) devices are very limited regarding to their (non-volatile) memory resources. Such devices are typically comprised of an embedded linux and a small web server, providing an interface for maintenance purposes.
+
+Some use cases, such as firmware update, require to transfer (larger) files to the device. The firmware file is often stored multiple times on the device:
+
+1.   cached by the web server, e.g. [lighttpd](https://redmine.lighttpd.net/boards/2/topics/3451)
+2.   copied to locally, e.g. /tmp
+3.   uncompressed, also to /tmp
+
+Techniques like [SquashFS](https://en.wikipedia.org/wiki/SquashFS) helps to avoid the third step, since the upgrade file can be mounted directly. [RAUC](https://rauc.io/) shows the use of SquashFS within an update facility.  
+However at least one (unecessary) copy of the upload file is needed on the device.
+
+To avoid Steps 1 and 2, it would be great to keep the update file entirely in web server, just like [NFS](https://en.wikipedia.org/wiki/Network_File_System) or [WebDAV](https://wiki.archlinux.org/index.php/WebDAV). Unfortunately, NFS is not based on any protocol, natively usable by a web application. WebDAV is based on HTTP, but it needs a server providing the update file.
+
+Fuse WSFS solves this problem by using the [WebSocket](https://en.wikipedia.org/wiki/WebSocket) protocol. The emdedded device runs a service, known as WSFS adapter, awaiting incoming connections, e.g. from a web browser. The browser acts as a file system provider, providing the update file to the device.
+
+## Concecpt
 
     +---------------------+  +-------------+      +------+
     | Filesystem Provider |  | wsfs daemon |      | user |
@@ -54,6 +74,17 @@ A reference implementation of such a daemon is provided within the examples. The
 -   Whenever the user makes filesystem requests, such as *ls*, the request is redirected via wsfs daemon to the connected filesystem provider
 
 Currently all requests are initiated by wsfs daemon and responded by filesystem provider. This may change in future, e.g. when authentication is supported.
+
+
+## Similar Projects
+
+### Davfs2
+
+[davfs2](http://savannah.nongnu.org/projects/davfs2) is a Linux file system driver that allows to mount a [WebDAV](https://wiki.archlinux.org/index.php/WebDAV) resource. WebDAV is an extension to HTTP/1.1 that allows remote collaborative authoring of Web resources.
+
+Unlike fuse wsfs, davfs2 mounts a remote filesystem locally, that is provided by a WebDAV server. In contrast, fuse wsfs starts a server awaiting client connections to attach the remote file system.
+
+## API
 
 ### Requests, responses and notifications
 
