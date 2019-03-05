@@ -20,9 +20,9 @@ Many embedded devices, such as smart home or [IoT](https://en.wikipedia.org/wiki
 
 Some use cases, such as firmware update, require to transfer (larger) files to the device. The firmware file is often stored multiple times on the device:
 
-1.   cached by the web server, e.g. [lighttpd](https://redmine.lighttpd.net/boards/2/topics/3451)
-2.   copied to locally, e.g. /tmp
-3.   uncompressed, also to /tmp
+1.  cached by the web server, e.g. [lighttpd](https://redmine.lighttpd.net/boards/2/topics/3451)
+2.  copied to locally, e.g. /tmp
+3.  uncompressed, also to /tmp
 
 Techniques like [SquashFS](https://en.wikipedia.org/wiki/SquashFS) helps to avoid the third step, since the upgrade file can be mounted directly. [RAUC](https://rauc.io/) shows the use of SquashFS within an update facility.  
 However at least one (unecessary) copy of the upload file is needed on the device.
@@ -74,7 +74,6 @@ A reference implementation of such a daemon is provided within the examples. The
 -   Whenever the user makes filesystem requests, such as *ls*, the request is redirected via wsfs daemon to the connected filesystem provider
 
 Currently all requests are initiated by wsfs daemon and responded by filesystem provider. This may change in future, e.g. when authentication is supported.
-
 
 ## Similar Projects
 
