@@ -7,7 +7,7 @@ fuse-wsfs combines libwebsockets and libfuse. It allows ot attach a remote files
 
 ## Contents
 
--   [Motication](#Motivation)
+-   [Motivation](#Motivation)
 -   [Concept](#Concept)
 -   [Similar Projects](#Similar-Projects)
 -   [API](#API)
@@ -24,12 +24,12 @@ Some use cases, such as firmware update, require to transfer (larger) files to t
 2.  copied to locally, e.g. /tmp
 3.  uncompressed, also to /tmp
 
-Techniques like [SquashFS](https://en.wikipedia.org/wiki/SquashFS) helps to avoid the third step, since the upgrade file can be mounted directly. [RAUC](https://rauc.io/) shows the use of SquashFS within an update facility.  
+Techniques like [SquashFS](https://en.wikipedia.org/wiki/SquashFS) help to avoid the third step, since the upgrade file can be mounted directly. [RAUC](https://rauc.io/) shows the use of SquashFS within an update facility.  
 However at least one (unecessary) copy of the upload file is needed on the device.
 
 To avoid Steps 1 and 2, it would be great to keep the update file entirely in web server, just like [NFS](https://en.wikipedia.org/wiki/Network_File_System) or [WebDAV](https://wiki.archlinux.org/index.php/WebDAV). Unfortunately, NFS is not based on any protocol, natively usable by a web application. WebDAV is based on HTTP, but it needs a server providing the update file.
 
-Fuse WSFS solves this problem by using the [WebSocket](https://en.wikipedia.org/wiki/WebSocket) protocol. The emdedded device runs a service, known as WSFS adapter, awaiting incoming connections, e.g. from a web browser. The browser acts as a file system provider, providing the update file to the device.
+fuse-wsfs solves this problem by using the [WebSocket](https://en.wikipedia.org/wiki/WebSocket) protocol. The emdedded device runs a service, known as WSFS adapter, awaiting incoming connections, e.g. from a web browser. The browser acts as a file system provider, providing the update file to the device.
 
 ## Concecpt
 
@@ -81,7 +81,7 @@ Currently all requests are initiated by wsfs daemon and responded by filesystem 
 
 [davfs2](http://savannah.nongnu.org/projects/davfs2) is a Linux file system driver that allows to mount a [WebDAV](https://wiki.archlinux.org/index.php/WebDAV) resource. WebDAV is an extension to HTTP/1.1 that allows remote collaborative authoring of Web resources.
 
-Unlike fuse wsfs, davfs2 mounts a remote filesystem locally, that is provided by a WebDAV server. In contrast, fuse wsfs starts a server awaiting client connections to attach the remote file system.
+Unlike fuse-wsfs, davfs2 mounts a remote filesystem locally, that is provided by a WebDAV server. In contrast, fuse-wsfs starts a server awaiting client connections to attach the remote file system.
 
 ## API
 
