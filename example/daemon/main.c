@@ -12,7 +12,7 @@
 
 struct args
 {
-	struct wsfs_server_config config;
+	struct wsfs_server_config * config;
 	bool show_help;
 };
 
@@ -53,6 +53,7 @@ static int parse_arguments(int argc, char * argv[], struct args * args)
 
 	bool result = EXIT_SUCCESS;
 	bool finished = false;
+	bool has_mountpoint = false;
 	while ((!finished) && (EXIT_SUCCESS == result))
 	{
 		int option_index = 0;
@@ -68,27 +69,23 @@ static int parse_arguments(int argc, char * argv[], struct args * args)
 				finished = true;
 				break;
 			case 'm':
-				free(args->config.mount_point);
-				args->config.mount_point = strdup(optarg);
+				wsfs_server_config_set_mountpoint(args->config, optarg);
+				has_mountpoint = true;
 				break;
 			case 'd':
-				free(args->config.document_root);
-				args->config.document_root = strdup(optarg);
+				wsfs_server_config_set_documentroot(args->config, optarg);
 				break;
 			case 'c':
-				free(args->config.cert_path);
-				args->config.cert_path = strdup(optarg);
+				wsfs_server_config_set_certpath(args->config, optarg);
 				break;
 			case 'k':
-				free(args->config.key_path);
-				args->config.key_path = strdup(optarg);
+				wsfs_server_config_set_keypath(args->config, optarg);
 				break;
 			case 'n':
-				free(args->config.vhost_name);
-				args->config.vhost_name = strdup(optarg);
+				wsfs_server_config_set_vhostname(args->config, optarg);
 				break;
 			case 'p':
-				args->config.port = atoi(optarg);
+				wsfs_server_config_set_port(args->config, atoi(optarg));
 				break;
 			default:
 				fprintf(stderr, "error: unknown argument\n");
@@ -99,7 +96,7 @@ static int parse_arguments(int argc, char * argv[], struct args * args)
 
 	if ((EXIT_SUCCESS == result) && (!args->show_help))
 	{
-		if (NULL == args->config.mount_point)
+		if (!has_mountpoint)
 		{
 			fprintf(stderr, "error: missing mount point\n");
 			result = EXIT_FAILURE;
@@ -123,26 +120,18 @@ static void on_interrupt(int signal_id)
 
 int main(int argc, char * argv[])
 {
-	struct args args =
-	{
-		.config = 
-		{
-			.mount_point = NULL,
-			.document_root = NULL,
-			.cert_path = NULL,
-			.key_path = NULL,
-			.vhost_name = strdup("localhost"),
-			.port = 8080,
-		},
-		.show_help = 0
-	};
+	struct args args;
+	args.config = wsfs_server_config_create();
+	wsfs_server_config_set_vhostname(args.config, "localhost");
+	wsfs_server_config_set_port(args.config, 8080);
+	args.show_help = false;
 
 	int result = parse_arguments(argc, argv, &args);
 	
 	if (!args.show_help)
 	{
 		signal(SIGINT, on_interrupt);
-		server = wsfs_server_create(&args.config);
+		server = wsfs_server_create(args.config);
 		if (NULL != server)
 		{
 			wsfs_server_run(server);
@@ -159,7 +148,7 @@ int main(int argc, char * argv[])
 		show_help();
 	}
 
-	wsfs_server_config_cleanup(&args.config);
+	wsfs_server_config_dispose(args.config);
 	return result;
 }
 

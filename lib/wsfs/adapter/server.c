@@ -4,7 +4,7 @@
 #include <stdbool.h>
 #include <libwebsockets.h>
 
-#include "wsfs/adapter/server_config.h"
+#include "wsfs/adapter/server_config_intern.h"
 #include "wsfs/adapter/server_protocol_intern.h"
 
 #define WSFS_DISABLE_LWS_LOG 0
