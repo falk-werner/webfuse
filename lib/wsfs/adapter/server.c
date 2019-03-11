@@ -4,6 +4,10 @@
 #include <stdbool.h>
 #include <libwebsockets.h>
 
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+
 #include "wsfs/adapter/server_config_intern.h"
 #include "wsfs/adapter/server_protocol_intern.h"
 
@@ -74,24 +78,49 @@ static struct lws_context * wsfs_server_context_create(
 
 }
 
+static bool wsfs_server_check_mountpoint(
+	 struct wsfs_server_config * config)
+{
+	bool result = false;
+
+	if (NULL != config->mount_point)
+	{
+		struct stat info;
+		int const rc = stat(config->mount_point, &info);
+		bool const isDir = ((0 == rc) && (S_ISDIR(info.st_mode)));
+
+		if (!isDir)
+		{
+			result = (0 == mkdir(config->mount_point, 0755));
+		}
+	}
+
+	return result;
+}
+
 struct wsfs_server * wsfs_server_create(
     struct wsfs_server_config * config)
 {
-    struct wsfs_server * server = malloc(sizeof(struct wsfs_server));
-    if (NULL != server)
-    {
-        if (wsfs_server_protocol_init(&server->protocol, config->mount_point))
+	struct wsfs_server * server = NULL;
+	
+	if (wsfs_server_check_mountpoint(config))
+	{
+		server = malloc(sizeof(struct wsfs_server));
+		if (NULL != server)
 		{
-			server->shutdown_requested = false;
-			wsfs_server_config_clone(config, &server->config);
-			server->context = wsfs_server_context_create(server);
-		}
-		else
-		{
-			free(server);
-			server = NULL;
-		}
-    }   
+			if (wsfs_server_protocol_init(&server->protocol, config->mount_point))
+			{
+				server->shutdown_requested = false;
+				wsfs_server_config_clone(config, &server->config);
+				server->context = wsfs_server_context_create(server);
+			}
+			else
+			{
+				free(server);
+				server = NULL;
+			}
+		}   
+	}
 
     return server; 
 }
