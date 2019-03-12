@@ -87,9 +87,9 @@ static bool wsfs_server_check_mountpoint(
 	{
 		struct stat info;
 		int const rc = stat(config->mount_point, &info);
-		bool const isDir = ((0 == rc) && (S_ISDIR(info.st_mode)));
+		result = ((0 == rc) && (S_ISDIR(info.st_mode)));
 
-		if (!isDir)
+		if (!result)
 		{
 			result = (0 == mkdir(config->mount_point, 0755));
 		}
