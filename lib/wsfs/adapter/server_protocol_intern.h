@@ -7,6 +7,7 @@
 #include "wsfs/adapter/filesystem.h"
 #include "wsfs/adapter/jsonrpc/server.h"
 #include "wsfs/adapter/time/timeout_manager.h"
+#include "wsfs/adapter/authenticators.h"
 
 struct wsfs_server_protocol
 {
@@ -14,7 +15,9 @@ struct wsfs_server_protocol
     struct wsfs_filesystem filesystem;
     struct wsfs_jsonrpc_server rpc;
     struct wsfs_message_queue queue;
-    struct lws * wsi;    
+    struct wsfs_authenticators authenticators;
+    struct lws * wsi;
+    bool is_authenticated;
 };
 
 extern bool wsfs_server_protocol_init(

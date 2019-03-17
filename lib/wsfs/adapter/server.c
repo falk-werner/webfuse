@@ -112,6 +112,7 @@ struct wsfs_server * wsfs_server_create(
 			{
 				server->shutdown_requested = false;
 				wsfs_server_config_clone(config, &server->config);
+				wsfs_authenticators_move(&server->config.authenticators, &server->protocol.authenticators);				
 				server->context = wsfs_server_context_create(server);
 			}
 			else

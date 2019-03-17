@@ -36,12 +36,14 @@ static int wsfs_server_protocol_callback(
 			if (NULL == protocol->wsi)
 			{
                 protocol->wsi = wsi;
+                protocol->is_authenticated = wsfs_authenticators_authenticate(&protocol->authenticators, NULL);
 			}
     		break;
 		case LWS_CALLBACK_CLOSED:
 			if (wsi == protocol->wsi)
             {
                 protocol->wsi = NULL;
+                protocol->is_authenticated = false;
                 wsfs_message_queue_cleanup(&protocol->queue);
             }
             break;
@@ -78,7 +80,7 @@ static bool wsfs_server_protocol_invoke(
     bool result = false;
     struct wsfs_server_protocol * protocol = user_data;
 
-    if (NULL != protocol->wsi)
+    if ((protocol->is_authenticated) && (NULL != protocol->wsi))
     {
         struct wsfs_message * message = wsfs_message_create(request);
         if (NULL != message)
@@ -131,9 +133,10 @@ bool wsfs_server_protocol_init(
     char * mount_point)
 {
     protocol->wsi = NULL;
+    protocol->is_authenticated = false;
     wsfs_message_queue_init(&protocol->queue);
-
     wsfs_timeout_manager_init(&protocol->timeout_manager);
+    wsfs_authenticators_init(&protocol->authenticators);
 
     wsfs_jsonrpc_server_init(&protocol->rpc, &protocol->timeout_manager);
     wsfs_jsonrpc_server_add(&protocol->rpc, "lookup", &wsfs_server_protocol_invoke, protocol);
@@ -149,6 +152,7 @@ bool wsfs_server_protocol_init(
     if (!success)
     {
         wsfs_jsonrpc_server_cleanup(&protocol->rpc);
+        wsfs_authenticators_cleanup(&protocol->authenticators);
         wsfs_timeout_manager_cleanup(&protocol->timeout_manager);
         wsfs_message_queue_cleanup(&protocol->queue);
     }
@@ -163,5 +167,15 @@ void wsfs_server_protocol_cleanup(
     wsfs_jsonrpc_server_cleanup(&protocol->rpc);
     wsfs_timeout_manager_cleanup(&protocol->timeout_manager);
     wsfs_message_queue_cleanup(&protocol->queue);
+    wsfs_authenticators_cleanup(&protocol->authenticators);
     protocol->wsi = NULL;
+}
+
+void wsfs_server_protocol_add_authenticator(
+    struct wsfs_server_protocol * protocol,
+    char const * type,
+    wsfs_authenticate_fn * authenticate,
+    void * user_data)
+{
+    wsfs_authenticators_add(&protocol->authenticators, type, authenticate, user_data);
 }

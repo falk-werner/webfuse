@@ -40,6 +40,25 @@ TEST(Authenticators, Clone)
 
     wsfs_authenticators_clone(&authenticators, &clone);
     ASSERT_NE(nullptr, clone.first);
+    ASSERT_NE(nullptr, authenticators.first);
+    ASSERT_NE(authenticators.first, clone.first);
+
+    wsfs_authenticators_cleanup(&authenticators);
+    wsfs_authenticators_cleanup(&clone);
+}
+
+TEST(Authenticators, Move)
+{
+    struct wsfs_authenticators authenticators;
+    struct wsfs_authenticators clone;
+
+    wsfs_authenticators_init(&authenticators);
+    wsfs_authenticators_add(&authenticators, "username", &authenticate, nullptr);
+    ASSERT_NE(nullptr, authenticators.first);
+
+    wsfs_authenticators_move(&authenticators, &clone);
+    ASSERT_NE(nullptr, clone.first);
+    ASSERT_EQ(nullptr, authenticators.first);
     ASSERT_NE(authenticators.first, clone.first);
 
     wsfs_authenticators_cleanup(&authenticators);
