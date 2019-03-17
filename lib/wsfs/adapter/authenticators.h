@@ -30,6 +30,10 @@ extern void wsfs_authenticators_clone(
     struct wsfs_authenticators * authenticators,
     struct wsfs_authenticators * other);
 
+extern void wsfs_authenticators_move(
+    struct wsfs_authenticators * authenticators,
+    struct wsfs_authenticators * other);
+
 extern void wsfs_authenticators_add(
     struct wsfs_authenticators * authenticators,
     char const * type,

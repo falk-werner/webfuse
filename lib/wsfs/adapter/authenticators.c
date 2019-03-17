@@ -63,6 +63,14 @@ void wsfs_authenticators_clone(
 
 }
 
+extern void wsfs_authenticators_move(
+    struct wsfs_authenticators * authenticators,
+    struct wsfs_authenticators * other)
+{
+    other->first = authenticators->first;
+    authenticators->first = NULL;
+}
+
 void wsfs_authenticators_add(
     struct wsfs_authenticators * authenticators,
     char const * type,
