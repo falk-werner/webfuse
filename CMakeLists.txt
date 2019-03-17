@@ -191,6 +191,7 @@ include (CTest)
 
 pkg_check_modules(GTEST gtest_main)
 include(GoogleTest)
+pkg_check_modules(GMOCK gmock)
 
 add_library(wsfs-adapter-static STATIC ${WSFS_ADAPTER_SOURCES})
 set_target_properties(wsfs-adapter-static PROPERTIES OUTPUT_NAME wsfs-adapter)
@@ -205,18 +206,21 @@ target_compile_options(wsfs-provider-static PUBLIC ${EXTRA_CFLAGS})
 
 add_executable(alltests
 	test/msleep.cc
+	test/mock_authenticator.cc
 	test/test_response_parser.cc
 	test/test_server.cc
 	test/test_timepoint.cc
 	test/test_timer.cc
 	test/test_url.cc
 	test/test_credentials.cc
+	test/test_authenticator.cc
+	test/test_authenticators.cc
 	${WSFS_COMMON_SOURCES}
 )
 
-target_link_libraries(alltests PUBLIC wsfs-adapter-static wsfs-provider-static ${EXTRA_LIBS} ${GTEST_LIBRARIES})
-target_include_directories(alltests PUBLIC lib ${EXTRA_INCLUDE_DIRS} ${GTEST_INCLUDE_DIRS})
-target_compile_options(alltests PUBLIC ${EXTRA_CFLAGS} ${GTEST_CFLAGS})
+target_link_libraries(alltests PUBLIC wsfs-adapter-static wsfs-provider-static ${EXTRA_LIBS} ${GMOCK_LIBRARIES} ${GTEST_LIBRARIES})
+target_include_directories(alltests PUBLIC lib ${EXTRA_INCLUDE_DIRS} ${GMOCK_INCLUDE_DIRS} ${GTEST_INCLUDE_DIRS})
+target_compile_options(alltests PUBLIC ${EXTRA_CFLAGS} ${GMOCK_CFLAGS} ${GTEST_CFLAGS})
 
 enable_testing()
 gtest_discover_tests(alltests TEST_PREFIX alltests:)

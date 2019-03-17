@@ -78,7 +78,7 @@ bool wsfs_authenticators_authenticate(
     struct wsfs_authenticators * authenticators,
     struct wsfs_credentials * credentials)
 {
-    bool result;
+    bool result =  (NULL == authenticators->first);
 
     if (NULL != credentials)
     {
@@ -87,14 +87,6 @@ bool wsfs_authenticators_authenticate(
         {
             result = wsfs_authenticator_autenticate(authenticator, credentials);
         }
-        else 
-        {
-            result = false;
-        }
-    }
-    else
-    {
-        result = (NULL == authenticators->first);
     }
 
     return result;
