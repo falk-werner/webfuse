@@ -2,6 +2,7 @@
 #define WSFS_ADAPTER_SERVER_CONFIG_H
 
 #include "wsfs/adapter/api.h"
+#include "wsfs/adapter/authenticate.h"
 
 struct wsfs_server_config;
 
@@ -39,6 +40,13 @@ extern WSFSA_API void wsfs_server_config_set_vhostname(
 extern WSFSA_API void wsfs_server_config_set_port(
     struct wsfs_server_config * config,
 	int port);
+
+extern WSFSA_API void wsfs_server_add_authenticator(
+    struct wsfs_server_config * config,
+    char const * type,
+    wsfs_authenticate_fn * authenticate,
+    void * user_data
+);
 
 #ifdef __cplusplus
 }

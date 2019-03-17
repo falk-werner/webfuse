@@ -32,7 +32,7 @@ void wsfsp_getattr_default(
     ino_t WSFS_UNUSED_PARAM(inode),
     void * WSFS_UNUSED_PARAM(user_data))
 {
-    wsfsp_respond_error(request, -1);
+    wsfsp_respond_error(request, WSFS_BAD_NOENTRY);
 }
 
 void wsfsp_respond_getattr(

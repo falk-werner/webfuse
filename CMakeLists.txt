@@ -56,6 +56,11 @@ install(FILES include/wsfs/status.h DESTINATION include/wsfs)
 set(WSFS_ADAPTER_SOURCES
 	lib/wsfs/adapter/filesystem.c
 	lib/wsfs/adapter/server.c
+	lib/wsfs/adapter/server_config.c
+	lib/wsfs/adapter/server_protocol.c
+	lib/wsfs/adapter/authenticator.c
+	lib/wsfs/adapter/authenticators.c
+	lib/wsfs/adapter/credentials.c
 	lib/wsfs/adapter/time/timepoint.c
 	lib/wsfs/adapter/time/timer.c
 	lib/wsfs/adapter/time/timeout_manager.c
@@ -65,8 +70,6 @@ set(WSFS_ADAPTER_SOURCES
 	lib/wsfs/adapter/operation/open.c
 	lib/wsfs/adapter/operation/close.c
 	lib/wsfs/adapter/operation/read.c
-	lib/wsfs/adapter/server_config.c
-	lib/wsfs/adapter/server_protocol.c
 	lib/wsfs/adapter/jsonrpc/server.c
 	lib/wsfs/adapter/jsonrpc/method.c
 	lib/wsfs/adapter/jsonrpc/request.c
