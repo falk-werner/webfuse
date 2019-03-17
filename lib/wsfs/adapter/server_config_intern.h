@@ -2,6 +2,7 @@
 #define WSFS_ADAPTER_SERVER_CONFIG_INTERN_H
 
 #include "wsfs/adapter/server_config.h"
+#include "wsfs/adapter/authenticators.h"
 
 struct wsfs_server_config
 {
@@ -11,6 +12,7 @@ struct wsfs_server_config
 	char * cert_path;
 	char * vhost_name;
 	int port;
+	struct wsfs_authenticators authenticators;
 };
 
 #ifdef __cplusplus
