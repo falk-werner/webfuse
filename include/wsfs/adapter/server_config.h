@@ -41,7 +41,7 @@ extern WSFSA_API void wsfs_server_config_set_port(
     struct wsfs_server_config * config,
 	int port);
 
-extern WSFSA_API void wsfs_server_add_authenticator(
+extern WSFSA_API void wsfs_server_config_add_authenticator(
     struct wsfs_server_config * config,
     char const * type,
     wsfs_authenticate_fn * authenticate,
