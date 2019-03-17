@@ -15,6 +15,11 @@ struct wsfs_authenticators
     struct wsfs_authenticator * first;
 };
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 extern void wsfs_authenticators_init(
     struct wsfs_authenticators * authenticators);
 
@@ -34,5 +39,9 @@ extern void wsfs_authenticators_add(
 extern bool wsfs_authenticators_authenticate(
     struct wsfs_authenticators * authenticators,
     struct wsfs_credentials * credentials);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
