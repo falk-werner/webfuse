@@ -115,7 +115,7 @@ void wsfs_server_config_set_port(
     config->port = port;
 }
 
-void wsfs_server_add_authenticator(
+void wsfs_server_config_add_authenticator(
     struct wsfs_server_config * config,
     char const * type,
     wsfs_authenticate_fn * authenticate,
