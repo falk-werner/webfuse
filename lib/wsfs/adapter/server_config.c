@@ -18,11 +18,15 @@ void wsfs_server_config_init(
     struct wsfs_server_config * config)
 {
     memset(config, 0, sizeof(struct wsfs_server_config));
+
+    wsfs_authenticators_init(&config->authenticators);
 }
 
 void wsfs_server_config_cleanup(
     struct wsfs_server_config * config)
 {
+    wsfs_authenticators_cleanup(&config->authenticators);
+
     free(config->mount_point);
 	free(config->document_root);
 	free(config->key_path);
@@ -42,6 +46,8 @@ void wsfs_server_config_clone(
 	clone->cert_path = wsfs_server_config_strdup(config->cert_path);
 	clone->vhost_name = wsfs_server_config_strdup(config->vhost_name);
 	clone->port = config->port;
+
+    wsfs_authenticators_clone(&config->authenticators, &clone->authenticators);
 }
 
 struct wsfs_server_config * wsfs_server_config_create(void)
@@ -107,4 +113,14 @@ void wsfs_server_config_set_port(
 	int port)
 {
     config->port = port;
+}
+
+void wsfs_server_add_authenticator(
+    struct wsfs_server_config * config,
+    char const * type,
+    wsfs_authenticate_fn * authenticate,
+    void * user_data
+)
+{
+    wsfs_authenticators_add(&config->authenticators, type, authenticate, user_data);
 }
