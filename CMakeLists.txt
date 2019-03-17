@@ -210,6 +210,7 @@ add_executable(alltests
 	test/test_timepoint.cc
 	test/test_timer.cc
 	test/test_url.cc
+	test/test_credentials.cc
 	${WSFS_COMMON_SOURCES}
 )
 

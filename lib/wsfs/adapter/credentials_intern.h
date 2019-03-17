@@ -20,7 +20,7 @@ extern void wsfs_credentials_init(
     char const * type,
     json_t * data);
 
-extern void wsfs_credentails_cleanup(
+extern void wsfs_credentials_cleanup(
     struct wsfs_credentials * credentials);
 
 #ifdef __cplusplus

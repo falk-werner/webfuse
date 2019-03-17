@@ -11,7 +11,7 @@ void wsfs_credentials_init(
     json_incref(credentials->data);
 }
 
-void wsfs_credentails_cleanup(
+void wsfs_credentials_cleanup(
     struct wsfs_credentials * credentials)
 {
     free(credentials->type);
