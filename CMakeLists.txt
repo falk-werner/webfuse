@@ -181,6 +181,30 @@ target_link_libraries(wsfs-provider-app PUBLIC wsfs-provider ${EXTRA_LIBS})
 target_include_directories(wsfs-provider-app PUBLIC ${EXTRA_INCLUDE_DIRS})
 target_compile_options(wsfs-provider-app PUBLIC ${EXTRA_CFLAGS})
 
+# wsfs-passwd
+
+pkg_check_modules(OPENSSL REQUIRED openssl)
+
+
+add_executable(wsfs-passwd
+	example/passwd/main.c
+)
+
+target_link_libraries(wsfs-passwd PUBLIC 
+	${OPENSSL_LIBRARIES}
+)
+
+target_include_directories(wsfs-passwd PUBLIC 
+	example/passwd
+	${OPENSSL_INCLUDE_DIRS}
+)
+
+target_compile_options(wsfs-passwd PUBLIC
+	${C_WARNINGS}
+	${OPENSSL_CFLAGS_OTHER}
+)
+
+
 endif(NOT WITHOUT_EXAMPLE)
 
 # tests
