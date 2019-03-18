@@ -192,16 +192,19 @@ add_executable(wsfs-passwd
 
 target_link_libraries(wsfs-passwd PUBLIC 
 	${OPENSSL_LIBRARIES}
+	${JANSSON_LIBRARIES}
 )
 
 target_include_directories(wsfs-passwd PUBLIC 
 	example/passwd
 	${OPENSSL_INCLUDE_DIRS}
+	${JANSSON_INCLUDE_DIRS}
 )
 
 target_compile_options(wsfs-passwd PUBLIC
 	${C_WARNINGS}
 	${OPENSSL_CFLAGS_OTHER}
+	${JANSSON_CFLAGS_OTHER}
 )
 
 
