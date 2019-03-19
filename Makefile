@@ -15,6 +15,7 @@ DOCKER_RUNUSER ?= $(shell id -u)
 DOCKER_RUNGROUP ?= $(shell id -g)
 
 UBUNTU_CODENAME ?= bionic
+QEMU_VERSION ?= v3.1.0-2
 
 MARCH_AMD64 := $(filter-out amd64,$(MARCH))
 MARCH_ARM32V7 := $(filter-out arm32v7,$(MARCH))
@@ -82,6 +83,13 @@ clean: $(CLEAN_TARGETS)
 configure: $(CONFIGURE_TARGETS) 
 
 %-ubuntu: CODENAME := $(UBUNTU_CODENAME)
+
+$(PROJECT_ROOT)/docker/qemu-arm-static-$(QEMU_VERSION):
+	$(SILENT) \
+	     curl -fSL -o $@ https://github.com/multiarch/qemu-user-static/releases/download/$(QEMU_VERSION)/qemu-arm-static \
+	  && chmod +x $@ 
+
+$(OUT)/docker/wsfs-builder-arm32v7-ubuntu: $(PROJECT_ROOT)/docker/qemu-arm-static-$(QEMU_VERSION)
 
 $(OUT)/docker/%: $(PROJECT_ROOT)/docker/%.dockerfile $(PROJECT_RESOURCES) | $(OUT_DIRS)
 	$(SILENT)$(DOCKER) build --rm $(DOCKER_BUILDFLAGS) --iidfile $@ --file $< --tag $*:$(VERSION) $(dir $<)
