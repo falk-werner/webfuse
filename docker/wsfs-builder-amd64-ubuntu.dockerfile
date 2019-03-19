@@ -4,6 +4,7 @@ FROM ubuntu:$CODENAME
 
 RUN set -x \
   && apt update \
+  && apt upgrade -y \
   && apt install --yes --no-install-recommends \
        openssl \
        ca-certificates \
@@ -11,7 +12,8 @@ RUN set -x \
        build-essential \
        cmake \
        ninja-build \
-       pkg-config
+       pkg-config \
+  && rm -rf /var/lib/apt/lists/*
 
 ARG NPROC=1
 ARG GTEST_VERSION=1.8.1
@@ -40,11 +42,13 @@ RUN set -x \
       && ./configure \
       && make -j$NPROC install) \
   && rm /tmp/fuse-$FUSE_VERSION.tar.gz \
-  && rm -rf /tmp/libfuse-fuse-$FUSE_VERSION
+  && rm -rf /tmp/libfuse-fuse-$FUSE_VERSION \
+  && rm -rf /var/lib/apt/lists/*
 
 ARG WEBSOCKETS_VERSION=3.1.0
 
 RUN set -x \
+  && apt update \
   && apt install --yes --no-install-recommends \
        libssl-dev \
   && curl -fSL https://github.com/warmcat/libwebsockets/archive/v$WEBSOCKETS_VERSION.tar.gz -o /tmp/libwebsockets-$WEBSOCKETS_VERSION.tar.gz \
@@ -53,7 +57,8 @@ RUN set -x \
       && cmake . \
       && make -j$NPROC install) \
   && rm /tmp/libwebsockets-$WEBSOCKETS_VERSION.tar.gz \
-  && rm -rf /tmp/libwebsockets-$WEBSOCKETS_VERSION
+  && rm -rf /tmp/libwebsockets-$WEBSOCKETS_VERSION \
+  && rm -rf /var/lib/apt/lists/*
 
 ARG JANSSON_VERSION=2.12
 
@@ -61,7 +66,7 @@ RUN set -x \
   && curl -fSL https://github.com/akheron/jansson/archive/v$JANSSON_VERSION.tar.gz -o /tmp/libjansson-$JANSSON_VERSION.tar.gz \
   && tar -C /tmp -xf /tmp/libjansson-$JANSSON_VERSION.tar.gz \
   && (   cd /tmp/jansson-$JANSSON_VERSION \
-      && cmake . \
+      && cmake -DJANSSON_BUILD_DOCS=OFF . \
       && make -j$NPROC install) \
   && rm /tmp/libjansson-$JANSSON_VERSION.tar.gz \
   && rm -rf /tmp/jansson-$JANSSON_VERSION
