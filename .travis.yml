@@ -1,25 +1,18 @@
-language: cpp
-
-compiler:
-  - gcc
-  - clang
-
+services:
+- docker
 addons:
-    apt:
-      update: true
-      packages:
-        - valgrind
-
+  apt:
+    update: true
 before_install:
-  - ./install_deps.sh
-  - export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
-
-
-before_script:
-  - mkdir .build
-  - cd .build
-  - cmake -DCMAKE_BUILD_TYPE=Debug ..
-
+- sudo apt-get install -y curl openssl ca-certificates
+- sudo apt-get install -y make
+- sudo apt-get install -y qemu-user-static
+env:
+  global:
+    - MAKEFLAGS="-j 2"
+  matrix:
+    - MARCH=amd64
+    - MARCH=arm32v7
 script:
-  - make
-  - valgrind ./alltests
+- make MARCH=$MARCH
+- make check MARCH=$MARCH
