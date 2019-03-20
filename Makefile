@@ -10,8 +10,9 @@ PROJECT_ROOT ?= .
 OUT ?= $(PROJECT_ROOT)/.build
 VERSION ?= $(shell cat $(PROJECT_ROOT)/VERSION)
 NPROC ?= $(shell nproc)
+UID ?= $(shell id -u)
 DOCKER ?= docker
-DOCKER_RUNUSER ?= $(shell id -u)
+DOCKER_RUNUSER ?= $(UID)
 DOCKER_RUNGROUP ?= $(shell id -g)
 
 UBUNTU_CODENAME ?= bionic
@@ -28,13 +29,14 @@ $(MARCH_ARM32V7)TARGETS += wsfs-builder-arm32v7-ubuntu
 DOCKER_RUNFLAGS += --interactive
 DOCKER_RUNFLAGS += --rm
 DOCKER_RUNFLAGS += --tty
-DOCKER_RUNFLAGS += --init 
+DOCKER_RUNFLAGS += --init
 DOCKER_RUNFLAGS += --user $(DOCKER_RUNUSER):$(DOCKER_RUNGROUP)
 DOCKER_RUNFLAGS += --device /dev/fuse --cap-add SYS_ADMIN --security-opt apparmor:unconfined
 DOCKER_RUNFLAGS += --env SOURCE_DATE_EPOCH
 
 DOCKER_BUILDARGS += CODENAME=$(CODENAME)
 DOCKER_BUILDARGS += NPROC=$(NPROC)
+DOCKER_BUILDARGS += USERID=$(UID)
 
 DOCKER_BUILDFLAGS += $(addprefix --build-arg ,$(DOCKER_BUILDARGS))
 
@@ -103,7 +105,7 @@ $(OUT)/%/CMakeCache.txt: $(PROJECT_ROOT)/CMakeLists.txt $(OUT)/docker/% | $(OUT_
 	  cmake -GNinja $(CMAKEFLAGS) .. && touch $@
 
 $(CHECK_TARGETS): GLOAS := test
-$(CHECK_TARGETS): DOCKER_RUNUSER := test
+$(CHECK_TARGETS): DOCKER_RUNUSER := user
 
 check-%: compile-%;
 

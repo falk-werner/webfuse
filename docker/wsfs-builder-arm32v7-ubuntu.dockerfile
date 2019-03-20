@@ -75,6 +75,9 @@ RUN set -x \
 
 ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
 
-RUN useradd -ms /bin/bash test
+ARG USERID=1000
+
+RUN useradd -u $USERID -ms /bin/bash user
+
 
 
