@@ -159,6 +159,24 @@ install(FILES "${PROJECT_BINARY_DIR}/libwsfs-provider.pc" DESTINATION lib${LIB_S
 
 if(NOT WITHOUT_EXAMPLE)
 
+# libuserdb
+
+add_library(userdb STATIC 
+	example/lib/userdb/src/userdb.c
+)
+
+target_include_directories(userdb PUBLIC
+	example/lib/userdb/include
+	${OPENSSL_INCLUDE_DIRS}
+	${JANSSON_INCLUDE_DIRS}
+)
+
+target_compile_options(userdb PUBLIC
+	${C_WARNINGS}
+	${OPENSSL_CFLAGS_OTHER}	
+	${JANSSON_CFLAGS_OTHER}
+)
+
 # daemon
 
 add_executable(wsfsd
@@ -191,12 +209,14 @@ add_executable(wsfs-passwd
 )
 
 target_link_libraries(wsfs-passwd PUBLIC 
+	userdb
 	${OPENSSL_LIBRARIES}
 	${JANSSON_LIBRARIES}
 )
 
 target_include_directories(wsfs-passwd PUBLIC 
 	example/passwd
+	example/lib/userdb/include
 	${OPENSSL_INCLUDE_DIRS}
 	${JANSSON_INCLUDE_DIRS}
 )
