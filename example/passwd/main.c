@@ -11,10 +11,8 @@
 #include <openssl/engine.h>
 #include <openssl/evp.h>
 #include <jansson.h>
+#include <userdb.h>
 
-#define HASH_ALGORITHM "sha512"
-#define PASSWD_FORMAT_MAJOR 1
-#define PASSWD_FORMAT_MINOR 0
 
 struct args
 {
@@ -151,22 +149,11 @@ static void args_init(struct args * args)
 
 static int create_passwd(struct args * args)
 {
-    json_t * db = json_object();
+    struct userdb * db = userdb_create(args->pepper);
+    bool result = userdb_save(db, args->file);
+    userdb_dispose(db);
 
-    json_t * meta = json_object();
-    json_object_set_new(meta, "type", json_string("wsfs-passwd"));
-    json_object_set_new(meta, "major", json_integer(PASSWD_FORMAT_MAJOR));
-    json_object_set_new(meta, "minor", json_integer(PASSWD_FORMAT_MINOR));
-    json_object_set_new(meta, "hash_alorithm", json_string(HASH_ALGORITHM));
-    json_object_set_new(db, "meta", meta);
-
-    json_t * users = json_object();
-    json_object_set_new(db, "users", users);
-
-    int result = json_dump_file(db, args->file, JSON_INDENT(2));
-    json_decref(db);
-
-    return (0 == result) ? EXIT_SUCCESS : EXIT_FAILURE;
+    return (result) ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
 static int add_user(struct args * args)
@@ -185,22 +172,56 @@ static int add_user(struct args * args)
         return EXIT_FAILURE;
     }
 
-    
+    struct userdb * db = userdb_create(args->pepper);
+    userdb_load(db, args->file);
+    userdb_add(db, args->username, args->password);
+    bool result = userdb_save(db, args->file);
+    userdb_dispose(db);
 
-    puts("add");
-    return EXIT_FAILURE;
+    return (result) ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
 static int remove_user(struct args * args)
 {
-    puts("remove");
-    return EXIT_FAILURE;
+    if (NULL == args->username)
+    {
+        fprintf(stderr, "error: missing username");
+        args->show_help = true;
+        return EXIT_FAILURE;
+    }
+
+    struct userdb * db = userdb_create(args->pepper);
+    userdb_load(db, args->file);
+    userdb_remove(db, args->username);
+    bool result = userdb_save(db, args->file);
+    userdb_dispose(db);
+
+    return (result) ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
 static int check_password(struct args * args)
 {
-    puts("check");
-    return EXIT_FAILURE;
+    if (NULL == args->username)
+    {
+        fprintf(stderr, "error: missing username");
+        args->show_help = true;
+        return EXIT_FAILURE;
+    }
+
+    if (NULL == args->password)
+    {
+        fprintf(stderr, "error: missing password");
+        args->show_help = true;
+        return EXIT_FAILURE;
+    }
+
+    struct userdb * db = userdb_create(args->pepper);
+    userdb_load(db, args->file);
+    bool result = userdb_check(db, args->username, args->password);
+    userdb_dispose(db);
+
+    printf("%s\n", (result) ? "OK" : "FAILURE");
+    return (result) ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
 static int invoke_invalid_command(struct args * args)
@@ -244,84 +265,6 @@ static void args_cleanup(struct args * args)
     free(args->username);
     free(args->password);
     free(args->pepper);
-}
-
-static char hex_char(unsigned char value)
-{
-    switch (value)
-    {
-        case  0x00: return '0';
-        case  0x01: return '1';
-        case  0x02: return '2';
-        case  0x03: return '3';
-        case  0x04: return '4';
-        case  0x05: return '5';
-        case  0x06: return '6';
-        case  0x07: return '7';
-        case  0x08: return '8';
-        case  0x09: return '9';
-        case  0x0a: return 'a';
-        case  0x0b: return 'b';
-        case  0x0c: return 'c';
-        case  0x0d: return 'd';
-        case  0x0e: return 'e';
-        case  0x0f: return 'f';
-        default: return '?';
-    }
-}
-
-static char * to_hex(unsigned char const * value, size_t length)
-{
-    char * result = malloc((2 * length) + 1);
-    if (NULL != result)
-    {
-        for (size_t i = 0, j = 0; i < length; i++, j+=2)
-        {
-            unsigned char high = (value[i] >> 4) & 0x0f;
-            unsigned char low =   value[i]       & 0x0f;
-
-            result[j    ] = hex_char(high);
-            result[j + 1] = hex_char(low);
-        }
-
-        result[2 * length] = '\0';
-    }
-
-    return result;
-}
-
-static char * get_password_hash(
-    char const * password,
-    char const * salt,
-    char * pepper)
-{
-    EVP_MD const * digest = EVP_get_digestbyname(HASH_ALGORITHM);
-    if (NULL == digest)
-    {
-        fprintf(stderr, "error: hash algorithm %s not supported\n", HASH_ALGORITHM);
-        exit(EXIT_FAILURE);
-    }
-
-    char * result = NULL;
-    unsigned int hash_size = digest->md_size;
-    unsigned char * hash = malloc(hash_size);
-
-    if (NULL != hash)
-    {
-        EVP_MD_CTX context;        
-        EVP_MD_CTX_init(&context);
-        EVP_DigestInit_ex(&context, digest, NULL);        
-        EVP_DigestUpdate(&context, password, strlen(password));
-        EVP_DigestUpdate(&context, salt, strlen(salt));
-        EVP_DigestUpdate(&context, pepper, strlen(pepper));
-        EVP_DigestFinal_ex(&context, hash, &hash_size);
-        EVP_MD_CTX_cleanup(&context);
-
-        result = to_hex(hash, hash_size);
-        free(hash);
-    }
-
-    return result;
 }
 
 static void openssl_cleanup(void)
