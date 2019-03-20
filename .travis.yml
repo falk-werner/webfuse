@@ -14,6 +14,7 @@ env:
   matrix:
     - MARCH=amd64
     - MARCH=arm32v7
-script:
+before_script:
 - make MARCH=$MARCH
+script:
 - make check MARCH=$MARCH
