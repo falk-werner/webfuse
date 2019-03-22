@@ -60,6 +60,8 @@ set(WSFS_ADAPTER_SOURCES
 	lib/wsfs/adapter/server.c
 	lib/wsfs/adapter/server_config.c
 	lib/wsfs/adapter/server_protocol.c
+	lib/wsfs/adapter/session.c
+	lib/wsfs/adapter/session_manager.c
 	lib/wsfs/adapter/authenticator.c
 	lib/wsfs/adapter/authenticators.c
 	lib/wsfs/adapter/credentials.c
