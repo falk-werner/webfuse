@@ -7,6 +7,7 @@ export SOURCE_DATE_EPOCH ?= $(shell $(PROJECT_ROOT)/build/get_source_date_epoch.
 export BUILDTIME ?= $(shell date -u -d '@$(SOURCE_DATE_EPOCH)' --rfc-3339 ns 2>/dev/null | sed -e 's/ /T/')
 
 VERBOSE ?=
+MARCH ?= amd64
 
 PROJECT_NAME ?= webfs
 PROJECT_ROOT ?= .
@@ -25,21 +26,33 @@ CONTAINER_WORKSPACE ?= /workspace
 
 UBUNTU_CODENAME ?= bionic
 
-QEMU_VERSION ?= v3.1.0-2
+# Dependencies
 
 GTEST_VERSION ?= 1.8.1
 DOCKER_BUILDARGS += GTEST_VERSION=$(GTEST_VERSION)
+FETCH_TARGETS += $(OUT)/googletest-release-$(GTEST_VERSION).tar.gz
+$(OUT)/googletest-release-$(GTEST_VERSION).tar.gz: URL := https://github.com/google/googletest/archive/release-$(GTEST_VERSION).tar.gz
 
 FUSE_VERSION ?= 3.1.1
 DOCKER_BUILDARGS += FUSE_VERSION=$(FUSE_VERSION)
+FETCH_TARGETS += $(OUT)/libfuse-fuse-$(FUSE_VERSION).tar.gz
+$(OUT)/libfuse-fuse-$(FUSE_VERSION).tar.gz: URL := https://github.com/libfuse/libfuse/archive/fuse-$(FUSE_VERSION).tar.gz
 
 WEBSOCKETS_VERSION ?= 3.1.0
 DOCKER_BUILDARGS += WEBSOCKETS_VERSION=$(WEBSOCKETS_VERSION)
+FETCH_TARGETS += $(OUT)/libwebsockets-$(WEBSOCKETS_VERSION).tar.gz
+$(OUT)/libwebsockets-$(WEBSOCKETS_VERSION).tar.gz: URL := https://github.com/warmcat/libwebsockets/archive/v$(WEBSOCKETS_VERSION).tar.gz
 
 JANSSON_VERSION ?= 2.12
 DOCKER_BUILDARGS += JANSSON_VERSION=$(JANSSON_VERSION)
+FETCH_TARGETS += $(OUT)/jansson-$(JANSSON_VERSION).tar.gz
+$(OUT)/jansson-$(JANSSON_VERSION).tar.gz: URL := https://github.com/akheron/jansson/archive/v$(JANSSON_VERSION).tar.gz
 
-# Target configuration
+QEMU_VERSION ?= v3.1.0-2
+FETCH_TARGETS += $(OUT)/docker/qemu-arm-static-$(QEMU_VERSION)
+$(OUT)/docker/qemu-arm-static-$(QEMU_VERSION): URL := https://github.com/multiarch/qemu-user-static/releases/download/$(QEMU_VERSION)/qemu-arm-static
+
+# Architecture-specific rule target configuration
 
 MARCH_AMD64 := $(filter-out amd64,$(MARCH))
 $(MARCH_AMD64)MARCHS += amd64
@@ -50,7 +63,12 @@ $(MARCH_ARM32V7)MARCHS += arm32v7
 $(MARCH_ARM32V7)TARGETS += arm32v7-ubuntu-builder
 
 ARM_TARGETS = $(filter arm%,$(TARGETS))
+$(addprefix $(OUT)/docker/,$(ARM_TARGETS)): $(OUT)/docker/qemu-arm-static-$(QEMU_VERSION)
+
 UBUNTU_TARGETS = $(filter $(addsuffix -ubuntu%,$(MARCHS)),$(TARGETS))
+$(addprefix $(OUT)/docker/,$(UBUNTU_TARGETS)): CODENAME := $(UBUNTU_CODENAME)
+
+# Common rule target configuration
 
 MAKEFLAGS += $(PARALLELMFLAGS) --no-builtin-rules
 
@@ -80,13 +98,6 @@ OUT_DIRS += $(addprefix $(OUT)/,$(TARGETS))
 
 BUILD_TARGETS += $(addprefix build-,$(TARGETS)) 
 CHECK_TARGETS += $(addprefix check-,$(TARGETS))
-
-FETCH_TARGETS += $(OUT)/docker/qemu-arm-static-$(QEMU_VERSION)
-FETCH_TARGETS += $(OUT)/googletest-release-$(GTEST_VERSION).tar.gz
-FETCH_TARGETS += $(OUT)/libfuse-fuse-$(FUSE_VERSION).tar.gz
-FETCH_TARGETS += $(OUT)/libwebsockets-$(WEBSOCKETS_VERSION).tar.gz
-FETCH_TARGETS += $(OUT)/jansson-$(JANSSON_VERSION).tar.gz
-
 EXTRACT_TARGETS += $(patsubst $(OUT)/%.tar.gz,$(OUT)/src/%,$(FETCH_TARGETS))
 
 echo_if_silent = VERBOSE=1
@@ -101,16 +112,6 @@ PROJECT_ROOT := $(PROJECT_ROOT)
 OUT := $(OUT)
 
 # Rules
-
-$(OUT)/docker/qemu-arm-static-$(QEMU_VERSION): URL := https://github.com/multiarch/qemu-user-static/releases/download/$(QEMU_VERSION)/qemu-arm-static
-$(OUT)/googletest-release-$(GTEST_VERSION).tar.gz: URL := https://github.com/google/googletest/archive/release-$(GTEST_VERSION).tar.gz
-$(OUT)/libfuse-fuse-$(FUSE_VERSION).tar.gz: URL := https://github.com/libfuse/libfuse/archive/fuse-$(FUSE_VERSION).tar.gz
-$(OUT)/libwebsockets-$(WEBSOCKETS_VERSION).tar.gz: URL := https://github.com/warmcat/libwebsockets/archive/v$(WEBSOCKETS_VERSION).tar.gz
-$(OUT)/jansson-$(JANSSON_VERSION).tar.gz: URL := https://github.com/akheron/jansson/archive/v$(JANSSON_VERSION).tar.gz
-
-$(addprefix $(OUT)/docker/,$(ARM_TARGETS)): $(OUT)/docker/qemu-arm-static-$(QEMU_VERSION)
-
-$(addprefix $(OUT)/docker/,$(UBUNTU_TARGETS)): CODENAME := $(UBUNTU_CODENAME)
 
 $(CHECK_TARGETS):
 
