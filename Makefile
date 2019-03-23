@@ -3,15 +3,22 @@ default: all
 
 # Overridable defaults
 
+export SOURCE_DATE_EPOCH ?= $(shell $(PROJECT_ROOT)/build/get_source_date_epoch.sh)
+export BUILDTIME ?= $(shell date -u -d '@$(SOURCE_DATE_EPOCH)' --rfc-3339 ns 2>/dev/null | sed -e 's/ /T/')
+
 VERBOSE ?=
+
 PROJECT_NAME ?= webfs
 PROJECT_ROOT ?= .
-OUT ?= $(PROJECT_ROOT)/.build
 VERSION ?= $(shell cat $(PROJECT_ROOT)/VERSION)
+OUT ?= $(PROJECT_ROOT)/.build
+
 PARALLELMFLAGS ?= -j$(shell nproc)
 UID ?= $(shell id -u)
+
 DOCKER ?= docker
 DOCKER_BUILDKIT ?= 
+
 CONTAINER_USER ?= $(UID)
 CONTAINER_GROUP ?= $(shell id -g)
 CONTAINER_WORKSPACE ?= /workspace
@@ -56,6 +63,7 @@ DOCKER_RUNFLAGS += --init
 DOCKER_RUNFLAGS += --user $(CONTAINER_USER):$(CONTAINER_GROUP)
 DOCKER_RUNFLAGS += --device /dev/fuse --cap-add SYS_ADMIN --security-opt apparmor:unconfined
 DOCKER_RUNFLAGS += --env SOURCE_DATE_EPOCH
+DOCKER_RUNFLAGS += --env BUILDTIME
 
 DOCKER_BUILDARGS += CODENAME=$(CODENAME)
 DOCKER_BUILDARGS += PARALLELMFLAGS=$(PARALLELMFLAGS)
@@ -148,7 +156,7 @@ $(OUT)/docker/qemu-arm-static-$(QEMU_VERSION):
 	  && curl -fsSL -o $@ $(URL) \
 	  && chmod +x $@ 
 
-$(OUT)/% : $(PROJECT_ROOT)/% | $(OUT_DIRS)
+$(OUT)/docker/% : $(PROJECT_ROOT)/build/% | $(OUT_DIRS)
 	cp $< $@
 
 $(OUT)/docker/%: $(OUT)/docker/%.dockerfile $(EXTRACT_TARGETS) $(PROJECT_ROOT)/Makefile | $(OUT_DIRS)
