@@ -1,8 +1,6 @@
 ARG CODENAME=bionic
 
-FROM arm32v7/ubuntu:$CODENAME as builder
-
-COPY docker/qemu-arm-static-* /usr/bin/qemu-arm-static
+FROM ubuntu:$CODENAME as builder
 
 RUN set -x \
   && apt update \
@@ -18,12 +16,16 @@ COPY src /usr/local/src
 
 ARG PARALLELMFLAGS=-j2
 
+ARG GTEST_VERSION=1.8.1
+
 RUN set -x \
   && mkdir -p /tmp/out \
   && cd /tmp/out \
-  && cmake /usr/local/src/googletest-release-* \
-  && make $PARALLELMFLAGS install \
+  && cmake "/usr/local/src/googletest-release-$GTEST_VERSION" \
+  && make "$PARALLELMFLAGS" install \
   && rm -rf /tmp/out
+
+ARG FUSE_VERSION=3.1.1
 
 RUN set -x \
   && apt update \
@@ -31,14 +33,16 @@ RUN set -x \
        libtool \
        automake \
        gettext \
-  && cd /usr/local/src/libfuse-fuse-* \
+  && cd "/usr/local/src/libfuse-fuse-$FUSE_VERSION" \
   && ./makeconf.sh \
   && mkdir -p /tmp/out \
   && cd /tmp/out \
-  && /usr/local/src/libfuse-fuse-*/configure \
-  && make $PARALLELMFLAGS install \
+  && "/usr/local/src/libfuse-fuse-$FUSE_VERSION/configure" \
+  && make "$PARALLELMFLAGS" install \
   && rm -rf /tmp/out \
   && rm -rf /var/lib/apt/lists/*
+
+ARG WEBSOCKETS_VERSION=3.1.0
 
 RUN set -x \
   && apt update \
@@ -47,22 +51,30 @@ RUN set -x \
        libssl-dev \
   && mkdir -p /tmp/out \
   && cd /tmp/out \
-  && cmake /usr/local/src/libwebsockets-* \
-  && make $PARALLELMFLAGS install \
+  && cmake "/usr/local/src/libwebsockets-$WEBSOCKETS_VERSION" \
+  && make "$PARALLELMFLAGS" install \
   && rm -rf /tmp/out \
   && rm -rf /var/lib/apt/lists/*
+
+ARG JANSSON_VERSION=2.12
 
 RUN set -x \
   && mkdir -p /tmp/out \
   && cd /tmp/out \
-  && cmake -DJANSSON_BUILD_DOCS=OFF /usr/local/src/jansson-* \
-  && make $PARALLELMFLAGS install \
+  && cmake -DJANSSON_BUILD_DOCS=OFF "/usr/local/src/jansson-$JANSSON_VERSION" \
+  && make "$PARALLELMFLAGS" install \
   && rm -rf /tmp/out
 
-ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
+ENV LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/usr/local/lib"
 
 ARG USERID=1000
 
-RUN useradd -u $USERID -ms /bin/bash user
+ARG WORKSPACE=/workspace
 
+RUN set -x \
+  && useradd -u "$USERID" -ms /bin/bash user \
+  && mkdir -p "$WORKSPACE" \
+  && chown user:user "$WORKSPACE"
+
+WORKDIR "$WORKSPACE"
 
