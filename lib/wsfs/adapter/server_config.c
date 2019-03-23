@@ -124,3 +124,4 @@ void wsfs_server_config_add_authenticator(
 {
     wsfs_authenticators_add(&config->authenticators, type, authenticate, user_data);
 }
+
