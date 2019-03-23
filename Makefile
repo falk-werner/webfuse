@@ -85,6 +85,8 @@ echo_if_silent = VERBOSE=1
 $(VERBOSE)echo_if_silent = echo $1
 $(VERBOSE)SILENT := @
 
+BUILD_TARGETS := $(BUILD_TARGETS)
+CHECK_TARGETS := $(CHECK_TARGETS)
 CONTAINER_GROUP := $(CONTAINER_GROUP)
 VERSION := $(VERSION)
 PROJECT_ROOT := $(PROJECT_ROOT)
@@ -101,6 +103,10 @@ $(OUT)/jansson-$(JANSSON_VERSION).tar.gz: URL := https://github.com/akheron/jans
 $(addprefix $(OUT)/docker/,$(ARM_TARGETS)): $(OUT)/docker/qemu-arm-static-$(QEMU_VERSION)
 
 $(addprefix $(OUT)/docker/,$(UBUNTU_TARGETS)): CODENAME := $(UBUNTU_CODENAME)
+
+$(CHECK_TARGETS):
+
+$(BUILD_TARGETS):
 
 .PHONY: all
 all: $(BUILD_TARGETS)
@@ -132,8 +138,6 @@ get-deps: $(EXTRACT_TARGETS)
 .PHONY: debug-print-%
 debug-print-%:
 	@printf '%s\n' '$*:' $($*)
-
-$(BUILD_TARGETS):
 
 $(CHECK_TARGETS): GLOAS := test
 $(CHECK_TARGETS): CONTAINER_USER := user
