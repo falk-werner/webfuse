@@ -64,6 +64,8 @@ $(MARCH_ARM32V7)MARCHS += arm32v7
 $(MARCH_ARM32V7)TARGETS += arm32v7-ubuntu-builder
 $(OUT)/arm32v7-ubuntu-builder/rules.mk: TARGET := arm32v7-ubuntu-builder
 
+$(MARCH_AMD64)MEMCHECK_TARGETS += $(addprefix memcheck-,$(TARGETS))
+
 ARM_TARGETS = $(filter arm%,$(TARGETS))
 $(addprefix $(OUT)/docker/,$(ARM_TARGETS)): $(OUT)/docker/qemu-arm-static-$(QEMU_VERSION)
 
@@ -104,6 +106,7 @@ RULE_TARGETS = $(addprefix $(OUT)/,$(addsuffix /rules.mk,$(TARGETS)))
 
 BUILD_TARGETS := $(BUILD_TARGETS)
 CHECK_TARGETS := $(CHECK_TARGETS)
+MEMCHECK_TARGETS := $(MEMCHECK_TARGETS)
 CONTAINER_GROUP := $(CONTAINER_GROUP)
 VERSION := $(VERSION)
 PROJECT_ROOT := $(PROJECT_ROOT)
@@ -136,7 +139,11 @@ configure = $(call run,$1,cmake $(CMAKEFLAGS) ..) && touch $@
 build_rule = build-$1: $$(OUT)/$1/CMakeCache.txt; $$(call build,$1)
 build = $(call run,$1,ninja $(PARALLELMFLAGS) $(GLOAS))
 
-check_rule = check-$1: build-$1;
+check_rule = check-$1: build-$1; $$(call check,$1)
+check = $(call run,$1,ctest $(CTESTFLAGS))
+
+memcheck_rule = memcheck-$1: build-$1; $$(call memcheck,$1)
+memcheck = $(call run,$1,ctest -T memcheck $(CTESTFLAGS))
 
 # Rules
 
@@ -156,6 +163,8 @@ $(RULE_TARGETS): $(PROJECT_ROOT)/Makefile | $(OUT_DIRS)
 		echo; \
 		echo '$(call check_rule,$(TARGET))'; \
 		echo; \
+		echo '$(call memcheck_rule,$(TARGET))'; \
+		echo; \
 		echo '$(call run_rule,$(TARGET))'; \
 	} > $@
 
@@ -164,6 +173,9 @@ all: $(BUILD_TARGETS)
 
 .PHONY: check
 check: $(CHECK_TARGETS)
+
+.PHONY: memcheck
+memcheck: $(MEMCHECK_TARGETS)
 
 .PHONY: clean
 clean: $(CLEAN_TARGETS)
@@ -176,8 +188,7 @@ get-deps: $(EXTRACT_TARGETS)
 debug-print-%:
 	@printf '%s\n' '$*:' $($*)
 
-$(CHECK_TARGETS): GLOAS := test
-$(CHECK_TARGETS): CONTAINER_USER := user
+$(CHECK_TARGETS) $(MEMCHECK_TARGETS): CONTAINER_USER := user
 
 $(OUT)/docker/qemu-arm-static-$(QEMU_VERSION):
 	$(SILENT) \

@@ -12,9 +12,9 @@ env:
   global:
     - PARALLELMFLAGS="-j2"
   matrix:
-    - MARCH=amd64
-    - MARCH=arm32v7
+    - MARCH=amd64   CHECK_TARGET=memcheck
+    - MARCH=arm32v7 CHECK_TARGET=check
 before_script:
 - make MARCH=$MARCH
 script:
-- make check MARCH=$MARCH
+- make MARCH=$MARCH $CHECK_TARGET

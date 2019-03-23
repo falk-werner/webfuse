@@ -10,6 +10,7 @@ RUN set -x \
        cmake \
        ninja-build \
        pkg-config \
+       valgrind \
   && rm -rf /var/lib/apt/lists/*
 
 COPY src /usr/local/src

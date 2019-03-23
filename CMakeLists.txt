@@ -184,6 +184,8 @@ endif(NOT WITHOUT_EXAMPLE)
 
 if(NOT WITHOUT_TESTS)
 
+include (CTest)
+
 pkg_check_modules(GTEST gtest_main)
 include(GoogleTest)
 
