@@ -226,6 +226,8 @@ static int check_password(struct args * args)
 
 static int invoke_invalid_command(struct args * args)
 {
+    (void) args;
+
     fprintf(stderr, "error: unknown command\n");
     return EXIT_FAILURE;
 }
