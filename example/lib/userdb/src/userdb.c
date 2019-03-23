@@ -120,19 +120,18 @@ static char * compute_hash(
     }
 
     char * result = NULL;
-    unsigned int hash_size = digest->md_size;
+    unsigned int hash_size = EVP_MD_size(digest);
     unsigned char * hash = malloc(hash_size);
 
     if (NULL != hash)
     {
-        EVP_MD_CTX context;        
-        EVP_MD_CTX_init(&context);
-        EVP_DigestInit_ex(&context, digest, NULL);        
-        EVP_DigestUpdate(&context, password, strlen(password));
-        EVP_DigestUpdate(&context, salt, strlen(salt));
-        EVP_DigestUpdate(&context, db->pepper, strlen(db->pepper));
-        EVP_DigestFinal_ex(&context, hash, &hash_size);
-        EVP_MD_CTX_cleanup(&context);
+        EVP_MD_CTX * context = EVP_MD_CTX_new();        
+        EVP_DigestInit_ex(context, digest, NULL);        
+        EVP_DigestUpdate(context, password, strlen(password));
+        EVP_DigestUpdate(context, salt, strlen(salt));
+        EVP_DigestUpdate(context, db->pepper, strlen(db->pepper));
+        EVP_DigestFinal_ex(context, hash, &hash_size);
+        EVP_MD_CTX_free(context);
 
         result = to_hex(hash, hash_size);
         free(hash);

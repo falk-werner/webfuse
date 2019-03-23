@@ -276,7 +276,6 @@ static void openssl_cleanup(void)
     CONF_modules_unload(1);
     EVP_cleanup();
     CRYPTO_cleanup_all_ex_data();
-    ERR_remove_state(0);
     ERR_free_strings();
 }
 
