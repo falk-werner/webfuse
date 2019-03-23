@@ -12,6 +12,8 @@ pkg_check_modules(FUSE3 REQUIRED fuse3)
 pkg_check_modules(LWS REQUIRED libwebsockets)
 pkg_check_modules(JANSSON REQUIRED jansson)
 
+add_definitions(-D_FILE_OFFSET_BITS=64)
+
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
