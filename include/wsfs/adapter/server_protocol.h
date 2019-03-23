@@ -1,7 +1,8 @@
 #ifndef WSFS_ADAPTER_SERVER_PROTOCOL_H
 #define WSFS_ADAPTER_SERVER_PROTOCOL_H
 
-#include "wsfs/adapter/api.h"
+#include <wsfs/adapter/api.h>
+#include <wsfs/adapter/authenticate.h>
 
 struct wsfs_server_protocol;
 struct lws_protocols;
@@ -20,6 +21,12 @@ extern WSFSA_API void wsfs_server_protocol_dispose(
 extern WSFSA_API void wsfs_server_protocol_init_lws(
     struct wsfs_server_protocol * protocol,
     struct lws_protocols * lws_protocol);
+
+extern WSFSA_API void wsfs_server_protocol_add_authenticator(
+    struct wsfs_server_protocol * protocol,
+    char const * type,
+    wsfs_authenticate_fn * authenticate,
+    void * user_data);
 
 #ifdef __cplusplus
 }

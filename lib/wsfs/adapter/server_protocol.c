@@ -19,6 +19,7 @@ static int wsfs_server_protocol_callback(
     struct wsfs_server_protocol * protocol = ws_protocol->user;
 
     wsfs_timeout_manager_check(&protocol->timeout_manager);
+    struct wsfs_session * session = wsfs_session_manager_get(&protocol->session_manager, wsi);
 
     switch (reason)
     {
@@ -33,33 +34,31 @@ static int wsfs_server_protocol_callback(
             }
             break;
 		case LWS_CALLBACK_ESTABLISHED:
-			if (NULL == protocol->wsi)
-			{
-                protocol->wsi = wsi;
-			}
+            session = wsfs_session_manager_add(
+                &protocol->session_manager,
+                wsi,
+                &protocol->authenticators,
+                &protocol->rpc);
+
+            if (NULL != session)
+            {
+                wsfs_session_authenticate(session, NULL);
+            }
     		break;
 		case LWS_CALLBACK_CLOSED:
-			if (wsi == protocol->wsi)
-            {
-                protocol->wsi = NULL;
-                wsfs_message_queue_cleanup(&protocol->queue);
-            }
+            wsfs_session_manager_remove(&protocol->session_manager, wsi);
             break;
 		case LWS_CALLBACK_SERVER_WRITEABLE:
-			if ((wsi == protocol->wsi) && (!wsfs_message_queue_empty(&protocol->queue)))
+			if (NULL != session)
 			{                
-				struct wsfs_message * message = wsfs_message_queue_pop(&protocol->queue);
-				lws_write(wsi, (unsigned char*) message->data, message->length, LWS_WRITE_TEXT);
-				wsfs_message_dispose(message);
-
-                if (!wsfs_message_queue_empty(&protocol->queue))
-                {
-                    lws_callback_on_writable(wsi);
-                }
+                wsfs_session_onwritable(session);
 			}
     		break;
         case LWS_CALLBACK_RECEIVE:
-            wsfs_jsonrpc_server_onresult(&protocol->rpc, in, len);
+            if (NULL != session)
+            {
+                wsfs_session_receive(session, in, len);
+            }
             break;
         case LWS_CALLBACK_RAW_RX_FILE:
             wsfs_filesystem_process_request(&protocol->filesystem);
@@ -75,20 +74,11 @@ static bool wsfs_server_protocol_invoke(
     void * user_data,
     json_t const * request)
 {
-    bool result = false;
     struct wsfs_server_protocol * protocol = user_data;
+    struct wsfs_session * session = &protocol->session_manager.session;
+    struct wsfs_message * message = wsfs_message_create(request);
 
-    if (NULL != protocol->wsi)
-    {
-        struct wsfs_message * message = wsfs_message_create(request);
-        if (NULL != message)
-        {
-            wsfs_message_queue_push(&protocol->queue, message);
-            lws_callback_on_writable(protocol->wsi);
-
-            result = true;
-        }
-    }
+    bool const result = wsfs_session_send(session, message);
 
     return result;
 }
@@ -130,10 +120,9 @@ bool wsfs_server_protocol_init(
     struct wsfs_server_protocol * protocol,
     char * mount_point)
 {
-    protocol->wsi = NULL;
-    wsfs_message_queue_init(&protocol->queue);
-
     wsfs_timeout_manager_init(&protocol->timeout_manager);
+    wsfs_session_manager_init(&protocol->session_manager);
+    wsfs_authenticators_init(&protocol->authenticators);
 
     wsfs_jsonrpc_server_init(&protocol->rpc, &protocol->timeout_manager);
     wsfs_jsonrpc_server_add(&protocol->rpc, "lookup", &wsfs_server_protocol_invoke, protocol);
@@ -149,8 +138,9 @@ bool wsfs_server_protocol_init(
     if (!success)
     {
         wsfs_jsonrpc_server_cleanup(&protocol->rpc);
+        wsfs_authenticators_cleanup(&protocol->authenticators);
         wsfs_timeout_manager_cleanup(&protocol->timeout_manager);
-        wsfs_message_queue_cleanup(&protocol->queue);
+        wsfs_session_manager_cleanup(&protocol->session_manager);
     }
 
     return success;
@@ -162,6 +152,15 @@ void wsfs_server_protocol_cleanup(
     wsfs_filesystem_cleanup(&protocol->filesystem);
     wsfs_jsonrpc_server_cleanup(&protocol->rpc);
     wsfs_timeout_manager_cleanup(&protocol->timeout_manager);
-    wsfs_message_queue_cleanup(&protocol->queue);
-    protocol->wsi = NULL;
+    wsfs_authenticators_cleanup(&protocol->authenticators);
+    wsfs_session_manager_cleanup(&protocol->session_manager);
+}
+
+void wsfs_server_protocol_add_authenticator(
+    struct wsfs_server_protocol * protocol,
+    char const * type,
+    wsfs_authenticate_fn * authenticate,
+    void * user_data)
+{
+    wsfs_authenticators_add(&protocol->authenticators, type, authenticate, user_data);
 }

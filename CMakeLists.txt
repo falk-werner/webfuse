@@ -58,6 +58,13 @@ install(FILES include/wsfs/status.h DESTINATION include/wsfs)
 set(WSFS_ADAPTER_SOURCES
 	lib/wsfs/adapter/filesystem.c
 	lib/wsfs/adapter/server.c
+	lib/wsfs/adapter/server_config.c
+	lib/wsfs/adapter/server_protocol.c
+	lib/wsfs/adapter/session.c
+	lib/wsfs/adapter/session_manager.c
+	lib/wsfs/adapter/authenticator.c
+	lib/wsfs/adapter/authenticators.c
+	lib/wsfs/adapter/credentials.c
 	lib/wsfs/adapter/time/timepoint.c
 	lib/wsfs/adapter/time/timer.c
 	lib/wsfs/adapter/time/timeout_manager.c
@@ -67,8 +74,6 @@ set(WSFS_ADAPTER_SOURCES
 	lib/wsfs/adapter/operation/open.c
 	lib/wsfs/adapter/operation/close.c
 	lib/wsfs/adapter/operation/read.c
-	lib/wsfs/adapter/server_config.c
-	lib/wsfs/adapter/server_protocol.c
 	lib/wsfs/adapter/jsonrpc/server.c
 	lib/wsfs/adapter/jsonrpc/method.c
 	lib/wsfs/adapter/jsonrpc/request.c
@@ -156,6 +161,24 @@ install(FILES "${PROJECT_BINARY_DIR}/libwsfs-provider.pc" DESTINATION lib${LIB_S
 
 if(NOT WITHOUT_EXAMPLE)
 
+# libuserdb
+
+add_library(userdb STATIC 
+	example/lib/userdb/src/userdb.c
+)
+
+target_include_directories(userdb PUBLIC
+	example/lib/userdb/include
+	${OPENSSL_INCLUDE_DIRS}
+	${JANSSON_INCLUDE_DIRS}
+)
+
+target_compile_options(userdb PUBLIC
+	${C_WARNINGS}
+	${OPENSSL_CFLAGS_OTHER}	
+	${JANSSON_CFLAGS_OTHER}
+)
+
 # daemon
 
 add_executable(wsfsd
@@ -178,6 +201,35 @@ target_link_libraries(wsfs-provider-app PUBLIC wsfs-provider ${EXTRA_LIBS})
 target_include_directories(wsfs-provider-app PUBLIC ${EXTRA_INCLUDE_DIRS})
 target_compile_options(wsfs-provider-app PUBLIC ${EXTRA_CFLAGS})
 
+# wsfs-passwd
+
+pkg_check_modules(OPENSSL REQUIRED openssl)
+
+
+add_executable(wsfs-passwd
+	example/passwd/main.c
+)
+
+target_link_libraries(wsfs-passwd PUBLIC 
+	userdb
+	${OPENSSL_LIBRARIES}
+	${JANSSON_LIBRARIES}
+)
+
+target_include_directories(wsfs-passwd PUBLIC 
+	example/passwd
+	example/lib/userdb/include
+	${OPENSSL_INCLUDE_DIRS}
+	${JANSSON_INCLUDE_DIRS}
+)
+
+target_compile_options(wsfs-passwd PUBLIC
+	${C_WARNINGS}
+	${OPENSSL_CFLAGS_OTHER}
+	${JANSSON_CFLAGS_OTHER}
+)
+
+
 endif(NOT WITHOUT_EXAMPLE)
 
 # tests
@@ -188,6 +240,7 @@ include (CTest)
 
 pkg_check_modules(GTEST gtest_main)
 include(GoogleTest)
+pkg_check_modules(GMOCK gmock)
 
 add_library(wsfs-adapter-static STATIC ${WSFS_ADAPTER_SOURCES})
 set_target_properties(wsfs-adapter-static PROPERTIES OUTPUT_NAME wsfs-adapter)
@@ -202,17 +255,21 @@ target_compile_options(wsfs-provider-static PUBLIC ${EXTRA_CFLAGS})
 
 add_executable(alltests
 	test/msleep.cc
+	test/mock_authenticator.cc
 	test/test_response_parser.cc
 	test/test_server.cc
 	test/test_timepoint.cc
 	test/test_timer.cc
 	test/test_url.cc
+	test/test_credentials.cc
+	test/test_authenticator.cc
+	test/test_authenticators.cc
 	${WSFS_COMMON_SOURCES}
 )
 
-target_link_libraries(alltests PUBLIC wsfs-adapter-static wsfs-provider-static ${EXTRA_LIBS} ${GTEST_LIBRARIES})
-target_include_directories(alltests PUBLIC lib ${EXTRA_INCLUDE_DIRS} ${GTEST_INCLUDE_DIRS})
-target_compile_options(alltests PUBLIC ${EXTRA_CFLAGS} ${GTEST_CFLAGS})
+target_link_libraries(alltests PUBLIC wsfs-adapter-static wsfs-provider-static ${EXTRA_LIBS} ${GMOCK_LIBRARIES} ${GTEST_LIBRARIES})
+target_include_directories(alltests PUBLIC lib ${EXTRA_INCLUDE_DIRS} ${GMOCK_INCLUDE_DIRS} ${GTEST_INCLUDE_DIRS})
+target_compile_options(alltests PUBLIC ${EXTRA_CFLAGS} ${GMOCK_CFLAGS} ${GTEST_CFLAGS})
 
 enable_testing()
 gtest_discover_tests(alltests TEST_PREFIX alltests:)
