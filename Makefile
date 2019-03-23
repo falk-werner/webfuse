@@ -11,6 +11,7 @@ VERSION ?= $(shell cat $(PROJECT_ROOT)/VERSION)
 PARALLELMFLAGS ?= -j$(shell nproc)
 UID ?= $(shell id -u)
 DOCKER ?= docker
+DOCKER_BUILDKIT ?= 
 CONTAINER_USER ?= $(UID)
 CONTAINER_GROUP ?= $(shell id -g)
 CONTAINER_WORKSPACE ?= /workspace
@@ -168,7 +169,8 @@ $(OUT)/%/CMakeCache.txt: $(PROJECT_ROOT)/CMakeLists.txt $(OUT)/docker/% | $(OUT_
 	       --volume '$(realpath $(dir $@)):$(CONTAINER_WORKSPACE)/$(notdir $(OUT))' \
 	       --workdir '$(CONTAINER_WORKSPACE)/$(notdir $(OUT))' \
 	       $(PROJECT_NAME)-$*:$(VERSION) \
-	       cmake $(CMAKEFLAGS) .. && touch $@
+	       cmake $(CMAKEFLAGS) .. \
+	  && touch $@
 
 $(OUT_DIRS):
 	$(SILENT)mkdir -p $@
