@@ -7,7 +7,7 @@ export SOURCE_DATE_EPOCH ?= $(shell $(PROJECT_ROOT)/build/get_source_date_epoch.
 export BUILDTIME ?= $(shell date -u -d '@$(SOURCE_DATE_EPOCH)' --rfc-3339 ns 2>/dev/null | sed -e 's/ /T/')
 
 VERBOSE ?=
-MARCH ?= amd64
+MARCH ?= 
 
 PROJECT_NAME ?= webfs
 PROJECT_ROOT ?= .
@@ -78,7 +78,6 @@ CMAKEFLAGS += -GNinja
 
 DOCKER_RUNFLAGS += --interactive
 DOCKER_RUNFLAGS += --rm
-#DOCKER_RUNFLAGS += --tty
 DOCKER_RUNFLAGS += --init
 DOCKER_RUNFLAGS += --user $(CONTAINER_USER):$(CONTAINER_GROUP)
 DOCKER_RUNFLAGS += --device /dev/fuse --cap-add SYS_ADMIN --security-opt apparmor:unconfined
@@ -117,41 +116,36 @@ $(VERBOSE)echo_if_silent = echo $1
 $(VERBOSE)SILENT := @
 
 image_rule = $$(OUT)/docker/$1: $$(OUT)/docker/$1.dockerfile $$(EXTRACT_TARGETS) $$(PROJECT_ROOT)/Makefile; $$(call image,$1)
-
 image = $(SILENT) \
      $(call echo_if_silent,docker build $(PROJECT_NAME)-$1:$(VERSION) $(OUT)) \
   && $(DOCKER) build $(DOCKER_BUILDFLAGS) --iidfile $@ --file $< --tag $(PROJECT_NAME)-$1:$(VERSION) $(OUT)
 
-configure_rule = $$(OUT)/$1/CMakeCache.txt: $$(PROJECT_ROOT)/CMakeLists.txt $$(OUT)/docker/$1; $$(call configure,$1)
-
-configure = $(SILENT) \
-     $(call echo_if_silent,TARGET=$1 cmake $(CMAKEFLAGS) ..) \
-  && $(DOCKER) run $(DOCKER_RUNFLAGS) \
+run_rule = run-$1: $$(OUT)/docker/$1; $$(call run,$1,/bin/bash,--tty)
+run = $(SILENT) \
+     $(call echo_if_silent,TARGET=$1 $2) \
+  && $(DOCKER) run $(DOCKER_RUNFLAGS) $3 \
        --volume '$(realpath $(PROJECT_ROOT)):$(CONTAINER_WORKSPACE)' \
-       --volume '$(realpath $(dir $@)):$(CONTAINER_WORKSPACE)/$(notdir $(OUT))' \
+       --volume '$(realpath $(OUT)/$1):$(CONTAINER_WORKSPACE)/$(notdir $(OUT))' \
        --workdir '$(CONTAINER_WORKSPACE)/$(notdir $(OUT))' \
        $(PROJECT_NAME)-$1:$(VERSION) \
-       cmake $(CMAKEFLAGS) .. \
-  && touch $@
+       $2
+
+configure_rule = $$(OUT)/$1/CMakeCache.txt: $$(PROJECT_ROOT)/CMakeLists.txt $$(OUT)/docker/$1; $$(call configure,$1)
+configure = $(call run,$1,cmake $(CMAKEFLAGS) ..) && touch $@
 
 build_rule = build-$1: $$(OUT)/$1/CMakeCache.txt; $$(call build,$1)
-
-build = $(SILENT) \
-     $(call echo_if_silent,TARGET=$1 ninja $(PARALLELMFLAGS) $(GLOAS)) \
-  && $(DOCKER) run $(DOCKER_RUNFLAGS) \
-       --volume '$(realpath $(PROJECT_ROOT)):$(CONTAINER_WORKSPACE)' \
-       --volume '$(realpath $(dir $<)):$(CONTAINER_WORKSPACE)/$(notdir $(OUT))' \
-       --workdir '$(CONTAINER_WORKSPACE)/$(notdir $(OUT))' \
-       $(PROJECT_NAME)-$1:$(VERSION) \
-       ninja $(PARALLELMFLAGS) $(GLOAS)
+build = $(call run,$1,ninja $(PARALLELMFLAGS) $(GLOAS))
 
 check_rule = check-$1: build-$1;
 
 # Rules
 
+ifneq ($(MAKECMDGOALS),clean)
 -include $(RULE_TARGETS)
+endif
 
 $(RULE_TARGETS): $(PROJECT_ROOT)/Makefile | $(OUT_DIRS)
+	$(SILENT) \
 	{ \
 		echo; \
 		echo '$(call image_rule,$(TARGET))'; \
@@ -161,6 +155,8 @@ $(RULE_TARGETS): $(PROJECT_ROOT)/Makefile | $(OUT_DIRS)
 		echo '$(call build_rule,$(TARGET))'; \
 		echo; \
 		echo '$(call check_rule,$(TARGET))'; \
+		echo; \
+		echo '$(call run_rule,$(TARGET))'; \
 	} > $@
 
 .PHONY: all
