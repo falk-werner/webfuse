@@ -57,10 +57,12 @@ $(OUT)/docker/qemu-arm-static-$(QEMU_VERSION): URL := https://github.com/multiar
 MARCH_AMD64 := $(filter-out amd64,$(MARCH))
 $(MARCH_AMD64)MARCHS += amd64
 $(MARCH_AMD64)TARGETS += amd64-ubuntu-builder
+$(OUT)/amd64-ubuntu-builder/rules.mk: TARGET := amd64-ubuntu-builder
 
 MARCH_ARM32V7 := $(filter-out arm32v7,$(MARCH))
 $(MARCH_ARM32V7)MARCHS += arm32v7
 $(MARCH_ARM32V7)TARGETS += arm32v7-ubuntu-builder
+$(OUT)/arm32v7-ubuntu-builder/rules.mk: TARGET := arm32v7-ubuntu-builder
 
 ARM_TARGETS = $(filter arm%,$(TARGETS))
 $(addprefix $(OUT)/docker/,$(ARM_TARGETS)): $(OUT)/docker/qemu-arm-static-$(QEMU_VERSION)
@@ -76,7 +78,7 @@ CMAKEFLAGS += -GNinja
 
 DOCKER_RUNFLAGS += --interactive
 DOCKER_RUNFLAGS += --rm
-DOCKER_RUNFLAGS += --tty
+#DOCKER_RUNFLAGS += --tty
 DOCKER_RUNFLAGS += --init
 DOCKER_RUNFLAGS += --user $(CONTAINER_USER):$(CONTAINER_GROUP)
 DOCKER_RUNFLAGS += --device /dev/fuse --cap-add SYS_ADMIN --security-opt apparmor:unconfined
@@ -96,13 +98,10 @@ OUT_DIRS += $(OUT)/docker
 OUT_DIRS += $(OUT)/src
 OUT_DIRS += $(addprefix $(OUT)/,$(TARGETS))
 
-BUILD_TARGETS += $(addprefix build-,$(TARGETS)) 
+BUILD_TARGETS += $(addprefix build-,$(TARGETS))
 CHECK_TARGETS += $(addprefix check-,$(TARGETS))
 EXTRACT_TARGETS += $(patsubst $(OUT)/%.tar.gz,$(OUT)/src/%,$(FETCH_TARGETS))
-
-echo_if_silent = VERBOSE=1
-$(VERBOSE)echo_if_silent = echo $1
-$(VERBOSE)SILENT := @
+RULE_TARGETS = $(addprefix $(OUT)/,$(addsuffix /rules.mk,$(TARGETS)))
 
 BUILD_TARGETS := $(BUILD_TARGETS)
 CHECK_TARGETS := $(CHECK_TARGETS)
@@ -111,11 +110,58 @@ VERSION := $(VERSION)
 PROJECT_ROOT := $(PROJECT_ROOT)
 OUT := $(OUT)
 
+# Macros
+
+echo_if_silent = VERBOSE=1
+$(VERBOSE)echo_if_silent = echo $1
+$(VERBOSE)SILENT := @
+
+image_rule = $$(OUT)/docker/$1: $$(OUT)/docker/$1.dockerfile $$(EXTRACT_TARGETS) $$(PROJECT_ROOT)/Makefile; $$(call image,$1)
+
+image = $(SILENT) \
+     $(call echo_if_silent,docker build $(PROJECT_NAME)-$1:$(VERSION) $(OUT)) \
+  && $(DOCKER) build $(DOCKER_BUILDFLAGS) --iidfile $@ --file $< --tag $(PROJECT_NAME)-$1:$(VERSION) $(OUT)
+
+configure_rule = $$(OUT)/$1/CMakeCache.txt: $$(PROJECT_ROOT)/CMakeLists.txt $$(OUT)/docker/$1; $$(call configure,$1)
+
+configure = $(SILENT) \
+     $(call echo_if_silent,TARGET=$1 cmake $(CMAKEFLAGS) ..) \
+  && $(DOCKER) run $(DOCKER_RUNFLAGS) \
+       --volume '$(realpath $(PROJECT_ROOT)):$(CONTAINER_WORKSPACE)' \
+       --volume '$(realpath $(dir $@)):$(CONTAINER_WORKSPACE)/$(notdir $(OUT))' \
+       --workdir '$(CONTAINER_WORKSPACE)/$(notdir $(OUT))' \
+       $(PROJECT_NAME)-$1:$(VERSION) \
+       cmake $(CMAKEFLAGS) .. \
+  && touch $@
+
+build_rule = build-$1: $$(OUT)/$1/CMakeCache.txt; $$(call build,$1)
+
+build = $(SILENT) \
+     $(call echo_if_silent,TARGET=$1 ninja $(PARALLELMFLAGS) $(GLOAS)) \
+  && $(DOCKER) run $(DOCKER_RUNFLAGS) \
+       --volume '$(realpath $(PROJECT_ROOT)):$(CONTAINER_WORKSPACE)' \
+       --volume '$(realpath $(dir $<)):$(CONTAINER_WORKSPACE)/$(notdir $(OUT))' \
+       --workdir '$(CONTAINER_WORKSPACE)/$(notdir $(OUT))' \
+       $(PROJECT_NAME)-$1:$(VERSION) \
+       ninja $(PARALLELMFLAGS) $(GLOAS)
+
+check_rule = check-$1: build-$1;
+
 # Rules
 
-$(CHECK_TARGETS):
+-include $(RULE_TARGETS)
 
-$(BUILD_TARGETS):
+$(RULE_TARGETS): $(PROJECT_ROOT)/Makefile | $(OUT_DIRS)
+	{ \
+		echo; \
+		echo '$(call image_rule,$(TARGET))'; \
+		echo; \
+		echo '$(call configure_rule,$(TARGET))'; \
+		echo; \
+		echo '$(call build_rule,$(TARGET))'; \
+		echo; \
+		echo '$(call check_rule,$(TARGET))'; \
+	} > $@
 
 .PHONY: all
 all: $(BUILD_TARGETS)
@@ -126,20 +172,6 @@ check: $(CHECK_TARGETS)
 .PHONY: clean
 clean: $(CLEAN_TARGETS)
 	$(SILENT)-rm -rf $(OUT_DIRS)
-
-.PHONY: check-%
-check-%: build-%;
-
-.PHONY: build-%
-build-%: $(OUT)/%/CMakeCache.txt
-	$(SILENT) \
-	     $(call echo_if_silent,ninja $(PARALLELMFLAGS) $(GLOAS)) \
-	  && $(DOCKER) run $(DOCKER_RUNFLAGS) \
-	       --volume '$(realpath $(PROJECT_ROOT)):$(CONTAINER_WORKSPACE)' \
-	       --volume '$(realpath $(dir $<)):$(CONTAINER_WORKSPACE)/$(notdir $(OUT))' \
-	       --workdir '$(CONTAINER_WORKSPACE)/$(notdir $(OUT))' \
-	       $(PROJECT_NAME)-$*:$(VERSION) \
-	       ninja $(PARALLELMFLAGS) $(GLOAS)
 
 .PHONY: get-deps
 get-deps: $(EXTRACT_TARGETS)
@@ -160,11 +192,6 @@ $(OUT)/docker/qemu-arm-static-$(QEMU_VERSION):
 $(OUT)/docker/% : $(PROJECT_ROOT)/build/% | $(OUT_DIRS)
 	cp $< $@
 
-$(OUT)/docker/%: $(OUT)/docker/%.dockerfile $(EXTRACT_TARGETS) $(PROJECT_ROOT)/Makefile | $(OUT_DIRS)
-	$(SILENT) \
-	     $(call echo_if_silent,docker build $(PROJECT_NAME)-$*:$(VERSION) $(OUT)) \
-	  && $(DOCKER) build $(DOCKER_BUILDFLAGS) --iidfile $@ --file $< --tag $(PROJECT_NAME)-$*:$(VERSION) $(OUT)
-
 $(OUT)/%.tar.gz: | $(OUT_DIRS)
 	curl -fsSL -o $@ $(URL)
 
@@ -172,17 +199,6 @@ $(OUT)/src/%: $(OUT)/%.tar.gz | $(OUT_DIRS)
 	$(SILENT) \
 	     $(call echo_if_silent,tar -C $(dir $@) -xf $<) \
 	  && tar -C $(dir $@) -xf $< \
-	  && touch $@
-
-$(OUT)/%/CMakeCache.txt: $(PROJECT_ROOT)/CMakeLists.txt $(OUT)/docker/% | $(OUT_DIRS)
-	$(SILENT) \
-	     $(call echo_if_silent,cmake $(CMAKEFLAGS) ..) \
-	  && $(DOCKER) run $(DOCKER_RUNFLAGS) \
-	       --volume '$(realpath $(PROJECT_ROOT)):$(CONTAINER_WORKSPACE)' \
-	       --volume '$(realpath $(dir $@)):$(CONTAINER_WORKSPACE)/$(notdir $(OUT))' \
-	       --workdir '$(CONTAINER_WORKSPACE)/$(notdir $(OUT))' \
-	       $(PROJECT_NAME)-$*:$(VERSION) \
-	       cmake $(CMAKEFLAGS) .. \
 	  && touch $@
 
 $(OUT_DIRS):
