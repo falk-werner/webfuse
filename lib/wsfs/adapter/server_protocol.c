@@ -34,31 +34,31 @@ static int wsfs_server_protocol_callback(
             }
             break;
 		case LWS_CALLBACK_ESTABLISHED:
-			{
-                bool is_authenticated = wsfs_authenticators_authenticate(&protocol->authenticators, NULL);
-                wsfs_session_manager_add(&protocol->session_manager, wsi, is_authenticated);
-			}
+            session = wsfs_session_manager_add(
+                &protocol->session_manager,
+                wsi,
+                &protocol->authenticators,
+                &protocol->rpc);
+
+            if (NULL != session)
+            {
+                wsfs_session_authenticate(session, NULL);
+            }
     		break;
 		case LWS_CALLBACK_CLOSED:
-            {
-                wsfs_session_manager_remove(&protocol->session_manager, wsi);
-            }
+            wsfs_session_manager_remove(&protocol->session_manager, wsi);
             break;
 		case LWS_CALLBACK_SERVER_WRITEABLE:
-			if ((NULL != session) && (!wsfs_message_queue_empty(&session->queue)))
+			if (NULL != session)
 			{                
-				struct wsfs_message * message = wsfs_message_queue_pop(&session->queue);
-				lws_write(wsi, (unsigned char*) message->data, message->length, LWS_WRITE_TEXT);
-				wsfs_message_dispose(message);
-
-                if (!wsfs_message_queue_empty(&session->queue))
-                {
-                    lws_callback_on_writable(wsi);
-                }
+                wsfs_session_onwritable(session);
 			}
     		break;
         case LWS_CALLBACK_RECEIVE:
-            wsfs_jsonrpc_server_onresult(&protocol->rpc, in, len);
+            if (NULL != session)
+            {
+                wsfs_session_receive(session, in, len);
+            }
             break;
         case LWS_CALLBACK_RAW_RX_FILE:
             wsfs_filesystem_process_request(&protocol->filesystem);
@@ -74,21 +74,11 @@ static bool wsfs_server_protocol_invoke(
     void * user_data,
     json_t const * request)
 {
-    bool result = false;
     struct wsfs_server_protocol * protocol = user_data;
     struct wsfs_session * session = &protocol->session_manager.session;
+    struct wsfs_message * message = wsfs_message_create(request);
 
-    if ((session->is_authenticated) && (NULL != session->wsi))
-    {
-        struct wsfs_message * message = wsfs_message_create(request);
-        if (NULL != message)
-        {
-            wsfs_message_queue_push(&session->queue, message);
-            lws_callback_on_writable(session->wsi);
-
-            result = true;
-        }
-    }
+    bool const result = wsfs_session_send(session, message);
 
     return result;
 }
