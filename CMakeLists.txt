@@ -45,20 +45,21 @@ set(EXTRA_CFLAGS
 )
 
 
-install(FILES include/wsfs/status.h DESTINATION include/wsfs)
-
 # libwsfs-core
 
 add_library(wsfs-core STATIC 
-	lib/wsfs/message.c
-	lib/wsfs/message_queue.c
-	lib/wsfs/status.c
+	lib/wsfs/core/message.c
+	lib/wsfs/core/message_queue.c
+	lib/wsfs/core/status.c
 )
 
 set_target_properties(wsfs-core PROPERTIES OUTPUT_NAME wsfs-core)
 target_include_directories(wsfs-core PUBLIC lib ${EXTRA_INCLUDE_DIRS})
 target_compile_options(wsfs-core PUBLIC ${EXTRA_CFLAGS})
 set_target_properties(wsfs-core PROPERTIES C_VISIBILITY_PRESET hidden)
+
+install(DIRECTORY include/wsfs/core DESTINATION include/wsfs)
+
 
 # libwsfs-adapter
 

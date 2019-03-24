@@ -1,7 +1,7 @@
 #include "wsfs/adapter/impl/session.h"
 #include "wsfs/adapter/impl/authenticators.h"
-#include "wsfs/message_queue.h"
-#include "wsfs/message.h"
+#include "wsfs/core/message_queue.h"
+#include "wsfs/core/message.h"
 #include "wsfs/adapter/impl/jsonrpc/server.h"
 
 #include <libwebsockets.h>

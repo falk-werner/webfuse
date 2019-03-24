@@ -1,7 +1,7 @@
 #ifndef WSFS_STATUS_INTERN_H
 #define WSFS_STATUS_INTERN_H
 
-#include "wsfs/status.h"
+#include "wsfs/core/status.h"
 
 #ifdef __cplusplus
 extern "C" {

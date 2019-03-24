@@ -2,7 +2,7 @@
 #define WSFSP_OPERATION_ERROR_H
 
 #include "wsfs/provider/api.h"
-#include "wsfs/status.h"
+#include "wsfs/core/status.h"
 
 struct wsfsp_request;
 

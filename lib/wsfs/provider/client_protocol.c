@@ -8,8 +8,8 @@
 
 
 #include "wsfs/provider/provider.h"
-#include "wsfs/util.h"
-#include "wsfs/message.h"
+#include "wsfs/core/util.h"
+#include "wsfs/core/message.h"
 
 static void wsfsp_client_protocol_respond(
     json_t * response,

@@ -9,7 +9,7 @@ using std::size_t;
 #endif
 
 #include <jansson.h>
-#include "wsfs/status.h"
+#include "wsfs/core/status.h"
 
 #ifdef __cplusplus
 extern "C" {

@@ -5,7 +5,7 @@
 #include "wsfs/provider/provider.h"
 #include "wsfs/provider/request.h"
 
-#include "wsfs/message_queue.h"
+#include "wsfs/core/message_queue.h"
 
 struct wsfsp_client_protocol
 {

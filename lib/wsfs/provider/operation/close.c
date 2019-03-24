@@ -1,6 +1,6 @@
 #include "wsfs/provider/operation/close_intern.h"
 #include <limits.h>
-#include "wsfs/util.h"
+#include "wsfs/core/util.h"
 
 void wsfsp_close(
     struct wsfsp_invokation_context * context,

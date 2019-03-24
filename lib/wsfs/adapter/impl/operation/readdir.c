@@ -9,7 +9,7 @@
 #include <unistd.h> 
 
 #include "wsfs/adapter/impl/jsonrpc/server.h"
-#include "wsfs/util.h"
+#include "wsfs/core/util.h"
 
 
 #define WSFS_DIRBUFFER_INITIAL_SIZE 1024

@@ -1,7 +1,7 @@
 #include "wsfs/provider/operation/open_intern.h"
 #include "wsfs/provider/operation/error.h"
 #include "wsfs/provider/request.h"
-#include "wsfs/util.h"
+#include "wsfs/core/util.h"
 
 void wsfsp_open(
     struct wsfsp_invokation_context * context,

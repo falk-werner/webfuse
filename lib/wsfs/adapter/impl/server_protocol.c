@@ -3,8 +3,8 @@
 #include <stdlib.h>
 #include <libwebsockets.h>
 
-#include "wsfs/message.h"
-#include "wsfs/util.h"
+#include "wsfs/core/message.h"
+#include "wsfs/core/util.h"
 
 #include "wsfs/adapter/impl/filesystem.h"
 

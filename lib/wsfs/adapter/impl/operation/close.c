@@ -5,7 +5,7 @@
 #include <jansson.h>
 
 #include "wsfs/adapter/impl/jsonrpc/server.h"
-#include "wsfs/util.h"
+#include "wsfs/core/util.h"
 
 void wsfs_impl_operation_close(
 	fuse_req_t request,

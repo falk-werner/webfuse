@@ -1,4 +1,4 @@
-#include "wsfs/status_intern.h"
+#include "wsfs/core/status_intern.h"
 
 #include <errno.h>
 

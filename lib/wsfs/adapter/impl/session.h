@@ -9,7 +9,7 @@
 using std::size_t;
 #endif
 
-#include "wsfs/message_queue.h"
+#include "wsfs/core/message_queue.h"
 
 #ifdef __cplusplus
 extern "C"

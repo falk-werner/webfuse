@@ -1,5 +1,5 @@
-#include "wsfs/message_queue.h"
-#include "wsfs/message.h"
+#include "wsfs/core/message_queue.h"
+#include "wsfs/core/message.h"
 
 void wsfs_message_queue_init(
     struct wsfs_message_queue * queue)

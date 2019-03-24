@@ -4,7 +4,7 @@
 #include <libwebsockets.h>
 
 #include "wsfs/provider/operation/error.h"
-#include "wsfs/util.h"
+#include "wsfs/core/util.h"
 
 void wsfsp_read(
     struct wsfsp_invokation_context * context,

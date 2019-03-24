@@ -3,7 +3,7 @@
 #include <stdbool.h>
 
 #include "wsfs/provider/operation/error.h"
-#include "wsfs/util.h"
+#include "wsfs/core/util.h"
 
 void wsfsp_lookup(
     struct wsfsp_invokation_context * context,
