@@ -11,16 +11,16 @@ using std::size_t;
 #include <jansson.h>
 #include "wsfs/status.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct wsfs_jsonrpc_response
 {
 	wsfs_status status;
 	int id;
 	json_t * result;	
 };
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 extern void wsfs_jsonrpc_response_init(
 	struct wsfs_jsonrpc_response * response,

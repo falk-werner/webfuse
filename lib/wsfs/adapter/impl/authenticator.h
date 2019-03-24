@@ -7,6 +7,11 @@
 
 #include "wsfs/adapter/authenticate.h"
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 struct wsfs_authenticator
 {
     char * type;
@@ -14,11 +19,6 @@ struct wsfs_authenticator
     void * user_data;
     struct wsfs_authenticator * next;
 };
-
-#ifdef __cplusplus
-extern "C"
-{
-#endif
 
 extern struct wsfs_authenticator * wsfs_authenticator_create(
     char const * type,

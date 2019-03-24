@@ -3,6 +3,10 @@
 
 #include "wsfs/adapter/impl/fuse_wrapper.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct wsfs_jsonrpc_server;
 
 struct wsfs_operations_context
@@ -10,10 +14,6 @@ struct wsfs_operations_context
 	struct wsfs_jsonrpc_server * rpc;
 	double timeout;
 };
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 extern void wsfs_operation_lookup (
 	fuse_req_t req, 

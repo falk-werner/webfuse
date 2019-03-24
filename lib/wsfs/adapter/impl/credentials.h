@@ -3,16 +3,16 @@
 
 #include <jansson.h>
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 struct wsfs_credentials
 {
     char * type;
     json_t * data;
 };
-
-#ifdef __cplusplus
-extern "C"
-{
-#endif
 
 extern void wsfs_impl_credentials_init(
     struct wsfs_credentials * credentials,

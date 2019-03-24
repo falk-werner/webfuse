@@ -8,6 +8,11 @@
 #include "wsfs/adapter/impl/fuse_wrapper.h"
 #include "wsfs/adapter/impl/operations.h"
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 struct wsfs_jsonrpc_server;
 
 struct wsfs_filesystem
@@ -17,11 +22,6 @@ struct wsfs_filesystem
 	struct fuse_buf buffer;
 	struct wsfs_operations_context user_data;
 };
-
-#ifdef __cplusplus
-extern "C"
-{
-#endif
 
 extern bool wsfs_filesystem_init(
     struct wsfs_filesystem * filesystem,

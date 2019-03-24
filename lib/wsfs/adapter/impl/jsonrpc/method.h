@@ -8,6 +8,10 @@
 #include <jansson.h>
 #include "wsfs/status.h"
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
 
 typedef bool wsfs_jsonrpc_method_invoke_fn(
     void * user_data,
@@ -18,6 +22,9 @@ typedef void wsfs_jsonrpc_method_finished_fn(
 	wsfs_status status,
 	struct json_t const * result);
 
+#ifdef __cplusplus
+}
+#endif
 
 
 

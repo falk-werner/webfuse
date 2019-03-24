@@ -3,6 +3,10 @@
 
 #include "wsfs/adapter/impl/authenticators.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct wsfs_server_config
 {
     char * mount_point;
@@ -13,11 +17,6 @@ struct wsfs_server_config
 	int port;
 	struct wsfs_authenticators authenticators;
 };
-
-#ifdef __cplusplus
-extern "C"
-{
-#endif
 
 extern struct wsfs_server_config * wsfs_impl_server_config_create(void);
 

@@ -8,13 +8,13 @@
 #include <cinttypes>
 #endif
 
-typedef uint64_t wsfs_timepoint;
-typedef int64_t wsfs_timediff;
-
 #ifdef __cplusplus
 extern "C"
 {
 #endif
+
+typedef uint64_t wsfs_timepoint;
+typedef int64_t wsfs_timediff;
 
 extern wsfs_timepoint wsfs_timepoint_now(void);
 

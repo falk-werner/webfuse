@@ -3,6 +3,11 @@
 
 #include "wsfs/adapter/impl/time/timepoint.h"
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 struct wsfs_timer;
 struct wsfs_timeout_manager;
 
@@ -17,11 +22,6 @@ struct wsfs_timer
     struct wsfs_timer * next;
     struct wsfs_timer * prev;
 };
-
-#ifdef __cplusplus
-extern "C"
-{
-#endif
 
 extern void wsfs_timer_init(
     struct wsfs_timer * timer,

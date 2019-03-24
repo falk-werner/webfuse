@@ -16,6 +16,9 @@ using std::size_t;
 #include "wsfs/adapter/impl/time/timeout_manager.h"
 #include "wsfs/adapter/impl/time/timer.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 struct wsfs_jsonrpc_request
 {
@@ -31,12 +34,6 @@ struct wsfs_jsonrpc_server
     struct wsfs_jsonrpc_method * methods;
     struct wsfs_jsonrpc_request request;
 };
-
-
-#ifdef __cplusplus
-extern "C"
-{
-#endif
 
 extern void wsfs_jsonrpc_server_init(
     struct wsfs_jsonrpc_server * server,

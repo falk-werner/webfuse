@@ -3,6 +3,11 @@
 
 #include "wsfs/adapter/impl/jsonrpc/method.h"
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 struct wsfs_jsonrpc_method
 {
     struct wsfs_jsonrpc_method * next;
@@ -10,11 +15,6 @@ struct wsfs_jsonrpc_method
     wsfs_jsonrpc_method_invoke_fn * invoke;
     void * user_data;
 };
-
-#ifdef __cplusplus
-extern "C"
-{
-#endif
 
 extern struct wsfs_jsonrpc_method * wsfs_jsonrpc_method_create(
     char const * name,
