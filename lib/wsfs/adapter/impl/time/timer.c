@@ -4,9 +4,9 @@
 #include <stddef.h>
 #include <string.h>
 
-void wsfs_timer_init(
-    struct wsfs_timer * timer,
-    struct wsfs_timeout_manager * manager)
+void timer_init(
+    struct timer * timer,
+    struct timeout_manager * manager)
 {
     timer->manager = manager;
     timer->timeout = 0;
@@ -16,44 +16,44 @@ void wsfs_timer_init(
     timer->next = NULL;
 }
 
-void wsfs_timer_cleanup(
-    struct wsfs_timer * timer)
+void timer_cleanup(
+    struct timer * timer)
 {
-    memset(timer, 0, sizeof(struct wsfs_timer));    
+    memset(timer, 0, sizeof(struct timer));    
 }
 
-void wsfs_timer_start(
-    struct wsfs_timer * timer,
-    wsfs_timepoint absolute_timeout,
-    wsfs_timer_timeout_fn * handler,
+void timer_start(
+    struct timer * timer,
+    timepoint absolute_timeout,
+    timer_timeout_fn * handler,
     void * user_data)
 {
     timer->timeout = absolute_timeout;
     timer->timeout_handler = handler;
     timer->user_data = user_data;
 
-    wsfs_timeout_manager_addtimer(timer->manager, timer);
+    timeout_manager_addtimer(timer->manager, timer);
 }
 
-void wsfs_timer_cancel(
-    struct wsfs_timer * timer)
+void timer_cancel(
+    struct timer * timer)
 {
-    wsfs_timeout_manager_removetimer(timer->manager, timer);
+    timeout_manager_removetimer(timer->manager, timer);
 
     timer->timeout = 0;
     timer->timeout_handler = NULL;
     timer->user_data = NULL;
 }
 
-bool wsfs_timer_is_timeout(
-    struct wsfs_timer * timer)
+bool timer_is_timeout(
+    struct timer * timer)
 {
-    return wsfs_timepoint_is_elapsed(timer->timeout);
+    return timepoint_is_elapsed(timer->timeout);
 }
 
 
-void wsfs_timer_trigger(
-    struct wsfs_timer * timer)
+void timer_trigger(
+    struct timer * timer)
 {
     if (NULL != timer->timeout_handler)
     {

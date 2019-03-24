@@ -7,42 +7,42 @@
 extern "C" {
 #endif
 
-struct wsfs_jsonrpc_server;
+struct jsonrpc_server;
 
-struct wsfs_operations_context
+struct operations_context
 {
-	struct wsfs_jsonrpc_server * rpc;
+	struct jsonrpc_server * rpc;
 	double timeout;
 };
 
-extern void wsfs_operation_lookup (
+extern void operation_lookup (
 	fuse_req_t req, 
 	fuse_ino_t parent, 
 	char const * name);
 
-extern void wsfs_operation_getattr (
+extern void operation_getattr (
 		fuse_req_t request,
 		fuse_ino_t inode,
 		struct fuse_file_info *file_info);
 
-extern void wsfs_operation_readdir (
+extern void operation_readdir (
 	fuse_req_t request,
 	fuse_ino_t inode,
 	size_t size,
 	off_t offset,
 	struct fuse_file_info *file_info);
 
-extern void wsfs_operation_open(
+extern void operation_open(
 	fuse_req_t request,
 	fuse_ino_t inode,
 	struct fuse_file_info * file_info);
 
-extern void wsfs_operation_close(
+extern void operation_close(
 	fuse_req_t request,
 	fuse_ino_t inode,
 	struct fuse_file_info * file_info);
 
-extern void wsfs_operation_read(
+extern void operation_read(
 	fuse_req_t request,
 	fuse_ino_t ino, size_t size, off_t off,
 			struct fuse_file_info *fi);

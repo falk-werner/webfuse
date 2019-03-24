@@ -13,16 +13,16 @@ extern "C"
 {
 #endif
 
-typedef uint64_t wsfs_timepoint;
-typedef int64_t wsfs_timediff;
+typedef uint64_t timepoint;
+typedef int64_t timediff;
 
-extern wsfs_timepoint wsfs_timepoint_now(void);
+extern timepoint timepoint_now(void);
 
-extern wsfs_timepoint wsfs_timepoint_in_msec(
-    wsfs_timediff value);
+extern timepoint timepoint_in_msec(
+    timediff value);
 
-extern bool wsfs_timepoint_is_elapsed(
-    wsfs_timepoint timepoint);
+extern bool timepoint_is_elapsed(
+    timepoint timepoint);
 
 #ifdef __cplusplus
 } 

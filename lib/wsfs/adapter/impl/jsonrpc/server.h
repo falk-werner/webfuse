@@ -20,52 +20,52 @@ using std::size_t;
 extern "C" {
 #endif
 
-struct wsfs_jsonrpc_request
+struct jsonrpc_request
 {
     bool is_pending;
-    wsfs_jsonrpc_method_finished_fn * finished;
+    jsonrpc_method_finished_fn * finished;
     void * user_data;
     int id;
-    struct wsfs_timer timer;
+    struct timer timer;
 };
 
-struct wsfs_jsonrpc_server
+struct jsonrpc_server
 {
-    struct wsfs_jsonrpc_method * methods;
-    struct wsfs_jsonrpc_request request;
+    struct jsonrpc_method * methods;
+    struct jsonrpc_request request;
 };
 
-extern void wsfs_jsonrpc_server_init(
-    struct wsfs_jsonrpc_server * server,
-    struct wsfs_timeout_manager * manager);
+extern void jsonrpc_server_init(
+    struct jsonrpc_server * server,
+    struct timeout_manager * manager);
 
-extern void wsfs_jsonrpc_server_cleanup(
-    struct wsfs_jsonrpc_server * server);
+extern void jsonrpc_server_cleanup(
+    struct jsonrpc_server * server);
 
-extern void wsfs_jsonrpc_server_add(
-    struct wsfs_jsonrpc_server * server,
+extern void jsonrpc_server_add(
+    struct jsonrpc_server * server,
     char const * name,
-    wsfs_jsonrpc_method_invoke_fn * invoke,
+    jsonrpc_method_invoke_fn * invoke,
     void * user_data );
 
-extern void wsfs_jsonrpc_server_invoke(
-	struct wsfs_jsonrpc_server * server,
-	wsfs_jsonrpc_method_finished_fn * finished,
+extern void jsonrpc_server_invoke(
+	struct jsonrpc_server * server,
+	jsonrpc_method_finished_fn * finished,
 	void * user_data,
 	char const * method_name,
 	char const * param_info,
 	...
 );
 
-extern void wsfs_jsonrpc_server_notify(
-	struct wsfs_jsonrpc_server * server,
+extern void jsonrpc_server_notify(
+	struct jsonrpc_server * server,
 	char const * method_name,
 	char const * param_info,
 	...
 );
 
-extern void wsfs_jsonrpc_server_onresult(
-    struct wsfs_jsonrpc_server * server,
+extern void jsonrpc_server_onresult(
+    struct jsonrpc_server * server,
     char const * message,
     size_t length);
 

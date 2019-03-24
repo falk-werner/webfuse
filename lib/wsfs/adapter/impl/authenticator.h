@@ -12,24 +12,24 @@ extern "C"
 {
 #endif
 
-struct wsfs_authenticator
+struct authenticator
 {
     char * type;
     wsfs_authenticate_fn * authenticate;
     void * user_data;
-    struct wsfs_authenticator * next;
+    struct authenticator * next;
 };
 
-extern struct wsfs_authenticator * wsfs_authenticator_create(
+extern struct authenticator * authenticator_create(
     char const * type,
     wsfs_authenticate_fn * authenticate,
     void * user_data);
 
-extern void wsfs_authenticator_dispose(
-    struct wsfs_authenticator * authenticator);
+extern void authenticator_dispose(
+    struct authenticator * authenticator);
 
-extern bool wsfs_authenticator_autenticate(
-    struct wsfs_authenticator * authenticator,
+extern bool authenticator_autenticate(
+    struct authenticator * authenticator,
     struct wsfs_credentials * credentials);
 
 

@@ -7,11 +7,11 @@
 #include <libwebsockets.h>
 #include <stddef.h>
 
-void wsfs_session_init(
-    struct wsfs_session * session,
+void session_init(
+    struct session * session,
     struct lws * wsi,
-    struct wsfs_authenticators * authenticators,
-    struct wsfs_jsonrpc_server * rpc)
+    struct authenticators * authenticators,
+    struct jsonrpc_server * rpc)
  {
     session->wsi = wsi;
     session->is_authenticated = false;
@@ -20,8 +20,8 @@ void wsfs_session_init(
     wsfs_message_queue_init(&session->queue);
  }
 
-void wsfs_session_cleanup(
-    struct wsfs_session * session)
+void session_cleanup(
+    struct session * session)
 {
     wsfs_message_queue_cleanup(&session->queue);
     session->is_authenticated = false;
@@ -30,15 +30,15 @@ void wsfs_session_cleanup(
     session->rpc = NULL;
 }
 
-void wsfs_session_authenticate(
-    struct wsfs_session * session,
+void session_authenticate(
+    struct session * session,
     struct wsfs_credentials * creds)
 {
-    session->is_authenticated = wsfs_authenticators_authenticate(session->authenticators, creds);
+    session->is_authenticated = authenticators_authenticate(session->authenticators, creds);
 }
 
-bool wsfs_session_send(
-    struct wsfs_session * session,
+bool session_send(
+    struct session * session,
     struct wsfs_message * message)
 {
     bool result = (session->is_authenticated) && (NULL != session->wsi);
@@ -58,8 +58,8 @@ bool wsfs_session_send(
     return result;
 }
 
-void wsfs_session_onwritable(
-    struct wsfs_session * session)
+void session_onwritable(
+    struct session * session)
 {
     if (!wsfs_message_queue_empty(&session->queue))
     {                
@@ -75,10 +75,10 @@ void wsfs_session_onwritable(
 }
 
 
-void wsfs_session_receive(
-    struct wsfs_session * session,
+void session_receive(
+    struct session * session,
     char const * data,
     size_t length)
 {
-    wsfs_jsonrpc_server_onresult(session->rpc, data, length);
+    jsonrpc_server_onresult(session->rpc, data, length);
 }

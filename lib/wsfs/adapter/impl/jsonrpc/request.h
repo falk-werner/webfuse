@@ -18,7 +18,7 @@ extern "C"
 {
 #endif
 
-extern json_t * wsfs_jsonrpc_request_create(
+extern json_t * jsonrpc_request_create(
 	char const * method,
 	int id,
 	char const * param_info,

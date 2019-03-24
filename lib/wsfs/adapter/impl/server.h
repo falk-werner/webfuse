@@ -9,16 +9,16 @@ extern "C"
 struct wsfs_server;
 struct wsfs_server_config;
 
-extern struct wsfs_server * wsfs_impl_server_create(
+extern struct wsfs_server * server_create(
     struct wsfs_server_config * config);
 
-extern void wsfs_impl_server_dispose(
+extern void server_dispose(
     struct wsfs_server * server);
 
-extern void wsfs_impl_server_run(
+extern void server_run(
     struct wsfs_server * server);
 
-extern void wsfs_impl_server_shutdown(
+extern void server_shutdown(
     struct wsfs_server * server);
 
 #ifdef __cplusplus

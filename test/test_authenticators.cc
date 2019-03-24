@@ -16,71 +16,71 @@ using ::wsfs_test::authenticate_2;
 
 TEST(Authenticators, CloneEmpty)
 {
-    struct wsfs_authenticators authenticators;
-    struct wsfs_authenticators clone;
+    struct authenticators authenticators;
+    struct authenticators clone;
 
-    wsfs_authenticators_init(&authenticators);
+    authenticators_init(&authenticators);
     ASSERT_EQ(nullptr, authenticators.first);
 
-    wsfs_authenticators_clone(&authenticators, &clone);
+    authenticators_clone(&authenticators, &clone);
     ASSERT_EQ(nullptr, clone.first);
 
-    wsfs_authenticators_cleanup(&authenticators);
-    wsfs_authenticators_cleanup(&clone);
+    authenticators_cleanup(&authenticators);
+    authenticators_cleanup(&clone);
 }
 
 TEST(Authenticators, Clone)
 {
-    struct wsfs_authenticators authenticators;
-    struct wsfs_authenticators clone;
+    struct authenticators authenticators;
+    struct authenticators clone;
 
-    wsfs_authenticators_init(&authenticators);
-    wsfs_authenticators_add(&authenticators, "username", &authenticate, nullptr);
+    authenticators_init(&authenticators);
+    authenticators_add(&authenticators, "username", &authenticate, nullptr);
     ASSERT_NE(nullptr, authenticators.first);
 
-    wsfs_authenticators_clone(&authenticators, &clone);
+    authenticators_clone(&authenticators, &clone);
     ASSERT_NE(nullptr, clone.first);
     ASSERT_NE(nullptr, authenticators.first);
     ASSERT_NE(authenticators.first, clone.first);
 
-    wsfs_authenticators_cleanup(&authenticators);
-    wsfs_authenticators_cleanup(&clone);
+    authenticators_cleanup(&authenticators);
+    authenticators_cleanup(&clone);
 }
 
 TEST(Authenticators, Move)
 {
-    struct wsfs_authenticators authenticators;
-    struct wsfs_authenticators clone;
+    struct authenticators authenticators;
+    struct authenticators clone;
 
-    wsfs_authenticators_init(&authenticators);
-    wsfs_authenticators_add(&authenticators, "username", &authenticate, nullptr);
+    authenticators_init(&authenticators);
+    authenticators_add(&authenticators, "username", &authenticate, nullptr);
     ASSERT_NE(nullptr, authenticators.first);
 
-    wsfs_authenticators_move(&authenticators, &clone);
+    authenticators_move(&authenticators, &clone);
     ASSERT_NE(nullptr, clone.first);
     ASSERT_EQ(nullptr, authenticators.first);
     ASSERT_NE(authenticators.first, clone.first);
 
-    wsfs_authenticators_cleanup(&authenticators);
-    wsfs_authenticators_cleanup(&clone);
+    authenticators_cleanup(&authenticators);
+    authenticators_cleanup(&clone);
 }
 
 TEST(Authenticators, AuthenticateWithoutAuthenticators)
 {
     struct wsfs_credentials creds;
-    wsfs_impl_credentials_init(&creds, "username", nullptr);
+    credentials_init(&creds, "username", nullptr);
 
-    struct wsfs_authenticators authenticators;
-    wsfs_authenticators_init(&authenticators);
+    struct authenticators authenticators;
+    authenticators_init(&authenticators);
 
-    bool result = wsfs_authenticators_authenticate(&authenticators, &creds);
+    bool result =authenticators_authenticate(&authenticators, &creds);
     ASSERT_TRUE(result);
 
-    result = wsfs_authenticators_authenticate(&authenticators, nullptr);
+    result = authenticators_authenticate(&authenticators, nullptr);
     ASSERT_TRUE(result);
 
-    wsfs_authenticators_cleanup(&authenticators);
-    wsfs_impl_credentials_cleanup(&creds);
+    authenticators_cleanup(&authenticators);
+    credentials_cleanup(&creds);
 }
 
 TEST(Authenticators, FailToAuthenticateWithoutCredentials)
@@ -88,20 +88,20 @@ TEST(Authenticators, FailToAuthenticateWithoutCredentials)
     MockAuthenticator mock;
     set_authenticator(&mock);
 
-    struct wsfs_authenticators authenticators;
-    wsfs_authenticators_init(&authenticators);
-    wsfs_authenticators_add(&authenticators, "username", &authenticate, nullptr);
+    struct authenticators authenticators;
+    authenticators_init(&authenticators);
+    authenticators_add(&authenticators, "username", &authenticate, nullptr);
 
-    bool result = wsfs_authenticators_authenticate(&authenticators, nullptr);
+    bool result = authenticators_authenticate(&authenticators, nullptr);
     ASSERT_FALSE(result);
 
-    wsfs_authenticators_cleanup(&authenticators);
+    authenticators_cleanup(&authenticators);
 }
 
 TEST(Authenticators, AuthenticateWithMultipleCredentials)
 {
     struct wsfs_credentials creds;
-    wsfs_impl_credentials_init(&creds, "username", nullptr);
+    credentials_init(&creds, "username", nullptr);
 
     MockAuthenticator username_mock;
     set_authenticator(1, &username_mock);
@@ -114,22 +114,22 @@ TEST(Authenticators, AuthenticateWithMultipleCredentials)
     EXPECT_CALL(certificate_mock, authenticate(_, _))
         .Times(0);
 
-    struct wsfs_authenticators authenticators;
-    wsfs_authenticators_init(&authenticators);
-    wsfs_authenticators_add(&authenticators, "username", &authenticate_1, nullptr);
-    wsfs_authenticators_add(&authenticators, "certificate", &authenticate_2, nullptr);
+    struct authenticators authenticators;
+    authenticators_init(&authenticators);
+    authenticators_add(&authenticators, "username", &authenticate_1, nullptr);
+    authenticators_add(&authenticators, "certificate", &authenticate_2, nullptr);
 
-    bool result = wsfs_authenticators_authenticate(&authenticators, &creds);
+    bool result = authenticators_authenticate(&authenticators, &creds);
     ASSERT_TRUE(result);
 
-    wsfs_authenticators_cleanup(&authenticators);
-    wsfs_impl_credentials_cleanup(&creds);
+    authenticators_cleanup(&authenticators);
+    credentials_cleanup(&creds);
 }
 
 TEST(Authenticators, FailedAuthenticateWithWrongType)
 {
     struct wsfs_credentials creds;
-    wsfs_impl_credentials_init(&creds, "token", nullptr);
+    credentials_init(&creds, "token", nullptr);
 
     MockAuthenticator username_mock;
     set_authenticator(1, &username_mock);
@@ -141,14 +141,14 @@ TEST(Authenticators, FailedAuthenticateWithWrongType)
     EXPECT_CALL(certificate_mock, authenticate(_, _))
         .Times(0);
 
-    struct wsfs_authenticators authenticators;
-    wsfs_authenticators_init(&authenticators);
-    wsfs_authenticators_add(&authenticators, "username", &authenticate_1, nullptr);
-    wsfs_authenticators_add(&authenticators, "certificate", &authenticate_2, nullptr);
+    struct authenticators authenticators;
+    authenticators_init(&authenticators);
+    authenticators_add(&authenticators, "username", &authenticate_1, nullptr);
+    authenticators_add(&authenticators, "certificate", &authenticate_2, nullptr);
 
-    bool result = wsfs_authenticators_authenticate(&authenticators, &creds);
+    bool result = authenticators_authenticate(&authenticators, &creds);
     ASSERT_FALSE(result);
 
-    wsfs_authenticators_cleanup(&authenticators);
-    wsfs_impl_credentials_cleanup(&creds);
+    authenticators_cleanup(&authenticators);
+    credentials_cleanup(&creds);
 }

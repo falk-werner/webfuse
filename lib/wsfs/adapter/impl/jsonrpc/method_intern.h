@@ -8,21 +8,21 @@ extern "C"
 {
 #endif
 
-struct wsfs_jsonrpc_method
+struct jsonrpc_method
 {
-    struct wsfs_jsonrpc_method * next;
+    struct jsonrpc_method * next;
     char * name;
-    wsfs_jsonrpc_method_invoke_fn * invoke;
+    jsonrpc_method_invoke_fn * invoke;
     void * user_data;
 };
 
-extern struct wsfs_jsonrpc_method * wsfs_jsonrpc_method_create(
+extern struct jsonrpc_method * jsonrpc_method_create(
     char const * name,
-    wsfs_jsonrpc_method_invoke_fn * invoke,
+    jsonrpc_method_invoke_fn * invoke,
     void * user_data);
 
-extern void wsfs_jsonrpc_method_dispose(
-    struct wsfs_jsonrpc_method * method);
+extern void jsonrpc_method_dispose(
+    struct jsonrpc_method * method);
 
 #ifdef __cplusplus
 }

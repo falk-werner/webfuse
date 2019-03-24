@@ -19,42 +19,42 @@ extern "C"
 struct lws;
 struct wsfs_message;
 struct wsfs_credentials;
-struct wsfs_authenticators;
-struct wsfs_jsonrpc_server;
+struct authenticators;
+struct jsonrpc_server;
 
-struct wsfs_session
+struct session
 {
     struct lws * wsi;
     bool is_authenticated;
     struct wsfs_message_queue queue;
-    struct wsfs_authenticators * authenticators;
-    struct wsfs_jsonrpc_server * rpc;
+    struct authenticators * authenticators;
+    struct jsonrpc_server * rpc;
 };
 
-extern void wsfs_session_init(
-    struct wsfs_session * session,
+extern void session_init(
+    struct session * session,
     struct lws * wsi,
-   struct wsfs_authenticators * authenticators,
-   struct wsfs_jsonrpc_server * rpc);
+   struct authenticators * authenticators,
+   struct jsonrpc_server * rpc);
 
-extern void wsfs_session_authenticate(
-    struct wsfs_session * session,
+extern void session_authenticate(
+    struct session * session,
     struct wsfs_credentials * creds);
 
-extern bool wsfs_session_send(
-    struct wsfs_session * session,
+extern bool session_send(
+    struct session * session,
     struct wsfs_message * message);
 
-extern void wsfs_session_receive(
-    struct wsfs_session * session,
+extern void session_receive(
+    struct session * session,
     char const * data,
     size_t length);
 
-extern void wsfs_session_onwritable(
-    struct wsfs_session * session);
+extern void session_onwritable(
+    struct session * session);
 
-extern void wsfs_session_cleanup(
-    struct wsfs_session * session);
+extern void session_cleanup(
+    struct session * session);
 
 #ifdef __cplusplus
 }

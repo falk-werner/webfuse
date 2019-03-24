@@ -1,7 +1,7 @@
 #include "wsfs/adapter/impl/jsonrpc/response.h"
 
-void wsfs_jsonrpc_response_init(
-	struct wsfs_jsonrpc_response * result,
+void jsonrpc_response_init(
+	struct jsonrpc_response * result,
     char const * buffer,
 	size_t length)
 {
@@ -49,8 +49,8 @@ void wsfs_jsonrpc_response_init(
 	json_decref(response);
 }
 
-void wsfs_jsonrpc_response_cleanup(
-	struct wsfs_jsonrpc_response * response)
+void jsonrpc_response_cleanup(
+	struct jsonrpc_response * response)
 {
     if (NULL != response->result)
     {

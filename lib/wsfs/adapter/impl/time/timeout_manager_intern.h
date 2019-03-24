@@ -8,13 +8,13 @@ extern "C"
 {
 #endif
 
-extern void wsfs_timeout_manager_addtimer(
-    struct wsfs_timeout_manager * manager,
-    struct wsfs_timer * timer);
+extern void timeout_manager_addtimer(
+    struct timeout_manager * manager,
+    struct timer * timer);
 
-extern void wsfs_timeout_manager_removetimer(
-    struct wsfs_timeout_manager * manager,
-    struct wsfs_timer * timer);
+extern void timeout_manager_removetimer(
+    struct timeout_manager * manager,
+    struct timer * timer);
 
 #ifdef __cplusplus
 }

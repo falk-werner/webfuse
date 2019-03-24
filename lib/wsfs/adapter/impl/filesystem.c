@@ -6,20 +6,20 @@
 #include <string.h>
 #include <errno.h>
 
-static struct fuse_lowlevel_ops const wsfs_filesystem_operations =
+static struct fuse_lowlevel_ops const filesystem_operations =
 {
-	.lookup = &wsfs_operation_lookup,
-	.getattr = &wsfs_operation_getattr,
-	.readdir = &wsfs_operation_readdir,
-	.open	= &wsfs_operation_open,
-	.release = &wsfs_operation_close,
-	.read	= &wsfs_operation_read
+	.lookup = &operation_lookup,
+	.getattr = &operation_getattr,
+	.readdir = &operation_readdir,
+	.open	= &operation_open,
+	.release = &operation_close,
+	.read	= &operation_read
 };
 
 
-bool wsfs_filesystem_init(
-    struct wsfs_filesystem * filesystem,
-	struct wsfs_jsonrpc_server * rpc,
+bool filesystem_init(
+    struct filesystem * filesystem,
+	struct jsonrpc_server * rpc,
     char * mount_point)
 {
 	bool result = false;
@@ -35,8 +35,8 @@ bool wsfs_filesystem_init(
 
 	filesystem->session = fuse_session_new(
         &filesystem->args,
-        &wsfs_filesystem_operations,
-        sizeof(wsfs_filesystem_operations),
+        &filesystem_operations,
+        sizeof(filesystem_operations),
         &filesystem->user_data);
 	if (NULL != filesystem->session)
 	{
@@ -46,8 +46,8 @@ bool wsfs_filesystem_init(
 	return result;
 }
 
-void wsfs_filesystem_cleanup(
-    struct wsfs_filesystem * filesystem)
+void filesystem_cleanup(
+    struct filesystem * filesystem)
 {
 	if (NULL != filesystem->session)
 	{
@@ -61,14 +61,14 @@ void wsfs_filesystem_cleanup(
 	fuse_opt_free_args(&filesystem->args);    
 }
 
-int wsfs_filesystem_get_fd(
-    struct wsfs_filesystem * filesystem)
+int filesystem_get_fd(
+    struct filesystem * filesystem)
 {
     return fuse_session_fd(filesystem->session);
 }
 
-void wsfs_filesystem_process_request(
-    struct wsfs_filesystem * filesystem)
+void filesystem_process_request(
+    struct filesystem * filesystem)
 {
 	int const result = fuse_session_receive_buf(filesystem->session, &filesystem->buffer);
 	if (0 < result)

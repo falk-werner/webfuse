@@ -6,20 +6,20 @@ extern "C"
 {
 #endif
 
-struct wsfs_timer;
-struct wsfs_timeout_manager
+struct timer;
+struct timeout_manager
 {
-    struct wsfs_timer * timers;
+    struct timer * timers;
 };
 
-extern void wsfs_timeout_manager_init(
-    struct wsfs_timeout_manager * manager);
+extern void timeout_manager_init(
+    struct timeout_manager * manager);
 
-extern void wsfs_timeout_manager_cleanup(
-    struct wsfs_timeout_manager * manager);
+extern void timeout_manager_cleanup(
+    struct timeout_manager * manager);
 
-extern void wsfs_timeout_manager_check(
-    struct wsfs_timeout_manager * manager);
+extern void timeout_manager_check(
+    struct timeout_manager * manager);
 
 
 #ifdef __cplusplus

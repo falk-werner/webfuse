@@ -1,6 +1,6 @@
 #include "wsfs/adapter/impl/jsonrpc/util.h"
 
-int wsfs_json_get_int(json_t const * object, char const * key, int default_value)
+int json_get_int(json_t const * object, char const * key, int default_value)
 {
 	int result = default_value;
 

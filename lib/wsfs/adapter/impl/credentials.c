@@ -1,7 +1,7 @@
 #include "wsfs/adapter/impl/credentials.h"
 #include <string.h>
 
-void wsfs_impl_credentials_init(
+void credentials_init(
     struct wsfs_credentials * credentials,
     char const * type,
     json_t * data)
@@ -11,20 +11,20 @@ void wsfs_impl_credentials_init(
     json_incref(credentials->data);
 }
 
-void wsfs_impl_credentials_cleanup(
+void credentials_cleanup(
     struct wsfs_credentials * credentials)
 {
     free(credentials->type);
     json_decref(credentials->data);
 }
 
-char const * wsfs_impl_credentials_type(
+char const * credentials_type(
     struct wsfs_credentials const * credentials)
 {
     return credentials->type;
 }
 
-char const * wsfs_impl_credentials_get(
+char const * credentials_get(
     struct wsfs_credentials const * credentials,
     char const * key)
 {

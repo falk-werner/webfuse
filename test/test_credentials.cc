@@ -7,9 +7,9 @@ TEST(Credentials, Type)
 {
     struct wsfs_credentials creds;
 
-    wsfs_impl_credentials_init(&creds, "test", nullptr);
-    ASSERT_STREQ("test", wsfs_impl_credentials_type(&creds));
-    wsfs_impl_credentials_cleanup(&creds);
+    credentials_init(&creds, "test", nullptr);
+    ASSERT_STREQ("test", credentials_type(&creds));
+    credentials_cleanup(&creds);
 }
 
 TEST(Credentials, Get)
@@ -19,12 +19,12 @@ TEST(Credentials, Get)
     json_object_set_new(data, "username", json_string("bob"));
     json_object_set_new(data, "password", json_string("<secret>"));
 
-    wsfs_impl_credentials_init(&creds, "username", data);
-    ASSERT_STREQ("username", wsfs_impl_credentials_type(&creds));
-    ASSERT_STREQ("bob", wsfs_impl_credentials_get(&creds, "username"));
-    ASSERT_STREQ("<secret>", wsfs_impl_credentials_get(&creds, "password"));
+    credentials_init(&creds, "username", data);
+    ASSERT_STREQ("username", credentials_type(&creds));
+    ASSERT_STREQ("bob", credentials_get(&creds, "username"));
+    ASSERT_STREQ("<secret>", credentials_get(&creds, "password"));
 
-    wsfs_impl_credentials_cleanup(&creds);
+    credentials_cleanup(&creds);
     json_decref(data);
 }
 
@@ -33,12 +33,12 @@ TEST(Credentials, FailedToGetNonexistingValue)
     struct wsfs_credentials creds;
     json_t * data = json_object();
 
-    wsfs_impl_credentials_init(&creds, "username", data);
-    ASSERT_STREQ("username", wsfs_impl_credentials_type(&creds));
-    ASSERT_STREQ(nullptr, wsfs_impl_credentials_get(&creds, "username"));
-    ASSERT_STREQ(nullptr, wsfs_impl_credentials_get(&creds, "password"));
+    credentials_init(&creds, "username", data);
+    ASSERT_STREQ("username", credentials_type(&creds));
+    ASSERT_STREQ(nullptr, credentials_get(&creds, "username"));
+    ASSERT_STREQ(nullptr, credentials_get(&creds, "password"));
 
-    wsfs_impl_credentials_cleanup(&creds);
+    credentials_cleanup(&creds);
     json_decref(data);    
 }
 
@@ -46,12 +46,12 @@ TEST(Credentials, FailedToGetWithoutData)
 {
     struct wsfs_credentials creds;
 
-    wsfs_impl_credentials_init(&creds, "username", nullptr);
-    ASSERT_STREQ("username", wsfs_impl_credentials_type(&creds));
-    ASSERT_STREQ(nullptr, wsfs_impl_credentials_get(&creds, "username"));
-    ASSERT_STREQ(nullptr, wsfs_impl_credentials_get(&creds, "password"));
+    credentials_init(&creds, "username", nullptr);
+    ASSERT_STREQ("username",credentials_type(&creds));
+    ASSERT_STREQ(nullptr, credentials_get(&creds, "username"));
+    ASSERT_STREQ(nullptr, credentials_get(&creds, "password"));
 
-    wsfs_impl_credentials_cleanup(&creds);
+    credentials_cleanup(&creds);
 }
 
 TEST(Credentials, FailedToGetWrongDataType)
@@ -59,12 +59,12 @@ TEST(Credentials, FailedToGetWrongDataType)
     struct wsfs_credentials creds;
     json_t * data = json_string("invalid_creds");
 
-    wsfs_impl_credentials_init(&creds, "username", data);
-    ASSERT_STREQ("username", wsfs_impl_credentials_type(&creds));
-    ASSERT_STREQ(nullptr, wsfs_impl_credentials_get(&creds, "username"));
-    ASSERT_STREQ(nullptr, wsfs_impl_credentials_get(&creds, "password"));
+    credentials_init(&creds, "username", data);
+    ASSERT_STREQ("username", credentials_type(&creds));
+    ASSERT_STREQ(nullptr, credentials_get(&creds, "username"));
+    ASSERT_STREQ(nullptr, credentials_get(&creds, "password"));
 
-    wsfs_impl_credentials_cleanup(&creds);
+    credentials_cleanup(&creds);
     json_decref(data);    
 }
 

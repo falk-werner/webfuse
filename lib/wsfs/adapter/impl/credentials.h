@@ -14,18 +14,18 @@ struct wsfs_credentials
     json_t * data;
 };
 
-extern void wsfs_impl_credentials_init(
+extern void credentials_init(
     struct wsfs_credentials * credentials,
     char const * type,
     json_t * data);
 
-extern void wsfs_impl_credentials_cleanup(
+extern void credentials_cleanup(
     struct wsfs_credentials * credentials);
 
-extern char const * wsfs_impl_credentials_type(
+extern char const * credentials_type(
     struct wsfs_credentials const * credentials);
 
-extern char const * wsfs_impl_credentials_get(
+extern char const * credentials_get(
     struct wsfs_credentials const * credentials,
     char const * key);
 

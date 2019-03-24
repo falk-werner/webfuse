@@ -12,36 +12,36 @@ extern "C"
 {
 #endif
 
-struct wsfs_authenticator;
+struct authenticator;
 struct wsfs_credentials;
 
-struct wsfs_authenticators
+struct authenticators
 {
-    struct wsfs_authenticator * first;
+    struct authenticator * first;
 };
 
-extern void wsfs_authenticators_init(
-    struct wsfs_authenticators * authenticators);
+extern void authenticators_init(
+    struct authenticators * authenticators);
 
-extern void wsfs_authenticators_cleanup(
-    struct wsfs_authenticators * authenticators);
+extern void authenticators_cleanup(
+    struct authenticators * authenticators);
 
-extern void wsfs_authenticators_clone(
-    struct wsfs_authenticators * authenticators,
-    struct wsfs_authenticators * other);
+extern void authenticators_clone(
+    struct authenticators * authenticators,
+    struct authenticators * other);
 
-extern void wsfs_authenticators_move(
-    struct wsfs_authenticators * authenticators,
-    struct wsfs_authenticators * other);
+extern void authenticators_move(
+    struct authenticators * authenticators,
+    struct authenticators * other);
 
-extern void wsfs_authenticators_add(
-    struct wsfs_authenticators * authenticators,
+extern void authenticators_add(
+    struct authenticators * authenticators,
     char const * type,
     wsfs_authenticate_fn * authenticate,
     void * user_data);
 
-extern bool wsfs_authenticators_authenticate(
-    struct wsfs_authenticators * authenticators,
+extern bool authenticators_authenticate(
+    struct authenticators * authenticators,
     struct wsfs_credentials * credentials);
 
 #ifdef __cplusplus

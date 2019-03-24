@@ -11,7 +11,7 @@
 #include "wsfs/adapter/impl/jsonrpc/util.h"
 #include "wsfs/util.h"
 
-struct wsfs_operation_getattr_context
+struct operation_getattr_context
 {
 	fuse_req_t request;
 	double timeout;
@@ -19,12 +19,12 @@ struct wsfs_operation_getattr_context
 	gid_t gid;
 };
 
-static void wsfs_operation_getattr_finished(
+static void operation_getattr_finished(
 	void * user_data,
 	wsfs_status status,
 	json_t const * data)
 {
-	struct wsfs_operation_getattr_context * context = user_data;
+	struct operation_getattr_context * context = user_data;
 
     struct stat buffer;
 	if (NULL != data)
@@ -50,10 +50,10 @@ static void wsfs_operation_getattr_finished(
             buffer.st_uid = context->uid;
             buffer.st_gid = context->gid;
             buffer.st_nlink = 1;
-			buffer.st_size = wsfs_json_get_int(data, "size", 0);
-			buffer.st_atime = wsfs_json_get_int(data, "atime", 0);
-			buffer.st_mtime = wsfs_json_get_int(data, "mtime", 0);
-			buffer.st_ctime = wsfs_json_get_int(data, "ctime", 0);
+			buffer.st_size = json_get_int(data, "size", 0);
+			buffer.st_atime = json_get_int(data, "atime", 0);
+			buffer.st_mtime = json_get_int(data, "mtime", 0);
+			buffer.st_ctime = json_get_int(data, "ctime", 0);
 
 		}
 		else
@@ -74,20 +74,20 @@ static void wsfs_operation_getattr_finished(
 	free(context);
 }
 
-void wsfs_operation_getattr (
+void operation_getattr (
 	fuse_req_t request,
 	fuse_ino_t inode,
 	struct fuse_file_info * WSFS_UNUSED_PARAM(file_info))
 {
     struct fuse_ctx const * context = fuse_req_ctx(request);
-    struct wsfs_operations_context * user_data = fuse_req_userdata(request);
-    struct wsfs_jsonrpc_server * rpc = user_data->rpc;
+    struct operations_context * user_data = fuse_req_userdata(request);
+    struct jsonrpc_server * rpc = user_data->rpc;
 
-	struct wsfs_operation_getattr_context * getattr_context = malloc(sizeof(struct wsfs_operation_getattr_context));
+	struct operation_getattr_context * getattr_context = malloc(sizeof(struct operation_getattr_context));
 	getattr_context->request = request;
 	getattr_context->uid = context->uid;
 	getattr_context->gid = context->gid;
 	getattr_context->timeout = user_data->timeout;
 
-	wsfs_jsonrpc_server_invoke(rpc, &wsfs_operation_getattr_finished, getattr_context, "getattr", "i", inode);
+	jsonrpc_server_invoke(rpc, &operation_getattr_finished, getattr_context, "getattr", "i", inode);
 }

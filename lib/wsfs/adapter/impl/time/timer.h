@@ -8,36 +8,36 @@ extern "C"
 {
 #endif
 
-struct wsfs_timer;
-struct wsfs_timeout_manager;
+struct timer;
+struct timeout_manager;
 
-typedef void wsfs_timer_timeout_fn(struct wsfs_timer * timer);
+typedef void timer_timeout_fn(struct timer * timer);
 
-struct wsfs_timer
+struct timer
 {
-    struct wsfs_timeout_manager * manager;
-    wsfs_timepoint timeout;
-    wsfs_timer_timeout_fn * timeout_handler;
+    struct timeout_manager * manager;
+    timepoint timeout;
+    timer_timeout_fn * timeout_handler;
     void * user_data;
-    struct wsfs_timer * next;
-    struct wsfs_timer * prev;
+    struct timer * next;
+    struct timer * prev;
 };
 
-extern void wsfs_timer_init(
-    struct wsfs_timer * timer,
-    struct wsfs_timeout_manager * manager);
+extern void timer_init(
+    struct timer * timer,
+    struct timeout_manager * manager);
 
-extern void wsfs_timer_cleanup(
-    struct wsfs_timer * timer);
+extern void timer_cleanup(
+    struct timer * timer);
 
-extern void wsfs_timer_start(
-    struct wsfs_timer * timer,
-    wsfs_timepoint absolute_timeout,
-    wsfs_timer_timeout_fn * handler,
+extern void timer_start(
+    struct timer * timer,
+    timepoint absolute_timeout,
+    timer_timeout_fn * handler,
     void * user_data);
 
-extern void wsfs_timer_cancel(
-    struct wsfs_timer * timer);
+extern void timer_cancel(
+    struct timer * timer);
 
 #ifdef __cplusplus
 }

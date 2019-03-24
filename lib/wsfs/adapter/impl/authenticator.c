@@ -5,12 +5,12 @@
 
 #include "wsfs/adapter/impl/credentials.h"
 
-struct wsfs_authenticator * wsfs_authenticator_create(
+struct authenticator * authenticator_create(
     char const * type,
     wsfs_authenticate_fn * authenticate,
     void * user_data)
 {
-    struct wsfs_authenticator * authenticator = malloc(sizeof(struct wsfs_authenticator));
+    struct authenticator * authenticator = malloc(sizeof(struct authenticator));
     if (NULL != authenticator)
     {
         authenticator->type = strdup(type);
@@ -22,15 +22,15 @@ struct wsfs_authenticator * wsfs_authenticator_create(
     return authenticator;
 }
 
-void wsfs_authenticator_dispose(
-    struct wsfs_authenticator * authenticator)
+void authenticator_dispose(
+    struct authenticator * authenticator)
 {
     free(authenticator->type);
     free(authenticator);
 }
 
-bool wsfs_authenticator_autenticate(
-    struct wsfs_authenticator * authenticator,
+bool authenticator_autenticate(
+    struct authenticator * authenticator,
     struct wsfs_credentials * credentials)
 {
     bool result;
