@@ -7,12 +7,12 @@
 
 #include "wsfs/provider/api.h"
 
-struct wsfsp_dirbuffer;
-
 #ifdef __cplusplus
 extern "C"
 {
 #endif
+
+struct wsfsp_dirbuffer;
 
 extern WSFSP_API struct wsfsp_dirbuffer * wsfsp_dirbuffer_create(void);
 

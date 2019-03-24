@@ -129,23 +129,31 @@ install(FILES "${PROJECT_BINARY_DIR}/libwsfs-adapter.pc" DESTINATION lib${LIB_SU
 
 #libwsfs-provider
 
-set(WSFS_PROVIDER_SOURCES
-	lib/wsfs/provider/url.c
-	lib/wsfs/provider/client.c
-	lib/wsfs/provider/client_config.c
-	lib/wsfs/provider/client_protocol.c
-	lib/wsfs/provider/provider.c
-	lib/wsfs/provider/request.c
-	lib/wsfs/provider/dirbuffer.c
-	lib/wsfs/provider/operation/lookup.c
-	lib/wsfs/provider/operation/getattr.c
-	lib/wsfs/provider/operation/readdir.c
-	lib/wsfs/provider/operation/open.c
-	lib/wsfs/provider/operation/close.c
-	lib/wsfs/provider/operation/read.c
+add_library(wsfs-provider-static STATIC 
+	lib/wsfs/provider/api.c
+	lib/wsfs/provider/impl/url.c
+	lib/wsfs/provider/impl/client.c
+	lib/wsfs/provider/impl/client_config.c
+	lib/wsfs/provider/impl/client_protocol.c
+	lib/wsfs/provider/impl/provider.c
+	lib/wsfs/provider/impl/request.c
+	lib/wsfs/provider/impl/dirbuffer.c
+	lib/wsfs/provider/impl/operation/lookup.c
+	lib/wsfs/provider/impl/operation/getattr.c
+	lib/wsfs/provider/impl/operation/readdir.c
+	lib/wsfs/provider/impl/operation/open.c
+	lib/wsfs/provider/impl/operation/close.c
+	lib/wsfs/provider/impl/operation/read.c
 )
 
-add_library(wsfs-provider SHARED ${WSFS_PROVIDER_SOURCES} ${WSFS_COMMON_SOURCES})
+set_target_properties(wsfs-provider-static PROPERTIES OUTPUT_NAME wsfs-provider)
+target_include_directories(wsfs-provider-static PUBLIC lib ${EXTRA_INCLUDE_DIRS})
+target_compile_options(wsfs-provider-static PUBLIC ${EXTRA_CFLAGS})
+set_target_properties(wsfs-provider-static PROPERTIES C_VISIBILITY_PRESET hidden)
+
+add_library(wsfs-provider SHARED 
+	lib/wsfs/provider/api.c
+)
 
 set_target_properties(wsfs-provider PROPERTIES VERSION ${PROJECT_VERSION})
 set_target_properties(wsfs-provider PROPERTIES SOVERSION 0)
@@ -154,7 +162,7 @@ set_target_properties(wsfs-provider PROPERTIES COMPILE_DEFINITIONS "WSFSP_API=WS
 
 target_include_directories(wsfs-provider PUBLIC lib ${EXTRA_INCLUDE_DIRS})
 target_compile_options(wsfs-provider PUBLIC  ${EXTRA_CFLAGS})
-target_link_libraries(wsfs-provider PUBLIC wsfs-core)
+target_link_libraries(wsfs-provider PRIVATE wsfs-provider-static wsfs-core)
 
 file(WRITE "${PROJECT_BINARY_DIR}/libwsfs-provider.pc"
 "prefix=\"${CMAKE_INSTALL_PREFIX}\"
@@ -259,12 +267,6 @@ include (CTest)
 pkg_check_modules(GTEST gtest_main)
 include(GoogleTest)
 pkg_check_modules(GMOCK gmock)
-
-add_library(wsfs-provider-static STATIC ${WSFS_PROVIDER_SOURCES})
-set_target_properties(wsfs-provider-static PROPERTIES OUTPUT_NAME wsfs-provider)
-target_include_directories(wsfs-provider-static PUBLIC lib ${EXTRA_INCLUDE_DIRS})
-target_compile_options(wsfs-provider-static PUBLIC ${EXTRA_CFLAGS})
-
 
 add_executable(alltests
 	test/msleep.cc

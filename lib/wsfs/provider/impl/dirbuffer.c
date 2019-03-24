@@ -1,7 +1,7 @@
-#include "wsfs/provider/dirbuffer_intern.h"
+#include "wsfs/provider/impl/dirbuffer.h"
 #include <stdlib.h>
 
-struct wsfsp_dirbuffer * wsfsp_dirbuffer_create(void)
+struct wsfsp_dirbuffer * wsfsp_impl_dirbuffer_create(void)
 {
     struct wsfsp_dirbuffer * buffer = malloc(sizeof(struct wsfsp_dirbuffer));
     if (NULL != buffer)
@@ -12,7 +12,7 @@ struct wsfsp_dirbuffer * wsfsp_dirbuffer_create(void)
     return buffer;
 }
 
-void wsfsp_dirbuffer_dispose(
+void wsfsp_impl_dirbuffer_dispose(
     struct wsfsp_dirbuffer * buffer)
 {
     if (NULL != buffer->entries)
@@ -23,7 +23,7 @@ void wsfsp_dirbuffer_dispose(
     free(buffer);
 }
 
-void wsfsp_dirbuffer_add(
+void wsfsp_impl_dirbuffer_add(
     struct wsfsp_dirbuffer * buffer,
     char const * name,
     ino_t inode)
@@ -35,7 +35,7 @@ void wsfsp_dirbuffer_add(
     json_array_append_new(buffer->entries, entry);
 }
 
-json_t * wsfsp_dirbuffer_take(
+json_t * wsfsp_impl_dirbuffer_take(
     struct wsfsp_dirbuffer * buffer)
 {
     json_t * entries = buffer->entries;

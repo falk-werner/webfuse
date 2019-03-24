@@ -1,9 +1,9 @@
-#include "wsfs/provider/request.h"
+#include "wsfs/provider/impl/request.h"
 
 #include <stdlib.h>
-#include "wsfs/provider/operation/error.h"
+#include "wsfs/provider/impl/operation/error.h"
 
-struct wsfsp_request * wsfsp_request_create(
+struct wsfsp_request * wsfsp_impl_request_create(
     struct wsfsp_request * prototype,
     int id)
 {
@@ -18,13 +18,13 @@ struct wsfsp_request * wsfsp_request_create(
     return request;
 }
 
-void wsfsp_request_dispose(
+void wsfsp_impl_request_dispose(
     struct wsfsp_request * request)
 {
     free(request);
 }
 
-extern void wsfsp_respond(
+extern void wsfsp_impl_respond(
     struct wsfsp_request * request,
     json_t * result)
 {
@@ -35,10 +35,10 @@ extern void wsfsp_respond(
     request->respond(response, request->user_data);
 
     json_decref(response);
-    wsfsp_request_dispose(request);
+    wsfsp_impl_request_dispose(request);
 }
 
-void wsfsp_respond_error(
+void wsfsp_impl_respond_error(
     struct wsfsp_request * request,
     wsfs_status status)
 {
@@ -51,5 +51,5 @@ void wsfsp_respond_error(
     request->respond(response, request->user_data);
 
     json_decref(response);
-    wsfsp_request_dispose(request);
+    wsfsp_impl_request_dispose(request);
 }

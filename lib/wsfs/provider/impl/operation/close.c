@@ -1,9 +1,9 @@
-#include "wsfs/provider/operation/close_intern.h"
+#include "wsfs/provider/impl/operation/close.h"
 #include <limits.h>
 #include "wsfs/core/util.h"
 
-void wsfsp_close(
-    struct wsfsp_invokation_context * context,
+void wsfsp_impl_close(
+    struct wsfsp_impl_invokation_context * context,
     json_t * params,
     int WSFS_UNUSED_PARAM(id))
 {
@@ -28,7 +28,7 @@ void wsfsp_close(
 
 }
 
-void wsfsp_close_default(
+void wsfsp_impl_close_default(
     ino_t WSFS_UNUSED_PARAM(inode),
     uint32_t WSFS_UNUSED_PARAM(handle),
     int WSFS_UNUSED_PARAM(flags),

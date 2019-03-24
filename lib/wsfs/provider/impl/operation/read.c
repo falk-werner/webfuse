@@ -1,13 +1,14 @@
-#include "wsfs/provider/operation/read_intern.h"
+#include "wsfs/provider/impl/operation/read.h"
 
 #include <stdlib.h>
 #include <libwebsockets.h>
 
-#include "wsfs/provider/operation/error.h"
+#include "wsfs/provider/impl/operation/error.h"
+#include "wsfs/provider/impl/request.h"
 #include "wsfs/core/util.h"
 
-void wsfsp_read(
-    struct wsfsp_invokation_context * context,
+void wsfsp_impl_read(
+    struct wsfsp_impl_invokation_context * context,
     json_t * params,
     int id)
 {
@@ -28,14 +29,14 @@ void wsfsp_read(
             int handle = json_integer_value(handle_holder);
             size_t offset = json_integer_value(offset_holder);
             size_t length = json_integer_value(length_holder);
-            struct wsfsp_request * request = wsfsp_request_create(context->request, id);
+            struct wsfsp_request * request = wsfsp_impl_request_create(context->request, id);
 
             context->provider->read(request, inode, handle, offset, length, context->user_data); /* Flawfinder: ignore */
         }
     } 
 }
 
-void wsfsp_read_default(
+void wsfsp_impl_read_default(
     struct wsfsp_request * request,
     ino_t WSFS_UNUSED_PARAM(inode),
     uint32_t WSFS_UNUSED_PARAM(handle),
@@ -43,10 +44,10 @@ void wsfsp_read_default(
     size_t WSFS_UNUSED_PARAM(length),
     void * WSFS_UNUSED_PARAM(user_data))
 {
-    wsfsp_respond_error(request, WSFS_BAD_NOENTRY);
+    wsfsp_impl_respond_error(request, WSFS_BAD_NOENTRY);
 }
 
-void wsfsp_respond_read(
+void wsfsp_impl_respond_read(
     struct wsfsp_request * request,
     char const * data,
     size_t length)
@@ -64,12 +65,12 @@ void wsfsp_respond_read(
             json_object_set_new(result, "format", json_string("base64"));
             json_object_set_new(result, "count", json_integer((int) length));
 
-            wsfsp_respond(request, result);
+            wsfsp_impl_respond(request, result);
             free(buffer);
         }
         else
         {
-            wsfsp_respond_error(request, WSFS_BAD);
+            wsfsp_impl_respond_error(request, WSFS_BAD);
         }
     }
     else
@@ -79,6 +80,6 @@ void wsfsp_respond_read(
             json_object_set_new(result, "format", json_string("identitiy"));
             json_object_set_new(result, "count", json_integer(0));
 
-            wsfsp_respond(request, result);        
+            wsfsp_impl_respond(request, result);        
     }
 }

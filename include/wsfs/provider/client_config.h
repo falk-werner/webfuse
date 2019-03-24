@@ -10,21 +10,21 @@
 #include <wsfs/provider/operation/close.h>
 #include <wsfs/provider/operation/read.h>
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 struct wsfsp_client_config;
 
 typedef void wsfsp_connected_fn(
     void * user_data);
 
 typedef void wsfsp_disconnected_fn(
-void * user_data);
+    void * user_data);
 
 typedef void wsfsp_ontimer_fn(
     void * user_data);
-
-#ifdef __cplusplus
-extern "C"
-{
-#endif
 
 extern WSFSP_API struct wsfsp_client_config * wsfsp_client_config_create(void);
 

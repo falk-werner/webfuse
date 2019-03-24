@@ -13,6 +13,11 @@
 
 #include "wsfs/provider/api.h"
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 struct wsfsp_request;
 
 typedef void wsfsp_open_fn(
@@ -20,11 +25,6 @@ typedef void wsfsp_open_fn(
     ino_t inode,
     int flags,
     void * user_data);
-
-#ifdef __cplusplus
-extern "C"
-{
-#endif
 
 extern WSFSP_API void wsfsp_respond_open(
     struct wsfsp_request * request,

@@ -1,4 +1,4 @@
-#include "wsfs/provider/client.h"
+#include "wsfs/provider/impl/client.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -6,10 +6,10 @@
 
 #include <libwebsockets.h>
 
-#include "wsfs/provider/provider.h"
-#include "wsfs/provider/client_protocol_intern.h"
-#include "wsfs/provider/client_config_intern.h"
-#include "wsfs/provider/url.h"
+#include "wsfs/provider/impl/provider.h"
+#include "wsfs/provider/impl/client_protocol.h"
+#include "wsfs/provider/impl/client_config.h"
+#include "wsfs/provider/impl/url.h"
 
 #define WSFSP_PROTOCOL ("fs")
 #define WSFSP_DISABLE_LWS_LOG 0
@@ -28,7 +28,7 @@ struct wsfsp_client
 };
 
 
-struct wsfsp_client * wsfsp_client_create(
+struct wsfsp_client * wsfsp_impl_client_create(
     struct wsfsp_client_config * config)
 {
  	lws_set_log_level(WSFSP_DISABLE_LWS_LOG, NULL);
@@ -37,11 +37,11 @@ struct wsfsp_client * wsfsp_client_create(
     if (NULL != client)
     {
         client->is_running = true;
-        wsfsp_client_protocol_init(&client->protocol, &config->provider, config->user_data);
+        wsfsp_impl_client_protocol_init(&client->protocol, &config->provider, config->user_data);
 
         memset(client->protocols, 0, sizeof(struct lws_protocols) * WSFSP_CLIENT_PROTOCOL_COUNT);
         client->protocols[0].name = "fs";
-        wsfsp_client_protocol_init_lws(&client->protocol, &client->protocols[0]);
+        wsfsp_impl_client_protocol_init_lws(&client->protocol, &client->protocols[0]);
 
         memset(&client->info, 0, sizeof(struct lws_context_creation_info));
         client->info.port = CONTEXT_PORT_NO_LISTEN;
@@ -60,20 +60,20 @@ struct wsfsp_client * wsfsp_client_create(
     return client;
 }
 
-void wsfsp_client_dispose(
+void wsfsp_impl_client_dispose(
     struct wsfsp_client * client)
 {
     lws_context_destroy(client->context);
-    wsfsp_client_protocol_cleanup(&client->protocol);    
+    wsfsp_impl_client_protocol_cleanup(&client->protocol);    
     free(client);
 }
 
-void wsfsp_client_connect(
+void wsfsp_impl_client_connect(
     struct wsfsp_client * client,
     char const * url)
 {
-    struct wsfsp_url url_data;
-    bool const success = wsfsp_url_init(&url_data, url);
+    struct wsfsp_impl_url url_data;
+    bool const success = wsfsp_impl_url_init(&url_data, url);
     if (success)
     {
         struct lws_client_connect_info info;
@@ -90,11 +90,11 @@ void wsfsp_client_connect(
 
         lws_client_connect_via_info(&info);
 
-        wsfsp_url_cleanup(&url_data);
+        wsfsp_impl_url_cleanup(&url_data);
     }
 }
 
-void wsfsp_client_disconnect(
+void wsfsp_impl_client_disconnect(
     struct wsfsp_client * client)
 {
     (void) client;
@@ -102,7 +102,7 @@ void wsfsp_client_disconnect(
     // ToDo: implement me
 }
 
-void wsfsp_client_run(
+void wsfsp_impl_client_run(
     struct wsfsp_client * client)
 {
     while (client->is_running)
@@ -111,7 +111,7 @@ void wsfsp_client_run(
     }
 }
 
-void wsfsp_client_shutdown(
+void wsfsp_impl_client_shutdown(
     struct wsfsp_client * client)
 {
     client->is_running = false;
