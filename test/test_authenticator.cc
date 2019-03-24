@@ -19,7 +19,7 @@ TEST(Authenticator, Authenticate)
     MockAuthenticator mock;
     set_authenticator(&mock);
 
-    struct wsfs_credentials creds;
+    struct credentials creds;
     credentials_init(&creds, "username", nullptr);
     char dummy[] = "usr_data";
     void * user_data = reinterpret_cast<void*>(dummy);
@@ -45,7 +45,7 @@ TEST(Authenticator, SkipAuthenticationWithWrongType)
     MockAuthenticator mock;
     set_authenticator(&mock);
 
-    struct wsfs_credentials creds;
+    struct credentials creds;
     credentials_init(&creds, "username", nullptr);
     EXPECT_CALL(mock, authenticate(_, _))
         .Times(0);

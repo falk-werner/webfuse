@@ -18,7 +18,7 @@ extern "C"
 
 struct lws;
 struct wsfs_message;
-struct wsfs_credentials;
+struct credentials;
 struct authenticators;
 struct jsonrpc_server;
 
@@ -39,7 +39,7 @@ extern void session_init(
 
 extern void session_authenticate(
     struct session * session,
-    struct wsfs_credentials * creds);
+    struct credentials * creds);
 
 extern bool session_send(
     struct session * session,

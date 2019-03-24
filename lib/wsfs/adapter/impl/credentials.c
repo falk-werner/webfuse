@@ -2,7 +2,7 @@
 #include <string.h>
 
 void credentials_init(
-    struct wsfs_credentials * credentials,
+    struct credentials * credentials,
     char const * type,
     json_t * data)
 {
@@ -12,20 +12,20 @@ void credentials_init(
 }
 
 void credentials_cleanup(
-    struct wsfs_credentials * credentials)
+    struct credentials * credentials)
 {
     free(credentials->type);
     json_decref(credentials->data);
 }
 
 char const * credentials_type(
-    struct wsfs_credentials const * credentials)
+    struct credentials const * credentials)
 {
     return credentials->type;
 }
 
 char const * credentials_get(
-    struct wsfs_credentials const * credentials,
+    struct credentials const * credentials,
     char const * key)
 {
     char const * result = NULL;

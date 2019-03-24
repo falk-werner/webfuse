@@ -5,7 +5,7 @@
 
 TEST(Credentials, Type)
 {
-    struct wsfs_credentials creds;
+    struct credentials creds;
 
     credentials_init(&creds, "test", nullptr);
     ASSERT_STREQ("test", credentials_type(&creds));
@@ -14,7 +14,7 @@ TEST(Credentials, Type)
 
 TEST(Credentials, Get)
 {
-    struct wsfs_credentials creds;
+    struct credentials creds;
     json_t * data = json_object();
     json_object_set_new(data, "username", json_string("bob"));
     json_object_set_new(data, "password", json_string("<secret>"));
@@ -30,7 +30,7 @@ TEST(Credentials, Get)
 
 TEST(Credentials, FailedToGetNonexistingValue)
 {
-    struct wsfs_credentials creds;
+    struct credentials creds;
     json_t * data = json_object();
 
     credentials_init(&creds, "username", data);
@@ -44,7 +44,7 @@ TEST(Credentials, FailedToGetNonexistingValue)
 
 TEST(Credentials, FailedToGetWithoutData)
 {
-    struct wsfs_credentials creds;
+    struct credentials creds;
 
     credentials_init(&creds, "username", nullptr);
     ASSERT_STREQ("username",credentials_type(&creds));
@@ -56,7 +56,7 @@ TEST(Credentials, FailedToGetWithoutData)
 
 TEST(Credentials, FailedToGetWrongDataType)
 {
-    struct wsfs_credentials creds;
+    struct credentials creds;
     json_t * data = json_string("invalid_creds");
 
     credentials_init(&creds, "username", data);

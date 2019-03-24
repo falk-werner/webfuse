@@ -74,7 +74,7 @@ extern void authenticators_move(
 void authenticators_add(
     struct authenticators * authenticators,
     char const * type,
-    wsfs_authenticate_fn * authenticate,
+    authenticate_fn * authenticate,
     void * user_data)
 {
     struct authenticator * authenticator = authenticator_create(type, authenticate, user_data);
@@ -84,7 +84,7 @@ void authenticators_add(
 
 bool authenticators_authenticate(
     struct authenticators * authenticators,
-    struct wsfs_credentials * credentials)
+    struct credentials * credentials)
 {
     bool result =  (NULL == authenticators->first);
 

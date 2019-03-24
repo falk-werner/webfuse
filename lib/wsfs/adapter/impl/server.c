@@ -15,10 +15,10 @@
 #define WSFS_SERVER_PROTOCOL_COUNT 3
 #define WSFS_SERVER_TIMEOUT (1 * 1000)
 
-struct wsfs_server
+struct server
 {
-    struct wsfs_server_config config;
-    struct wsfs_server_protocol protocol;
+    struct server_config config;
+    struct server_protocol protocol;
     struct lws_protocols ws_protocols[WSFS_SERVER_PROTOCOL_COUNT];
     struct lws_context * context;
     volatile bool shutdown_requested;
@@ -27,13 +27,13 @@ struct wsfs_server
 };
 
 static bool server_tls_enabled(
-	struct wsfs_server * server)
+	struct server * server)
 {
 	return ((server->config.key_path != NULL) && (server->config.cert_path != NULL));
 }
 
 static struct lws_context * server_context_create(
-    struct wsfs_server * server)
+    struct server * server)
 {
 	lws_set_log_level(WSFS_DISABLE_LWS_LOG, NULL);
 
@@ -79,7 +79,7 @@ static struct lws_context * server_context_create(
 }
 
 static bool server_check_mountpoint(
-	 struct wsfs_server_config * config)
+	 struct server_config * config)
 {
 	bool result = false;
 
@@ -98,14 +98,14 @@ static bool server_check_mountpoint(
 	return result;
 }
 
-struct wsfs_server * server_create(
-    struct wsfs_server_config * config)
+struct server * server_create(
+    struct server_config * config)
 {
-	struct wsfs_server * server = NULL;
+	struct server * server = NULL;
 	
 	if (server_check_mountpoint(config))
 	{
-		server = malloc(sizeof(struct wsfs_server));
+		server = malloc(sizeof(struct server));
 		if (NULL != server)
 		{
 			if (server_protocol_init(&server->protocol, config->mount_point))
@@ -127,7 +127,7 @@ struct wsfs_server * server_create(
 }
 
 void server_dispose(
-    struct wsfs_server * server)
+    struct server * server)
 {
     lws_context_destroy(server->context);
     server_protocol_cleanup(&server->protocol);
@@ -136,7 +136,7 @@ void server_dispose(
 }
 
 void server_run(
-    struct wsfs_server * server)
+    struct server * server)
 {
     int n = 0;
     while ((0 <= n) && (!server->shutdown_requested))
@@ -146,7 +146,7 @@ void server_run(
 }
 
 void server_shutdown(
-    struct wsfs_server * server)
+    struct server * server)
 {
     server->shutdown_requested = true;
 }

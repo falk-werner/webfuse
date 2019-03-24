@@ -32,7 +32,7 @@ void session_cleanup(
 
 void session_authenticate(
     struct session * session,
-    struct wsfs_credentials * creds)
+    struct credentials * creds)
 {
     session->is_authenticated = authenticators_authenticate(session->authenticators, creds);
 }

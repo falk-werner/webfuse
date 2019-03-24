@@ -16,7 +16,7 @@ static int server_protocol_callback(
 	size_t len)
 {
     struct lws_protocols const * ws_protocol = lws_get_protocol(wsi);
-    struct wsfs_server_protocol * protocol = ws_protocol->user;
+    struct server_protocol * protocol = ws_protocol->user;
 
     timeout_manager_check(&protocol->timeout_manager);
     struct session * session = session_manager_get(&protocol->session_manager, wsi);
@@ -74,7 +74,7 @@ static bool server_protocol_invoke(
     void * user_data,
     json_t const * request)
 {
-    struct wsfs_server_protocol * protocol = user_data;
+    struct server_protocol * protocol = user_data;
     struct session * session = &protocol->session_manager.session;
     struct wsfs_message * message = wsfs_message_create(request);
 
@@ -84,10 +84,10 @@ static bool server_protocol_invoke(
 }
 
 
-struct wsfs_server_protocol * server_protocol_create(
+struct server_protocol * server_protocol_create(
     char * mount_point)
 {
-    struct wsfs_server_protocol * protocol = malloc(sizeof(struct wsfs_server_protocol));
+    struct server_protocol * protocol = malloc(sizeof(struct server_protocol));
     if (NULL != protocol)
     {
         if (!server_protocol_init(protocol, mount_point))
@@ -101,14 +101,14 @@ struct wsfs_server_protocol * server_protocol_create(
 }
 
 void server_protocol_dispose(
-    struct wsfs_server_protocol * protocol)
+    struct server_protocol * protocol)
 {
     server_protocol_cleanup(protocol);
     free(protocol);
 }
 
 void server_protocol_init_lws(
-    struct wsfs_server_protocol * protocol,
+    struct server_protocol * protocol,
     struct lws_protocols * lws_protocol)
 {
 	lws_protocol->callback = &server_protocol_callback;
@@ -117,7 +117,7 @@ void server_protocol_init_lws(
 }
 
 bool server_protocol_init(
-    struct wsfs_server_protocol * protocol,
+    struct server_protocol * protocol,
     char * mount_point)
 {
     timeout_manager_init(&protocol->timeout_manager);
@@ -147,7 +147,7 @@ bool server_protocol_init(
 }
 
 void server_protocol_cleanup(
-    struct wsfs_server_protocol * protocol)
+    struct server_protocol * protocol)
 {
     filesystem_cleanup(&protocol->filesystem);
     jsonrpc_server_cleanup(&protocol->rpc);
@@ -157,9 +157,9 @@ void server_protocol_cleanup(
 }
 
 void server_protocol_add_authenticator(
-    struct wsfs_server_protocol * protocol,
+    struct server_protocol * protocol,
     char const * type,
-    wsfs_authenticate_fn * authenticate,
+    authenticate_fn * authenticate,
     void * user_data)
 {
     authenticators_add(&protocol->authenticators, type, authenticate, user_data);

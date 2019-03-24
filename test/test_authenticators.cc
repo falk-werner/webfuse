@@ -67,7 +67,7 @@ TEST(Authenticators, Move)
 
 TEST(Authenticators, AuthenticateWithoutAuthenticators)
 {
-    struct wsfs_credentials creds;
+    struct credentials creds;
     credentials_init(&creds, "username", nullptr);
 
     struct authenticators authenticators;
@@ -100,7 +100,7 @@ TEST(Authenticators, FailToAuthenticateWithoutCredentials)
 
 TEST(Authenticators, AuthenticateWithMultipleCredentials)
 {
-    struct wsfs_credentials creds;
+    struct credentials creds;
     credentials_init(&creds, "username", nullptr);
 
     MockAuthenticator username_mock;
@@ -128,7 +128,7 @@ TEST(Authenticators, AuthenticateWithMultipleCredentials)
 
 TEST(Authenticators, FailedAuthenticateWithWrongType)
 {
-    struct wsfs_credentials creds;
+    struct credentials creds;
     credentials_init(&creds, "token", nullptr);
 
     MockAuthenticator username_mock;

@@ -15,15 +15,15 @@ static char * server_config_strdup(char const * value)
 }
 
 void server_config_init(
-    struct wsfs_server_config * config)
+    struct server_config * config)
 {
-    memset(config, 0, sizeof(struct wsfs_server_config));
+    memset(config, 0, sizeof(struct server_config));
 
     authenticators_init(&config->authenticators);
 }
 
 void server_config_cleanup(
-    struct wsfs_server_config * config)
+    struct server_config * config)
 {
     authenticators_cleanup(&config->authenticators);
 
@@ -37,8 +37,8 @@ void server_config_cleanup(
 }
 
 void server_config_clone(
-	struct wsfs_server_config * config,
-	struct wsfs_server_config * clone)
+	struct server_config * config,
+	struct server_config * clone)
 {
     clone->mount_point = server_config_strdup(config->mount_point);
 	clone->document_root = server_config_strdup(config->document_root);
@@ -50,9 +50,9 @@ void server_config_clone(
     authenticators_clone(&config->authenticators, &clone->authenticators);
 }
 
-struct wsfs_server_config * server_config_create(void)
+struct server_config * server_config_create(void)
 {
-    struct wsfs_server_config * config = malloc(sizeof(struct wsfs_server_config));
+    struct server_config * config = malloc(sizeof(struct server_config));
     if (NULL != config)
     {
         server_config_init(config);
@@ -62,14 +62,14 @@ struct wsfs_server_config * server_config_create(void)
 }
 
 void server_config_dispose(
-    struct wsfs_server_config * config)
+    struct server_config * config)
 {
     server_config_cleanup(config);
     free(config);
 }
 
 void server_config_set_mountpoint(
-    struct wsfs_server_config * config,
+    struct server_config * config,
 	char const * mount_point)
 {
     free(config->mount_point);
@@ -77,7 +77,7 @@ void server_config_set_mountpoint(
 }
 
 void server_config_set_documentroot(
-    struct wsfs_server_config * config,
+    struct server_config * config,
 	char const * document_root)
 {
     free(config->document_root);
@@ -85,7 +85,7 @@ void server_config_set_documentroot(
 }
 
 void server_config_set_keypath(
-    struct wsfs_server_config * config,
+    struct server_config * config,
 	char const * key_path)
 {
     free(config->key_path);
@@ -93,7 +93,7 @@ void server_config_set_keypath(
 }
 
 void server_config_set_certpath(
-    struct wsfs_server_config * config,
+    struct server_config * config,
 	char const * cert_path)
 {
     free(config->cert_path);
@@ -101,7 +101,7 @@ void server_config_set_certpath(
 }
 
 void server_config_set_vhostname(
-    struct wsfs_server_config * config,
+    struct server_config * config,
 	char const * vhost_name)
 {
     free(config->vhost_name);
@@ -109,16 +109,16 @@ void server_config_set_vhostname(
 }
 
 void server_config_set_port(
-    struct wsfs_server_config * config,
+    struct server_config * config,
 	int port)
 {
     config->port = port;
 }
 
 void server_config_add_authenticator(
-    struct wsfs_server_config * config,
+    struct server_config * config,
     char const * type,
-    wsfs_authenticate_fn * authenticate,
+    authenticate_fn * authenticate,
     void * user_data
 )
 {

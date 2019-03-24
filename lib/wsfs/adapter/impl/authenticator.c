@@ -7,7 +7,7 @@
 
 struct authenticator * authenticator_create(
     char const * type,
-    wsfs_authenticate_fn * authenticate,
+    authenticate_fn * authenticate,
     void * user_data)
 {
     struct authenticator * authenticator = malloc(sizeof(struct authenticator));
@@ -31,7 +31,7 @@ void authenticator_dispose(
 
 bool authenticator_autenticate(
     struct authenticator * authenticator,
-    struct wsfs_credentials * credentials)
+    struct credentials * credentials)
 {
     bool result;
 

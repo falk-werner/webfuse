@@ -14,7 +14,7 @@ extern "C"
 
 struct lws_protocols;
 
-struct wsfs_server_protocol
+struct server_protocol
 {
     struct timeout_manager timeout_manager;
     struct filesystem filesystem;
@@ -24,26 +24,26 @@ struct wsfs_server_protocol
 };
 
 extern bool server_protocol_init(
-    struct wsfs_server_protocol * protocol,
+    struct server_protocol * protocol,
     char * mount_point);
 
 extern void server_protocol_cleanup(
-    struct wsfs_server_protocol * protocol);
+    struct server_protocol * protocol);
 
-extern struct wsfs_server_protocol * server_protocol_create(
+extern struct server_protocol * server_protocol_create(
     char * mount_point);
 
 extern void server_protocol_dispose(
-    struct wsfs_server_protocol * protocol);
+    struct server_protocol * protocol);
 
 extern void server_protocol_init_lws(
-    struct wsfs_server_protocol * protocol,
+    struct server_protocol * protocol,
     struct lws_protocols * lws_protocol);
 
 extern void server_protocol_add_authenticator(
-    struct wsfs_server_protocol * protocol,
+    struct server_protocol * protocol,
     char const * type,
-    wsfs_authenticate_fn * authenticate,
+    authenticate_fn * authenticate,
     void * user_data);
 
 #ifdef __cplusplus

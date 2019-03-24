@@ -8,25 +8,25 @@ extern "C"
 {
 #endif
 
-struct wsfs_credentials
+struct credentials
 {
     char * type;
     json_t * data;
 };
 
 extern void credentials_init(
-    struct wsfs_credentials * credentials,
+    struct credentials * credentials,
     char const * type,
     json_t * data);
 
 extern void credentials_cleanup(
-    struct wsfs_credentials * credentials);
+    struct credentials * credentials);
 
 extern char const * credentials_type(
-    struct wsfs_credentials const * credentials);
+    struct credentials const * credentials);
 
 extern char const * credentials_get(
-    struct wsfs_credentials const * credentials,
+    struct credentials const * credentials,
     char const * key);
 
 #ifdef __cplusplus

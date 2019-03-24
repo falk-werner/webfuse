@@ -23,17 +23,17 @@ void set_authenticator(size_t i, Authenticator * authenticator)
     g_authenticators[i] = authenticator;
 }
 
-bool authenticate(struct wsfs_credentials * creds, void * user_data)
+bool authenticate(struct credentials * creds, void * user_data)
 {
     return g_authenticators[0]->authenticate(creds, user_data);
 }
 
-bool authenticate_1(struct wsfs_credentials * creds, void * user_data)
+bool authenticate_1(struct credentials * creds, void * user_data)
 {
     return g_authenticators[1]->authenticate(creds, user_data);
 }
 
-bool authenticate_2(struct wsfs_credentials * creds, void * user_data)
+bool authenticate_2(struct credentials * creds, void * user_data)
 {
     return g_authenticators[2]->authenticate(creds, user_data);
 }

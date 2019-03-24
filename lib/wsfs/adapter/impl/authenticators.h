@@ -5,7 +5,7 @@
 #include <stdbool.h>
 #endif
 
-#include "wsfs/adapter/authenticate.h"
+#include "wsfs/adapter/impl/authenticate.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -13,7 +13,7 @@ extern "C"
 #endif
 
 struct authenticator;
-struct wsfs_credentials;
+struct credentials;
 
 struct authenticators
 {
@@ -37,12 +37,12 @@ extern void authenticators_move(
 extern void authenticators_add(
     struct authenticators * authenticators,
     char const * type,
-    wsfs_authenticate_fn * authenticate,
+    authenticate_fn * authenticate,
     void * user_data);
 
 extern bool authenticators_authenticate(
     struct authenticators * authenticators,
-    struct wsfs_credentials * credentials);
+    struct credentials * credentials);
 
 #ifdef __cplusplus
 }

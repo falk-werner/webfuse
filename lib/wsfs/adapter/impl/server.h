@@ -6,20 +6,20 @@ extern "C"
 {
 #endif
 
-struct wsfs_server;
-struct wsfs_server_config;
+struct server;
+struct server_config;
 
-extern struct wsfs_server * server_create(
-    struct wsfs_server_config * config);
+extern struct server * server_create(
+    struct server_config * config);
 
 extern void server_dispose(
-    struct wsfs_server * server);
+    struct server * server);
 
 extern void server_run(
-    struct wsfs_server * server);
+    struct server * server);
 
 extern void server_shutdown(
-    struct wsfs_server * server);
+    struct server * server);
 
 #ifdef __cplusplus
 }
