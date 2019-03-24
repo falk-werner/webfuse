@@ -1,4 +1,4 @@
-#include "wsfs/adapter/impl/server_protocol_intern.h"
+#include "wsfs/adapter/impl/server_protocol.h"
 
 #include <stdlib.h>
 #include <libwebsockets.h>
@@ -8,7 +8,7 @@
 
 #include "wsfs/adapter/impl/filesystem.h"
 
-static int wsfs_server_protocol_callback(
+static int wsfs_impl_server_protocol_callback(
 	struct lws * wsi,
 	enum lws_callback_reasons reason,
 	void * WSFS_UNUSED_PARAM(user),
@@ -70,7 +70,7 @@ static int wsfs_server_protocol_callback(
     return 0;
 }
 
-static bool wsfs_server_protocol_invoke(
+static bool wsfs_impl_server_protocol_invoke(
     void * user_data,
     json_t const * request)
 {
@@ -84,13 +84,13 @@ static bool wsfs_server_protocol_invoke(
 }
 
 
-struct wsfs_server_protocol * wsfs_server_protocol_create(
+struct wsfs_server_protocol * wsfs_impl_server_protocol_create(
     char * mount_point)
 {
     struct wsfs_server_protocol * protocol = malloc(sizeof(struct wsfs_server_protocol));
     if (NULL != protocol)
     {
-        if (!wsfs_server_protocol_init(protocol, mount_point))
+        if (!wsfs_impl_server_protocol_init(protocol, mount_point))
         {
             free(protocol);
             protocol = NULL;
@@ -100,23 +100,23 @@ struct wsfs_server_protocol * wsfs_server_protocol_create(
     return protocol;
 }
 
-void wsfs_server_protocol_dispose(
+void wsfs_impl_server_protocol_dispose(
     struct wsfs_server_protocol * protocol)
 {
-    wsfs_server_protocol_cleanup(protocol);
+    wsfs_impl_server_protocol_cleanup(protocol);
     free(protocol);
 }
 
-void wsfs_server_protocol_init_lws(
+void wsfs_impl_server_protocol_init_lws(
     struct wsfs_server_protocol * protocol,
     struct lws_protocols * lws_protocol)
 {
-	lws_protocol->callback = &wsfs_server_protocol_callback;
+	lws_protocol->callback = &wsfs_impl_server_protocol_callback;
 	lws_protocol->per_session_data_size = 0;
 	lws_protocol->user = protocol;
 }
 
-bool wsfs_server_protocol_init(
+bool wsfs_impl_server_protocol_init(
     struct wsfs_server_protocol * protocol,
     char * mount_point)
 {
@@ -125,12 +125,12 @@ bool wsfs_server_protocol_init(
     wsfs_authenticators_init(&protocol->authenticators);
 
     wsfs_jsonrpc_server_init(&protocol->rpc, &protocol->timeout_manager);
-    wsfs_jsonrpc_server_add(&protocol->rpc, "lookup", &wsfs_server_protocol_invoke, protocol);
-    wsfs_jsonrpc_server_add(&protocol->rpc, "getattr", &wsfs_server_protocol_invoke, protocol);
-    wsfs_jsonrpc_server_add(&protocol->rpc, "readdir", &wsfs_server_protocol_invoke, protocol);
-    wsfs_jsonrpc_server_add(&protocol->rpc, "open", &wsfs_server_protocol_invoke, protocol);
-    wsfs_jsonrpc_server_add(&protocol->rpc, "close", &wsfs_server_protocol_invoke, protocol);
-    wsfs_jsonrpc_server_add(&protocol->rpc, "read", &wsfs_server_protocol_invoke, protocol);
+    wsfs_jsonrpc_server_add(&protocol->rpc, "lookup", &wsfs_impl_server_protocol_invoke, protocol);
+    wsfs_jsonrpc_server_add(&protocol->rpc, "getattr", &wsfs_impl_server_protocol_invoke, protocol);
+    wsfs_jsonrpc_server_add(&protocol->rpc, "readdir", &wsfs_impl_server_protocol_invoke, protocol);
+    wsfs_jsonrpc_server_add(&protocol->rpc, "open", &wsfs_impl_server_protocol_invoke, protocol);
+    wsfs_jsonrpc_server_add(&protocol->rpc, "close", &wsfs_impl_server_protocol_invoke, protocol);
+    wsfs_jsonrpc_server_add(&protocol->rpc, "read", &wsfs_impl_server_protocol_invoke, protocol);
 
     bool const success = wsfs_filesystem_init(&protocol->filesystem, &protocol->rpc, mount_point);
 
@@ -146,7 +146,7 @@ bool wsfs_server_protocol_init(
     return success;
 }
 
-void wsfs_server_protocol_cleanup(
+void wsfs_impl_server_protocol_cleanup(
     struct wsfs_server_protocol * protocol)
 {
     wsfs_filesystem_cleanup(&protocol->filesystem);
@@ -156,7 +156,7 @@ void wsfs_server_protocol_cleanup(
     wsfs_session_manager_cleanup(&protocol->session_manager);
 }
 
-void wsfs_server_protocol_add_authenticator(
+void wsfs_impl_server_protocol_add_authenticator(
     struct wsfs_server_protocol * protocol,
     char const * type,
     wsfs_authenticate_fn * authenticate,

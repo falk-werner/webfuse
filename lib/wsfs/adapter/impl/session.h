@@ -1,5 +1,5 @@
-#ifndef WSFS_ADAPTER_SESSION_H
-#define WSFS_ADAPTER_SESSION_H
+#ifndef WSFS_ADAPTER_IMPL_SESSION_H
+#define WSFS_ADAPTER_IMPL_SESSION_H
 
 #ifndef __cplusplus
 #include <stdbool.h>

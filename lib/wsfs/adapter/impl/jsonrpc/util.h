@@ -1,5 +1,5 @@
-#ifndef WSFS_ADAPTER_JSON_UTIL_H
-#define WSFS_ADAPTER_JSON_UTIL_H
+#ifndef WSFS_ADAPTER_IMPL_JSON_UTIL_H
+#define WSFS_ADAPTER_IMPL_JSON_UTIL_H
 
 #include <jansson.h>
 

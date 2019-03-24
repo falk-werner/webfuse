@@ -3,13 +3,13 @@
 
 #include "wsfs/adapter/api.h"
 
-struct wsfs_server;
-struct wsfs_server_config;
-
 #ifdef __cplusplus
 extern "C"
 {
 #endif
+
+struct wsfs_server;
+struct wsfs_server_config;
 
 extern WSFSA_API struct wsfs_server * wsfs_server_create(
     struct wsfs_server_config * config);

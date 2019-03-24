@@ -1,5 +1,5 @@
-#ifndef WSFS_ADAPTER_FUSE_H
-#define WSFS_ADAPTER_FUSE_H
+#ifndef WSFS_ADAPTER_IMPL_FUSE_H
+#define WSFS_ADAPTER_IMPL_FUSE_H
 
 #ifdef __cplusplus
 extern "C" {

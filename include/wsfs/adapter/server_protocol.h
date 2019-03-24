@@ -4,13 +4,13 @@
 #include <wsfs/adapter/api.h>
 #include <wsfs/adapter/authenticate.h>
 
-struct wsfs_server_protocol;
-struct lws_protocols;
-
 #ifdef __cplusplus
 extern "C"
 {
 #endif
+
+struct wsfs_server_protocol;
+struct lws_protocols;
 
 extern WSFSA_API struct wsfs_server_protocol * wsfs_server_protocol_create(
     char * mount_point);

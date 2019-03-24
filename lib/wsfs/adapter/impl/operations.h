@@ -1,5 +1,5 @@
-#ifndef WSFS_ADAPTER_OPERATIONS
-#define WSFS_ADAPTER_OPERATIONS
+#ifndef WSFS_ADAPTER_IMPL_OPERATIONS_H
+#define WSFS_ADAPTER_IMPL_OPERATIONS_H
 
 #include "wsfs/adapter/impl/fuse_wrapper.h"
 

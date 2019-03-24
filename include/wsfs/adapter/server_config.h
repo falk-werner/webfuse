@@ -4,12 +4,12 @@
 #include "wsfs/adapter/api.h"
 #include "wsfs/adapter/authenticate.h"
 
-struct wsfs_server_config;
-
 #ifdef __cplusplus
 extern "C"
 {
 #endif
+
+struct wsfs_server_config;
 
 extern WSFSA_API struct wsfs_server_config * wsfs_server_config_create(void);
 
