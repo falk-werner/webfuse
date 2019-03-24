@@ -43,19 +43,26 @@ set(EXTRA_CFLAGS
 	${JANSSON_CFLAGS_OTHER}
 	"-pthread"
 )
-# libwsfs-common
 
-set(WSFS_COMMON_SOURCES
+
+install(FILES include/wsfs/status.h DESTINATION include/wsfs)
+
+# libwsfs-core
+
+add_library(wsfs-core STATIC 
 	lib/wsfs/message.c
 	lib/wsfs/message_queue.c
 	lib/wsfs/status.c
 )
 
-install(FILES include/wsfs/status.h DESTINATION include/wsfs)
+set_target_properties(wsfs-core PROPERTIES OUTPUT_NAME wsfs-core)
+target_include_directories(wsfs-core PUBLIC lib ${EXTRA_INCLUDE_DIRS})
+target_compile_options(wsfs-core PUBLIC ${EXTRA_CFLAGS})
+set_target_properties(wsfs-core PROPERTIES C_VISIBILITY_PRESET hidden)
 
 # libwsfs-adapter
 
-set(WSFS_ADAPTER_SOURCES
+add_library(wsfs-adapter-static STATIC 
 	lib/wsfs/adapter/api.c
 	lib/wsfs/adapter/impl/filesystem.c
 	lib/wsfs/adapter/impl/server.c
@@ -82,7 +89,14 @@ set(WSFS_ADAPTER_SOURCES
 	lib/wsfs/adapter/impl/jsonrpc/util.c
 )
 
-add_library(wsfs-adapter SHARED ${WSFS_ADAPTER_SOURCES} ${WSFS_COMMON_SOURCES})
+set_target_properties(wsfs-adapter-static PROPERTIES OUTPUT_NAME wsfs-adapter)
+target_include_directories(wsfs-adapter-static PUBLIC lib ${EXTRA_INCLUDE_DIRS})
+target_compile_options(wsfs-adapter-static PUBLIC ${EXTRA_CFLAGS})
+set_target_properties(wsfs-adapter-static PROPERTIES C_VISIBILITY_PRESET hidden)
+
+add_library(wsfs-adapter SHARED 
+	lib/wsfs/adapter/api.c
+)
 
 set_target_properties(wsfs-adapter PROPERTIES VERSION ${PROJECT_VERSION})
 set_target_properties(wsfs-adapter PROPERTIES SOVERSION 0)
@@ -91,6 +105,7 @@ set_target_properties(wsfs-adapter PROPERTIES COMPILE_DEFINITIONS "WSFSA_API=WSF
 
 target_include_directories(wsfs-adapter PUBLIC lib ${EXTRA_INCLUDE_DIRS})
 target_compile_options(wsfs-adapter PUBLIC  ${EXTRA_CFLAGS})
+target_link_libraries(wsfs-adapter PRIVATE wsfs-adapter-static wsfs-core)
 
 file(WRITE "${PROJECT_BINARY_DIR}/libwsfs-adapter.pc"
 "prefix=\"${CMAKE_INSTALL_PREFIX}\"
@@ -138,6 +153,7 @@ set_target_properties(wsfs-provider PROPERTIES COMPILE_DEFINITIONS "WSFSP_API=WS
 
 target_include_directories(wsfs-provider PUBLIC lib ${EXTRA_INCLUDE_DIRS})
 target_compile_options(wsfs-provider PUBLIC  ${EXTRA_CFLAGS})
+target_link_libraries(wsfs-provider PUBLIC wsfs-core)
 
 file(WRITE "${PROJECT_BINARY_DIR}/libwsfs-provider.pc"
 "prefix=\"${CMAKE_INSTALL_PREFIX}\"
@@ -243,11 +259,6 @@ pkg_check_modules(GTEST gtest_main)
 include(GoogleTest)
 pkg_check_modules(GMOCK gmock)
 
-add_library(wsfs-adapter-static STATIC ${WSFS_ADAPTER_SOURCES})
-set_target_properties(wsfs-adapter-static PROPERTIES OUTPUT_NAME wsfs-adapter)
-target_include_directories(wsfs-adapter-static PUBLIC lib ${EXTRA_INCLUDE_DIRS})
-target_compile_options(wsfs-adapter-static PUBLIC ${EXTRA_CFLAGS})
-
 add_library(wsfs-provider-static STATIC ${WSFS_PROVIDER_SOURCES})
 set_target_properties(wsfs-provider-static PROPERTIES OUTPUT_NAME wsfs-provider)
 target_include_directories(wsfs-provider-static PUBLIC lib ${EXTRA_INCLUDE_DIRS})
@@ -265,10 +276,9 @@ add_executable(alltests
 	test/test_credentials.cc
 	test/test_authenticator.cc
 	test/test_authenticators.cc
-	${WSFS_COMMON_SOURCES}
 )
 
-target_link_libraries(alltests PUBLIC wsfs-adapter-static wsfs-provider-static ${EXTRA_LIBS} ${GMOCK_LIBRARIES} ${GTEST_LIBRARIES})
+target_link_libraries(alltests PUBLIC wsfs-adapter-static wsfs-provider-static wsfs-core ${EXTRA_LIBS} ${GMOCK_LIBRARIES} ${GTEST_LIBRARIES})
 target_include_directories(alltests PUBLIC lib ${EXTRA_INCLUDE_DIRS} ${GMOCK_INCLUDE_DIRS} ${GTEST_INCLUDE_DIRS})
 target_compile_options(alltests PUBLIC ${EXTRA_CFLAGS} ${GMOCK_CFLAGS} ${GTEST_CFLAGS})
 
