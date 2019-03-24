@@ -20,52 +20,52 @@ using std::size_t;
 extern "C" {
 #endif
 
-struct jsonrpc_request
+struct wsfs_impl_jsonrpc_request
 {
     bool is_pending;
-    jsonrpc_method_finished_fn * finished;
+    wsfs_impl_jsonrpc_method_finished_fn * finished;
     void * user_data;
     int id;
-    struct timer timer;
+    struct wsfs_impl_timer timer;
 };
 
-struct jsonrpc_server
+struct wsfs_impl_jsonrpc_server
 {
-    struct jsonrpc_method * methods;
-    struct jsonrpc_request request;
+    struct wsfs_impl_jsonrpc_method * methods;
+    struct wsfs_impl_jsonrpc_request request;
 };
 
-extern void jsonrpc_server_init(
-    struct jsonrpc_server * server,
-    struct timeout_manager * manager);
+extern void wsfs_impl_jsonrpc_server_init(
+    struct wsfs_impl_jsonrpc_server * server,
+    struct wsfs_impl_timeout_manager * manager);
 
-extern void jsonrpc_server_cleanup(
-    struct jsonrpc_server * server);
+extern void wsfs_impl_jsonrpc_server_cleanup(
+    struct wsfs_impl_jsonrpc_server * server);
 
-extern void jsonrpc_server_add(
-    struct jsonrpc_server * server,
+extern void wsfs_impl_jsonrpc_server_add(
+    struct wsfs_impl_jsonrpc_server * server,
     char const * name,
-    jsonrpc_method_invoke_fn * invoke,
+    wsfs_impl_jsonrpc_method_invoke_fn * invoke,
     void * user_data );
 
-extern void jsonrpc_server_invoke(
-	struct jsonrpc_server * server,
-	jsonrpc_method_finished_fn * finished,
+extern void wsfs_impl_jsonrpc_server_invoke(
+	struct wsfs_impl_jsonrpc_server * server,
+	wsfs_impl_jsonrpc_method_finished_fn * finished,
 	void * user_data,
 	char const * method_name,
 	char const * param_info,
 	...
 );
 
-extern void jsonrpc_server_notify(
-	struct jsonrpc_server * server,
+extern void wsfs_impl_jsonrpc_server_notify(
+	struct wsfs_impl_jsonrpc_server * server,
 	char const * method_name,
 	char const * param_info,
 	...
 );
 
-extern void jsonrpc_server_onresult(
-    struct jsonrpc_server * server,
+extern void wsfs_impl_jsonrpc_server_onresult(
+    struct wsfs_impl_jsonrpc_server * server,
     char const * message,
     size_t length);
 

@@ -4,21 +4,21 @@
 #include "wsfs/adapter/impl/time/timer_intern.h"
 #include "wsfs/adapter/impl/time/timepoint.h"
 
-void timeout_manager_init(
-    struct timeout_manager * manager)
+void wsfs_impl_timeout_manager_init(
+    struct wsfs_impl_timeout_manager * manager)
 {
     manager->timers = NULL;
 }
 
-void timeout_manager_cleanup(
-    struct timeout_manager * manager)
+void wsfs_impl_timeout_manager_cleanup(
+    struct wsfs_impl_timeout_manager * manager)
 {
-    struct timer * timer = manager->timers;
+    struct wsfs_impl_timer * timer = manager->timers;
     while (NULL != timer)
     {
-        struct timer * next = timer->next;
+        struct wsfs_impl_timer * next = timer->next;
 
-        timer_trigger(timer);
+        wsfs_impl_timer_trigger(timer);
 
         timer = next;
     }
@@ -27,27 +27,27 @@ void timeout_manager_cleanup(
 
 }
 
-void timeout_manager_check(
-    struct timeout_manager * manager)
+void wsfs_impl_timeout_manager_check(
+    struct wsfs_impl_timeout_manager * manager)
 {
-    struct timer * timer = manager->timers;
+    struct wsfs_impl_timer * timer = manager->timers;
     while (NULL != timer)
     {
-        struct timer * next = timer->next;
+        struct wsfs_impl_timer * next = timer->next;
 
-        if (timer_is_timeout(timer))
+        if (wsfs_impl_timer_is_timeout(timer))
         {
-            timeout_manager_removetimer(manager, timer);
-            timer_trigger(timer);
+            wsfs_impl_timeout_manager_removetimer(manager, timer);
+            wsfs_impl_timer_trigger(timer);
         }
 
         timer = next;
     }    
 }
 
-void timeout_manager_addtimer(
-    struct timeout_manager * manager,
-    struct timer * timer)
+void wsfs_impl_timeout_manager_addtimer(
+    struct wsfs_impl_timeout_manager * manager,
+    struct wsfs_impl_timer * timer)
 {
     if (NULL != manager->timers)
     {
@@ -59,12 +59,12 @@ void timeout_manager_addtimer(
     manager->timers = timer;
 }
 
-void timeout_manager_removetimer(
-    struct timeout_manager * manager,
-    struct timer * timer)
+void wsfs_impl_timeout_manager_removetimer(
+    struct wsfs_impl_timeout_manager * manager,
+    struct wsfs_impl_timer * timer)
 {
-    struct timer * prev = timer->prev;
-    struct timer * next = timer->next;
+    struct wsfs_impl_timer * prev = timer->prev;
+    struct wsfs_impl_timer * next = timer->next;
 
     if (NULL != prev)
     {

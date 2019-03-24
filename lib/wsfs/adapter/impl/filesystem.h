@@ -13,29 +13,29 @@ extern "C"
 {
 #endif
 
-struct jsonrpc_server;
+struct wsfs_impl_jsonrpc_server;
 
-struct filesystem
+struct wsfs_impl_filesystem
 {
 	struct fuse_args args;
 	struct fuse_session * session;
 	struct fuse_buf buffer;
-	struct operations_context user_data;
+	struct wsfs_impl_operations_context user_data;
 };
 
-extern bool filesystem_init(
-    struct filesystem * filesystem,
-    struct jsonrpc_server * rpc,
+extern bool wsfs_impl_filesystem_init(
+    struct wsfs_impl_filesystem * filesystem,
+    struct wsfs_impl_jsonrpc_server * rpc,
     char * mount_point);
 
-extern void filesystem_cleanup(
-    struct filesystem * filesystem);
+extern void wsfs_impl_filesystem_cleanup(
+    struct wsfs_impl_filesystem * filesystem);
 
-extern int filesystem_get_fd(
-    struct filesystem * filesystem);
+extern int wsfs_impl_filesystem_get_fd(
+    struct wsfs_impl_filesystem * filesystem);
 
-extern void filesystem_process_request(
-    struct filesystem * filesystem);
+extern void wsfs_impl_filesystem_process_request(
+    struct wsfs_impl_filesystem * filesystem);
 
 #ifdef __cplusplus
 }

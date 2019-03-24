@@ -14,36 +14,36 @@ extern "C"
 
 struct lws_protocols;
 
-struct server_protocol
+struct wsfs_server_protocol
 {
-    struct timeout_manager timeout_manager;
-    struct filesystem filesystem;
-    struct jsonrpc_server rpc;
-    struct authenticators authenticators;
-    struct session_manager session_manager;
+    struct wsfs_impl_timeout_manager timeout_manager;
+    struct wsfs_impl_filesystem filesystem;
+    struct wsfs_impl_jsonrpc_server rpc;
+    struct wsfs_impl_authenticators authenticators;
+    struct wsfs_impl_session_manager session_manager;
 };
 
-extern bool server_protocol_init(
-    struct server_protocol * protocol,
+extern bool wsfs_impl_server_protocol_init(
+    struct wsfs_server_protocol * protocol,
     char * mount_point);
 
-extern void server_protocol_cleanup(
-    struct server_protocol * protocol);
+extern void wsfs_impl_server_protocol_cleanup(
+    struct wsfs_server_protocol * protocol);
 
-extern struct server_protocol * server_protocol_create(
+extern struct wsfs_server_protocol * wsfs_impl_server_protocol_create(
     char * mount_point);
 
-extern void server_protocol_dispose(
-    struct server_protocol * protocol);
+extern void wsfs_impl_server_protocol_dispose(
+    struct wsfs_server_protocol * protocol);
 
-extern void server_protocol_init_lws(
-    struct server_protocol * protocol,
+extern void wsfs_impl_server_protocol_init_lws(
+    struct wsfs_server_protocol * protocol,
     struct lws_protocols * lws_protocol);
 
-extern void server_protocol_add_authenticator(
-    struct server_protocol * protocol,
+extern void wsfs_impl_server_protocol_add_authenticator(
+    struct wsfs_server_protocol * protocol,
     char const * type,
-    authenticate_fn * authenticate,
+    wsfs_authenticate_fn * authenticate,
     void * user_data);
 
 #ifdef __cplusplus

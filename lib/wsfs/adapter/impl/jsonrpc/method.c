@@ -3,12 +3,12 @@
 #include <stdlib.h>
 #include <string.h>
 
-struct jsonrpc_method * jsonrpc_method_create(
+struct wsfs_impl_jsonrpc_method * wsfs_impl_jsonrpc_method_create(
     char const * name,
-    jsonrpc_method_invoke_fn * invoke,
+    wsfs_impl_jsonrpc_method_invoke_fn * invoke,
     void * user_data)
 {
-    struct jsonrpc_method * method = malloc(sizeof(struct jsonrpc_method));
+    struct wsfs_impl_jsonrpc_method * method = malloc(sizeof(struct wsfs_impl_jsonrpc_method));
     if (NULL != method)
     {
         method->next = NULL;
@@ -20,8 +20,8 @@ struct jsonrpc_method * jsonrpc_method_create(
     return method;
 }
 
-void jsonrpc_method_dispose(
-    struct jsonrpc_method * method)
+void wsfs_impl_jsonrpc_method_dispose(
+    struct wsfs_impl_jsonrpc_method * method)
 {
     free(method->name);
     free(method);

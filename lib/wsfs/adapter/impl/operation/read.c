@@ -10,7 +10,7 @@
 
 #define WSFS_MAX_READ_LENGTH 4096
 
-static char * fill_buffer(
+static char * wsfs_impl_fill_buffer(
 	char const * data,
 	char const * format,
 	size_t count,
@@ -38,7 +38,7 @@ static char * fill_buffer(
 	return buffer;
 }
 
-static void operation_read_finished(void * user_data, wsfs_status status, json_t const * data)
+static void wsfs_impl_operation_read_finished(void * user_data, wsfs_status status, json_t const * data)
 {
 	fuse_req_t request = user_data;
 
@@ -58,7 +58,7 @@ static void operation_read_finished(void * user_data, wsfs_status status, json_t
 			char const * const format = json_string_value(format_holder);
 			length = (size_t) json_integer_value(count_holder);
 
-			buffer = fill_buffer(data, format, length, &status);
+			buffer = wsfs_impl_fill_buffer(data, format, length, &status);
 		}
 		else
 		{
@@ -79,17 +79,17 @@ static void operation_read_finished(void * user_data, wsfs_status status, json_t
 
 }
 
-void operation_read(
+void wsfs_impl_operation_read(
 	fuse_req_t request,
 	fuse_ino_t inode,
     size_t size,
     off_t offset,
 	struct fuse_file_info * file_info)
 {
-    struct operations_context * user_data = fuse_req_userdata(request);
-    struct jsonrpc_server * rpc = user_data->rpc;
+    struct wsfs_impl_operations_context * user_data = fuse_req_userdata(request);
+    struct wsfs_impl_jsonrpc_server * rpc = user_data->rpc;
 
 	int const length = (size <= WSFS_MAX_READ_LENGTH) ? (int) size : WSFS_MAX_READ_LENGTH;
     int handle = (file_info->fh & INT_MAX);
-	jsonrpc_server_invoke(rpc, &operation_read_finished, request, "read", "iiii", inode, handle, (int) offset, length);
+	wsfs_impl_jsonrpc_server_invoke(rpc, &wsfs_impl_operation_read_finished, request, "read", "iiii", inode, handle, (int) offset, length);
 }

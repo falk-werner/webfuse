@@ -11,7 +11,7 @@ using wsfs_test::msleep;
 
 namespace
 {
-    void on_timeout(struct timer * timer)
+    void on_timeout(struct wsfs_impl_timer * timer)
     {
         bool * triggered = reinterpret_cast<bool*>(timer->user_data);
         *triggered = true;
@@ -20,82 +20,82 @@ namespace
 
 TEST(timer, init)
 {
-    struct timeout_manager manager;
-    struct timer timer;
+    struct wsfs_impl_timeout_manager manager;
+    struct wsfs_impl_timer timer;
 
-    timeout_manager_init(&manager);
-    timer_init(&timer, &manager);
+    wsfs_impl_timeout_manager_init(&manager);
+    wsfs_impl_timer_init(&timer, &manager);
 
-    timer_cleanup(&timer);
-    timeout_manager_cleanup(&manager);
+    wsfs_impl_timer_cleanup(&timer);
+    wsfs_impl_timeout_manager_cleanup(&manager);
 }
 
 TEST(timer, trigger)
 {
-    struct timeout_manager manager;
-    struct timer timer;
+    struct wsfs_impl_timeout_manager manager;
+    struct wsfs_impl_timer timer;
 
-    timeout_manager_init(&manager);
-    timer_init(&timer, &manager);
+    wsfs_impl_timeout_manager_init(&manager);
+    wsfs_impl_timer_init(&timer, &manager);
 
     bool triggered = false;
-    timer_start(&timer, timepoint_in_msec(250), &on_timeout, reinterpret_cast<void*>(&triggered));
+    wsfs_impl_timer_start(&timer, wsfs_impl_timepoint_in_msec(250), &on_timeout, reinterpret_cast<void*>(&triggered));
     msleep(500);
-    timeout_manager_check(&manager);
+    wsfs_impl_timeout_manager_check(&manager);
 
     ASSERT_TRUE(triggered);
 
-    timer_cleanup(&timer);
-    timeout_manager_cleanup(&manager);
+    wsfs_impl_timer_cleanup(&timer);
+    wsfs_impl_timeout_manager_cleanup(&manager);
 }
 
 TEST(timer, cancel)
 {
-    struct timeout_manager manager;
-    struct timer timer;
+    struct wsfs_impl_timeout_manager manager;
+    struct wsfs_impl_timer timer;
 
-    timeout_manager_init(&manager);
-    timer_init(&timer, &manager);
+    wsfs_impl_timeout_manager_init(&manager);
+    wsfs_impl_timer_init(&timer, &manager);
 
     bool triggered = false;
-    timer_start(&timer, timepoint_in_msec(250), &on_timeout, &triggered);
+    wsfs_impl_timer_start(&timer, wsfs_impl_timepoint_in_msec(250), &on_timeout, &triggered);
     msleep(500);
-    timer_cancel(&timer);
-    timeout_manager_check(&manager);
+    wsfs_impl_timer_cancel(&timer);
+    wsfs_impl_timeout_manager_check(&manager);
 
     ASSERT_FALSE(triggered);
     
-    timer_cleanup(&timer);
-    timeout_manager_cleanup(&manager);
+    wsfs_impl_timer_cleanup(&timer);
+    wsfs_impl_timeout_manager_cleanup(&manager);
 }
 
 TEST(timer, multiple_timers)
 {
     static size_t const count = 5;
-    struct timeout_manager manager;
-    struct timer timer[count];
+    struct wsfs_impl_timeout_manager manager;
+    struct wsfs_impl_timer timer[count];
     bool triggered[count];
 
-    timeout_manager_init(&manager);
+    wsfs_impl_timeout_manager_init(&manager);
 
     for(size_t i = 0; i < count; i++)
     {
-        timer_init(&timer[i], &manager);
+        wsfs_impl_timer_init(&timer[i], &manager);
         triggered[i] = false;
-        timer_start(&timer[i], timepoint_in_msec(300 - (50 * i)), &on_timeout, &triggered[i]);
+        wsfs_impl_timer_start(&timer[i], wsfs_impl_timepoint_in_msec(300 - (50 * i)), &on_timeout, &triggered[i]);
     }
 
     for(size_t i = 0; i < count; i++)
     {
         msleep(100);
-        timeout_manager_check(&manager);
+        wsfs_impl_timeout_manager_check(&manager);
     }
 
     for(size_t i = 0; i < count; i++)
     {
         ASSERT_TRUE(triggered[i]);    
-        timer_cleanup(&timer[i]);
+        wsfs_impl_timer_cleanup(&timer[i]);
     }
 
-    timeout_manager_cleanup(&manager);
+    wsfs_impl_timeout_manager_cleanup(&manager);
 }

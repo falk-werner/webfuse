@@ -19,8 +19,8 @@ TEST(Authenticator, Authenticate)
     MockAuthenticator mock;
     set_authenticator(&mock);
 
-    struct credentials creds;
-    credentials_init(&creds, "username", nullptr);
+    struct wsfs_credentials creds;
+    wsfs_impl_credentials_init(&creds, "username", nullptr);
     char dummy[] = "usr_data";
     void * user_data = reinterpret_cast<void*>(dummy);
 
@@ -28,16 +28,16 @@ TEST(Authenticator, Authenticate)
         .Times(1)
         .WillRepeatedly(Return(true));
 
-    struct authenticator * authenticator = authenticator_create(
+    struct wsfs_impl_authenticator * authenticator = wsfs_impl_authenticator_create(
         "username",
         &authenticate,
         user_data);
 
-    bool result = authenticator_autenticate(authenticator, &creds);
+    bool result = wsfs_impl_authenticator_autenticate(authenticator, &creds);
     ASSERT_TRUE(result);
 
-    authenticator_dispose(authenticator);
-    credentials_cleanup(&creds);
+    wsfs_impl_authenticator_dispose(authenticator);
+    wsfs_impl_credentials_cleanup(&creds);
 }
 
 TEST(Authenticator, SkipAuthenticationWithWrongType)
@@ -45,19 +45,19 @@ TEST(Authenticator, SkipAuthenticationWithWrongType)
     MockAuthenticator mock;
     set_authenticator(&mock);
 
-    struct credentials creds;
-    credentials_init(&creds, "username", nullptr);
+    struct wsfs_credentials creds;
+    wsfs_impl_credentials_init(&creds, "username", nullptr);
     EXPECT_CALL(mock, authenticate(_, _))
         .Times(0);
 
-    struct authenticator * authenticator = authenticator_create(
+    struct wsfs_impl_authenticator * authenticator = wsfs_impl_authenticator_create(
         "certificate",
         &authenticate,
         nullptr);
 
-    bool result = authenticator_autenticate(authenticator, &creds);
+    bool result = wsfs_impl_authenticator_autenticate(authenticator, &creds);
     ASSERT_FALSE(result);
 
-    authenticator_dispose(authenticator);
-    credentials_cleanup(&creds);
+    wsfs_impl_authenticator_dispose(authenticator);
+    wsfs_impl_credentials_cleanup(&creds);
 }

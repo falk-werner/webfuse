@@ -5,44 +5,44 @@
 #include <stdbool.h>
 #endif
 
-#include "wsfs/adapter/impl/authenticate.h"
+#include "wsfs/adapter/authenticate.h"
 
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
-struct authenticator;
-struct credentials;
+struct wsfs_impl_authenticator;
+struct wsfs_credentials;
 
-struct authenticators
+struct wsfs_impl_authenticators
 {
-    struct authenticator * first;
+    struct wsfs_impl_authenticator * first;
 };
 
-extern void authenticators_init(
-    struct authenticators * authenticators);
+extern void wsfs_impl_authenticators_init(
+    struct wsfs_impl_authenticators * authenticators);
 
-extern void authenticators_cleanup(
-    struct authenticators * authenticators);
+extern void wsfs_impl_authenticators_cleanup(
+    struct wsfs_impl_authenticators * authenticators);
 
-extern void authenticators_clone(
-    struct authenticators * authenticators,
-    struct authenticators * other);
+extern void wsfs_impl_authenticators_clone(
+    struct wsfs_impl_authenticators * authenticators,
+    struct wsfs_impl_authenticators * other);
 
-extern void authenticators_move(
-    struct authenticators * authenticators,
-    struct authenticators * other);
+extern void wsfs_impl_authenticators_move(
+    struct wsfs_impl_authenticators * authenticators,
+    struct wsfs_impl_authenticators * other);
 
-extern void authenticators_add(
-    struct authenticators * authenticators,
+extern void wsfs_impl_authenticators_add(
+    struct wsfs_impl_authenticators * authenticators,
     char const * type,
-    authenticate_fn * authenticate,
+    wsfs_authenticate_fn * authenticate,
     void * user_data);
 
-extern bool authenticators_authenticate(
-    struct authenticators * authenticators,
-    struct credentials * credentials);
+extern bool wsfs_impl_authenticators_authenticate(
+    struct wsfs_impl_authenticators * authenticators,
+    struct wsfs_credentials * credentials);
 
 #ifdef __cplusplus
 }

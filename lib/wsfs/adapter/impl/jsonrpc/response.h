@@ -15,20 +15,20 @@ using std::size_t;
 extern "C" {
 #endif
 
-struct jsonrpc_response
+struct wsfs_impl_jsonrpc_response
 {
 	wsfs_status status;
 	int id;
 	json_t * result;	
 };
 
-extern void jsonrpc_response_init(
-	struct jsonrpc_response * response,
+extern void wsfs_impl_jsonrpc_response_init(
+	struct wsfs_impl_jsonrpc_response * response,
     char const * buffer,
 	size_t buffer_length);
 
-extern void jsonrpc_response_cleanup(
-	struct jsonrpc_response * response);
+extern void wsfs_impl_jsonrpc_response_cleanup(
+	struct wsfs_impl_jsonrpc_response * response);
 
 #ifdef __cplusplus
 }

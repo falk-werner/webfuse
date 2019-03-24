@@ -5,16 +5,16 @@
 #include "wsfs/adapter/impl/authenticator.h"
 #include "wsfs/adapter/impl/credentials.h"
 
-static struct authenticator * authenticators_find(
-    struct authenticators * authenticators,
+static struct wsfs_impl_authenticator * wsfs_impl_authenticators_find(
+    struct wsfs_impl_authenticators * authenticators,
     char const * type)
 {
-    struct authenticator * result = NULL;
+    struct wsfs_impl_authenticator * result = NULL;
 
-    struct authenticator * actual = authenticators->first;
+    struct wsfs_impl_authenticator * actual = authenticators->first;
     while ((NULL == result) && (NULL != actual))
     {
-        struct authenticator * next = actual->next;
+        struct wsfs_impl_authenticator * next = actual->next;
         if (0 == strcmp(type, actual->type))
         {
             result = actual;
@@ -26,74 +26,74 @@ static struct authenticator * authenticators_find(
     return result;
 }
 
-void authenticators_init(
-    struct authenticators * authenticators)
+void wsfs_impl_authenticators_init(
+    struct wsfs_impl_authenticators * authenticators)
 {
     authenticators->first = NULL;
 }
 
-void authenticators_cleanup(
-    struct authenticators * authenticators)
+void wsfs_impl_authenticators_cleanup(
+    struct wsfs_impl_authenticators * authenticators)
 {
-    struct authenticator * actual = authenticators->first;
+    struct wsfs_impl_authenticator * actual = authenticators->first;
     while (NULL != actual)
     {
-        struct authenticator * next = actual->next;
-        authenticator_dispose(actual);
+        struct wsfs_impl_authenticator * next = actual->next;
+        wsfs_impl_authenticator_dispose(actual);
         actual = next;
     }
 
     authenticators->first = NULL;
 }
 
-void authenticators_clone(
-    struct authenticators * authenticators,
-    struct authenticators * other)
+void wsfs_impl_authenticators_clone(
+    struct wsfs_impl_authenticators * authenticators,
+    struct wsfs_impl_authenticators * other)
 {
-    authenticators_init(other);
+    wsfs_impl_authenticators_init(other);
 
-    struct authenticator * actual = authenticators->first;
+    struct wsfs_impl_authenticator * actual = authenticators->first;
     while (NULL != actual)
     {
-        struct authenticator * next = actual->next;
-        authenticators_add(other, 
+        struct wsfs_impl_authenticator * next = actual->next;
+        wsfs_impl_authenticators_add(other, 
                 actual->type, actual->authenticate, actual->user_data);
         actual = next;
     }
 
 }
 
-extern void authenticators_move(
-    struct authenticators * authenticators,
-    struct authenticators * other)
+extern void wsfs_impl_authenticators_move(
+    struct wsfs_impl_authenticators * authenticators,
+    struct wsfs_impl_authenticators * other)
 {
     other->first = authenticators->first;
     authenticators->first = NULL;
 }
 
-void authenticators_add(
-    struct authenticators * authenticators,
+void wsfs_impl_authenticators_add(
+    struct wsfs_impl_authenticators * authenticators,
     char const * type,
-    authenticate_fn * authenticate,
+    wsfs_authenticate_fn * authenticate,
     void * user_data)
 {
-    struct authenticator * authenticator = authenticator_create(type, authenticate, user_data);
+    struct wsfs_impl_authenticator * authenticator = wsfs_impl_authenticator_create(type, authenticate, user_data);
     authenticator->next = authenticators->first;
     authenticators->first = authenticator;
 }
 
-bool authenticators_authenticate(
-    struct authenticators * authenticators,
-    struct credentials * credentials)
+bool wsfs_impl_authenticators_authenticate(
+    struct wsfs_impl_authenticators * authenticators,
+    struct wsfs_credentials * credentials)
 {
     bool result =  (NULL == authenticators->first);
 
     if (NULL != credentials)
     {
-        struct authenticator * authenticator = authenticators_find(authenticators, credentials->type);
+        struct wsfs_impl_authenticator * authenticator = wsfs_impl_authenticators_find(authenticators, credentials->type);
         if (NULL != authenticator)
         {
-            result = authenticator_autenticate(authenticator, credentials);
+            result = wsfs_impl_authenticator_autenticate(authenticator, credentials);
         }
     }
 

@@ -7,11 +7,11 @@
 #include <libwebsockets.h>
 #include <stddef.h>
 
-void session_init(
-    struct session * session,
+void wsfs_impl_session_init(
+    struct wsfs_impl_session * session,
     struct lws * wsi,
-    struct authenticators * authenticators,
-    struct jsonrpc_server * rpc)
+    struct wsfs_impl_authenticators * authenticators,
+    struct wsfs_impl_jsonrpc_server * rpc)
  {
     session->wsi = wsi;
     session->is_authenticated = false;
@@ -20,8 +20,8 @@ void session_init(
     wsfs_message_queue_init(&session->queue);
  }
 
-void session_cleanup(
-    struct session * session)
+void wsfs_impl_session_cleanup(
+    struct wsfs_impl_session * session)
 {
     wsfs_message_queue_cleanup(&session->queue);
     session->is_authenticated = false;
@@ -30,15 +30,15 @@ void session_cleanup(
     session->rpc = NULL;
 }
 
-void session_authenticate(
-    struct session * session,
-    struct credentials * creds)
+void wsfs_impl_session_authenticate(
+    struct wsfs_impl_session * session,
+    struct wsfs_credentials * creds)
 {
-    session->is_authenticated = authenticators_authenticate(session->authenticators, creds);
+    session->is_authenticated = wsfs_impl_authenticators_authenticate(session->authenticators, creds);
 }
 
-bool session_send(
-    struct session * session,
+bool wsfs_impl_session_send(
+    struct wsfs_impl_session * session,
     struct wsfs_message * message)
 {
     bool result = (session->is_authenticated) && (NULL != session->wsi);
@@ -58,8 +58,8 @@ bool session_send(
     return result;
 }
 
-void session_onwritable(
-    struct session * session)
+void wsfs_impl_session_onwritable(
+    struct wsfs_impl_session * session)
 {
     if (!wsfs_message_queue_empty(&session->queue))
     {                
@@ -75,10 +75,10 @@ void session_onwritable(
 }
 
 
-void session_receive(
-    struct session * session,
+void wsfs_impl_session_receive(
+    struct wsfs_impl_session * session,
     char const * data,
     size_t length)
 {
-    jsonrpc_server_onresult(session->rpc, data, length);
+    wsfs_impl_jsonrpc_server_onresult(session->rpc, data, length);
 }

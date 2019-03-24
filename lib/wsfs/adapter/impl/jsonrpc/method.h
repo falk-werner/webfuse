@@ -13,11 +13,11 @@ extern "C"
 {
 #endif
 
-typedef bool jsonrpc_method_invoke_fn(
+typedef bool wsfs_impl_jsonrpc_method_invoke_fn(
     void * user_data,
     struct json_t const * method_call);
 
-typedef void jsonrpc_method_finished_fn(
+typedef void wsfs_impl_jsonrpc_method_finished_fn(
 	void * user_data,
 	wsfs_status status,
 	struct json_t const * result);

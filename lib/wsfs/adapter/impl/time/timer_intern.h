@@ -12,11 +12,11 @@ extern "C"
 {
 #endif
 
-extern bool timer_is_timeout(
-    struct timer * timer);
+extern bool wsfs_impl_timer_is_timeout(
+    struct wsfs_impl_timer * timer);
 
-extern void timer_trigger(
-    struct timer * timer);
+extern void wsfs_impl_timer_trigger(
+    struct wsfs_impl_timer * timer);
 
 #ifdef __cplusplus
 }

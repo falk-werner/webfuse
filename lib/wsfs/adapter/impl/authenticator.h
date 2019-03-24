@@ -5,34 +5,34 @@
 #include <stdbool.h>
 #endif
 
-#include "wsfs/adapter/impl/authenticate.h"
+#include "wsfs/adapter/authenticate.h"
 
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
-struct credentials;
+struct wsfs_credentials;
 
-struct authenticator
+struct wsfs_impl_authenticator
 {
     char * type;
-    authenticate_fn * authenticate;
+    wsfs_authenticate_fn * authenticate;
     void * user_data;
-    struct authenticator * next;
+    struct wsfs_impl_authenticator * next;
 };
 
-extern struct authenticator * authenticator_create(
+extern struct wsfs_impl_authenticator * wsfs_impl_authenticator_create(
     char const * type,
-    authenticate_fn * authenticate,
+    wsfs_authenticate_fn * authenticate,
     void * user_data);
 
-extern void authenticator_dispose(
-    struct authenticator * authenticator);
+extern void wsfs_impl_authenticator_dispose(
+    struct wsfs_impl_authenticator * authenticator);
 
-extern bool authenticator_autenticate(
-    struct authenticator * authenticator,
-    struct credentials * credentials);
+extern bool wsfs_impl_authenticator_autenticate(
+    struct wsfs_impl_authenticator * authenticator,
+    struct wsfs_credentials * credentials);
 
 
 

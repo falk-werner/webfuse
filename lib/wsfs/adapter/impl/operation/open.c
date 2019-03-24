@@ -8,7 +8,7 @@
 #include "wsfs/util.h"
 #include "wsfs/status.h"
 
-static void operation_open_finished(
+static void wsfs_impl_operation_open_finished(
 	void * user_data,
 	wsfs_status status,
 	json_t const * result)
@@ -41,13 +41,13 @@ static void operation_open_finished(
 
 }
 
-void operation_open(
+void wsfs_impl_operation_open(
 	fuse_req_t request,
 	fuse_ino_t inode,
 	struct fuse_file_info * file_info)
 {
-    struct operations_context * user_data = fuse_req_userdata(request);
-    struct jsonrpc_server * rpc = user_data->rpc;
+    struct wsfs_impl_operations_context * user_data = fuse_req_userdata(request);
+    struct wsfs_impl_jsonrpc_server * rpc = user_data->rpc;
 
-	jsonrpc_server_invoke(rpc, &operation_open_finished, request, "open", "ii", inode, file_info->flags);
+	wsfs_impl_jsonrpc_server_invoke(rpc, &wsfs_impl_operation_open_finished, request, "open", "ii", inode, file_info->flags);
 }

@@ -1,39 +1,39 @@
 #include "wsfs/adapter/impl/session_manager.h"
 #include <stddef.h>
 
-void session_manager_init(
-    struct session_manager * manager)
+void wsfs_impl_session_manager_init(
+    struct wsfs_impl_session_manager * manager)
 {
-    session_init(&manager->session, NULL, NULL, NULL);
+    wsfs_impl_session_init(&manager->session, NULL, NULL, NULL);
 }
 
-void session_manager_cleanup(
-    struct session_manager * manager)
+void wsfs_impl_session_manager_cleanup(
+    struct wsfs_impl_session_manager * manager)
 {
-    session_cleanup(&manager->session);
+    wsfs_impl_session_cleanup(&manager->session);
 }
 
-struct session * session_manager_add(
-    struct session_manager * manager,
+struct wsfs_impl_session * wsfs_impl_session_manager_add(
+    struct wsfs_impl_session_manager * manager,
     struct lws * wsi,
-    struct authenticators * authenticators,
-    struct jsonrpc_server * rpc)
+    struct wsfs_impl_authenticators * authenticators,
+    struct wsfs_impl_jsonrpc_server * rpc)
 {
-    struct session * session = NULL; 
+    struct wsfs_impl_session * session = NULL; 
     if (NULL == manager->session.wsi)
     {
         session = &manager->session;
-        session_init(&manager->session, wsi, authenticators, rpc);        
+        wsfs_impl_session_init(&manager->session, wsi, authenticators, rpc);        
     }
 
     return session;
 }
 
-struct session * session_manager_get(
-    struct session_manager * manager,
+struct wsfs_impl_session * wsfs_impl_session_manager_get(
+    struct wsfs_impl_session_manager * manager,
     struct lws * wsi)
 {
-    struct session * session = NULL;
+    struct wsfs_impl_session * session = NULL;
     if (wsi == manager->session.wsi)
     {
         session = &manager->session;
@@ -42,13 +42,13 @@ struct session * session_manager_get(
     return session;
 }
 
-void session_manager_remove(
-    struct session_manager * manager,
+void wsfs_impl_session_manager_remove(
+    struct wsfs_impl_session_manager * manager,
     struct lws * wsi)
 {
     if (wsi == manager->session.wsi)
     {
-        session_cleanup(&manager->session);
+        wsfs_impl_session_cleanup(&manager->session);
         manager->session.wsi = NULL;
     }
 }

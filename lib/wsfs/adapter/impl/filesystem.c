@@ -8,18 +8,18 @@
 
 static struct fuse_lowlevel_ops const filesystem_operations =
 {
-	.lookup = &operation_lookup,
-	.getattr = &operation_getattr,
-	.readdir = &operation_readdir,
-	.open	= &operation_open,
-	.release = &operation_close,
-	.read	= &operation_read
+	.lookup = &wsfs_impl_operation_lookup,
+	.getattr = &wsfs_impl_operation_getattr,
+	.readdir = &wsfs_impl_operation_readdir,
+	.open	= &wsfs_impl_operation_open,
+	.release = &wsfs_impl_operation_close,
+	.read	= &wsfs_impl_operation_read
 };
 
 
-bool filesystem_init(
-    struct filesystem * filesystem,
-	struct jsonrpc_server * rpc,
+bool wsfs_impl_filesystem_init(
+    struct wsfs_impl_filesystem * filesystem,
+	struct wsfs_impl_jsonrpc_server * rpc,
     char * mount_point)
 {
 	bool result = false;
@@ -46,8 +46,8 @@ bool filesystem_init(
 	return result;
 }
 
-void filesystem_cleanup(
-    struct filesystem * filesystem)
+void wsfs_impl_filesystem_cleanup(
+    struct wsfs_impl_filesystem * filesystem)
 {
 	if (NULL != filesystem->session)
 	{
@@ -61,14 +61,14 @@ void filesystem_cleanup(
 	fuse_opt_free_args(&filesystem->args);    
 }
 
-int filesystem_get_fd(
-    struct filesystem * filesystem)
+int wsfs_impl_filesystem_get_fd(
+    struct wsfs_impl_filesystem * filesystem)
 {
     return fuse_session_fd(filesystem->session);
 }
 
-void filesystem_process_request(
-    struct filesystem * filesystem)
+void wsfs_impl_filesystem_process_request(
+    struct wsfs_impl_filesystem * filesystem)
 {
 	int const result = fuse_session_receive_buf(filesystem->session, &filesystem->buffer);
 	if (0 < result)

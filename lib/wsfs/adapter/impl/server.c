@@ -15,10 +15,10 @@
 #define WSFS_SERVER_PROTOCOL_COUNT 3
 #define WSFS_SERVER_TIMEOUT (1 * 1000)
 
-struct server
+struct wsfs_server
 {
-    struct server_config config;
-    struct server_protocol protocol;
+    struct wsfs_server_config config;
+    struct wsfs_server_protocol protocol;
     struct lws_protocols ws_protocols[WSFS_SERVER_PROTOCOL_COUNT];
     struct lws_context * context;
     volatile bool shutdown_requested;
@@ -26,14 +26,14 @@ struct server
 	struct lws_context_creation_info info;
 };
 
-static bool server_tls_enabled(
-	struct server * server)
+static bool wsfs_impl_server_tls_enabled(
+	struct wsfs_server * server)
 {
 	return ((server->config.key_path != NULL) && (server->config.cert_path != NULL));
 }
 
-static struct lws_context * server_context_create(
-    struct server * server)
+static struct lws_context * wsfs_impl_server_context_create(
+    struct wsfs_server * server)
 {
 	lws_set_log_level(WSFS_DISABLE_LWS_LOG, NULL);
 
@@ -41,7 +41,7 @@ static struct lws_context * server_context_create(
     server->ws_protocols[0].name = "http";
     server->ws_protocols[0].callback = lws_callback_http_dummy;
     server->ws_protocols[1].name = "fs";
-    server_protocol_init_lws(&server->protocol, &server->ws_protocols[1]);
+    wsfs_impl_server_protocol_init_lws(&server->protocol, &server->ws_protocols[1]);
 
 	memset(&server->mount, 0, sizeof(struct lws_http_mount));
 	server->mount.mount_next = NULL,
@@ -66,7 +66,7 @@ static struct lws_context * server_context_create(
 		server->info.mounts = NULL;
 	}
 
-	if (server_tls_enabled(server))
+	if (wsfs_impl_server_tls_enabled(server))
 	{
 		server->info.options |= LWS_SERVER_OPTION_DO_SSL_GLOBAL_INIT;
 		server->info.ssl_cert_filepath = server->config.cert_path;
@@ -78,8 +78,8 @@ static struct lws_context * server_context_create(
 
 }
 
-static bool server_check_mountpoint(
-	 struct server_config * config)
+static bool wsfs_impl_server_check_mountpoint(
+	 struct wsfs_server_config * config)
 {
 	bool result = false;
 
@@ -98,22 +98,22 @@ static bool server_check_mountpoint(
 	return result;
 }
 
-struct server * server_create(
-    struct server_config * config)
+struct wsfs_server * wsfs_impl_server_create(
+    struct wsfs_server_config * config)
 {
-	struct server * server = NULL;
+	struct wsfs_server * server = NULL;
 	
-	if (server_check_mountpoint(config))
+	if (wsfs_impl_server_check_mountpoint(config))
 	{
-		server = malloc(sizeof(struct server));
+		server = malloc(sizeof(struct wsfs_server));
 		if (NULL != server)
 		{
-			if (server_protocol_init(&server->protocol, config->mount_point))
+			if (wsfs_impl_server_protocol_init(&server->protocol, config->mount_point))
 			{
 				server->shutdown_requested = false;
-				server_config_clone(config, &server->config);
-				authenticators_move(&server->config.authenticators, &server->protocol.authenticators);				
-				server->context = server_context_create(server);
+				wsfs_impl_server_config_clone(config, &server->config);
+				wsfs_impl_authenticators_move(&server->config.authenticators, &server->protocol.authenticators);				
+				server->context = wsfs_impl_server_context_create(server);
 			}
 			else
 			{
@@ -126,17 +126,17 @@ struct server * server_create(
     return server; 
 }
 
-void server_dispose(
-    struct server * server)
+void wsfs_impl_server_dispose(
+    struct wsfs_server * server)
 {
     lws_context_destroy(server->context);
-    server_protocol_cleanup(&server->protocol);
-    server_config_cleanup(&server->config);
+    wsfs_impl_server_protocol_cleanup(&server->protocol);
+    wsfs_impl_server_config_cleanup(&server->config);
     free(server);   
 }
 
-void server_run(
-    struct server * server)
+void wsfs_impl_server_run(
+    struct wsfs_server * server)
 {
     int n = 0;
     while ((0 <= n) && (!server->shutdown_requested))
@@ -145,8 +145,8 @@ void server_run(
     }
 }
 
-void server_shutdown(
-    struct server * server)
+void wsfs_impl_server_shutdown(
+    struct wsfs_server * server)
 {
     server->shutdown_requested = true;
 }

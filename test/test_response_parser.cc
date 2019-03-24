@@ -6,14 +6,14 @@
 
 static void response_parse_str(
 	std::string const & buffer,
-	struct jsonrpc_response * response)
+	struct wsfs_impl_jsonrpc_response * response)
 {
-	jsonrpc_response_init(response, buffer.c_str(), buffer.size());
+	wsfs_impl_jsonrpc_response_init(response, buffer.c_str(), buffer.size());
 }
 
 TEST(response_parser, test)
 {
-	struct jsonrpc_response response;
+	struct wsfs_impl_jsonrpc_response response;
 
 	// invalid json
 	response_parse_str("", &response);

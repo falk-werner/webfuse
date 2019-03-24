@@ -14,29 +14,29 @@ extern "C"
 
 struct lws;
 
-struct session_manager
+struct wsfs_impl_session_manager
 {
-    struct session session;
+    struct wsfs_impl_session session;
 };
 
-extern void session_manager_init(
-    struct session_manager * manager);
+extern void wsfs_impl_session_manager_init(
+    struct wsfs_impl_session_manager * manager);
 
-extern void session_manager_cleanup(
-    struct session_manager * manager);
+extern void wsfs_impl_session_manager_cleanup(
+    struct wsfs_impl_session_manager * manager);
 
-extern struct session * session_manager_add(
-    struct session_manager * manager,
+extern struct wsfs_impl_session * wsfs_impl_session_manager_add(
+    struct wsfs_impl_session_manager * manager,
     struct lws * wsi,
-    struct authenticators * authenticators,
-    struct jsonrpc_server * rpc);
+    struct wsfs_impl_authenticators * authenticators,
+    struct wsfs_impl_jsonrpc_server * rpc);
 
-extern struct session * session_manager_get(
-    struct session_manager * manager,
+extern struct wsfs_impl_session * wsfs_impl_session_manager_get(
+    struct wsfs_impl_session_manager * manager,
     struct lws * wsi);
 
-extern void session_manager_remove(
-    struct session_manager * manager,
+extern void wsfs_impl_session_manager_remove(
+    struct wsfs_impl_session_manager * manager,
     struct lws * wsi);
 
 #ifdef __cplusplus

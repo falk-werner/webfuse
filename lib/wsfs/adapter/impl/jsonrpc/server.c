@@ -7,11 +7,11 @@
 
 #define WSFS_DEFAULT_TIMEOUT (10 * 1000)
 
-static struct jsonrpc_method const * jsonrpc_server_getmethod(
-    struct jsonrpc_server * server,
+static struct wsfs_impl_jsonrpc_method const * wsfs_impl_jsonrpc_server_getmethod(
+    struct wsfs_impl_jsonrpc_server * server,
     char const * name)
 {
-    struct jsonrpc_method * method = server->methods;
+    struct wsfs_impl_jsonrpc_method * method = server->methods;
     while ((NULL != method) && (0 == strcmp(name, method->name)))
     {
         method = method->next;
@@ -20,40 +20,40 @@ static struct jsonrpc_method const * jsonrpc_server_getmethod(
     return method;
 }
 
-static void jsonrpc_server_timeout(
-    struct timer * timer)
+static void wsfs_impl_jsonrpc_server_timeout(
+    struct wsfs_impl_timer * timer)
 {
-    struct jsonrpc_server * server = timer->user_data;
+    struct wsfs_impl_jsonrpc_server * server = timer->user_data;
 
     if (server->request.is_pending)
     {
-        jsonrpc_method_finished_fn * finished = server->request.finished;
+        wsfs_impl_jsonrpc_method_finished_fn * finished = server->request.finished;
         void * user_data = server->request.user_data;
 
         server->request.is_pending = false;
         server->request.id = 0;
         server->request.user_data = NULL;
         server->request.finished = NULL;
-        timer_cancel(&server->request.timer);
+        wsfs_impl_timer_cancel(&server->request.timer);
 
         finished(user_data, WSFS_BAD_TIMEOUT, NULL);
     }
 }
 
-void jsonrpc_server_init(
-    struct jsonrpc_server * server,
-    struct timeout_manager * timeout_manager)
+void wsfs_impl_jsonrpc_server_init(
+    struct wsfs_impl_jsonrpc_server * server,
+    struct wsfs_impl_timeout_manager * timeout_manager)
 {
     server->methods = NULL;
     server->request.is_pending = false;
     
-    timer_init(&server->request.timer, timeout_manager);
+    wsfs_impl_timer_init(&server->request.timer, timeout_manager);
 }
 
-void jsonrpc_server_cleanup(
-    struct jsonrpc_server * server)
+void wsfs_impl_jsonrpc_server_cleanup(
+    struct wsfs_impl_jsonrpc_server * server)
 {
-    timer_cleanup(&server->request.timer);
+    wsfs_impl_timer_cleanup(&server->request.timer);
 
     if (server->request.is_pending)
     {
@@ -61,31 +61,31 @@ void jsonrpc_server_cleanup(
         server->request.is_pending = false;
     }
 
-    struct jsonrpc_method * method = server->methods;
+    struct wsfs_impl_jsonrpc_method * method = server->methods;
     while (NULL != method)
     {
-        struct jsonrpc_method * next = method->next;
+        struct wsfs_impl_jsonrpc_method * next = method->next;
         method->next = NULL;
-        jsonrpc_method_dispose(method);
+        wsfs_impl_jsonrpc_method_dispose(method);
         method = next;
     }
     server->methods = NULL;
 }
 
-void jsonrpc_server_add(
-    struct jsonrpc_server * server,
+void wsfs_impl_jsonrpc_server_add(
+    struct wsfs_impl_jsonrpc_server * server,
     char const * name,
-    jsonrpc_method_invoke_fn * invoke,
+    wsfs_impl_jsonrpc_method_invoke_fn * invoke,
     void * user_data)
 {
-    struct jsonrpc_method * method = jsonrpc_method_create(name, invoke, user_data);
+    struct wsfs_impl_jsonrpc_method * method = wsfs_impl_jsonrpc_method_create(name, invoke, user_data);
     method->next = server->methods;
     server->methods = method;
 }
 
-void jsonrpc_server_invoke(
-	struct jsonrpc_server * server,
-	jsonrpc_method_finished_fn * finished,
+void wsfs_impl_jsonrpc_server_invoke(
+	struct wsfs_impl_jsonrpc_server * server,
+	wsfs_impl_jsonrpc_method_finished_fn * finished,
 	void * user_data,
 	char const * method_name,
 	char const * param_info,
@@ -94,19 +94,19 @@ void jsonrpc_server_invoke(
 {
     if (!server->request.is_pending)
     {
-        struct jsonrpc_method const * method = jsonrpc_server_getmethod(server, method_name);
+        struct wsfs_impl_jsonrpc_method const * method = wsfs_impl_jsonrpc_server_getmethod(server, method_name);
         if (NULL != method)
         {
             server->request.is_pending = true;
             server->request.finished = finished;
             server->request.user_data = user_data;
             server->request.id = 42;
-            timer_start(&server->request.timer, timepoint_in_msec(WSFS_DEFAULT_TIMEOUT), 
-                    &jsonrpc_server_timeout, server);
+            wsfs_impl_timer_start(&server->request.timer, wsfs_impl_timepoint_in_msec(WSFS_DEFAULT_TIMEOUT), 
+                    &wsfs_impl_jsonrpc_server_timeout, server);
             
             va_list args;
             va_start(args, param_info);
-            json_t * request = jsonrpc_request_create(method_name, server->request.id, param_info, args);
+            json_t * request = wsfs_impl_jsonrpc_request_create(method_name, server->request.id, param_info, args);
             va_end(args);
             if (NULL != request)
             {
@@ -116,7 +116,7 @@ void jsonrpc_server_invoke(
                     server->request.finished = NULL;
                     server->request.user_data = NULL;
                     server->request.id = 0;
-                    timer_cancel(&server->request.timer);
+                    wsfs_impl_timer_cancel(&server->request.timer);
 
                     finished(user_data, WSFS_BAD, NULL);
                 }
@@ -134,20 +134,20 @@ void jsonrpc_server_invoke(
     }
 }
 
-extern void jsonrpc_server_notify(
-	struct jsonrpc_server * server,
+extern void wsfs_impl_jsonrpc_server_notify(
+	struct wsfs_impl_jsonrpc_server * server,
 	char const * method_name,
 	char const * param_info,
 	...
 )
 {
-        struct jsonrpc_method const * method = jsonrpc_server_getmethod(server, method_name);
+        struct wsfs_impl_jsonrpc_method const * method = wsfs_impl_jsonrpc_server_getmethod(server, method_name);
         if (NULL != method)
         {
             
             va_list args;
             va_start(args, param_info);
-            json_t * request = jsonrpc_request_create(method_name, 0, param_info, args);
+            json_t * request = wsfs_impl_jsonrpc_request_create(method_name, 0, param_info, args);
             va_end(args);
             if (NULL != request)
             {
@@ -159,28 +159,28 @@ extern void jsonrpc_server_notify(
 }
 
 
-void jsonrpc_server_onresult(
-    struct jsonrpc_server * server,
+void wsfs_impl_jsonrpc_server_onresult(
+    struct wsfs_impl_jsonrpc_server * server,
     char const * message,
     size_t length)
 {
-	struct jsonrpc_response response;
-	jsonrpc_response_init(&response, message, length);
+	struct wsfs_impl_jsonrpc_response response;
+	wsfs_impl_jsonrpc_response_init(&response, message, length);
 
     if ((server->request.is_pending) && (response.id == server->request.id))
     {
-        jsonrpc_method_finished_fn * finished = server->request.finished;
+        wsfs_impl_jsonrpc_method_finished_fn * finished = server->request.finished;
         void * user_data = server->request.user_data;
 
         server->request.is_pending = false;
         server->request.id = 0;
         server->request.user_data = NULL;
         server->request.finished = NULL;
-        timer_cancel(&server->request.timer);
+        wsfs_impl_timer_cancel(&server->request.timer);
 
         finished(user_data, response.status, response.result);
     }
 
-    jsonrpc_response_cleanup(&response);
+    wsfs_impl_jsonrpc_response_cleanup(&response);
 }
 

@@ -8,7 +8,7 @@ extern "C"
 {
 #endif
 
-extern int json_get_int(json_t const * object, char const * key, int default_value);
+extern int wsfs_impl_json_get_int(json_t const * object, char const * key, int default_value);
 
 #ifdef __cplusplus
 }

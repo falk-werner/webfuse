@@ -1,6 +1,6 @@
 #include "wsfs/adapter/impl/jsonrpc/request.h"
 
-json_t * jsonrpc_request_create(
+json_t * wsfs_impl_jsonrpc_request_create(
 	char const * method,
 	int id,
 	char const * param_info,
