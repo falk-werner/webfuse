@@ -1,8 +1,8 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
-#include "wsfs/adapter/authenticators.h"
-#include "wsfs/adapter/credentials_intern.h"
+#include "wsfs/adapter/impl/authenticators.h"
+#include "wsfs/adapter/impl/credentials.h"
 #include "mock_authenticator.hpp"
 
 using ::testing::_;
@@ -68,7 +68,7 @@ TEST(Authenticators, Move)
 TEST(Authenticators, AuthenticateWithoutAuthenticators)
 {
     struct wsfs_credentials creds;
-    wsfs_credentials_init(&creds, "username", nullptr);
+    wsfs_impl_credentials_init(&creds, "username", nullptr);
 
     struct wsfs_authenticators authenticators;
     wsfs_authenticators_init(&authenticators);
@@ -80,7 +80,7 @@ TEST(Authenticators, AuthenticateWithoutAuthenticators)
     ASSERT_TRUE(result);
 
     wsfs_authenticators_cleanup(&authenticators);
-    wsfs_credentials_cleanup(&creds);
+    wsfs_impl_credentials_cleanup(&creds);
 }
 
 TEST(Authenticators, FailToAuthenticateWithoutCredentials)
@@ -101,7 +101,7 @@ TEST(Authenticators, FailToAuthenticateWithoutCredentials)
 TEST(Authenticators, AuthenticateWithMultipleCredentials)
 {
     struct wsfs_credentials creds;
-    wsfs_credentials_init(&creds, "username", nullptr);
+    wsfs_impl_credentials_init(&creds, "username", nullptr);
 
     MockAuthenticator username_mock;
     set_authenticator(1, &username_mock);
@@ -123,13 +123,13 @@ TEST(Authenticators, AuthenticateWithMultipleCredentials)
     ASSERT_TRUE(result);
 
     wsfs_authenticators_cleanup(&authenticators);
-    wsfs_credentials_cleanup(&creds);
+    wsfs_impl_credentials_cleanup(&creds);
 }
 
 TEST(Authenticators, FailedAuthenticateWithWrongType)
 {
     struct wsfs_credentials creds;
-    wsfs_credentials_init(&creds, "token", nullptr);
+    wsfs_impl_credentials_init(&creds, "token", nullptr);
 
     MockAuthenticator username_mock;
     set_authenticator(1, &username_mock);
@@ -150,5 +150,5 @@ TEST(Authenticators, FailedAuthenticateWithWrongType)
     ASSERT_FALSE(result);
 
     wsfs_authenticators_cleanup(&authenticators);
-    wsfs_credentials_cleanup(&creds);
+    wsfs_impl_credentials_cleanup(&creds);
 }

@@ -56,29 +56,30 @@ install(FILES include/wsfs/status.h DESTINATION include/wsfs)
 # libwsfs-adapter
 
 set(WSFS_ADAPTER_SOURCES
-	lib/wsfs/adapter/filesystem.c
-	lib/wsfs/adapter/server.c
-	lib/wsfs/adapter/server_config.c
-	lib/wsfs/adapter/server_protocol.c
-	lib/wsfs/adapter/session.c
-	lib/wsfs/adapter/session_manager.c
-	lib/wsfs/adapter/authenticator.c
-	lib/wsfs/adapter/authenticators.c
-	lib/wsfs/adapter/credentials.c
-	lib/wsfs/adapter/time/timepoint.c
-	lib/wsfs/adapter/time/timer.c
-	lib/wsfs/adapter/time/timeout_manager.c
-	lib/wsfs/adapter/operation/lookup.c
-	lib/wsfs/adapter/operation/getattr.c
-	lib/wsfs/adapter/operation/readdir.c
-	lib/wsfs/adapter/operation/open.c
-	lib/wsfs/adapter/operation/close.c
-	lib/wsfs/adapter/operation/read.c
-	lib/wsfs/adapter/jsonrpc/server.c
-	lib/wsfs/adapter/jsonrpc/method.c
-	lib/wsfs/adapter/jsonrpc/request.c
-	lib/wsfs/adapter/jsonrpc/response.c
-	lib/wsfs/adapter/jsonrpc/util.c
+	lib/wsfs/adapter/api.c
+	lib/wsfs/adapter/impl/filesystem.c
+	lib/wsfs/adapter/impl/server.c
+	lib/wsfs/adapter/impl/server_config.c
+	lib/wsfs/adapter/impl/server_protocol.c
+	lib/wsfs/adapter/impl/session.c
+	lib/wsfs/adapter/impl/session_manager.c
+	lib/wsfs/adapter/impl/authenticator.c
+	lib/wsfs/adapter/impl/authenticators.c
+	lib/wsfs/adapter/impl/credentials.c
+	lib/wsfs/adapter/impl/time/timepoint.c
+	lib/wsfs/adapter/impl/time/timer.c
+	lib/wsfs/adapter/impl/time/timeout_manager.c
+	lib/wsfs/adapter/impl/operation/lookup.c
+	lib/wsfs/adapter/impl/operation/getattr.c
+	lib/wsfs/adapter/impl/operation/readdir.c
+	lib/wsfs/adapter/impl/operation/open.c
+	lib/wsfs/adapter/impl/operation/close.c
+	lib/wsfs/adapter/impl/operation/read.c
+	lib/wsfs/adapter/impl/jsonrpc/server.c
+	lib/wsfs/adapter/impl/jsonrpc/method.c
+	lib/wsfs/adapter/impl/jsonrpc/request.c
+	lib/wsfs/adapter/impl/jsonrpc/response.c
+	lib/wsfs/adapter/impl/jsonrpc/util.c
 )
 
 add_library(wsfs-adapter SHARED ${WSFS_ADAPTER_SOURCES} ${WSFS_COMMON_SOURCES})

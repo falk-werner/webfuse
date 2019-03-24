@@ -3,8 +3,8 @@
 
 #include "mock_authenticator.hpp"
 
-#include "wsfs/adapter/authenticator.h"
-#include "wsfs/adapter/credentials_intern.h"
+#include "wsfs/adapter/impl/authenticator.h"
+#include "wsfs/adapter/impl/credentials.h"
 
 using ::testing::Return;
 using ::testing::_;
@@ -20,7 +20,7 @@ TEST(Authenticator, Authenticate)
     set_authenticator(&mock);
 
     struct wsfs_credentials creds;
-    wsfs_credentials_init(&creds, "username", nullptr);
+    wsfs_impl_credentials_init(&creds, "username", nullptr);
     char dummy[] = "usr_data";
     void * user_data = reinterpret_cast<void*>(dummy);
 
@@ -37,7 +37,7 @@ TEST(Authenticator, Authenticate)
     ASSERT_TRUE(result);
 
     wsfs_authenticator_dispose(authenticator);
-    wsfs_credentials_cleanup(&creds);
+    wsfs_impl_credentials_cleanup(&creds);
 }
 
 TEST(Authenticator, SkipAuthenticationWithWrongType)
@@ -46,7 +46,7 @@ TEST(Authenticator, SkipAuthenticationWithWrongType)
     set_authenticator(&mock);
 
     struct wsfs_credentials creds;
-    wsfs_credentials_init(&creds, "username", nullptr);
+    wsfs_impl_credentials_init(&creds, "username", nullptr);
     EXPECT_CALL(mock, authenticate(_, _))
         .Times(0);
 
@@ -59,5 +59,5 @@ TEST(Authenticator, SkipAuthenticationWithWrongType)
     ASSERT_FALSE(result);
 
     wsfs_authenticator_dispose(authenticator);
-    wsfs_credentials_cleanup(&creds);
+    wsfs_impl_credentials_cleanup(&creds);
 }
