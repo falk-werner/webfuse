@@ -16,6 +16,11 @@ using std::size_t;
 
 #include "wsfs/provider/api.h"
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 struct wsfsp_request;
 
 typedef void wsfsp_read_fn(
@@ -25,11 +30,6 @@ typedef void wsfsp_read_fn(
     size_t offset,
     size_t length,
     void * user_data);
-
-#ifdef __cplusplus
-extern "C"
-{
-#endif
 
 extern WSFSP_API void wsfsp_respond_read(
     struct wsfsp_request * request,

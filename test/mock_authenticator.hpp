@@ -2,7 +2,7 @@
 #define MOCK_AUTHENTICATOR_H
 
 #include <gmock/gmock.h>
-#include "wsfs/adapter/authenticator.h"
+#include "wsfs/adapter/impl/authenticator.h"
 
 namespace wsfs_test
 {

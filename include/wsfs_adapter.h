@@ -1,7 +1,7 @@
 #ifndef WSFS_ADAPTER_H
 #define WSFS_ADAPTER_H
 
-#include <wsfs/status.h>
+#include <wsfs/core/status.h>
 
 #include <wsfs/adapter/api.h>
 #include <wsfs/adapter/server.h>

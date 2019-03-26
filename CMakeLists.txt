@@ -43,45 +43,61 @@ set(EXTRA_CFLAGS
 	${JANSSON_CFLAGS_OTHER}
 	"-pthread"
 )
-# libwsfs-common
 
-set(WSFS_COMMON_SOURCES
-	lib/wsfs/message.c
-	lib/wsfs/message_queue.c
-	lib/wsfs/status.c
+
+# libwsfs-core
+
+add_library(wsfs-core STATIC 
+	lib/wsfs/core/message.c
+	lib/wsfs/core/message_queue.c
+	lib/wsfs/core/status.c
 )
 
-install(FILES include/wsfs/status.h DESTINATION include/wsfs)
+set_target_properties(wsfs-core PROPERTIES OUTPUT_NAME wsfs-core)
+target_include_directories(wsfs-core PUBLIC lib ${EXTRA_INCLUDE_DIRS})
+target_compile_options(wsfs-core PUBLIC ${EXTRA_CFLAGS})
+set_target_properties(wsfs-core PROPERTIES C_VISIBILITY_PRESET hidden)
+
+install(DIRECTORY include/wsfs/core DESTINATION include/wsfs)
+
 
 # libwsfs-adapter
 
-set(WSFS_ADAPTER_SOURCES
-	lib/wsfs/adapter/filesystem.c
-	lib/wsfs/adapter/server.c
-	lib/wsfs/adapter/server_config.c
-	lib/wsfs/adapter/server_protocol.c
-	lib/wsfs/adapter/session.c
-	lib/wsfs/adapter/session_manager.c
-	lib/wsfs/adapter/authenticator.c
-	lib/wsfs/adapter/authenticators.c
-	lib/wsfs/adapter/credentials.c
-	lib/wsfs/adapter/time/timepoint.c
-	lib/wsfs/adapter/time/timer.c
-	lib/wsfs/adapter/time/timeout_manager.c
-	lib/wsfs/adapter/operation/lookup.c
-	lib/wsfs/adapter/operation/getattr.c
-	lib/wsfs/adapter/operation/readdir.c
-	lib/wsfs/adapter/operation/open.c
-	lib/wsfs/adapter/operation/close.c
-	lib/wsfs/adapter/operation/read.c
-	lib/wsfs/adapter/jsonrpc/server.c
-	lib/wsfs/adapter/jsonrpc/method.c
-	lib/wsfs/adapter/jsonrpc/request.c
-	lib/wsfs/adapter/jsonrpc/response.c
-	lib/wsfs/adapter/jsonrpc/util.c
+add_library(wsfs-adapter-static STATIC 
+	lib/wsfs/adapter/api.c
+	lib/wsfs/adapter/impl/filesystem.c
+	lib/wsfs/adapter/impl/server.c
+	lib/wsfs/adapter/impl/server_config.c
+	lib/wsfs/adapter/impl/server_protocol.c
+	lib/wsfs/adapter/impl/session.c
+	lib/wsfs/adapter/impl/session_manager.c
+	lib/wsfs/adapter/impl/authenticator.c
+	lib/wsfs/adapter/impl/authenticators.c
+	lib/wsfs/adapter/impl/credentials.c
+	lib/wsfs/adapter/impl/time/timepoint.c
+	lib/wsfs/adapter/impl/time/timer.c
+	lib/wsfs/adapter/impl/time/timeout_manager.c
+	lib/wsfs/adapter/impl/operation/lookup.c
+	lib/wsfs/adapter/impl/operation/getattr.c
+	lib/wsfs/adapter/impl/operation/readdir.c
+	lib/wsfs/adapter/impl/operation/open.c
+	lib/wsfs/adapter/impl/operation/close.c
+	lib/wsfs/adapter/impl/operation/read.c
+	lib/wsfs/adapter/impl/jsonrpc/server.c
+	lib/wsfs/adapter/impl/jsonrpc/method.c
+	lib/wsfs/adapter/impl/jsonrpc/request.c
+	lib/wsfs/adapter/impl/jsonrpc/response.c
+	lib/wsfs/adapter/impl/jsonrpc/util.c
 )
 
-add_library(wsfs-adapter SHARED ${WSFS_ADAPTER_SOURCES} ${WSFS_COMMON_SOURCES})
+set_target_properties(wsfs-adapter-static PROPERTIES OUTPUT_NAME wsfs-adapter)
+target_include_directories(wsfs-adapter-static PUBLIC lib ${EXTRA_INCLUDE_DIRS})
+target_compile_options(wsfs-adapter-static PUBLIC ${EXTRA_CFLAGS})
+set_target_properties(wsfs-adapter-static PROPERTIES C_VISIBILITY_PRESET hidden)
+
+add_library(wsfs-adapter SHARED 
+	lib/wsfs/adapter/api.c
+)
 
 set_target_properties(wsfs-adapter PROPERTIES VERSION ${PROJECT_VERSION})
 set_target_properties(wsfs-adapter PROPERTIES SOVERSION 0)
@@ -90,6 +106,7 @@ set_target_properties(wsfs-adapter PROPERTIES COMPILE_DEFINITIONS "WSFSA_API=WSF
 
 target_include_directories(wsfs-adapter PUBLIC lib ${EXTRA_INCLUDE_DIRS})
 target_compile_options(wsfs-adapter PUBLIC  ${EXTRA_CFLAGS})
+target_link_libraries(wsfs-adapter PRIVATE wsfs-adapter-static wsfs-core)
 
 file(WRITE "${PROJECT_BINARY_DIR}/libwsfs-adapter.pc"
 "prefix=\"${CMAKE_INSTALL_PREFIX}\"
@@ -112,23 +129,31 @@ install(FILES "${PROJECT_BINARY_DIR}/libwsfs-adapter.pc" DESTINATION lib${LIB_SU
 
 #libwsfs-provider
 
-set(WSFS_PROVIDER_SOURCES
-	lib/wsfs/provider/url.c
-	lib/wsfs/provider/client.c
-	lib/wsfs/provider/client_config.c
-	lib/wsfs/provider/client_protocol.c
-	lib/wsfs/provider/provider.c
-	lib/wsfs/provider/request.c
-	lib/wsfs/provider/dirbuffer.c
-	lib/wsfs/provider/operation/lookup.c
-	lib/wsfs/provider/operation/getattr.c
-	lib/wsfs/provider/operation/readdir.c
-	lib/wsfs/provider/operation/open.c
-	lib/wsfs/provider/operation/close.c
-	lib/wsfs/provider/operation/read.c
+add_library(wsfs-provider-static STATIC 
+	lib/wsfs/provider/api.c
+	lib/wsfs/provider/impl/url.c
+	lib/wsfs/provider/impl/client.c
+	lib/wsfs/provider/impl/client_config.c
+	lib/wsfs/provider/impl/client_protocol.c
+	lib/wsfs/provider/impl/provider.c
+	lib/wsfs/provider/impl/request.c
+	lib/wsfs/provider/impl/dirbuffer.c
+	lib/wsfs/provider/impl/operation/lookup.c
+	lib/wsfs/provider/impl/operation/getattr.c
+	lib/wsfs/provider/impl/operation/readdir.c
+	lib/wsfs/provider/impl/operation/open.c
+	lib/wsfs/provider/impl/operation/close.c
+	lib/wsfs/provider/impl/operation/read.c
 )
 
-add_library(wsfs-provider SHARED ${WSFS_PROVIDER_SOURCES} ${WSFS_COMMON_SOURCES})
+set_target_properties(wsfs-provider-static PROPERTIES OUTPUT_NAME wsfs-provider)
+target_include_directories(wsfs-provider-static PUBLIC lib ${EXTRA_INCLUDE_DIRS})
+target_compile_options(wsfs-provider-static PUBLIC ${EXTRA_CFLAGS})
+set_target_properties(wsfs-provider-static PROPERTIES C_VISIBILITY_PRESET hidden)
+
+add_library(wsfs-provider SHARED 
+	lib/wsfs/provider/api.c
+)
 
 set_target_properties(wsfs-provider PROPERTIES VERSION ${PROJECT_VERSION})
 set_target_properties(wsfs-provider PROPERTIES SOVERSION 0)
@@ -137,6 +162,7 @@ set_target_properties(wsfs-provider PROPERTIES COMPILE_DEFINITIONS "WSFSP_API=WS
 
 target_include_directories(wsfs-provider PUBLIC lib ${EXTRA_INCLUDE_DIRS})
 target_compile_options(wsfs-provider PUBLIC  ${EXTRA_CFLAGS})
+target_link_libraries(wsfs-provider PRIVATE wsfs-provider-static wsfs-core)
 
 file(WRITE "${PROJECT_BINARY_DIR}/libwsfs-provider.pc"
 "prefix=\"${CMAKE_INSTALL_PREFIX}\"
@@ -242,17 +268,6 @@ pkg_check_modules(GTEST gtest_main)
 include(GoogleTest)
 pkg_check_modules(GMOCK gmock)
 
-add_library(wsfs-adapter-static STATIC ${WSFS_ADAPTER_SOURCES})
-set_target_properties(wsfs-adapter-static PROPERTIES OUTPUT_NAME wsfs-adapter)
-target_include_directories(wsfs-adapter-static PUBLIC lib ${EXTRA_INCLUDE_DIRS})
-target_compile_options(wsfs-adapter-static PUBLIC ${EXTRA_CFLAGS})
-
-add_library(wsfs-provider-static STATIC ${WSFS_PROVIDER_SOURCES})
-set_target_properties(wsfs-provider-static PROPERTIES OUTPUT_NAME wsfs-provider)
-target_include_directories(wsfs-provider-static PUBLIC lib ${EXTRA_INCLUDE_DIRS})
-target_compile_options(wsfs-provider-static PUBLIC ${EXTRA_CFLAGS})
-
-
 add_executable(alltests
 	test/msleep.cc
 	test/mock_authenticator.cc
@@ -264,10 +279,9 @@ add_executable(alltests
 	test/test_credentials.cc
 	test/test_authenticator.cc
 	test/test_authenticators.cc
-	${WSFS_COMMON_SOURCES}
 )
 
-target_link_libraries(alltests PUBLIC wsfs-adapter-static wsfs-provider-static ${EXTRA_LIBS} ${GMOCK_LIBRARIES} ${GTEST_LIBRARIES})
+target_link_libraries(alltests PUBLIC wsfs-adapter-static wsfs-provider-static wsfs-core ${EXTRA_LIBS} ${GMOCK_LIBRARIES} ${GTEST_LIBRARIES})
 target_include_directories(alltests PUBLIC lib ${EXTRA_INCLUDE_DIRS} ${GMOCK_INCLUDE_DIRS} ${GTEST_INCLUDE_DIRS})
 target_compile_options(alltests PUBLIC ${EXTRA_CFLAGS} ${GMOCK_CFLAGS} ${GTEST_CFLAGS})
 

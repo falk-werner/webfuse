@@ -7,6 +7,11 @@
 
 #include "wsfs/provider/api.h"
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 struct wsfsp_request;
 
 typedef void wsfsp_lookup_fn(
@@ -14,11 +19,6 @@ typedef void wsfsp_lookup_fn(
     ino_t parent,
     char const * name,
     void * user_data);
-
-#ifdef __cplusplus
-extern "C"
-{
-#endif
 
 extern WSFSP_API void wsfsp_respond_lookup(
     struct wsfsp_request * request,

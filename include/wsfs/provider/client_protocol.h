@@ -3,14 +3,14 @@
 
 #include "wsfs/provider/api.h"
 
-struct wsfsp_client_protocol;
-struct wsfsp_provider;
-struct lws_protocols;
-
 #ifdef __cplusplus
 extern "C"
 {
 #endif
+
+struct wsfsp_client_protocol;
+struct wsfsp_provider;
+struct lws_protocols;
 
 extern WSFSP_API struct wsfsp_client_protocol * wsfsp_client_protocol_create(
     struct wsfsp_provider const * provider,

@@ -3,12 +3,12 @@
 
 #include "wsfs/adapter/api.h"
 
-struct wsfs_credentials;
-
 #ifdef __cplusplus
 extern "C"
 {
 #endif
+
+struct wsfs_credentials;
 
 extern WSFSA_API char const * wsfs_credentials_type(
     struct wsfs_credentials const * credentials);

@@ -7,18 +7,17 @@
 
 #include "wsfs/provider/api.h"
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 struct wsfsp_request;
 
 typedef void wsfsp_getattr_fn(
     struct wsfsp_request * request,
     ino_t inode,
     void * user_data);
-
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-
 
 extern WSFSP_API void wsfsp_respond_getattr(
     struct wsfsp_request * request,

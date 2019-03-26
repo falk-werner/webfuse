@@ -1,7 +1,7 @@
 #ifndef WSFS_PROVIDER_H
 #define WSFS_PROVIDER_H
 
-#include <wsfs/status.h>
+#include <wsfs/core/status.h>
 
 #include <wsfs/provider/api.h>
 #include <wsfs/provider/client.h>
