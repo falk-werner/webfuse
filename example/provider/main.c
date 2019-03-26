@@ -9,12 +9,12 @@
 #include <unistd.h>
 #include <getopt.h>
 
-#include "wsfs_provider.h"
+#include "webfuse_provider.h"
 
 struct config
 {
     char * url;
-    struct wsfsp_client_config * client_config;
+    struct wfp_client_config * client_config;
     bool show_help;
 };
 
@@ -43,19 +43,19 @@ struct fs
 static void show_help()
 {
     printf(
-        "wsfs-provider, Copyright (c) 2019 fuse-wsfs authors <https://github.com/falk-werner/fuse-wsfs>\n"
+        "webfuse-provider, Copyright (c) 2019, webfuse authors <https://github.com/falk-werner/webfuse>\n"
         "Example for websocket file system provider\n"
         "\n"
-        "Usage: wsfs-provider -u <url> [-k <key_path>] [-c <cert_path>]\n"
+        "Usage: webfuse-provider -u <url> [-k <key_path>] [-c <cert_path>]\n"
         "\n"
         "Options:\n"
-        "\t-u, --url       URL of WSFS server (required)\n"
+        "\t-u, --url       URL of webfuse server (required)\n"
         "\t-k, --key_path  Path to private key of provider (default: not set, TLS disabled)\n"
         "\t-c, --cert_path Path to certificate of provider (defautl: not set, TLS disabled)\n"
         "\t-h, --help      prints this message\n"
         "\n"
         "Example:\n"
-        "\twsfs-provider -u ws://localhost:8080/\n"
+        "\twebfuse-provider -u ws://localhost:8080/\n"
         "\n"
     );
 }
@@ -95,10 +95,10 @@ static int parse_arguments(
                 config->url = strdup(optarg);
                 break;
             case 'k':
-                wsfsp_client_config_set_keypath(config->client_config, optarg);
+                wfp_client_config_set_keypath(config->client_config, optarg);
                 break;
             case 'c':
-                wsfsp_client_config_set_certpath(config->client_config, optarg);
+                wfp_client_config_set_certpath(config->client_config, optarg);
                 break;
             default:
                 fprintf(stderr, "error: unknown argument\n");
@@ -177,7 +177,7 @@ static void fs_stat(
 }
 
 static void fs_lookup(
-    struct wsfsp_request * request,
+    struct wfp_request * request,
     ino_t parent,
     char const * name,
     void * user_data)
@@ -189,17 +189,17 @@ static void fs_lookup(
         struct stat stat;
         fs_stat(entry, &stat);
 
-        wsfsp_respond_lookup(request, &stat);
+        wfp_respond_lookup(request, &stat);
     }
     else
     {
-        wsfsp_respond_error(request, WSFS_BAD_NOENTRY);
+        wfp_respond_error(request, WF_BAD_NOENTRY);
     }
 }
 
 
 static void fs_getattr(
-    struct wsfsp_request * request,
+    struct wfp_request * request,
     ino_t inode,
     void * user_data)
 {
@@ -211,16 +211,16 @@ static void fs_getattr(
         struct stat stat;
         fs_stat(entry, &stat);
 
-        wsfsp_respond_getattr(request, &stat);
+        wfp_respond_getattr(request, &stat);
     }
     else
     {
-        wsfsp_respond_error(request, WSFS_BAD_NOENTRY);
+        wfp_respond_error(request, WF_BAD_NOENTRY);
     }
 }
 
 static void fs_readdir(
-    struct wsfsp_request * request,
+    struct wfp_request * request,
     ino_t directory,
     void * user_data)
 {
@@ -229,30 +229,30 @@ static void fs_readdir(
     struct fs_entry const * dir = fs_getentry(fs, directory);
     if ((NULL != dir) && (FS_DIR == dir->type))
     {
-        struct wsfsp_dirbuffer * buffer = wsfsp_dirbuffer_create();
-        wsfsp_dirbuffer_add(buffer, ".", dir->inode);
-        wsfsp_dirbuffer_add(buffer, "..", dir->inode);
+        struct wfp_dirbuffer * buffer = wfp_dirbuffer_create();
+        wfp_dirbuffer_add(buffer, ".", dir->inode);
+        wfp_dirbuffer_add(buffer, "..", dir->inode);
 
         for(size_t i = 0; 0 != fs->entries[i].inode; i++)
         {
             struct fs_entry const * entry = &fs->entries[i];
             if (directory == entry->parent)
             {
-                wsfsp_dirbuffer_add(buffer, entry->name, entry->inode);
+                wfp_dirbuffer_add(buffer, entry->name, entry->inode);
             }
         }
 
-        wsfsp_respond_readdir(request, buffer);
-        wsfsp_dirbuffer_dispose(buffer);
+        wfp_respond_readdir(request, buffer);
+        wfp_dirbuffer_dispose(buffer);
     }
     else
     {
-        wsfsp_respond_error(request, WSFS_BAD_NOENTRY);
+        wfp_respond_error(request, WF_BAD_NOENTRY);
     }
 }
 
 static void fs_open(
-    struct wsfsp_request * request,
+    struct wfp_request * request,
     ino_t inode,
     int flags,
     void * user_data)
@@ -264,16 +264,16 @@ static void fs_open(
     {
         if (O_RDONLY == (flags & O_ACCMODE))
         {
-            wsfsp_respond_open(request, 0U);
+            wfp_respond_open(request, 0U);
         }
         else
         {
-            wsfsp_respond_error(request, WSFS_BAD_NOACCESS);
+            wfp_respond_error(request, WF_BAD_NOACCESS);
         }        
     }
     else
     {
-        wsfsp_respond_error(request, WSFS_BAD_NOENTRY);
+        wfp_respond_error(request, WF_BAD_NOENTRY);
     }
 }
 
@@ -283,7 +283,7 @@ static size_t min(size_t const a, size_t const b)
 }
 
 static void fs_read(
-    struct wsfsp_request * request,
+    struct wfp_request * request,
     ino_t inode,
     uint32_t handle,
     size_t offset,
@@ -301,26 +301,26 @@ static void fs_read(
             size_t const remaining = entry->content_length - offset;
             size_t const count = min(remaining, length);
 
-            wsfsp_respond_read(request, &entry->content[offset], count);
+            wfp_respond_read(request, &entry->content[offset], count);
         }
         else
         {
-            wsfsp_respond_error(request, WSFS_BAD);
+            wfp_respond_error(request, WF_BAD);
         }        
     }
     else
     {
-        wsfsp_respond_error(request, WSFS_BAD_NOENTRY);
+        wfp_respond_error(request, WF_BAD_NOENTRY);
     }
 }
 
-static struct wsfsp_client * client;
+static struct wfp_client * client;
 
 static void on_interrupt(int signal_id)
 {
 	(void) signal_id;
 
-	wsfsp_client_shutdown(client);
+	wfp_client_shutdown(client);
 }
 
 int main(int argc, char* argv[])
@@ -328,7 +328,7 @@ int main(int argc, char* argv[])
     struct config config;
     config.url = NULL;
     config.show_help = false;
-    config.client_config = wsfsp_client_config_create();
+    config.client_config = wfp_client_config_create();
     int result = parse_arguments(argc, argv, &config);
 
     if (EXIT_SUCCESS == result)
@@ -355,19 +355,19 @@ int main(int argc, char* argv[])
 
         signal(SIGINT, &on_interrupt);
 
-        wsfsp_client_config_set_userdata(config.client_config, &fs);
-        wsfsp_client_config_set_onlookup(config.client_config, &fs_lookup);
-        wsfsp_client_config_set_ongetattr(config.client_config, &fs_getattr);
-        wsfsp_client_config_set_onreaddir(config.client_config, &fs_readdir);
-        wsfsp_client_config_set_onopen(config.client_config, &fs_open);
-        wsfsp_client_config_set_onread(config.client_config, &fs_read);
+        wfp_client_config_set_userdata(config.client_config, &fs);
+        wfp_client_config_set_onlookup(config.client_config, &fs_lookup);
+        wfp_client_config_set_ongetattr(config.client_config, &fs_getattr);
+        wfp_client_config_set_onreaddir(config.client_config, &fs_readdir);
+        wfp_client_config_set_onopen(config.client_config, &fs_open);
+        wfp_client_config_set_onread(config.client_config, &fs_read);
 
-        client = wsfsp_client_create(config.client_config);
-        wsfsp_client_connect(client, config.url);
+        client = wfp_client_create(config.client_config);
+        wfp_client_connect(client, config.url);
 
-        wsfsp_client_run(client);
+        wfp_client_run(client);
 
-        wsfsp_client_dispose(client);
+        wfp_client_dispose(client);
     }   
 
     if (config.show_help)
@@ -376,6 +376,6 @@ int main(int argc, char* argv[])
     }
 
     free(config.url);
-    wsfsp_client_config_dispose(config.client_config);
+    wfp_client_config_dispose(config.client_config);
     return result;
 }

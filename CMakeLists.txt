@@ -1,5 +1,5 @@
 cmake_minimum_required (VERSION 3.10)
-project(fuse-wsfs VERSION 0.1.0 DESCRIPTION "Websocket filesystem based on libfuse")
+project(webfuse VERSION 0.1.0 DESCRIPTION "Websocket filesystem based on libfuse")
 
 option(WITHOUT_TESTS   "disable unit tests" OFF)
 option(WITHOUT_EXAMPLE "disable example"    OFF)
@@ -45,142 +45,142 @@ set(EXTRA_CFLAGS
 )
 
 
-# libwsfs-core
+# libwebfuse-core
 
-add_library(wsfs-core STATIC 
-	lib/wsfs/core/message.c
-	lib/wsfs/core/message_queue.c
-	lib/wsfs/core/status.c
+add_library(webfuse-core STATIC 
+	lib/webfuse/core/message.c
+	lib/webfuse/core/message_queue.c
+	lib/webfuse/core/status.c
 )
 
-set_target_properties(wsfs-core PROPERTIES OUTPUT_NAME wsfs-core)
-target_include_directories(wsfs-core PUBLIC lib ${EXTRA_INCLUDE_DIRS})
-target_compile_options(wsfs-core PUBLIC ${EXTRA_CFLAGS})
-set_target_properties(wsfs-core PROPERTIES C_VISIBILITY_PRESET hidden)
+set_target_properties(webfuse-core PROPERTIES OUTPUT_NAME webfuse-core)
+target_include_directories(webfuse-core PUBLIC lib ${EXTRA_INCLUDE_DIRS})
+target_compile_options(webfuse-core PUBLIC ${EXTRA_CFLAGS})
+set_target_properties(webfuse-core PROPERTIES C_VISIBILITY_PRESET hidden)
 
-install(DIRECTORY include/wsfs/core DESTINATION include/wsfs)
+install(DIRECTORY include/webfuse/core DESTINATION include/webfuse)
 
 
-# libwsfs-adapter
+# libwebfuse-adapter
 
-add_library(wsfs-adapter-static STATIC 
-	lib/wsfs/adapter/api.c
-	lib/wsfs/adapter/impl/filesystem.c
-	lib/wsfs/adapter/impl/server.c
-	lib/wsfs/adapter/impl/server_config.c
-	lib/wsfs/adapter/impl/server_protocol.c
-	lib/wsfs/adapter/impl/session.c
-	lib/wsfs/adapter/impl/session_manager.c
-	lib/wsfs/adapter/impl/authenticator.c
-	lib/wsfs/adapter/impl/authenticators.c
-	lib/wsfs/adapter/impl/credentials.c
-	lib/wsfs/adapter/impl/time/timepoint.c
-	lib/wsfs/adapter/impl/time/timer.c
-	lib/wsfs/adapter/impl/time/timeout_manager.c
-	lib/wsfs/adapter/impl/operation/lookup.c
-	lib/wsfs/adapter/impl/operation/getattr.c
-	lib/wsfs/adapter/impl/operation/readdir.c
-	lib/wsfs/adapter/impl/operation/open.c
-	lib/wsfs/adapter/impl/operation/close.c
-	lib/wsfs/adapter/impl/operation/read.c
-	lib/wsfs/adapter/impl/jsonrpc/server.c
-	lib/wsfs/adapter/impl/jsonrpc/method.c
-	lib/wsfs/adapter/impl/jsonrpc/request.c
-	lib/wsfs/adapter/impl/jsonrpc/response.c
-	lib/wsfs/adapter/impl/jsonrpc/util.c
+add_library(webfuse-adapter-static STATIC 
+	lib/webfuse/adapter/api.c
+	lib/webfuse/adapter/impl/filesystem.c
+	lib/webfuse/adapter/impl/server.c
+	lib/webfuse/adapter/impl/server_config.c
+	lib/webfuse/adapter/impl/server_protocol.c
+	lib/webfuse/adapter/impl/session.c
+	lib/webfuse/adapter/impl/session_manager.c
+	lib/webfuse/adapter/impl/authenticator.c
+	lib/webfuse/adapter/impl/authenticators.c
+	lib/webfuse/adapter/impl/credentials.c
+	lib/webfuse/adapter/impl/time/timepoint.c
+	lib/webfuse/adapter/impl/time/timer.c
+	lib/webfuse/adapter/impl/time/timeout_manager.c
+	lib/webfuse/adapter/impl/operation/lookup.c
+	lib/webfuse/adapter/impl/operation/getattr.c
+	lib/webfuse/adapter/impl/operation/readdir.c
+	lib/webfuse/adapter/impl/operation/open.c
+	lib/webfuse/adapter/impl/operation/close.c
+	lib/webfuse/adapter/impl/operation/read.c
+	lib/webfuse/adapter/impl/jsonrpc/server.c
+	lib/webfuse/adapter/impl/jsonrpc/method.c
+	lib/webfuse/adapter/impl/jsonrpc/request.c
+	lib/webfuse/adapter/impl/jsonrpc/response.c
+	lib/webfuse/adapter/impl/jsonrpc/util.c
 )
 
-set_target_properties(wsfs-adapter-static PROPERTIES OUTPUT_NAME wsfs-adapter)
-target_include_directories(wsfs-adapter-static PUBLIC lib ${EXTRA_INCLUDE_DIRS})
-target_compile_options(wsfs-adapter-static PUBLIC ${EXTRA_CFLAGS})
-set_target_properties(wsfs-adapter-static PROPERTIES C_VISIBILITY_PRESET hidden)
+set_target_properties(webfuse-adapter-static PROPERTIES OUTPUT_NAME webfuse-adapter)
+target_include_directories(webfuse-adapter-static PUBLIC lib ${EXTRA_INCLUDE_DIRS})
+target_compile_options(webfuse-adapter-static PUBLIC ${EXTRA_CFLAGS})
+set_target_properties(webfuse-adapter-static PROPERTIES C_VISIBILITY_PRESET hidden)
 
-add_library(wsfs-adapter SHARED 
-	lib/wsfs/adapter/api.c
+add_library(webfuse-adapter SHARED 
+	lib/webfuse/adapter/api.c
 )
 
-set_target_properties(wsfs-adapter PROPERTIES VERSION ${PROJECT_VERSION})
-set_target_properties(wsfs-adapter PROPERTIES SOVERSION 0)
-set_target_properties(wsfs-adapter PROPERTIES C_VISIBILITY_PRESET hidden)
-set_target_properties(wsfs-adapter PROPERTIES COMPILE_DEFINITIONS "WSFSA_API=WSFSA_EXPORT")
+set_target_properties(webfuse-adapter PROPERTIES VERSION ${PROJECT_VERSION})
+set_target_properties(webfuse-adapter PROPERTIES SOVERSION 0)
+set_target_properties(webfuse-adapter PROPERTIES C_VISIBILITY_PRESET hidden)
+set_target_properties(webfuse-adapter PROPERTIES COMPILE_DEFINITIONS "WF_API=WF_EXPORT")
 
-target_include_directories(wsfs-adapter PUBLIC lib ${EXTRA_INCLUDE_DIRS})
-target_compile_options(wsfs-adapter PUBLIC  ${EXTRA_CFLAGS})
-target_link_libraries(wsfs-adapter PRIVATE wsfs-adapter-static wsfs-core)
+target_include_directories(webfuse-adapter PUBLIC lib ${EXTRA_INCLUDE_DIRS})
+target_compile_options(webfuse-adapter PUBLIC  ${EXTRA_CFLAGS})
+target_link_libraries(webfuse-adapter PRIVATE webfuse-adapter-static webfuse-core)
 
-file(WRITE "${PROJECT_BINARY_DIR}/libwsfs-adapter.pc"
+file(WRITE "${PROJECT_BINARY_DIR}/libwebfuse-adapter.pc"
 "prefix=\"${CMAKE_INSTALL_PREFIX}\"
 
 exec_prefix=\${prefix}
 libdir=\${exec_prefix}/lib${LIB_SUFFIX}
 includedir=\${prefix}/include
-Name: libwsfs
+Name: libwebfuse
 Description: Websockets filesystem server library
 Version: ${PROJECT_VERSION}
 
-Libs: -L\${libdir} -lwsfs-adapter -l${FUSE3_LIBRARIES} -l${LWS_LIBRARIES} -l${JANSSON_LIBRARIES}
+Libs: -L\${libdir} -lwebfuse-adapter -l${FUSE3_LIBRARIES} -l${LWS_LIBRARIES} -l${JANSSON_LIBRARIES}
 Cflags: -I\${includedir}"
 )
 
-install(TARGETS wsfs-adapter DESTINATION lib${LIB_SUFFIX})
-install(FILES include/wsfs_adapter.h DESTINATION include)
-install(DIRECTORY include/wsfs/adapter DESTINATION include/wsfs)
-install(FILES "${PROJECT_BINARY_DIR}/libwsfs-adapter.pc" DESTINATION lib${LIB_SUFFIX}/pkgconfig)
+install(TARGETS webfuse-adapter DESTINATION lib${LIB_SUFFIX})
+install(FILES include/webfuse_adapter.h DESTINATION include)
+install(DIRECTORY include/webfuse/adapter DESTINATION include/webfuse)
+install(FILES "${PROJECT_BINARY_DIR}/libwebfuse-adapter.pc" DESTINATION lib${LIB_SUFFIX}/pkgconfig)
 
-#libwsfs-provider
+#libwebfuse-provider
 
-add_library(wsfs-provider-static STATIC 
-	lib/wsfs/provider/api.c
-	lib/wsfs/provider/impl/url.c
-	lib/wsfs/provider/impl/client.c
-	lib/wsfs/provider/impl/client_config.c
-	lib/wsfs/provider/impl/client_protocol.c
-	lib/wsfs/provider/impl/provider.c
-	lib/wsfs/provider/impl/request.c
-	lib/wsfs/provider/impl/dirbuffer.c
-	lib/wsfs/provider/impl/operation/lookup.c
-	lib/wsfs/provider/impl/operation/getattr.c
-	lib/wsfs/provider/impl/operation/readdir.c
-	lib/wsfs/provider/impl/operation/open.c
-	lib/wsfs/provider/impl/operation/close.c
-	lib/wsfs/provider/impl/operation/read.c
+add_library(webfuse-provider-static STATIC 
+	lib/webfuse/provider/api.c
+	lib/webfuse/provider/impl/url.c
+	lib/webfuse/provider/impl/client.c
+	lib/webfuse/provider/impl/client_config.c
+	lib/webfuse/provider/impl/client_protocol.c
+	lib/webfuse/provider/impl/provider.c
+	lib/webfuse/provider/impl/request.c
+	lib/webfuse/provider/impl/dirbuffer.c
+	lib/webfuse/provider/impl/operation/lookup.c
+	lib/webfuse/provider/impl/operation/getattr.c
+	lib/webfuse/provider/impl/operation/readdir.c
+	lib/webfuse/provider/impl/operation/open.c
+	lib/webfuse/provider/impl/operation/close.c
+	lib/webfuse/provider/impl/operation/read.c
 )
 
-set_target_properties(wsfs-provider-static PROPERTIES OUTPUT_NAME wsfs-provider)
-target_include_directories(wsfs-provider-static PUBLIC lib ${EXTRA_INCLUDE_DIRS})
-target_compile_options(wsfs-provider-static PUBLIC ${EXTRA_CFLAGS})
-set_target_properties(wsfs-provider-static PROPERTIES C_VISIBILITY_PRESET hidden)
+set_target_properties(webfuse-provider-static PROPERTIES OUTPUT_NAME webfuse-provider)
+target_include_directories(webfuse-provider-static PUBLIC lib ${EXTRA_INCLUDE_DIRS})
+target_compile_options(webfuse-provider-static PUBLIC ${EXTRA_CFLAGS})
+set_target_properties(webfuse-provider-static PROPERTIES C_VISIBILITY_PRESET hidden)
 
-add_library(wsfs-provider SHARED 
-	lib/wsfs/provider/api.c
+add_library(webfuse-provider SHARED 
+	lib/webfuse/provider/api.c
 )
 
-set_target_properties(wsfs-provider PROPERTIES VERSION ${PROJECT_VERSION})
-set_target_properties(wsfs-provider PROPERTIES SOVERSION 0)
-set_target_properties(wsfs-provider PROPERTIES C_VISIBILITY_PRESET hidden)
-set_target_properties(wsfs-provider PROPERTIES COMPILE_DEFINITIONS "WSFSP_API=WSFSP_EXPORT")
+set_target_properties(webfuse-provider PROPERTIES VERSION ${PROJECT_VERSION})
+set_target_properties(webfuse-provider PROPERTIES SOVERSION 0)
+set_target_properties(webfuse-provider PROPERTIES C_VISIBILITY_PRESET hidden)
+set_target_properties(webfuse-provider PROPERTIES COMPILE_DEFINITIONS "WFP_API=WFP_EXPORT")
 
-target_include_directories(wsfs-provider PUBLIC lib ${EXTRA_INCLUDE_DIRS})
-target_compile_options(wsfs-provider PUBLIC  ${EXTRA_CFLAGS})
-target_link_libraries(wsfs-provider PRIVATE wsfs-provider-static wsfs-core)
+target_include_directories(webfuse-provider PUBLIC lib ${EXTRA_INCLUDE_DIRS})
+target_compile_options(webfuse-provider PUBLIC  ${EXTRA_CFLAGS})
+target_link_libraries(webfuse-provider PRIVATE webfuse-provider-static webfuse-core)
 
-file(WRITE "${PROJECT_BINARY_DIR}/libwsfs-provider.pc"
+file(WRITE "${PROJECT_BINARY_DIR}/libwebfuse-provider.pc"
 "prefix=\"${CMAKE_INSTALL_PREFIX}\"
 exec_prefix=\${prefix}
 libdir=\${exec_prefix}/lib${LIB_SUFFIX}
 includedir=\${prefix}/include
-Name: libwsfs-provider
+Name: libwebfuse-provider
 Description: Provider library for websockets filesystem
 Version: ${PROJECT_VERSION}
 
-Libs: -L\${libdir} -lwsfs-provider  -l${LWS_LIBRARIES} -l${JANSSON_LIBRARIES}
+Libs: -L\${libdir} -lwebfuse-provider  -l${LWS_LIBRARIES} -l${JANSSON_LIBRARIES}
 Cflags: -I\${includedir}"
 )
 
-install(TARGETS wsfs-provider DESTINATION lib${LIB_SUFFIX})
-install(FILES include/wsfs_provider.h DESTINATION include)
-install(DIRECTORY include/wsfs/provider DESTINATION include/wsfs)
-install(FILES "${PROJECT_BINARY_DIR}/libwsfs-provider.pc" DESTINATION lib${LIB_SUFFIX}/pkgconfig)
+install(TARGETS webfuse-provider DESTINATION lib${LIB_SUFFIX})
+install(FILES include/webfuse_provider.h DESTINATION include)
+install(DIRECTORY include/webfuse/provider DESTINATION include/webfuse)
+install(FILES "${PROJECT_BINARY_DIR}/libwebfuse-provider.pc" DESTINATION lib${LIB_SUFFIX}/pkgconfig)
 
 
 # examples
@@ -207,49 +207,49 @@ target_compile_options(userdb PUBLIC
 
 # daemon
 
-add_executable(wsfsd
+add_executable(webfused
 	example/daemon/main.c
 )
 
-target_link_libraries(wsfsd PUBLIC wsfs-adapter ${EXTRA_LIBS})
-target_include_directories(wsfsd PUBLIC ${EXTRA_INCLUDE_DIRS})
-target_compile_options(wsfsd PUBLIC ${EXTRA_CFLAGS})
+target_link_libraries(webfused PUBLIC webfuse-adapter ${EXTRA_LIBS})
+target_include_directories(webfused PUBLIC ${EXTRA_INCLUDE_DIRS})
+target_compile_options(webfused PUBLIC ${EXTRA_CFLAGS})
 
 # provider
 
-add_executable(wsfs-provider-app
+add_executable(webfuse-provider-app
 	example/provider/main.c
 )
 
-set_target_properties(wsfs-provider-app PROPERTIES OUTPUT_NAME wsfs-provider)
+set_target_properties(webfuse-provider-app PROPERTIES OUTPUT_NAME webfuse-provider)
 
-target_link_libraries(wsfs-provider-app PUBLIC wsfs-provider ${EXTRA_LIBS})
-target_include_directories(wsfs-provider-app PUBLIC ${EXTRA_INCLUDE_DIRS})
-target_compile_options(wsfs-provider-app PUBLIC ${EXTRA_CFLAGS})
+target_link_libraries(webfuse-provider-app PUBLIC webfuse-provider ${EXTRA_LIBS})
+target_include_directories(webfuse-provider-app PUBLIC ${EXTRA_INCLUDE_DIRS})
+target_compile_options(webfuse-provider-app PUBLIC ${EXTRA_CFLAGS})
 
-# wsfs-passwd
+# webfuse-passwd
 
 pkg_check_modules(OPENSSL REQUIRED openssl)
 
 
-add_executable(wsfs-passwd
+add_executable(webfuse-passwd
 	example/passwd/main.c
 )
 
-target_link_libraries(wsfs-passwd PUBLIC 
+target_link_libraries(webfuse-passwd PUBLIC 
 	userdb
 	${OPENSSL_LIBRARIES}
 	${JANSSON_LIBRARIES}
 )
 
-target_include_directories(wsfs-passwd PUBLIC 
+target_include_directories(webfuse-passwd PUBLIC 
 	example/passwd
 	example/lib/userdb/include
 	${OPENSSL_INCLUDE_DIRS}
 	${JANSSON_INCLUDE_DIRS}
 )
 
-target_compile_options(wsfs-passwd PUBLIC
+target_compile_options(webfuse-passwd PUBLIC
 	${C_WARNINGS}
 	${OPENSSL_CFLAGS_OTHER}
 	${JANSSON_CFLAGS_OTHER}
@@ -281,7 +281,7 @@ add_executable(alltests
 	test/test_authenticators.cc
 )
 
-target_link_libraries(alltests PUBLIC wsfs-adapter-static wsfs-provider-static wsfs-core ${EXTRA_LIBS} ${GMOCK_LIBRARIES} ${GTEST_LIBRARIES})
+target_link_libraries(alltests PUBLIC webfuse-adapter-static webfuse-provider-static webfuse-core ${EXTRA_LIBS} ${GMOCK_LIBRARIES} ${GTEST_LIBRARIES})
 target_include_directories(alltests PUBLIC lib ${EXTRA_INCLUDE_DIRS} ${GMOCK_INCLUDE_DIRS} ${GTEST_INCLUDE_DIRS})
 target_compile_options(alltests PUBLIC ${EXTRA_CFLAGS} ${GMOCK_CFLAGS} ${GTEST_CFLAGS})
 

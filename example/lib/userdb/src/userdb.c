@@ -33,7 +33,7 @@ static bool is_compatible(json_t * meta)
 
         result = (
             json_is_string(type) &&
-            (0 == strcmp(json_string_value(type), "wsfs-userdb")) &&
+            (0 == strcmp(json_string_value(type), "wf-userdb")) &&
             json_is_integer(major) && 
             (USERDB_MAJOR == json_integer_value(major)) &&
             json_is_integer(minor)  &&
@@ -170,7 +170,7 @@ bool userdb_save(
     json_t * container = json_object();
 
     json_t * meta = json_object();
-    json_object_set_new(meta, "type", json_string("wsfs-userdb"));
+    json_object_set_new(meta, "type", json_string("wf-userdb"));
     json_object_set_new(meta, "major", json_integer(USERDB_MAJOR));
     json_object_set_new(meta, "minor", json_integer(USERDB_MINOR));
     json_object_set_new(meta, "hash_algorithm", json_string(db->hash_algorithm));

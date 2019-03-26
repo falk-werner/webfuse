@@ -5,21 +5,21 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-#include "wsfs/adapter/server.h"
-#include "wsfs/adapter/server_config.h"
+#include "webfuse/adapter/server.h"
+#include "webfuse/adapter/server_config.h"
 
 
 TEST(server, create_dispose)
 {
     mkdir("test", 0700);
 
-    struct wsfs_server_config * config = wsfs_server_config_create();
-    wsfs_server_config_set_mountpoint(config, "test");
-    struct wsfs_server * server = wsfs_server_create(config);
+    struct wf_server_config * config = wf_server_config_create();
+    wf_server_config_set_mountpoint(config, "test");
+    struct wf_server * server = wf_server_create(config);
     ASSERT_NE(nullptr, server);
 
-    wsfs_server_dispose(server);
-    wsfs_server_config_dispose(config);
+    wf_server_dispose(server);
+    wf_server_config_dispose(config);
 
     rmdir("test");
 }

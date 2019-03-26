@@ -1,7 +1,7 @@
 #include "msleep.hpp"
 #include <ctime>
 
-namespace wsfs_test
+namespace webfuse_test
 {
 
 void msleep(long millis)

@@ -1,16 +1,16 @@
 #include "mock_authenticator.hpp"
 
-#define WSFS_AUTHENTICTOR_COUNT 3
+#define WF_AUTHENTICATOR_COUNT 3
 
 namespace
 {
 
-wsfs_test::Authenticator * g_authenticators[WSFS_AUTHENTICTOR_COUNT];
+webfuse_test::Authenticator * g_authenticators[WF_AUTHENTICATOR_COUNT];
 
 }
 
 
-namespace wsfs_test
+namespace webfuse_test
 {
 
 void set_authenticator(Authenticator * authenticator)
@@ -23,17 +23,17 @@ void set_authenticator(size_t i, Authenticator * authenticator)
     g_authenticators[i] = authenticator;
 }
 
-bool authenticate(struct wsfs_credentials * creds, void * user_data)
+bool authenticate(struct wf_credentials * creds, void * user_data)
 {
     return g_authenticators[0]->authenticate(creds, user_data);
 }
 
-bool authenticate_1(struct wsfs_credentials * creds, void * user_data)
+bool authenticate_1(struct wf_credentials * creds, void * user_data)
 {
     return g_authenticators[1]->authenticate(creds, user_data);
 }
 
-bool authenticate_2(struct wsfs_credentials * creds, void * user_data)
+bool authenticate_2(struct wf_credentials * creds, void * user_data)
 {
     return g_authenticators[2]->authenticate(creds, user_data);
 }
