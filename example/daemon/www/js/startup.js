@@ -1,4 +1,4 @@
-import { Client } from "./wsfs/client.js";
+import { Client } from "./webfuse/client.js";
 import { ConnectionView } from "./connection_view.js";
 import { FileSystemProvider } from "./filesystem_provider.js";
 

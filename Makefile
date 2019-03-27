@@ -9,7 +9,7 @@ export BUILDTIME ?= $(shell date -u -d '@$(SOURCE_DATE_EPOCH)' --rfc-3339 ns 2>/
 VERBOSE ?=
 MARCH ?= 
 
-PROJECT_NAME ?= webfs
+PROJECT_NAME ?= webfuse
 PROJECT_ROOT ?= .
 VERSION ?= $(shell cat $(PROJECT_ROOT)/VERSION)
 OUT ?= $(PROJECT_ROOT)/.build

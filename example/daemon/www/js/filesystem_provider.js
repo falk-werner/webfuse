@@ -1,8 +1,8 @@
 /* eslint no-unused-vars: ["error", { "argsIgnorePattern": "^_" }] */
 
-import { BadState } from "./wsfs/bad_state.js";
-import { FileMode } from "./wsfs/file_mode.js";
-import { Provider } from "./wsfs/provider.js";
+import { BadState } from "./webfuse/bad_state.js";
+import { FileMode } from "./webfuse/file_mode.js";
+import { Provider } from "./webfuse/provider.js";
 
 export class FileSystemProvider extends Provider {
     constructor(root) {
