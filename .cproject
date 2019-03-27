@@ -44,13 +44,13 @@
 		</cconfiguration>
 	</storageModule>
 	<storageModule moduleId="cdtBuildSystem" version="4.0.0">
-		<project id="fuse-wsfs.null.1226539536" name="fuse-wsfs"/>
+		<project id="webfuse.null.1226539536" name="webfuse"/>
 	</storageModule>
 	<storageModule moduleId="org.eclipse.cdt.core.LanguageSettingsProviders"/>
 	<storageModule moduleId="refreshScope" versionNumber="2">
 		<configuration configurationName="amd64-ubuntu"/>
 		<configuration configurationName="Default">
-			<resource resourceType="PROJECT" workspacePath="/fuse-wsfs"/>
+			<resource resourceType="PROJECT" workspacePath="/webfuse"/>
 		</configuration>
 	</storageModule>
 	<storageModule moduleId="scannerConfiguration">
