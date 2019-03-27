@@ -2,6 +2,9 @@
 
 set -e
 
+export LANG=C
+export LC_ALL=C
+
 cleanup() {
   rm -rf "$INCLUDE_DIRS_TMPFILE"
 }
@@ -9,12 +12,14 @@ cleanup() {
 trap cleanup TERM INT EXIT
 
 DEST="${DEST:-$PWD}"
-INCLUDE_DIRS_TMPFILE="${2:-$(mktemp -p "$DEST" include_dirs_XXXXXXXXXX.txt)}"
-INCLUDE_DIRS_FILE="${INCLUDE_DIRS_FILE:-$DEST/include_dirs.txt}"
 
 CMAKE_CACHE_FILE="${1:-CMakeCache.txt}"
 CMAKE_CXX_COMPILER="$(sed -n -e 's/CMAKE_CXX_COMPILER:FILEPATH=\(.*\)$/\1/p' "$CMAKE_CACHE_FILE")"
 CMAKE_C_COMPILER="$(sed -n -e 's/CMAKE_C_COMPILER:FILEPATH=\(.*\)$/\1/p' "$CMAKE_CACHE_FILE")"
+
+INCLUDE_DIRS_PREFIX="${2:-$DEST}"
+INCLUDE_DIRS_TMPFILE="$(mktemp -p "$DEST" include_dirs_XXXXXXXXXX.txt)"
+INCLUDE_DIRS_FILE="${INCLUDE_DIRS_FILE:-$DEST/include_dirs.txt}"
 
 C_BUILTIN_FILE="${C_BUILTIN_FILE:-$DEST/builtins.h}"
 CXX_BUILTIN_FILE="${CXX_BUILTIN_FILE:-$DEST/builtins.hpp}"
@@ -36,7 +41,7 @@ fi
 
 {
   echo '#include <...> search starts here:'
-  cat "$INCLUDE_DIRS_TMPFILE" | sed -n -e "s@\(.*\)@$DEST\1@p"
+  sed -n -e "s@\(.*\)@$INCLUDE_DIRS_PREFIX\1@p" "$INCLUDE_DIRS_TMPFILE"
   echo 'End of search list.'
 } > "$INCLUDE_DIRS_FILE"
 
