@@ -10,6 +10,7 @@ RUN set -x \
        cmake \
        ninja-build \
        pkg-config \
+       rsync \
        valgrind \
   && rm -rf /var/lib/apt/lists/*
 
@@ -70,12 +71,13 @@ ENV LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/usr/local/lib"
 
 ARG USERID=1000
 
-ARG WORKSPACE=/workspace
+ARG PROJECT_ROOT=/workspace/src
+ARG OUT=/workspace/out
 
 RUN set -x \
   && useradd -u "$USERID" -ms /bin/bash user \
-  && mkdir -p "$WORKSPACE" \
-  && chown user:user "$WORKSPACE"
+  && mkdir -p "$PROJECT_ROOT" "$OUT" \
+  && chown user:user "$PROJECT_ROOT" "$OUT"
 
-WORKDIR "$WORKSPACE"
+WORKDIR "$OUT"
 
