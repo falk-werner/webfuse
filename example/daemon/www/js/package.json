@@ -1,7 +1,7 @@
 {
-  "name": "wsfs-provider",
+  "name": "webfuse-provider",
   "version": "0.1.0",
-  "description": "Provider for websocket filesystem (wsfs)",
+  "description": "Provider for websocket filesystem (webfuse)",
   "main": "startup.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

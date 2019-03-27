@@ -1,15 +1,15 @@
 #include <gtest/gtest.h>
 
 #include "msleep.hpp"
-#include "wsfs/adapter/impl/time/timepoint.h"
+#include "webfuse/adapter/impl/time/timepoint.h"
 
-using wsfs_test::msleep;
+using webfuse_test::msleep;
 
 TEST(timepoint, now)
 {
-    wsfs_impl_timepoint start = wsfs_impl_timepoint_now();
+    wf_impl_timepoint start = wf_impl_timepoint_now();
     msleep(42);
-    wsfs_impl_timepoint end = wsfs_impl_timepoint_now();
+    wf_impl_timepoint end = wf_impl_timepoint_now();
 
     ASSERT_LT(start, end);
     ASSERT_LT(end, start + 500);
@@ -17,20 +17,20 @@ TEST(timepoint, now)
 
 TEST(timepoint, in_msec)
 {
-    wsfs_impl_timepoint now = wsfs_impl_timepoint_now();
-    wsfs_impl_timepoint later = wsfs_impl_timepoint_in_msec(42);
+    wf_impl_timepoint now = wf_impl_timepoint_now();
+    wf_impl_timepoint later = wf_impl_timepoint_in_msec(42);
 
     ASSERT_LT(now, later);
     ASSERT_LT(later, now + 500);
 }
 
-TEST(wsfs_impl_timepoint, elapsed)
+TEST(wf_impl_timepoint, elapsed)
 {
-    wsfs_impl_timepoint now;
+    wf_impl_timepoint now;
     
-    now = wsfs_impl_timepoint_now();
-    ASSERT_TRUE(wsfs_impl_timepoint_is_elapsed(now - 1));
+    now = wf_impl_timepoint_now();
+    ASSERT_TRUE(wf_impl_timepoint_is_elapsed(now - 1));
 
-    now =wsfs_impl_timepoint_now();
-    ASSERT_FALSE(wsfs_impl_timepoint_is_elapsed(now + 500));
+    now =wf_impl_timepoint_now();
+    ASSERT_FALSE(wf_impl_timepoint_is_elapsed(now + 500));
 }

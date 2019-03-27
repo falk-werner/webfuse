@@ -1,9 +1,9 @@
-[![Build Status](https://travis-ci.org/falk-werner/fuse-wsfs.svg?branch=master)](https://travis-ci.org/falk-werner/fuse-wsfs)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/d6c20d37bb3a456a9c0ee224001081b2)](https://www.codacy.com/app/falk.werner/fuse-wsfs?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=falk-werner/fuse-wsfs&amp;utm_campaign=Badge_Grade)
+[![Build Status](https://travis-ci.org/falk-werner/webfuse.svg?branch=master)](https://travis-ci.org/falk-werner/webfuse)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/d6c20d37bb3a456a9c0ee224001081b2)](https://www.codacy.com/app/falk.werner/webfuse?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=falk-werner/webfuse&amp;utm_campaign=Badge_Grade)
 
-# fuse-wsfs
+# webfuse
 
-fuse-wsfs combines libwebsockets and libfuse. It allows ot attach a remote filesystem via websockets.
+webfuse combines libwebsockets and libfuse. It allows ot attach a remote filesystem via websockets.
 
 ## Contents
 
@@ -29,13 +29,13 @@ However at least one (unecessary) copy of the upload file is needed on the devic
 
 To avoid Steps 1 and 2, it would be great to keep the update file entirely in web server, just like [NFS](https://en.wikipedia.org/wiki/Network_File_System) or [WebDAV](https://wiki.archlinux.org/index.php/WebDAV). Unfortunately, NFS is not based on any protocol, natively usable by a web application. WebDAV is based on HTTP, but it needs a server providing the update file.
 
-fuse-wsfs solves this problem by using the [WebSocket](https://en.wikipedia.org/wiki/WebSocket) protocol. The emdedded device runs a service, known as WSFS adapter, awaiting incoming connections, e.g. from a web browser. The browser acts as a file system provider, providing the update file to the device.
+webfuse solves this problem by using the [WebSocket](https://en.wikipedia.org/wiki/WebSocket) protocol. The emdedded device runs a service, known as webfuse adapter, awaiting incoming connections, e.g. from a web browser. The browser acts as a file system provider, providing the update file to the device.
 
 ## Concecpt
 
     +---------------------+  +-------------+      +------+
-    | Filesystem Provider |  | wsfs daemon |      | user |
-    |  (e.g. Webbrowser)  |  |             |      |      |
+    | Filesystem Provider |  |   webfuse   |      | user |
+    |  (e.g. Webbrowser)  |  |   daemon    |      |      |
     +----------+----------+  +------+------+      +---+--+
                |                    |                 |
                |                  +-+-+               |
@@ -62,18 +62,18 @@ fuse-wsfs solves this problem by using the [WebSocket](https://en.wikipedia.org/
                |                  +-+-+             +-+-+
                |                    |                 |
 
-With fuse-wsfs it is possible to implement remote filesystems based on websockets.
+With webfuse it is possible to implement remote filesystems based on websockets.
 A reference implementation of such a daemon is provided within the examples. The picture above describes the workflow:
 
--   The websocket filesystem daemon (*wsfs daemon*) mounts a filesystem on startup.  
+-   The websocket filesystem daemon (*webfuse daemon*) mounts a filesystem on startup.  
     It starts the websocket server and waits for incoming connections.
 
--   A remote filesystem provider connects to wsfs daemon via websocket protocol.  
+-   A remote filesystem provider connects to webfuse daemon via websocket protocol.  
     The example includes such a provider implemented in HTML and JavaScript.
 
--   Whenever the user makes filesystem requests, such as *ls*, the request is redirected via wsfs daemon to the connected filesystem provider
+-   Whenever the user makes filesystem requests, such as *ls*, the request is redirected via webfuse daemon to the connected filesystem provider
 
-Currently all requests are initiated by wsfs daemon and responded by filesystem provider. This may change in future, e.g. when authentication is supported.
+Currently all requests are initiated by webfuse daemon and responded by filesystem provider. This may change in future, e.g. when authentication is supported.
 
 ## Similar Projects
 
@@ -81,13 +81,13 @@ Currently all requests are initiated by wsfs daemon and responded by filesystem 
 
 [davfs2](http://savannah.nongnu.org/projects/davfs2) is a Linux file system driver that allows to mount a [WebDAV](https://wiki.archlinux.org/index.php/WebDAV) resource. WebDAV is an extension to HTTP/1.1 that allows remote collaborative authoring of Web resources.
 
-Unlike fuse-wsfs, davfs2 mounts a remote filesystem locally, that is provided by a WebDAV server. In contrast, fuse-wsfs starts a server awaiting client connections to attach the remote file system.
+Unlike webfuse, davfs2 mounts a remote filesystem locally, that is provided by a WebDAV server. In contrast, webfuse starts a server awaiting client connections to attach the remote file system.
 
 ## API
 
 ### Requests, responses and notifications
 
-There are three types of messages, used for communication between wsfs daemon and filesystem provider. All message types are encoded in [JSON](https://www.json.org/) and strongly inspired by [JSON-RPC](https://www.jsonrpc.org/).
+There are three types of messages, used for communication between webfuse daemon and filesystem provider. All message types are encoded in [JSON](https://www.json.org/) and strongly inspired by [JSON-RPC](https://www.jsonrpc.org/).
 
 #### Request
 
@@ -168,7 +168,7 @@ Notfications are used to inform a receiver about something. Unlike requests, not
 
 Retrieve information about a filesystem entry by name.
 
-    wsfs daemon: {"method": "lookup", "params": [<parent>, <name>], "id": <id>}
+    webfuse daemon: {"method": "lookup", "params": [<parent>, <name>], "id": <id>}
     fs provider: {"result": {
         "inode": <inode>,
         "mode" : <mode>,
@@ -195,7 +195,7 @@ Retrieve information about a filesystem entry by name.
 
 Get file attributes.
 
-    wsfs daemon: {"method": "getattr", "params": [<inode>], "id": <id>}
+    webfuse daemon: {"method": "getattr", "params": [<inode>], "id": <id>}
     fs provider: {"result": {
         "mode" : <mode>,
         "type" : <type>,
@@ -221,7 +221,7 @@ Read directory contents.
 Result is an array of name-inode pairs for each entry. The generic entries 
 "." and ".." should also be provided.
 
-    wsfs daemon: {"method": "readdir", "params": [<dir_inode>], "id": <id>}
+    webfuse daemon: {"method": "readdir", "params": [<dir_inode>], "id": <id>}
     fs provider: {"result": [
         {"name": <name>, "inode": <inode>},
         ...
@@ -237,7 +237,7 @@ Result is an array of name-inode pairs for each entry. The generic entries
 
 Open a file.
 
-    wsfs daemon: {"method": "readdir", "params": [<inode>, <flags>], "id": <id>}
+    webfuse daemon: {"method": "readdir", "params": [<inode>, <flags>], "id": <id>}
     fs provider: {"result": {"handle": <handle>}, "id": <id>}
 
 | Item        | Data type | Description                   |
@@ -264,7 +264,7 @@ Open a file.
 Informs filesystem provider, that a file is closed.  
 Since `close` is a notification, it cannot fail.
 
-    wsfs daemon: {"method": "close", "params": [<inode>, <handle>, <flags>], "id": <id>}
+    webfuse daemon: {"method": "close", "params": [<inode>, <handle>, <flags>], "id": <id>}
 
 | Item        | Data type | Description                  |
 | ----------- | ----------| ---------------------------- |
@@ -276,7 +276,7 @@ Since `close` is a notification, it cannot fail.
 
 Read from an open file.
 
-    wsfs daemon: {"method": "close", "params": [<inode>, <handle>, <offset>, <length>], "id": <id>}
+    webfuse daemon: {"method": "close", "params": [<inode>, <handle>, <offset>, <length>], "id": <id>}
     fs provider: {"result": {
         "data": <data>,
         "format": <format>,
@@ -304,12 +304,12 @@ Read from an open file.
 
 To install dependencies, see below.
 
-    cd fuse-wsfs
+    cd webfuse
     mkdir .build
     cd .build
     cmake ..
     mkdir test
-    ./wsfsd -m test --document_root=../exmaple/daemon/www --port=4711
+    ./webfused -m test --document_root=../exmaple/daemon/www --port=4711
 
 ### Build options
 
@@ -364,7 +364,7 @@ By default, unit tests and example application are enabled. You can disable them
 
 #### GoogleTest
 
-Installation of GoogleTest is optional fuse-wsfs library, but required to compile tests.
+Installation of GoogleTest is optional webfuse library, but required to compile tests.
 
     wget -O gtest-1.8.1.tar.gz https://github.com/google/googletest/archive/release-1.8.1.tar.gz
     tar -xf gtest-1.8.1.tar.gz

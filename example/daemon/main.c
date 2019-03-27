@@ -9,25 +9,25 @@
 #include <getopt.h>
 #include <jansson.h>
 
-#include <wsfs_adapter.h>
+#include <webfuse_adapter.h>
 
 
 struct args
 {
-	struct wsfs_server_config * config;
+	struct wf_server_config * config;
 	char * passwd_path;
 	bool show_help;
 };
 
-static struct wsfs_server * server;
+static struct wf_server * server;
 
 static void show_help(void)
 {
 	printf(
-		"wsfsd, Copyright (c) 2019, Falk Werner\n"
+		"webfused, Copyright (c) 2019, webfuse authors <https://github.com/falk-werner/webfuse>\n"
 		"Websocket file system daemon\n"
 		"\n"
-		"Usage: wsfsd [m <mount_point>] [-d <document_root] [-n <vhost_name>] [-p <port>]\n"
+		"Usage: webfused [m <mount_point>] [-d <document_root] [-n <vhost_name>] [-p <port>]\n"
 		"            [-c <server_cert_path>] [-k <server_key_path>] [-P <passwd_path>]\n"
 		"\n"
 		"Options:\n"
@@ -41,13 +41,13 @@ static void show_help(void)
 		"\n");
 }
 
-static bool authenticate(struct wsfs_credentials * creds, void * user_data)
+static bool authenticate(struct wf_credentials * creds, void * user_data)
 {
 	bool result = false;
 	struct args * args = user_data;
 
-	char const * username = wsfs_credentials_get(creds, "username");
-	char const * password = wsfs_credentials_get(creds, "password");
+	char const * username = wf_credentials_get(creds, "username");
+	char const * password = wf_credentials_get(creds, "password");
 	if ((NULL != username) && (NULL != password))
 	{
 		json_t * passwd = json_load_file(args->passwd_path, 0, NULL);
@@ -103,28 +103,28 @@ static int parse_arguments(int argc, char * argv[], struct args * args)
 				finished = true;
 				break;
 			case 'm':
-				wsfs_server_config_set_mountpoint(args->config, optarg);
+				wf_server_config_set_mountpoint(args->config, optarg);
 				has_mountpoint = true;
 				break;
 			case 'd':
-				wsfs_server_config_set_documentroot(args->config, optarg);
+				wf_server_config_set_documentroot(args->config, optarg);
 				break;
 			case 'c':
-				wsfs_server_config_set_certpath(args->config, optarg);
+				wf_server_config_set_certpath(args->config, optarg);
 				break;
 			case 'k':
-				wsfs_server_config_set_keypath(args->config, optarg);
+				wf_server_config_set_keypath(args->config, optarg);
 				break;
 			case 'n':
-				wsfs_server_config_set_vhostname(args->config, optarg);
+				wf_server_config_set_vhostname(args->config, optarg);
 				break;
 			case 'p':
-				wsfs_server_config_set_port(args->config, atoi(optarg));
+				wf_server_config_set_port(args->config, atoi(optarg));
 				break;
 			case 'P':
 				free(args->passwd_path);
 				args->passwd_path = strdup(optarg);
-				wsfs_server_config_add_authenticator(args->config, 
+				wf_server_config_add_authenticator(args->config, 
 					"username",
 					&authenticate,
 					args);
@@ -157,15 +157,15 @@ static void on_interrupt(int signal_id)
 {
 	(void) signal_id;
 
-	wsfs_server_shutdown(server);
+	wf_server_shutdown(server);
 }
 
 int main(int argc, char * argv[])
 {
 	struct args args;
-	args.config = wsfs_server_config_create();
-	wsfs_server_config_set_vhostname(args.config, "localhost");
-	wsfs_server_config_set_port(args.config, 8080);
+	args.config = wf_server_config_create();
+	wf_server_config_set_vhostname(args.config, "localhost");
+	wf_server_config_set_port(args.config, 8080);
 	args.passwd_path = NULL;
 	args.show_help = false;
 
@@ -174,11 +174,11 @@ int main(int argc, char * argv[])
 	if (!args.show_help)
 	{
 		signal(SIGINT, on_interrupt);
-		server = wsfs_server_create(args.config);
+		server = wf_server_create(args.config);
 		if (NULL != server)
 		{
-			wsfs_server_run(server);
-			wsfs_server_dispose(server);			
+			wf_server_run(server);
+			wf_server_dispose(server);			
 		}
 		else
 		{
@@ -192,7 +192,7 @@ int main(int argc, char * argv[])
 	}
 
 	free(args.passwd_path);
-	wsfs_server_config_dispose(args.config);
+	wf_server_config_dispose(args.config);
 	return result;
 }
 

@@ -36,13 +36,13 @@ struct command
 static void print_usage(void)
 {
     printf(
-        "wsfs-passwd, Copyright (c) 2019 authors <https://github.com/falk-werner/fuse-wsfs>\n"
-        "Manage wsfs passwd file\n"
+        "webfuse-passwd, Copyright (c) 2019, webfuse authors <https://github.com/falk-werner/webfuse>\n"
+        "Manage webfuse passwd file\n"
         "\n"
-        "Usage: wsfs-passwd -f <file> -c <command> [-u <username>] [-p <password>] [-P <pepper>]\n"
+        "Usage: webfuse-passwd -f <file> -c <command> [-u <username>] [-p <password>] [-P <pepper>]\n"
         "\n"
         "Options:\n"
-        "\t-f, --file     Path of wsfs passwd file\n"
+        "\t-f, --file     Path of wf passwd file\n"
         "\t-c, --command  Command to execute\n"
         "\t-u, --username Name of user\n"
         "\t-p, --password Password of user\n"
@@ -51,13 +51,13 @@ static void print_usage(void)
         "\n"
         "Commands:\n"
         "\tcreate Creates an empty passwd file (or cleans an existing)\n"
-        "\t       Example: wsfs-passwd -f passwd.json -c create\n"
+        "\t       Example: webfuse-passwd -f passwd.json -c create\n"
         "\tadd    Adds or replaces a user\n"
-        "\t       Example: wsfs-passwd -f passwd.json -c add -u bob -p secret\n"
+        "\t       Example: webfuse-passwd -f passwd.json -c add -u bob -p secret\n"
         "\tremove Removes a user\n"
-        "\t       Example: wsfs-passwd -f passwd.json -c remove -u bob\n"
+        "\t       Example: webfuse-passwd -f passwd.json -c remove -u bob\n"
         "\tcheck  Checks password of a user\n"
-        "\t       Example: wsfs-passwd -f passwd.json -c check -u bob -p secret\n"
+        "\t       Example: webfuse-passwd -f passwd.json -c check -u bob -p secret\n"
         "\n"
     );
 }
