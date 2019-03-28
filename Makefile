@@ -26,6 +26,7 @@ UID ?= $(shell id -u)
 
 CONTAINER_USER ?= $(UID)
 CONTAINER_GROUP ?= $(shell id -g)
+CONTAINER_CGROUP_PARENT ?= 
 
 HOST_CONTAINER ?= $(shell $(PROJECT_ROOT)/build/get_container_id.sh)
 HOST_CONTAINER := $(HOST_CONTAINER)
@@ -105,6 +106,7 @@ DOCKER_RUNFLAGS += --env SOURCE_DATE_EPOCH
 DOCKER_RUNFLAGS += --env BUILDTIME
 DOCKER_RUNFLAGS += --env NINJA_STATUS
 DOCKER_RUNFLAGS += $(addprefix --volumes-from ,$(HOST_CONTAINER))
+DOCKER_RUNFLAGS += $(addprefix --cgroup-parent ,$(CONTAINER_CGROUP_PARENT))
 
 DOCKER_BUILDARGS += CODENAME=$(CODENAME)
 DOCKER_BUILDARGS += PARALLELMFLAGS=$(PARALLELMFLAGS)
@@ -147,52 +149,51 @@ container_run = $(DOCKER) run $(DOCKER_RUNFLAGS) $3 \
 
 image_rule = \
   $$(OUT)/docker/$1: $$(OUT)/docker/$1.dockerfile $$(EXTRACT_TARGETS) $$(PROJECT_ROOT)/Makefile; \
-    $$(call image,$1)
-image = $(SILENT) \
+    $(SILENT)$$(call image,$1)
+image = \
      $(call echo_if_silent,docker build $(PROJECT_NAME)-$1:$(VERSION) $(OUT)) \
   && $(DOCKER) build $(DOCKER_BUILDFLAGS) --iidfile $@ --file $< --tag $(PROJECT_NAME)-$1:$(VERSION) $(OUT)
 
-run_rule = \
-  run-$1: $$(OUT)/docker/$1; \
-    $$(call run_recipe,$1,/bin/bash,--tty)
-run = $(call echo_if_silent,TARGET=$1 $2) && $(call container_run,$1,$2,$3)
-run_recipe = $(SILENT)-$(call run,$1,$2,$3)
-
 configure_rule = \
   $$(OUT)/$1/CMakeCache.txt: $$(PROJECT_ROOT)/CMakeLists.txt $$(OUT)/docker/$1; \
-    $$(call configure,$1)
-configure = $(SILENT) \
+    $(SILENT)$$(call configure,$1)
+configure = \
      $(call run,$1,sh -c 'cmake $(CMAKEFLAGS) $(CONTAINER_PROJECT_ROOT) && $(CONTAINER_PROJECT_ROOT)/build/discover_cc_settings.sh $(notdir $@) $(realpath $(dir $@))') \
   && touch $@
 
 build_rule = \
   build-$1: $$(OUT)/$1/CMakeCache.txt; \
-    $$(call build,$1)
-build = $(SILENT)$(call run,$1,ninja $(PARALLELMFLAGS) $(NINJAFLAGS) $(GOALS))
+    $(SILENT)$$(call build,$1)
+build = $(call run,$1,ninja $(PARALLELMFLAGS) $(NINJAFLAGS) $(GOALS))
 
 check_rule = \
   check-$1: build-$1;
 
 memcheck_rule = \
   memcheck-$1: build-$1; \
-    $$(call memcheck,$1)
-memcheck = $(SILENT)$(call run,$1,ctest -T memcheck $(CTESTFLAGS))
+    $(SILENT)$$(call memcheck,$1)
+memcheck = $(call run,$1,ctest -T memcheck $(CTESTFLAGS))
+
+run_rule = \
+  run-$1: $$(OUT)/docker/$1; \
+    $(SILENT)$$(call run,$1,/bin/bash,--tty) || true
+run = $(call echo_if_silent,TARGET=$1 $2) && $(call container_run,$1,$2,$3)
+
+clean_rule = \
+  clean-$1: ; \
+    $(SILENT)-$$(call clean,$1)
+clean = rm -rf $(OUT)/$1
 
 discover_cc_settings_rule = \
   $$(OUT)/$1/include_dirs.txt: $$(OUT)/$1/CMakeCache.txt; \
-    $$(call discover_cc_settings,$1)
-discover_cc_settings = $(SILENT) \
+    $(SILENT)$$(call discover_cc_settings,$1)
+discover_cc_settings = \
   $(call run,$1,$(CONTAINER_PROJECT_ROOT)/build/discover_cc_settings.sh $(notdir $<) $(realpath $(dir $<)))
 
 discover_cc_rule = \
   discover-cc-$1: $$(OUT)/$1/include_dirs.txt; \
-    $$(call discover_cc,$1)
-discover_cc = $(SILENT)cat $<
-
-clean_rule = \
-  clean-$1: ; \
-    $$(call clean,$1)
-clean = $(SILENT)-rm -rf $(OUT)/$1
+    $(SILENT)$$(call discover_cc,$1)
+discover_cc = cat $<
 
 # Rules
 
@@ -216,11 +217,11 @@ $(RULE_TARGETS): $(PROJECT_ROOT)/Makefile | $(OUT_DIRS)
 		echo; \
 		echo '$(call run_rule,$(TARGET))'; \
 		echo; \
+		echo '$(call clean_rule,$(TARGET))'; \
+		echo; \
 		echo '$(call discover_cc_settings_rule,$(TARGET))'; \
 		echo; \
 		echo '$(call discover_cc_rule,$(TARGET))'; \
-		echo; \
-		echo '$(call clean_rule,$(TARGET))'; \
 	} > $@
 
 .PHONY: all build-%
