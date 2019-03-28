@@ -142,7 +142,7 @@ $(VERBOSE)SILENT := @
 $(HOST_CONTAINER)container_run_volumes += '$(realpath $(PROJECT_ROOT)):$(CONTAINER_PROJECT_ROOT):cached'
 $(HOST_CONTAINER)container_run_volumes += '$(realpath $(OUT)/$1):$(CONTAINER_OUT)/$1:delegated'
 
-container_name = $(subst -,/,$1)/$(PROJECT_NAME):$(VERSION)
+container_name = $(REGISTRY_PREFIX)$(subst -,/,$1)/$(PROJECT_NAME):$(VERSION)
 container_run = $(DOCKER) run $(DOCKER_RUNFLAGS) $3 \
   $(addprefix --volume ,$(call container_run_volumes,$1)) \
   --workdir '$(CONTAINER_OUT)/$1' \
