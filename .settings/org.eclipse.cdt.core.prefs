@@ -1,0 +1,12 @@
+eclipse.preferences.version=1
+environment/project/cdt.managedbuild.toolchain.gnu.base.2091678410/BUILDTARGET/delimiter=\:
+environment/project/cdt.managedbuild.toolchain.gnu.base.2091678410/BUILDTARGET/operation=append
+environment/project/cdt.managedbuild.toolchain.gnu.base.2091678410/BUILDTARGET/value=amd64-ubuntu-builder
+environment/project/cdt.managedbuild.toolchain.gnu.base.2091678410/BUILDVERBOSE/delimiter=\:
+environment/project/cdt.managedbuild.toolchain.gnu.base.2091678410/BUILDVERBOSE/operation=append
+environment/project/cdt.managedbuild.toolchain.gnu.base.2091678410/BUILDVERBOSE/value=1
+environment/project/cdt.managedbuild.toolchain.gnu.base.2091678410/VERBOSE/delimiter=\:
+environment/project/cdt.managedbuild.toolchain.gnu.base.2091678410/VERBOSE/operation=replace
+environment/project/cdt.managedbuild.toolchain.gnu.base.2091678410/VERBOSE/value=
+environment/project/cdt.managedbuild.toolchain.gnu.base.2091678410/append=true
+environment/project/cdt.managedbuild.toolchain.gnu.base.2091678410/appendContributed=true

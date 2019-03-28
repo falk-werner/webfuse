@@ -1,3 +1,6 @@
+PARALLELMFLAGS ?= -j$(shell nproc)
+MAKEFLAGS += $(PARALLELMFLAGS) --no-builtin-rules
+
 .PHONY: default
 default: all
 
@@ -5,24 +8,33 @@ default: all
 
 export SOURCE_DATE_EPOCH ?= $(shell $(PROJECT_ROOT)/build/get_source_date_epoch.sh)
 export BUILDTIME ?= $(shell date -u -d '@$(SOURCE_DATE_EPOCH)' --rfc-3339 ns 2>/dev/null | sed -e 's/ /T/')
+export DOCKER ?= docker
 
-VERBOSE ?=
-MARCH ?= 
+DOCKER_BUILDKIT ?= 
+
+VERBOSE ?= 
+BUILDVERBOSE ?= 
+BUILDTARGET ?= 
+MARCH ?= $(call march,$(BUILDTARGET))
 
 PROJECT_NAME ?= webfuse
 PROJECT_ROOT ?= .
 VERSION ?= $(shell cat $(PROJECT_ROOT)/VERSION)
 OUT ?= $(PROJECT_ROOT)/.build
 
-PARALLELMFLAGS ?= -j$(shell nproc)
 UID ?= $(shell id -u)
-
-DOCKER ?= docker
-DOCKER_BUILDKIT ?= 
 
 CONTAINER_USER ?= $(UID)
 CONTAINER_GROUP ?= $(shell id -g)
-CONTAINER_WORKSPACE ?= /workspace
+
+HOST_CONTAINER ?= $(shell $(PROJECT_ROOT)/build/get_container_id.sh)
+HOST_CONTAINER := $(HOST_CONTAINER)
+
+$(HOST_CONTAINER)PORTABLE_WORSPACE ?= 
+CONTAINER_PROJECT_ROOT ?= /workspace/src
+CONTAINER_OUT ?= /workspace/out
+$(PORTABLE_WORSPACE)CONTAINER_PROJECT_ROOT = $(abspath $(PROJECT_ROOT))
+$(PORTABLE_WORSPACE)CONTAINER_OUT = $(abspath $(OUT))
 
 UBUNTU_CODENAME ?= bionic
 
@@ -54,6 +66,11 @@ $(OUT)/docker/qemu-arm-static-$(QEMU_VERSION): URL := https://github.com/multiar
 
 # Architecture-specific rule target configuration
 
+march = $(shell echo '$1' | sed -n -e 's@\([^-]*\)-.*@\1@p')
+
+TARGETS += $(BUILDTARGET)
+MARCH := $(MARCH)
+
 MARCH_AMD64 := $(filter-out amd64,$(MARCH))
 $(MARCH_AMD64)MARCHS += amd64
 $(MARCH_AMD64)TARGETS += amd64-ubuntu-builder
@@ -74,9 +91,10 @@ $(addprefix $(OUT)/docker/,$(UBUNTU_TARGETS)): CODENAME := $(UBUNTU_CODENAME)
 
 # Common rule target configuration
 
-MAKEFLAGS += $(PARALLELMFLAGS) --no-builtin-rules
+CMAKEFLAGS += '-GNinja'
 
-CMAKEFLAGS += -GNinja
+BUILDSILENT := $(if $(BUILDVERBOSE),,1)
+$(BUILDSILENT)NINJAFLAGS += -v
 
 DOCKER_RUNFLAGS += --interactive
 DOCKER_RUNFLAGS += --rm
@@ -85,11 +103,14 @@ DOCKER_RUNFLAGS += --user $(CONTAINER_USER):$(CONTAINER_GROUP)
 DOCKER_RUNFLAGS += --device /dev/fuse --cap-add SYS_ADMIN --security-opt apparmor:unconfined
 DOCKER_RUNFLAGS += --env SOURCE_DATE_EPOCH
 DOCKER_RUNFLAGS += --env BUILDTIME
+DOCKER_RUNFLAGS += --env NINJA_STATUS
+DOCKER_RUNFLAGS += $(addprefix --volumes-from ,$(HOST_CONTAINER))
 
 DOCKER_BUILDARGS += CODENAME=$(CODENAME)
 DOCKER_BUILDARGS += PARALLELMFLAGS=$(PARALLELMFLAGS)
 DOCKER_BUILDARGS += USERID=$(UID)
-DOCKER_BUILDARGS += WORKSPACE=$(CONTAINER_WORKSPACE)
+DOCKER_BUILDARGS += PROJECT_ROOT=$(CONTAINER_PROJECT_ROOT)
+DOCKER_BUILDARGS += OUT=$(CONTAINER_OUT)
 
 DOCKER_BUILDFLAGS += --rm
 DOCKER_BUILDFLAGS += $(addprefix --build-arg ,$(DOCKER_BUILDARGS))
@@ -101,16 +122,13 @@ OUT_DIRS += $(addprefix $(OUT)/,$(TARGETS))
 
 BUILD_TARGETS += $(addprefix build-,$(TARGETS))
 CHECK_TARGETS += $(addprefix check-,$(TARGETS))
+CLEAN_TARGETS += $(addprefix clean-,$(TARGETS))
+RUN_TARGETS += $(addprefix run-,$(firstword $(TARGETS)))
 EXTRACT_TARGETS += $(patsubst $(OUT)/%.tar.gz,$(OUT)/src/%,$(FETCH_TARGETS))
+DISCOVER_CC_TARGETS += $(addprefix discover-cc-,$(firstword $(TARGETS)))
 RULE_TARGETS = $(addprefix $(OUT)/,$(addsuffix /rules.mk,$(TARGETS)))
 
-BUILD_TARGETS := $(BUILD_TARGETS)
-CHECK_TARGETS := $(CHECK_TARGETS)
-MEMCHECK_TARGETS := $(MEMCHECK_TARGETS)
-CONTAINER_GROUP := $(CONTAINER_GROUP)
-VERSION := $(VERSION)
-PROJECT_ROOT := $(PROJECT_ROOT)
-OUT := $(OUT)
+TARGETS := $(sort $(TARGETS))
 
 # Macros
 
@@ -118,36 +136,67 @@ echo_if_silent = VERBOSE=1
 $(VERBOSE)echo_if_silent = echo $1
 $(VERBOSE)SILENT := @
 
-image_rule = $$(OUT)/docker/$1: $$(OUT)/docker/$1.dockerfile $$(EXTRACT_TARGETS) $$(PROJECT_ROOT)/Makefile; $$(call image,$1)
+$(HOST_CONTAINER)container_run_volumes += '$(realpath $(PROJECT_ROOT)):$(CONTAINER_PROJECT_ROOT):cached'
+$(HOST_CONTAINER)container_run_volumes += '$(realpath $(OUT)/$1):$(CONTAINER_OUT)/$1:delegated'
+
+container_run = $(DOCKER) run $(DOCKER_RUNFLAGS) $3 \
+  $(addprefix --volume ,$(call container_run_volumes,$1)) \
+  --workdir '$(CONTAINER_OUT)/$1' \
+  $(PROJECT_NAME)-$1:$(VERSION) \
+  $2
+
+image_rule = \
+  $$(OUT)/docker/$1: $$(OUT)/docker/$1.dockerfile $$(EXTRACT_TARGETS) $$(PROJECT_ROOT)/Makefile; \
+    $$(call image,$1)
 image = $(SILENT) \
      $(call echo_if_silent,docker build $(PROJECT_NAME)-$1:$(VERSION) $(OUT)) \
   && $(DOCKER) build $(DOCKER_BUILDFLAGS) --iidfile $@ --file $< --tag $(PROJECT_NAME)-$1:$(VERSION) $(OUT)
 
-run_rule = run-$1: $$(OUT)/docker/$1; $$(call run,$1,/bin/bash,--tty)
-run = $(SILENT) \
-     $(call echo_if_silent,TARGET=$1 $2) \
-  && $(DOCKER) run $(DOCKER_RUNFLAGS) $3 \
-       --volume '$(realpath $(PROJECT_ROOT)):$(CONTAINER_WORKSPACE)' \
-       --volume '$(realpath $(OUT)/$1):$(CONTAINER_WORKSPACE)/$(notdir $(OUT))' \
-       --workdir '$(CONTAINER_WORKSPACE)/$(notdir $(OUT))' \
-       $(PROJECT_NAME)-$1:$(VERSION) \
-       $2
+run_rule = \
+  run-$1: $$(OUT)/docker/$1; \
+    $$(call run_recipe,$1,/bin/bash,--tty)
+run = $(call echo_if_silent,TARGET=$1 $2) && $(call container_run,$1,$2,$3)
+run_recipe = $(SILENT)-$(call run,$1,$2,$3)
 
-configure_rule = $$(OUT)/$1/CMakeCache.txt: $$(PROJECT_ROOT)/CMakeLists.txt $$(OUT)/docker/$1; $$(call configure,$1)
-configure = $(call run,$1,cmake $(CMAKEFLAGS) ..) && touch $@
+configure_rule = \
+  $$(OUT)/$1/CMakeCache.txt: $$(PROJECT_ROOT)/CMakeLists.txt $$(OUT)/docker/$1; \
+    $$(call configure,$1)
+configure = $(SILENT) \
+     $(call run,$1,sh -c 'cmake $(CMAKEFLAGS) $(CONTAINER_PROJECT_ROOT) && $(CONTAINER_PROJECT_ROOT)/build/discover_cc_settings.sh $(notdir $@) $(realpath $(dir $@))') \
+  && touch $@
 
-build_rule = build-$1: $$(OUT)/$1/CMakeCache.txt; $$(call build,$1)
-build = $(call run,$1,ninja $(PARALLELMFLAGS) $(GLOAS))
+build_rule = \
+  build-$1: $$(OUT)/$1/CMakeCache.txt; \
+    $$(call build,$1)
+build = $(SILENT)$(call run,$1,ninja $(PARALLELMFLAGS) $(NINJAFLAGS) $(GOALS))
 
-check_rule = check-$1: build-$1; $$(call check,$1)
-check = $(call run,$1,ctest $(CTESTFLAGS))
+check_rule = \
+  check-$1: build-$1;
 
-memcheck_rule = memcheck-$1: build-$1; $$(call memcheck,$1)
-memcheck = $(call run,$1,ctest -T memcheck $(CTESTFLAGS))
+memcheck_rule = \
+  memcheck-$1: build-$1; \
+    $$(call memcheck,$1)
+memcheck = $(SILENT)$(call run,$1,ctest -T memcheck $(CTESTFLAGS))
+
+discover_cc_settings_rule = \
+  $$(OUT)/$1/include_dirs.txt: $$(OUT)/$1/CMakeCache.txt; \
+    $$(call discover_cc_settings,$1)
+discover_cc_settings = $(SILENT) \
+  $(call run,$1,$(CONTAINER_PROJECT_ROOT)/build/discover_cc_settings.sh $(notdir $<) $(realpath $(dir $<)))
+
+discover_cc_rule = \
+  discover-cc-$1: $$(OUT)/$1/include_dirs.txt; \
+    $$(call discover_cc,$1)
+discover_cc = $(SILENT)cat $<
+
+clean_rule = \
+  clean-$1: ; \
+    $$(call clean,$1)
+clean = $(SILENT)-rm -rf $(OUT)/$1
 
 # Rules
 
-ifneq ($(MAKECMDGOALS),clean)
+ifneq ($(MAKECMDGOALS),distclean)
 -include $(RULE_TARGETS)
 endif
 
@@ -166,28 +215,47 @@ $(RULE_TARGETS): $(PROJECT_ROOT)/Makefile | $(OUT_DIRS)
 		echo '$(call memcheck_rule,$(TARGET))'; \
 		echo; \
 		echo '$(call run_rule,$(TARGET))'; \
+		echo; \
+		echo '$(call discover_cc_settings_rule,$(TARGET))'; \
+		echo; \
+		echo '$(call discover_cc_rule,$(TARGET))'; \
+		echo; \
+		echo '$(call clean_rule,$(TARGET))'; \
 	} > $@
 
-.PHONY: all
-all: $(BUILD_TARGETS)
+.PHONY: all build-%
+all: $(BUILD_TARGETS);
 
-.PHONY: check
-check: $(CHECK_TARGETS)
+.PHONY: check check-%
+check: $(CHECK_TARGETS);
 
-.PHONY: memcheck
-memcheck: $(MEMCHECK_TARGETS)
+.PHONY: memcheck memcheck-%
+memcheck: $(MEMCHECK_TARGETS);
 
-.PHONY: clean
-clean: $(CLEAN_TARGETS)
+.PHONY: lint lint-%
+lint: $(LINT_TARGETS);
+
+.PHONY: run run-%
+run: $(RUN_TARGETS);
+
+.PHONY: clean clean-%
+clean: $(CLEAN_TARGETS);
+
+.PHONY: get-deps get-deps-%
+get-deps: $(EXTRACT_TARGETS);
+
+.PHONY: discover-cc discover-cc-%
+discover-cc: $(DISCOVER_CC_TARGETS);
+
+.PHONY: distclean
+distclean:
 	$(SILENT)-rm -rf $(OUT_DIRS)
-
-.PHONY: get-deps
-get-deps: $(EXTRACT_TARGETS)
 
 .PHONY: debug-print-%
 debug-print-%:
 	@printf '%s\n' '$*:' $($*)
 
+$(CHECK_TARGETS): GOALS := test
 $(CHECK_TARGETS) $(MEMCHECK_TARGETS): CONTAINER_USER := user
 
 $(OUT)/docker/qemu-arm-static-$(QEMU_VERSION):
@@ -210,7 +278,4 @@ $(OUT)/src/%: $(OUT)/%.tar.gz | $(OUT_DIRS)
 
 $(OUT_DIRS):
 	$(SILENT)mkdir -p $@
-
-.PRECIOUS: $(OUT)/docker/% $(OUT)/%/CMakeCache.txt
-.DELETE_ON_ERROR: $(OUT)/%/CMakeCache.txt
 

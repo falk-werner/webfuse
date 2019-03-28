@@ -11,6 +11,7 @@ before_install:
 env:
   global:
     - PARALLELMFLAGS="-j2"
+    - PORTABLE_WORSPACE=1
   matrix:
     - MARCH=amd64   CHECK_TARGET=memcheck
     - MARCH=arm32v7 CHECK_TARGET=check
