@@ -97,11 +97,12 @@ CMAKEFLAGS += '-GNinja'
 BUILDSILENT := $(if $(BUILDVERBOSE),,1)
 $(BUILDSILENT)NINJAFLAGS += -v
 
+DOCKER_RUNFLAGS += --device /dev/fuse --cap-add SYS_ADMIN --security-opt apparmor:unconfined
+
 DOCKER_RUNFLAGS += --interactive
 DOCKER_RUNFLAGS += --rm
 DOCKER_RUNFLAGS += --init
 DOCKER_RUNFLAGS += --user $(CONTAINER_USER):$(CONTAINER_GROUP)
-DOCKER_RUNFLAGS += --device /dev/fuse --cap-add SYS_ADMIN --security-opt apparmor:unconfined
 DOCKER_RUNFLAGS += --env SOURCE_DATE_EPOCH
 DOCKER_RUNFLAGS += --env BUILDTIME
 DOCKER_RUNFLAGS += --env NINJA_STATUS
@@ -141,18 +142,19 @@ $(VERBOSE)SILENT := @
 $(HOST_CONTAINER)container_run_volumes += '$(realpath $(PROJECT_ROOT)):$(CONTAINER_PROJECT_ROOT):cached'
 $(HOST_CONTAINER)container_run_volumes += '$(realpath $(OUT)/$1):$(CONTAINER_OUT)/$1:delegated'
 
+container_name = $(subst -,/,$1)/$(PROJECT_NAME):$(VERSION)
 container_run = $(DOCKER) run $(DOCKER_RUNFLAGS) $3 \
   $(addprefix --volume ,$(call container_run_volumes,$1)) \
   --workdir '$(CONTAINER_OUT)/$1' \
-  $(PROJECT_NAME)-$1:$(VERSION) \
+  $(call container_name,$1) \
   $2
 
 image_rule = \
   $$(OUT)/docker/$1: $$(OUT)/docker/$1.dockerfile $$(EXTRACT_TARGETS) $$(PROJECT_ROOT)/Makefile; \
     $(SILENT)$$(call image,$1)
 image = \
-     $(call echo_if_silent,docker build $(PROJECT_NAME)-$1:$(VERSION) $(OUT)) \
-  && $(DOCKER) build $(DOCKER_BUILDFLAGS) --iidfile $@ --file $< --tag $(PROJECT_NAME)-$1:$(VERSION) $(OUT)
+     $(call echo_if_silent,docker build $(call container_name,$1) $(OUT)) \
+  && $(DOCKER) build $(DOCKER_BUILDFLAGS) --iidfile $@ --file $< --tag $(call container_name,$1) $(OUT)
 
 configure_rule = \
   $$(OUT)/$1/CMakeCache.txt: $$(PROJECT_ROOT)/CMakeLists.txt $$(OUT)/docker/$1; \
