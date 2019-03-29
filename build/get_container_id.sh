@@ -33,7 +33,7 @@ impl_container_id_by_cgroup() {
 DOCKER="${DOCKER:-docker}"
 
 if [ -z "${CONTAINER+x}" ] && [ -n "$DOCKER" ]; then
-  CONTAINER="$(container_id "$@")" || true
+  CONTAINER="$(container_id "$@")"
 fi
 
 echo "$CONTAINER"
