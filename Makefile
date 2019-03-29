@@ -161,7 +161,7 @@ configure_rule = \
     $(SILENT)$$(call configure,$1)
 configure = \
      $(call run,$1,sh -c 'cmake $(CMAKEFLAGS) $(CONTAINER_PROJECT_ROOT) && $(CONTAINER_PROJECT_ROOT)/build/discover_cc_settings.sh $(notdir $@) $(realpath $(dir $@))') \
-  && touch $@
+  && touch $(addprefix $(dir $@)/,include_dirs.txt) $@
 
 build_rule = \
   build-$1: $$(OUT)/$1/CMakeCache.txt; \
