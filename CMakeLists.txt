@@ -84,7 +84,7 @@ add_library(webfuse-adapter-static STATIC
 	lib/webfuse/adapter/impl/operation/open.c
 	lib/webfuse/adapter/impl/operation/close.c
 	lib/webfuse/adapter/impl/operation/read.c
-	lib/webfuse/adapter/impl/jsonrpc/server.c
+	lib/webfuse/adapter/impl/jsonrpc/proxy.c
 	lib/webfuse/adapter/impl/jsonrpc/request.c
 	lib/webfuse/adapter/impl/jsonrpc/response.c
 	lib/webfuse/adapter/impl/jsonrpc/util.c

@@ -2,7 +2,7 @@
 #include "webfuse/adapter/impl/authenticators.h"
 #include "webfuse/core/message_queue.h"
 #include "webfuse/core/message.h"
-#include "webfuse/adapter/impl/jsonrpc/server.h"
+#include "webfuse/adapter/impl/jsonrpc/proxy.h"
 
 #include <libwebsockets.h>
 #include <stddef.h>
@@ -40,14 +40,14 @@ void wf_impl_session_init(
     session->wsi = wsi;
     session->is_authenticated = false;
     session->authenticators = authenticators;
-    wf_impl_jsonrpc_server_init(&session->rpc, timeout_manager, &wf_impl_session_send, session);
+    wf_impl_jsonrpc_proxy_init(&session->rpc, timeout_manager, &wf_impl_session_send, session);
     wf_message_queue_init(&session->queue);
  }
 
 void wf_impl_session_cleanup(
     struct wf_impl_session * session)
 {
-    wf_impl_jsonrpc_server_cleanup(&session->rpc);
+    wf_impl_jsonrpc_proxy_cleanup(&session->rpc);
     wf_message_queue_cleanup(&session->queue);
     session->is_authenticated = false;
     session->wsi = NULL;
@@ -83,5 +83,5 @@ void wf_impl_session_receive(
     char const * data,
     size_t length)
 {
-    wf_impl_jsonrpc_server_onresult(&session->rpc, data, length);
+    wf_impl_jsonrpc_proxy_onresult(&session->rpc, data, length);
 }
