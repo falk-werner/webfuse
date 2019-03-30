@@ -1,7 +1,7 @@
 #include "webfuse/adapter/impl/filesystem.h"
 #include "webfuse/adapter/impl/operations.h"
-#include "webfuse/adapter/impl/jsonrpc/server.h"
 
+#include <stdlib.h>
 #include <stddef.h>
 #include <string.h>
 #include <errno.h>
