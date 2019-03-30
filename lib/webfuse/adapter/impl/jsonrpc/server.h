@@ -12,18 +12,29 @@ using std::size_t;
 #endif
 
 #include <jansson.h>
-#include "webfuse/adapter/impl/jsonrpc/method.h"
 #include "webfuse/adapter/impl/time/timeout_manager.h"
 #include "webfuse/adapter/impl/time/timer.h"
+#include "webfuse/core/status.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+typedef bool wf_impl_jsonrpc_server_send_fn(
+	json_t * request,
+    void * user_data);
+
+
+typedef void wf_impl_jsonrpc_server_finished_fn(
+	void * user_data,
+	wf_status status,
+	struct json_t const * result);
+
+
 struct wf_impl_jsonrpc_request
 {
     bool is_pending;
-    wf_impl_jsonrpc_method_finished_fn * finished;
+    wf_impl_jsonrpc_server_finished_fn * finished;
     void * user_data;
     int id;
     struct wf_impl_timer timer;
@@ -31,26 +42,23 @@ struct wf_impl_jsonrpc_request
 
 struct wf_impl_jsonrpc_server
 {
-    struct wf_impl_jsonrpc_method * methods;
     struct wf_impl_jsonrpc_request request;
+    wf_impl_jsonrpc_server_send_fn * send;
+    void * user_data;
 };
 
 extern void wf_impl_jsonrpc_server_init(
     struct wf_impl_jsonrpc_server * server,
-    struct wf_impl_timeout_manager * manager);
+    struct wf_impl_timeout_manager * manager,
+    wf_impl_jsonrpc_server_send_fn * send,
+    void * user_data);
 
 extern void wf_impl_jsonrpc_server_cleanup(
     struct wf_impl_jsonrpc_server * server);
 
-extern void wf_impl_jsonrpc_server_add(
-    struct wf_impl_jsonrpc_server * server,
-    char const * name,
-    wf_impl_jsonrpc_method_invoke_fn * invoke,
-    void * user_data );
-
 extern void wf_impl_jsonrpc_server_invoke(
 	struct wf_impl_jsonrpc_server * server,
-	wf_impl_jsonrpc_method_finished_fn * finished,
+	wf_impl_jsonrpc_server_finished_fn * finished,
 	void * user_data,
 	char const * method_name,
 	char const * param_info,
