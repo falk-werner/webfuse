@@ -74,6 +74,7 @@ add_library(webfuse-adapter-static STATIC
 	lib/webfuse/adapter/impl/authenticator.c
 	lib/webfuse/adapter/impl/authenticators.c
 	lib/webfuse/adapter/impl/credentials.c
+	lib/webfuse/adapter/impl/operations.c
 	lib/webfuse/adapter/impl/time/timepoint.c
 	lib/webfuse/adapter/impl/time/timer.c
 	lib/webfuse/adapter/impl/time/timeout_manager.c
@@ -84,7 +85,6 @@ add_library(webfuse-adapter-static STATIC
 	lib/webfuse/adapter/impl/operation/close.c
 	lib/webfuse/adapter/impl/operation/read.c
 	lib/webfuse/adapter/impl/jsonrpc/server.c
-	lib/webfuse/adapter/impl/jsonrpc/method.c
 	lib/webfuse/adapter/impl/jsonrpc/request.c
 	lib/webfuse/adapter/impl/jsonrpc/response.c
 	lib/webfuse/adapter/impl/jsonrpc/util.c

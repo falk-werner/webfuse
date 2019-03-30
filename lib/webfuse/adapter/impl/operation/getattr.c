@@ -81,13 +81,20 @@ void wf_impl_operation_getattr (
 {
     struct fuse_ctx const * context = fuse_req_ctx(request);
     struct wf_impl_operations_context * user_data = fuse_req_userdata(request);
-    struct wf_impl_jsonrpc_server * rpc = user_data->rpc;
+    struct wf_impl_jsonrpc_server * rpc = wf_impl_operations_context_get_server(user_data, inode);
 
-	struct wf_impl_operation_getattr_context * getattr_context = malloc(sizeof(struct wf_impl_operation_getattr_context));
-	getattr_context->request = request;
-	getattr_context->uid = context->uid;
-	getattr_context->gid = context->gid;
-	getattr_context->timeout = user_data->timeout;
+	if (NULL != rpc)
+	{
+		struct wf_impl_operation_getattr_context * getattr_context = malloc(sizeof(struct wf_impl_operation_getattr_context));
+		getattr_context->request = request;
+		getattr_context->uid = context->uid;
+		getattr_context->gid = context->gid;
+		getattr_context->timeout = user_data->timeout;
 
-	wf_impl_jsonrpc_server_invoke(rpc, &wf_impl_operation_getattr_finished, getattr_context, "getattr", "i", inode);
+		wf_impl_jsonrpc_server_invoke(rpc, &wf_impl_operation_getattr_finished, getattr_context, "getattr", "i", inode);
+	}
+	else
+	{
+		fuse_reply_err(request, ENOENT);
+	}
 }

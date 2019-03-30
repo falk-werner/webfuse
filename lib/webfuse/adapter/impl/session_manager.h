@@ -6,6 +6,7 @@
 #endif
 
 #include "webfuse/adapter/impl/session.h"
+#include "webfuse/adapter/impl/fuse_wrapper.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -13,6 +14,7 @@ extern "C"
 #endif
 
 struct lws;
+struct wf_impl_timeout_manager;
 
 struct wf_impl_session_manager
 {
@@ -29,11 +31,15 @@ extern struct wf_impl_session * wf_impl_session_manager_add(
     struct wf_impl_session_manager * manager,
     struct lws * wsi,
     struct wf_impl_authenticators * authenticators,
-    struct wf_impl_jsonrpc_server * rpc);
+    struct wf_impl_timeout_manager * timeout_manager);
 
 extern struct wf_impl_session * wf_impl_session_manager_get(
     struct wf_impl_session_manager * manager,
     struct lws * wsi);
+
+extern struct wf_impl_session * wf_impl_session_manager_get_by_inode(
+    struct wf_impl_session_manager * session_manger,
+    fuse_ino_t inode);
 
 extern void wf_impl_session_manager_remove(
     struct wf_impl_session_manager * manager,
