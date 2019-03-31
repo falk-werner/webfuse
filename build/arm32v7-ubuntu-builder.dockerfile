@@ -13,6 +13,7 @@ RUN set -x \
        ninja-build \
        pkg-config \
        rsync \
+       gdb \
   && rm -rf /var/lib/apt/lists/*
 
 COPY src /usr/local/src
