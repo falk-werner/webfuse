@@ -153,19 +153,19 @@ $(VERBOSE)SILENT := @
 $(HOST_CONTAINER)image_run_volumes += '$(realpath $(PROJECT_ROOT)):$(CONTAINER_PROJECT_ROOT):cached'
 $(HOST_CONTAINER)image_run_volumes += '$(realpath $(OUT)/$1):$(CONTAINER_OUT)/$1:delegated'
 
-container_name = $(REGISTRY_PREFIX)$(subst -,/,$1)/$(PROJECT_NAME):$(VERSION)
-container_run = $(DOCKER) run $(DOCKER_RUNFLAGS) $3 \
-  $(addprefix --volume ,$(call container_run_volumes,$1)) \
+image_name = $(REGISTRY_PREFIX)$(subst -,/,$1)/$(PROJECT_NAME):$(VERSION)
+image_run = $(DOCKER) run $(DOCKER_RUNFLAGS) $3 \
+  $(addprefix --volume ,$(call image_run_volumes,$1)) \
   --workdir '$(CONTAINER_OUT)/$1/$(BUILDTYPE)' \
-  $(call container_name,$1) \
+  $(call image_name,$1) \
   $2
 
 image_rule = \
   $$(OUT)/docker/$1: $$(OUT)/docker/$1.dockerfile $$(EXTRACT_TARGETS) $$(PROJECT_ROOT)/Makefile; \
     $$(SILENT)$$(call image,$1)
 image = \
-     $(call echo_if_silent,TARGET=$1 docker build $(call container_name,$1) $(OUT)) \
-  && $(DOCKER) build $(DOCKER_BUILDFLAGS) --iidfile $@ --file $< --tag $(call container_name,$1) $(OUT)
+     $(call echo_if_silent,TARGET=$1 docker build $(call image_name,$1) $(OUT)) \
+  && $(DOCKER) build $(DOCKER_BUILDFLAGS) --iidfile $@ --file $< --tag $(call image_name,$1) $(OUT)
 
 configure_rule = \
   $$(OUT)/$1/$$(BUILDTYPE)/CMakeCache.txt: $$(PROJECT_ROOT)/CMakeLists.txt $$(OUT)/docker/$1; \
@@ -190,7 +190,7 @@ memcheck = $(call run,$1,ctest -T memcheck $(CTESTFLAGS))
 run_rule = \
   run-$1: $$(OUT)/docker/$1; \
     $$(SILENT)$$(call run,$1,bash,--tty) || true
-run = $(call echo_if_silent,TARGET=$1 BUILDTYPE=$(BUILDTYPE) $2) && $(call container_run,$1,$2,$3)
+run = $(call echo_if_silent,TARGET=$1 BUILDTYPE=$(BUILDTYPE) $2) && $(call image_run,$1,$2,$3)
 
 clean_rule = \
   clean-$1: ; \
