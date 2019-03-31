@@ -2,6 +2,7 @@
 #define WF_ADAPTER_IMPL_JSONRPC_RESPONSE_H
 
 #ifndef __cplusplus
+#include <stdbool.h>
 #include <stddef.h>
 #else
 #include <cstddef>
@@ -21,6 +22,9 @@ struct wf_impl_jsonrpc_response
 	int id;
 	json_t * result;	
 };
+
+extern bool wf_impl_jsonrpc_is_response(
+    json_t * message);
 
 extern void wf_impl_jsonrpc_response_init(
 	struct wf_impl_jsonrpc_response * response,

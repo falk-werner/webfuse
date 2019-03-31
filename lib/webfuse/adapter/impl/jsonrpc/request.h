@@ -22,6 +22,9 @@ extern "C"
 
 struct wf_impl_jsonrpc_request;
 
+extern bool wf_impl_jsonrpc_is_request(
+    json_t * message);
+
 extern struct wf_impl_jsonrpc_request * wf_impl_jsonrpc_request_create(
     int id,
     wf_impl_jsonrpc_send_fn * send,

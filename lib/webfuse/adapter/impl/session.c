@@ -3,6 +3,8 @@
 #include "webfuse/core/message_queue.h"
 #include "webfuse/core/message.h"
 #include "webfuse/adapter/impl/jsonrpc/proxy.h"
+#include "webfuse/adapter/impl/jsonrpc/request.h"
+#include "webfuse/adapter/impl/jsonrpc/response.h"
 
 #include <libwebsockets.h>
 #include <stddef.h>
@@ -89,7 +91,15 @@ void wf_impl_session_receive(
     json_t * message = json_loadb(data, length, 0, NULL);
     if (NULL != message)
     {
-        wf_impl_jsonrpc_proxy_onresult(&session->rpc, message);
+        if (wf_impl_jsonrpc_is_response(message))
+        {
+            wf_impl_jsonrpc_proxy_onresult(&session->rpc, message);
+        }
+        else if (wf_impl_jsonrpc_is_request(message))
+        {
+            wf_impl_jsonrpc_server_process(session->server, message, &wf_impl_session_send, session);
+        }
+
 	    json_decref(message);
     }
 

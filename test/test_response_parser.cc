@@ -9,8 +9,11 @@ static void response_parse_str(
 	struct wf_impl_jsonrpc_response * response)
 {
 	json_t * message = json_loadb(buffer.c_str(), buffer.size(), 0, nullptr);
-	wf_impl_jsonrpc_response_init(response, message);
-	json_decref(message);
+	if (nullptr != message)
+	{
+		wf_impl_jsonrpc_response_init(response, message);
+		json_decref(message);
+	}
 }
 
 TEST(response_parser, test)
