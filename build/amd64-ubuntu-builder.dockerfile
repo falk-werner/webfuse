@@ -11,6 +11,7 @@ RUN set -x \
        ninja-build \
        pkg-config \
        rsync \
+       gdb \
        valgrind \
   && rm -rf /var/lib/apt/lists/*
 
