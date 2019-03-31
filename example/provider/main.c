@@ -268,7 +268,7 @@ static void fs_open(
         }
         else
         {
-            wfp_respond_error(request, WF_BAD_NOACCESS);
+            wfp_respond_error(request, WF_BAD_ACCESS_DENIED);
         }        
     }
     else

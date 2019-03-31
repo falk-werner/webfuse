@@ -41,7 +41,7 @@ extern void wf_impl_session_init(
    struct wf_impl_timeout_manager * timeout_manager,
    struct wf_impl_jsonrpc_server * server);
 
-extern void wf_impl_session_authenticate(
+extern bool wf_impl_session_authenticate(
     struct wf_impl_session * session,
     struct wf_credentials * creds);
 

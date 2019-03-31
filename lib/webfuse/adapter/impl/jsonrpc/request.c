@@ -43,6 +43,12 @@ void wf_impl_jsonrpc_request_dispose(
     free(request);
 }
 
+void * wf_impl_jsonrpc_request_get_userdata(
+    struct wf_impl_jsonrpc_request * request)
+{
+    return request->user_data;
+}
+
 
 void wf_impl_jsonrpc_respond(
     struct wf_impl_jsonrpc_request * request,

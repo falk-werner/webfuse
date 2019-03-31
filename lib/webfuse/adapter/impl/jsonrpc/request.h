@@ -33,6 +33,9 @@ extern struct wf_impl_jsonrpc_request * wf_impl_jsonrpc_request_create(
 extern void wf_impl_jsonrpc_request_dispose(
     struct wf_impl_jsonrpc_request * request);
 
+extern void * wf_impl_jsonrpc_request_get_userdata(
+    struct wf_impl_jsonrpc_request * request);
+
 extern void wf_impl_jsonrpc_respond(
     struct wf_impl_jsonrpc_request * request,
     json_t * result);

@@ -7,6 +7,7 @@
 #include "webfuse/core/util.h"
 
 #include "webfuse/adapter/impl/filesystem.h"
+#include "webfuse/adapter/impl/credentials.h"
 #include "webfuse/adapter/impl/jsonrpc/request.h"
 
 static int wf_impl_server_protocol_callback(
@@ -107,10 +108,36 @@ void wf_impl_server_protocol_init_lws(
 static void wf_impl_server_protocol_authenticate(
     struct wf_impl_jsonrpc_request * request,
     char const * WF_UNUSED_PARAM(method_name),
-    json_t * WF_UNUSED_PARAM(params),
+    json_t * params,
     void * WF_UNUSED_PARAM(user_data))
 {
-    wf_impl_jsonrpc_respond_error(request, WF_BAD_NOTIMPLEMENTED);
+    bool result = false;
+
+    json_t * type_holder = json_array_get(params, 0);
+    json_t * creds_holder = json_array_get(params, 1);
+
+    if (json_is_string(type_holder) && json_is_object(creds_holder))
+    {
+        char const * type = json_string_value(type_holder);
+        struct wf_credentials creds;
+         
+        wf_impl_credentials_init(&creds, type, creds_holder);
+        struct wf_impl_session * session = wf_impl_jsonrpc_request_get_userdata(request);
+        result = wf_impl_session_authenticate(session, &creds);
+        
+        wf_impl_credentials_cleanup(&creds);
+    }
+
+
+    if (result)
+    {
+        json_t * result = json_object();
+        wf_impl_jsonrpc_respond(request, result);
+    }
+    else
+    {
+        wf_impl_jsonrpc_respond_error(request, WF_BAD_ACCESS_DENIED);
+    }    
 }
 
 bool wf_impl_server_protocol_init(

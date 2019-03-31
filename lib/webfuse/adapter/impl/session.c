@@ -16,7 +16,7 @@ static bool wf_impl_session_send(
     struct wf_impl_session * session = user_data;
     struct wf_message * message = wf_message_create(request);
 
-    bool result = (session->is_authenticated) && (NULL != session->wsi);
+    bool result = (session->is_authenticated || wf_impl_jsonrpc_is_response(request)) && (NULL != session->wsi);
 
     if (result)
     {
@@ -59,11 +59,13 @@ void wf_impl_session_cleanup(
     session->server = NULL;
 }
 
-void wf_impl_session_authenticate(
+bool wf_impl_session_authenticate(
     struct wf_impl_session * session,
     struct wf_credentials * creds)
 {
     session->is_authenticated = wf_impl_authenticators_authenticate(session->authenticators, creds);
+
+    return session->is_authenticated;
 }
 
 void wf_impl_session_onwritable(
