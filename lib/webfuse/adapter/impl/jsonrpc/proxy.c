@@ -157,11 +157,10 @@ extern void wf_impl_jsonrpc_proxy_notify(
 
 void wf_impl_jsonrpc_proxy_onresult(
     struct wf_impl_jsonrpc_proxy * proxy,
-    char const * message,
-    size_t length)
+    json_t * message)
 {
 	struct wf_impl_jsonrpc_response response;
-	wf_impl_jsonrpc_response_init(&response, message, length);
+	wf_impl_jsonrpc_response_init(&response, message);
 
     if ((proxy->request.is_pending) && (response.id == proxy->request.id))
     {

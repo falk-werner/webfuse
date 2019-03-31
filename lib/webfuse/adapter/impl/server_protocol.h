@@ -6,6 +6,7 @@
 #include "webfuse/adapter/impl/time/timeout_manager.h"
 #include "webfuse/adapter/impl/authenticators.h"
 #include "webfuse/adapter/impl/session_manager.h"
+#include "webfuse/adapter/impl/jsonrpc/server.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -20,6 +21,7 @@ struct wf_server_protocol
     struct wf_impl_filesystem filesystem;
     struct wf_impl_authenticators authenticators;
     struct wf_impl_session_manager session_manager;
+    struct wf_impl_jsonrpc_server server;
 };
 
 extern bool wf_impl_server_protocol_init(

@@ -24,8 +24,7 @@ struct wf_impl_jsonrpc_response
 
 extern void wf_impl_jsonrpc_response_init(
 	struct wf_impl_jsonrpc_response * response,
-    char const * buffer,
-	size_t buffer_length);
+    json_t * message);
 
 extern void wf_impl_jsonrpc_response_cleanup(
 	struct wf_impl_jsonrpc_response * response);

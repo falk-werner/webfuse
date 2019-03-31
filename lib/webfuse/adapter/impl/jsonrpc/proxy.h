@@ -70,8 +70,7 @@ extern void wf_impl_jsonrpc_proxy_notify(
 
 extern void wf_impl_jsonrpc_proxy_onresult(
     struct wf_impl_jsonrpc_proxy * proxy,
-    char const * message,
-    size_t length);
+    json_t * message);
 
 #ifdef __cplusplus
 }

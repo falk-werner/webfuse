@@ -2,19 +2,11 @@
 
 void wf_impl_jsonrpc_response_init(
 	struct wf_impl_jsonrpc_response * result,
-    char const * buffer,
-	size_t length)
+	json_t * response)
 {
 	result->status = WF_BAD;
 	result->id = -1;
 	result->result = NULL;
-
-	json_t * response = json_loadb(buffer, length, 0, NULL);
-	if (NULL == response)
-	{
-		result->status = WF_BAD_FORMAT;
-		return;
-	}
 
 	json_t * id_holder = json_object_get(response, "id");
 	if ((NULL == id_holder) || (!json_is_integer(id_holder)))
@@ -45,8 +37,6 @@ void wf_impl_jsonrpc_response_init(
 			}
 		}
 	}
-	
-	json_decref(response);
 }
 
 void wf_impl_jsonrpc_response_cleanup(

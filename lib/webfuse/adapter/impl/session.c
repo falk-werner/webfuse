@@ -35,11 +35,13 @@ void wf_impl_session_init(
     struct wf_impl_session * session,
     struct lws * wsi,
     struct wf_impl_authenticators * authenticators,
-    struct wf_impl_timeout_manager * timeout_manager)
+    struct wf_impl_timeout_manager * timeout_manager,
+    struct wf_impl_jsonrpc_server * server)
  {
     session->wsi = wsi;
     session->is_authenticated = false;
     session->authenticators = authenticators;
+    session->server = server;
     wf_impl_jsonrpc_proxy_init(&session->rpc, timeout_manager, &wf_impl_session_send, session);
     wf_message_queue_init(&session->queue);
  }
@@ -52,6 +54,7 @@ void wf_impl_session_cleanup(
     session->is_authenticated = false;
     session->wsi = NULL;
     session->authenticators = NULL;
+    session->server = NULL;
 }
 
 void wf_impl_session_authenticate(
@@ -83,5 +86,11 @@ void wf_impl_session_receive(
     char const * data,
     size_t length)
 {
-    wf_impl_jsonrpc_proxy_onresult(&session->rpc, data, length);
+    json_t * message = json_loadb(data, length, 0, NULL);
+    if (NULL != message)
+    {
+        wf_impl_jsonrpc_proxy_onresult(&session->rpc, message);
+	    json_decref(message);
+    }
+
 }
