@@ -213,9 +213,9 @@ add_executable(webfused
 	example/daemon/main.c
 )
 
-target_link_libraries(webfused PUBLIC webfuse-adapter ${EXTRA_LIBS})
+target_link_libraries(webfused PUBLIC webfuse-adapter userdb ${OPENSSL_LIBRARIES} ${EXTRA_LIBS})
 target_include_directories(webfused PUBLIC ${EXTRA_INCLUDE_DIRS})
-target_compile_options(webfused PUBLIC ${EXTRA_CFLAGS})
+target_compile_options(webfused PUBLIC ${C_WARNINGS} ${OPENSSL_CFLAGS_OTHER} ${EXTRA_CFLAGS})
 
 # provider
 
