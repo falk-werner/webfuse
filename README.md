@@ -162,7 +162,7 @@ Notfications are used to inform a receiver about something. Unlike requests, not
 | method_name | string    | name of the method to invoke      |
 | params      | array     | method specific parameters        |
 
-### Requests
+### Requests (Adapter -> Provider)
 
 #### lookup
 
@@ -299,6 +299,26 @@ Read from an open file.
 | ---------- | -------------------------------------------------------- |
 | "identiy"  | Use data as is; note that JSON strings are UTF-8 encoded |
 | "base64"   | data is base64 encoded                                   |
+
+### Requests (Provider -> Adapter)
+
+#### authtenticate
+
+Authenticate the provider.  
+If authentication is enabled, a provider must be authenticated by the adapter before the adapter will send any messages.
+
+    fs provider: {"method": "authenticate", "params": [<type>, <credentials>], "id": <id>}
+    webfuse daemon: {"result": {}, "id": <id>}
+
+| Item        | Data type | Description                     |
+| ----------- | ----------| ------------------------------- |
+| type        | string    | authentication type (see below) |
+| credentials | object    | credentials to authenticate     |
+
+##### authentication types
+
+-   **username**: authenticate via username and password  
+    `{"username": <username>, "password": <password>}`
 
 ## Build and run
 
