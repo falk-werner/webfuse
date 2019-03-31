@@ -24,8 +24,8 @@ OUT ?= $(PROJECT_ROOT)/.build
 
 UID ?= $(shell id -u)
 
-CONTAINER_USER ?= $(UID)
-CONTAINER_GROUP ?= $(shell id -g)
+CONTAINER_USER ?= user
+CONTAINER_GROUP ?= user
 CONTAINER_CGROUP_PARENT ?= 
 
 HOST_CONTAINER ?= $(shell $(PROJECT_ROOT)/build/get_container_id.sh)
@@ -97,7 +97,8 @@ CMAKEFLAGS += '-GNinja'
 BUILDSILENT := $(if $(BUILDVERBOSE),,1)
 $(BUILDSILENT)NINJAFLAGS += -v
 
-DOCKER_RUNFLAGS += --device /dev/fuse --cap-add SYS_ADMIN --security-opt apparmor:unconfined
+DOCKER_RUNFLAGS += --device /dev/fuse
+DOCKER_RUNFLAGS += --cap-add SYS_ADMIN --security-opt apparmor:unconfined
 
 DOCKER_RUNFLAGS += --interactive
 DOCKER_RUNFLAGS += --rm
@@ -118,10 +119,12 @@ DOCKER_BUILDARGS += OUT=$(CONTAINER_OUT)
 DOCKER_BUILDFLAGS += --rm
 DOCKER_BUILDFLAGS += $(addprefix --build-arg ,$(DOCKER_BUILDARGS))
 
+OUT_TARGETS += $(addprefix $(OUT)/,$(TARGETS))
+
 OUT_DIRS += $(OUT)
 OUT_DIRS += $(OUT)/docker
 OUT_DIRS += $(OUT)/src
-OUT_DIRS += $(addprefix $(OUT)/,$(TARGETS))
+OUT_DIRS += $(addsuffix /usr/bin,$(OUT_TARGETS))
 
 BUILD_TARGETS += $(addprefix build-,$(TARGETS))
 CHECK_TARGETS += $(addprefix check-,$(TARGETS))
@@ -129,7 +132,7 @@ CLEAN_TARGETS += $(addprefix clean-,$(TARGETS))
 RUN_TARGETS += $(addprefix run-,$(firstword $(TARGETS)))
 EXTRACT_TARGETS += $(patsubst $(OUT)/%.tar.gz,$(OUT)/src/%,$(FETCH_TARGETS))
 DISCOVER_CC_TARGETS += $(addprefix discover-cc-,$(firstword $(TARGETS)))
-RULE_TARGETS = $(addprefix $(OUT)/,$(addsuffix /rules.mk,$(TARGETS)))
+RULE_TARGETS += $(addsuffix /rules.mk,$(OUT_TARGETS))
 
 TARGETS := $(sort $(TARGETS))
 
@@ -151,21 +154,21 @@ container_run = $(DOCKER) run $(DOCKER_RUNFLAGS) $3 \
 
 image_rule = \
   $$(OUT)/docker/$1: $$(OUT)/docker/$1.dockerfile $$(EXTRACT_TARGETS) $$(PROJECT_ROOT)/Makefile; \
-    $(SILENT)$$(call image,$1)
+    $$(SILENT)$$(call image,$1)
 image = \
      $(call echo_if_silent,docker build $(call container_name,$1) $(OUT)) \
   && $(DOCKER) build $(DOCKER_BUILDFLAGS) --iidfile $@ --file $< --tag $(call container_name,$1) $(OUT)
 
 configure_rule = \
-  $$(OUT)/$1/CMakeCache.txt: $$(PROJECT_ROOT)/CMakeLists.txt $$(OUT)/docker/$1; \
-    $(SILENT)$$(call configure,$1)
+  $$(OUT)/$1/CMakeCache.txt: $$(PROJECT_ROOT)/CMakeLists.txt $$(OUT)/docker/$1 | $$(OUT)/$1/usr/bin/gdb; \
+    $$(SILENT)$$(call configure,$1)
 configure = \
      $(call run,$1,sh -c 'cmake $(CMAKEFLAGS) $(CONTAINER_PROJECT_ROOT) && $(CONTAINER_PROJECT_ROOT)/build/discover_cc_settings.sh $(notdir $@) $(realpath $(dir $@))') \
   && touch $(addprefix $(dir $@)/,include_dirs.txt) $@
 
 build_rule = \
   build-$1: $$(OUT)/$1/CMakeCache.txt; \
-    $(SILENT)$$(call build,$1)
+    $$(SILENT)$$(call build,$1)
 build = $(call run,$1,ninja $(PARALLELMFLAGS) $(NINJAFLAGS) $(GOALS))
 
 check_rule = \
@@ -173,28 +176,28 @@ check_rule = \
 
 memcheck_rule = \
   memcheck-$1: build-$1; \
-    $(SILENT)$$(call memcheck,$1)
+    $$(SILENT)$$(call memcheck,$1)
 memcheck = $(call run,$1,ctest -T memcheck $(CTESTFLAGS))
 
 run_rule = \
   run-$1: $$(OUT)/docker/$1; \
-    $(SILENT)$$(call run,$1,/bin/bash,--tty) || true
+    $$(SILENT)$$(call run,$1,bash,--tty) || true
 run = $(call echo_if_silent,TARGET=$1 $2) && $(call container_run,$1,$2,$3)
 
 clean_rule = \
   clean-$1: ; \
-    $(SILENT)-$$(call clean,$1)
+    $$(SILENT)-$$(call clean,$1)
 clean = rm -rf $(OUT)/$1
 
 discover_cc_settings_rule = \
   $$(OUT)/$1/include_dirs.txt: $$(OUT)/$1/CMakeCache.txt; \
-    $(SILENT)$$(call discover_cc_settings,$1)
+    $$(SILENT)$$(call discover_cc_settings,$1)
 discover_cc_settings = \
   $(call run,$1,$(CONTAINER_PROJECT_ROOT)/build/discover_cc_settings.sh $(notdir $<) $(realpath $(dir $<)))
 
 discover_cc_rule = \
   discover-cc-$1: $$(OUT)/$1/include_dirs.txt; \
-    $(SILENT)$$(call discover_cc,$1)
+    $$(SILENT)$$(call discover_cc,$1)
 discover_cc = cat $<
 
 # Rules
@@ -259,7 +262,6 @@ debug-print-%:
 	@printf '%s\n' '$*:' $($*)
 
 $(CHECK_TARGETS): GOALS := test
-$(CHECK_TARGETS) $(MEMCHECK_TARGETS): CONTAINER_USER := user
 
 $(OUT)/docker/qemu-arm-static-$(QEMU_VERSION):
 	$(SILENT) \
