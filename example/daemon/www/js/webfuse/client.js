@@ -32,9 +32,6 @@ export class Client {
         };
         
         this._ws.send(JSON.stringify(request));
-        console.log(request);
-
-        // ToDo: make response usable
     }
 
     disconnect() {
@@ -71,7 +68,6 @@ export class Client {
             }
         }
         catch (ex) {
-            console.log(message.data);
             // swallow
         }
     }
