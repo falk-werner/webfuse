@@ -18,7 +18,6 @@ struct wf_server_protocol
 {
     struct wf_impl_timeout_manager timeout_manager;
     struct wf_impl_filesystem filesystem;
-    struct wf_impl_jsonrpc_proxy rpc;
     struct wf_impl_authenticators authenticators;
     struct wf_impl_session_manager session_manager;
 };
