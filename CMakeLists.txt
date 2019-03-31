@@ -187,6 +187,8 @@ install(FILES "${PROJECT_BINARY_DIR}/libwebfuse-provider.pc" DESTINATION lib${LI
 
 # examples
 
+pkg_check_modules(OPENSSL REQUIRED openssl)
+
 if(NOT WITHOUT_EXAMPLE)
 
 # libuserdb
@@ -230,9 +232,6 @@ target_include_directories(webfuse-provider-app PUBLIC ${EXTRA_INCLUDE_DIRS})
 target_compile_options(webfuse-provider-app PUBLIC ${EXTRA_CFLAGS})
 
 # webfuse-passwd
-
-pkg_check_modules(OPENSSL REQUIRED openssl)
-
 
 add_executable(webfuse-passwd
 	example/passwd/main.c
