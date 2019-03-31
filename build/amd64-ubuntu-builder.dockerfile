@@ -12,7 +12,6 @@ RUN set -x \
        pkg-config \
        rsync \
        gdb \
-       gdbserver \
        valgrind \
   && rm -rf /var/lib/apt/lists/*
 
