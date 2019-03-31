@@ -105,11 +105,7 @@ BUILDSILENT := $(if $(BUILDVERBOSE),,1)
 $(BUILDSILENT)NINJAFLAGS += -v
 
 DOCKER_RUNFLAGS += --device /dev/fuse
-DOCKER_RUNFLAGS += --cap-add SYS_ADMIN
-DOCKER_RUNFLAGS += --security-opt apparmor:unconfined
-
-DOCKER_RUNFLAGS += --cap-add SYS_PTRACE
-DOCKER_RUNFLAGS += --security-opt seccomp=unconfined
+DOCKER_RUNFLAGS += --cap-add SYS_ADMIN --security-opt apparmor:unconfined
 
 DOCKER_RUNFLAGS += --interactive
 DOCKER_RUNFLAGS += --rm
@@ -132,7 +128,7 @@ OUT_TARGETS += $(addprefix $(OUT)/,$(TARGETS))
 OUT_DIRS += $(OUT)
 OUT_DIRS += $(OUT)/docker
 OUT_DIRS += $(OUT)/src
-OUT_DIRS += $(addsuffix /$(BUILDTYPE),$(OUT_TARGETS))
+OUT_DIRS += $(addsuffix /usr/bin,$(OUT_TARGETS))
 
 BUILD_TARGETS += $(addprefix build-,$(TARGETS))
 CHECK_TARGETS += $(addprefix check-,$(TARGETS))
@@ -168,14 +164,14 @@ image = \
   && $(DOCKER) build $(DOCKER_BUILDFLAGS) --iidfile $@ --file $< --tag $(call image_name,$1) $(OUT)
 
 configure_rule = \
-  $$(OUT)/$1/$$(BUILDTYPE)/CMakeCache.txt: $$(PROJECT_ROOT)/CMakeLists.txt $$(OUT)/docker/$1; \
+  $$(OUT)/$1/CMakeCache.txt: $$(PROJECT_ROOT)/CMakeLists.txt $$(OUT)/docker/$1 | $$(OUT)/$1/usr/bin/gdb; \
     $$(SILENT)$$(call configure,$1)
 configure = \
      $(call run,$1,sh -c 'cmake $(CMAKEFLAGS) $(CONTAINER_PROJECT_ROOT) && $(CONTAINER_PROJECT_ROOT)/build/discover_cc_settings.sh $(notdir $@) $(realpath $(dir $@))') \
   && touch $(addprefix $(dir $@)/,include_dirs.txt) $@
 
 build_rule = \
-  build-$1: $$(OUT)/$1/$$(BUILDTYPE)/CMakeCache.txt; \
+  build-$1: $$(OUT)/$1/CMakeCache.txt; \
     $$(SILENT)$$(call build,$1)
 build = $(call run,$1,ninja $(PARALLELMFLAGS) $(NINJAFLAGS) $(GOALS))
 
@@ -190,7 +186,7 @@ memcheck = $(call run,$1,ctest -T memcheck $(CTESTFLAGS))
 run_rule = \
   run-$1: $$(OUT)/docker/$1; \
     $$(SILENT)$$(call run,$1,bash,--tty) || true
-run = $(call echo_if_silent,TARGET=$1 BUILDTYPE=$(BUILDTYPE) $2) && $(call image_run,$1,$2,$3)
+run = $(call echo_if_silent,TARGET=$1 $2) && $(call container_run,$1,$2,$3)
 
 clean_rule = \
   clean-$1: ; \
@@ -198,13 +194,13 @@ clean_rule = \
 clean = rm -rf $(OUT)/$1
 
 discover_cc_settings_rule = \
-  $$(OUT)/$1/$$(BUILDTYPE)/include_dirs.txt: $$(OUT)/$1/$$(BUILDTYPE)/CMakeCache.txt; \
+  $$(OUT)/$1/include_dirs.txt: $$(OUT)/$1/CMakeCache.txt; \
     $$(SILENT)$$(call discover_cc_settings,$1)
 discover_cc_settings = \
   $(call run,$1,$(CONTAINER_PROJECT_ROOT)/build/discover_cc_settings.sh $(notdir $<) $(realpath $(dir $<)))
 
 discover_cc_rule = \
-  discover-cc-$1: $$(OUT)/$1/$$(BUILDTYPE)/include_dirs.txt; \
+  discover-cc-$1: $$(OUT)/$1/include_dirs.txt; \
     $$(SILENT)$$(call discover_cc,$1)
 discover_cc = cat $<
 
