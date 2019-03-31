@@ -12,6 +12,7 @@ using std::size_t;
 #endif
 
 #include <jansson.h>
+#include "webfuse/adapter/impl/jsonrpc/send_fn.h"
 #include "webfuse/adapter/impl/time/timeout_manager.h"
 #include "webfuse/adapter/impl/time/timer.h"
 #include "webfuse/core/status.h"
@@ -19,11 +20,6 @@ using std::size_t;
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-typedef bool wf_impl_jsonrpc_proxy_send_fn(
-	json_t * request,
-    void * user_data);
-
 
 typedef void wf_impl_jsonrpc_proxy_finished_fn(
 	void * user_data,
@@ -43,14 +39,14 @@ struct wf_impl_jsonrpc_request
 struct wf_impl_jsonrpc_proxy
 {
     struct wf_impl_jsonrpc_request request;
-    wf_impl_jsonrpc_proxy_send_fn * send;
+    wf_impl_jsonrpc_send_fn * send;
     void * user_data;
 };
 
 extern void wf_impl_jsonrpc_proxy_init(
     struct wf_impl_jsonrpc_proxy * proxy,
     struct wf_impl_timeout_manager * manager,
-    wf_impl_jsonrpc_proxy_send_fn * send,
+    wf_impl_jsonrpc_send_fn * send,
     void * user_data);
 
 extern void wf_impl_jsonrpc_proxy_cleanup(

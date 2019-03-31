@@ -1,7 +1,6 @@
 #include "webfuse/adapter/impl/jsonrpc/proxy.h"
 #include <string.h>
 
-#include "webfuse/adapter/impl/jsonrpc/request.h"
 #include "webfuse/adapter/impl/jsonrpc/response.h"
 
 #define WF_DEFAULT_TIMEOUT (10 * 1000)
@@ -26,10 +25,53 @@ static void wf_impl_jsonrpc_proxy_timeout(
     }
 }
 
+static json_t * wf_impl_jsonrpc_request_create(
+	char const * method,
+	int id,
+	char const * param_info,
+	va_list args)
+{
+	json_t * request = json_object();
+	json_object_set_new(request, "method", json_string(method));
+	json_t * params = json_array();
+	
+	for (char const * param_type = param_info; '\0' != *param_type; param_type++)
+	{
+		switch(*param_type)
+		{
+			case 's':
+			{
+				char const * const value = va_arg(args, char const *);
+				json_array_append_new(params, json_string(value));
+			}
+			break;
+			case 'i':
+			{
+				int const value = va_arg(args, int);
+				json_array_append_new(params, json_integer(value));
+			}
+			break;
+			default:
+			fprintf(stderr, "fatal: unknown param_type '%c'\n", *param_type);
+			exit(EXIT_FAILURE);
+			break;
+		}
+	}
+	
+
+	json_object_set_new(request, "params", params);
+	if (0 != id)
+	{
+		json_object_set_new(request, "id", json_integer(id));
+	}
+	
+	return request;
+}
+
 void wf_impl_jsonrpc_proxy_init(
     struct wf_impl_jsonrpc_proxy * proxy,
     struct wf_impl_timeout_manager * timeout_manager,
-    wf_impl_jsonrpc_proxy_send_fn * send,
+    wf_impl_jsonrpc_send_fn * send,
     void * user_data)
 {
     proxy->send = send;
