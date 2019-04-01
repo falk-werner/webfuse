@@ -1,0 +1,30 @@
+@startuml
+participant "Filesystem Provider\n(e.g. Webbrowser)" as provider
+participant "webfuse\ndaemon" as daemon
+actor "user" as user
+
+group startup
+daemon -> daemon : fuse_mount
+daemon -> daemon : start ws
+end
+...
+
+group connect
+provider -> daemon : connect
+    opt authentication
+    provider -> daemon: authenticate
+    daemon -> daemon: check credentials
+    daemon --> provider: okay
+    end
+end
+...
+
+group directory listing
+user     -> daemon : ls
+daemon   -> provider : readdir
+provider --> daemon : readdir_resp
+daemon   --> user : "[., ..]"
+end
+...
+
+@enduml

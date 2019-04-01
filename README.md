@@ -33,34 +33,7 @@ webfuse solves this problem by using the [WebSocket](https://en.wikipedia.org/wi
 
 ## Concept
 
-    +---------------------+  +-------------+      +------+
-    | Filesystem Provider |  |   webfuse   |      | user |
-    |  (e.g. Webbrowser)  |  |   daemon    |      |      |
-    +----------+----------+  +------+------+      +---+--+
-               |                    |                 |
-               |                  +-+-+               |
-               |                  |   +--+            |
-               |                  |   |  | fuse_mount |
-               |                  |   +<-+            |
-               |                  |   |               |
-               |                  |   +--+            |
-               |                  |   |  | start ws   |
-               |                  |   +<-+            |
-               |                  +-+-+               |
-               |                    |                 |
-             +-+-+     connect    +-+-+               |
-             |   |--------------->|   |               |
-             +-+-+                +-+-+               |
-               |                    |                 |
-               |                  +-+-+      ls     +-+-+
-             +-+-+     readdir    |   |<------------+   |
-             |   |<---------------+   |             |   |
-             |   |                |   |             |   |
-             |   |  readdir_resp  |   |             |   |
-             |   +--------------->|   |   [., ..]   |   |
-             +-+-+                |   +------------>|   |
-               |                  +-+-+             +-+-+
-               |                    |                 |
+![concept](doc/concept.png)
 
 With webfuse it is possible to implement remote filesystems based on websockets.
 A reference implementation of such a daemon is provided within the examples. The picture above describes the workflow:
