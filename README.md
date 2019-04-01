@@ -119,7 +119,7 @@ A response is used to answer a prior request. There are two kinds of responses:
 | BAD_BUSY           | 4         | resource busy          |
 | BAD_FORMAT         | 5         | invalid formt          |
 | BAD_NOENTRY        | 101       | invalid entry          |
-| BAD_NOACCESS       | 102       | access not allowed     |
+| BAD_ACCESS_DENIED  | 102       | access not allowed     |
 
 #### Notification
 
