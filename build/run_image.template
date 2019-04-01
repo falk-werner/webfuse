@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+set -e
+
+DOCKER="${DOCKER:-'%DOCKER%'}"
+DOCKER_IMAGE="{DOCKER_IMAGE:-'%DOCKER_IMAGE%'}"
+
+DOCKER_RUNFLAGS+=( %DOCKER_RUNFLAGS% )
+DOCKER_RUNFLAGS+=( --network host )
+DOCKER_RUNFLAGS+=( --workdir "$PWD" )
+
+DOCKER_RUNCMD=( %DOCKER_RUNCMD% )
+
+set -- "${DOCKER_RUNFLAGS[@]}" "%DOCKER_IMAGE%" "${DOCKER_RUNCMD[@]}" "$@"
+
+exec docker run "$@"

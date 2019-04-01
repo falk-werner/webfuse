@@ -166,7 +166,7 @@ image = \
   && $(DOCKER) build $(DOCKER_BUILDFLAGS) --iidfile $@ --file $< --tag $(call image_name,$1) $(OUT)
 
 configure_rule = \
-  $$(OUT)/$1/$$(BUILDTYPE)/CMakeCache.txt: $$(PROJECT_ROOT)/CMakeLists.txt $$(OUT)/docker/$1; \
+  $$(OUT)/$1/$$(BUILDTYPE)/CMakeCache.txt: $$(PROJECT_ROOT)/CMakeLists.txt $$(OUT)/docker/$1 | $$(OUT)/$1/$$(BUILDTYPE)/gdbserver; \
     $$(SILENT)$$(call configure,$1)
 configure = \
      $(call run,$1,sh -c 'cmake $(CMAKEFLAGS) $(CONTAINER_PROJECT_ROOT) && $(CONTAINER_PROJECT_ROOT)/build/discover_cc_settings.sh $(notdir $@) $(realpath $(dir $@))') \
@@ -206,6 +206,19 @@ discover_cc_rule = \
     $$(SILENT)$$(call discover_cc,$1)
 discover_cc = cat $<
 
+wrapper_rule = \
+  $$(OUT)/$1/$$(BUILDTYPE)/gdbserver: $$(PROJECT_ROOT)/build/run_image.template $$(OUT)/docker/$1; \
+    $$(SILENT)$$(call wrapper,$1)
+wrapper = \
+     $(call echo_if_silent,generating $@) \
+  && sed \
+       -e 's@%DOCKER%@$(DOCKER)@g' \
+       -e 's@%DOCKER_RUNFLAGS%@$(DOCKER_RUNFLAGS) $(addprefix --volume ,$(call image_run_volumes,$1))@g' \
+       -e 's@%DOCKER_IMAGE%@$(call image_name,$1)@g' \
+       -e 's@%DOCKER_RUNCMD%@$(notdir $@)@g' \
+       $< > $@ \
+  && chmod +x $@
+
 # Rules
 
 ifneq ($(MAKECMDGOALS),distclean)
@@ -233,6 +246,8 @@ $(RULE_TARGETS): $(PROJECT_ROOT)/Makefile | $(OUT_DIRS)
 		echo '$(call discover_cc_settings_rule,$(TARGET))'; \
 		echo; \
 		echo '$(call discover_cc_rule,$(TARGET))'; \
+		echo; \
+		echo '$(call wrapper_rule,$(TARGET))'; \
 	} > $@
 
 .PHONY: all build-%
