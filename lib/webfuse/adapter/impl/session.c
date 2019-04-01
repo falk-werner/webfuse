@@ -2,46 +2,21 @@
 #include "webfuse/adapter/impl/authenticators.h"
 #include "webfuse/core/message_queue.h"
 #include "webfuse/core/message.h"
-#include "webfuse/adapter/impl/jsonrpc/server.h"
+#include "webfuse/adapter/impl/jsonrpc/proxy.h"
+#include "webfuse/adapter/impl/jsonrpc/request.h"
+#include "webfuse/adapter/impl/jsonrpc/response.h"
 
 #include <libwebsockets.h>
 #include <stddef.h>
 
-void wf_impl_session_init(
-    struct wf_impl_session * session,
-    struct lws * wsi,
-    struct wf_impl_authenticators * authenticators,
-    struct wf_impl_jsonrpc_server * rpc)
- {
-    session->wsi = wsi;
-    session->is_authenticated = false;
-    session->authenticators = authenticators;
-    session->rpc = rpc;
-    wf_message_queue_init(&session->queue);
- }
-
-void wf_impl_session_cleanup(
-    struct wf_impl_session * session)
+static bool wf_impl_session_send(
+    json_t * request,
+    void * user_data)
 {
-    wf_message_queue_cleanup(&session->queue);
-    session->is_authenticated = false;
-    session->wsi = NULL;
-    session->authenticators = NULL;
-    session->rpc = NULL;
-}
+    struct wf_impl_session * session = user_data;
+    struct wf_message * message = wf_message_create(request);
 
-void wf_impl_session_authenticate(
-    struct wf_impl_session * session,
-    struct wf_credentials * creds)
-{
-    session->is_authenticated = wf_impl_authenticators_authenticate(session->authenticators, creds);
-}
-
-bool wf_impl_session_send(
-    struct wf_impl_session * session,
-    struct wf_message * message)
-{
-    bool result = (session->is_authenticated) && (NULL != session->wsi);
+    bool result = (session->is_authenticated || wf_impl_jsonrpc_is_response(request)) && (NULL != session->wsi);
 
     if (result)
     {
@@ -56,6 +31,41 @@ bool wf_impl_session_send(
     }
 
     return result;
+}
+
+void wf_impl_session_init(
+    struct wf_impl_session * session,
+    struct lws * wsi,
+    struct wf_impl_authenticators * authenticators,
+    struct wf_impl_timeout_manager * timeout_manager,
+    struct wf_impl_jsonrpc_server * server)
+ {
+    session->wsi = wsi;
+    session->is_authenticated = false;
+    session->authenticators = authenticators;
+    session->server = server;
+    wf_impl_jsonrpc_proxy_init(&session->rpc, timeout_manager, &wf_impl_session_send, session);
+    wf_message_queue_init(&session->queue);
+ }
+
+void wf_impl_session_cleanup(
+    struct wf_impl_session * session)
+{
+    wf_impl_jsonrpc_proxy_cleanup(&session->rpc);
+    wf_message_queue_cleanup(&session->queue);
+    session->is_authenticated = false;
+    session->wsi = NULL;
+    session->authenticators = NULL;
+    session->server = NULL;
+}
+
+bool wf_impl_session_authenticate(
+    struct wf_impl_session * session,
+    struct wf_credentials * creds)
+{
+    session->is_authenticated = wf_impl_authenticators_authenticate(session->authenticators, creds);
+
+    return session->is_authenticated;
 }
 
 void wf_impl_session_onwritable(
@@ -80,5 +90,19 @@ void wf_impl_session_receive(
     char const * data,
     size_t length)
 {
-    wf_impl_jsonrpc_server_onresult(session->rpc, data, length);
+    json_t * message = json_loadb(data, length, 0, NULL);
+    if (NULL != message)
+    {
+        if (wf_impl_jsonrpc_is_response(message))
+        {
+            wf_impl_jsonrpc_proxy_onresult(&session->rpc, message);
+        }
+        else if (wf_impl_jsonrpc_is_request(message))
+        {
+            wf_impl_jsonrpc_server_process(session->server, message, &wf_impl_session_send, session);
+        }
+
+	    json_decref(message);
+    }
+
 }

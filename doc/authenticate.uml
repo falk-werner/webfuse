@@ -1,0 +1,28 @@
+@startuml
+participant "Filesystem Provider\n(e.g. Webbrowser)" as provider
+participant "webfuse\ndaemon" as daemon
+actor "user" as user
+
+group directory listing fails without authentication
+user     -> daemon : ls
+daemon   -> daemon : is_authenticated
+daemon   -->x user : error: no entry
+end
+
+
+group authenticate
+provider -> daemon: authenticate(type, credentials)
+daemon -> daemon: get_authenticator(type)
+daemon -> daemon: check(credentials)
+daemon --> provider: result
+end
+
+group directory listing succeeds after authentication
+user     -> daemon : ls
+daemon   -> daemon : is_authenticated
+daemon   -> provider : readdir
+provider --> daemon : readdir_resp
+daemon   --> user : [., ..]
+end
+
+@enduml

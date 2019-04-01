@@ -8,24 +8,17 @@ static void response_parse_str(
 	std::string const & buffer,
 	struct wf_impl_jsonrpc_response * response)
 {
-	wf_impl_jsonrpc_response_init(response, buffer.c_str(), buffer.size());
+	json_t * message = json_loadb(buffer.c_str(), buffer.size(), 0, nullptr);
+	if (nullptr != message)
+	{
+		wf_impl_jsonrpc_response_init(response, message);
+		json_decref(message);
+	}
 }
 
 TEST(response_parser, test)
 {
 	struct wf_impl_jsonrpc_response response;
-
-	// invalid json
-	response_parse_str("", &response);
-	ASSERT_NE(WF_GOOD, response.status);
-	ASSERT_EQ(-1, response.id);
-	ASSERT_EQ(nullptr, response.result);
-
-	// invalid json
-	response_parse_str("invalid_json", &response);
-	ASSERT_NE(WF_GOOD, response.status);
-	ASSERT_EQ(-1, response.id);
-	ASSERT_EQ(nullptr, response.result);
 
 	// no object
 	response_parse_str("[]", &response);

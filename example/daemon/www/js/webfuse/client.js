@@ -24,6 +24,16 @@ export class Client {
         };
     }
 
+    authenticate(type, credentials) {
+        const request = {
+            "method": "authenticate",
+            "params": [type, credentials],
+            "id": 42
+        };
+        
+        this._ws.send(JSON.stringify(request));
+    }
+
     disconnect() {
         if (this._ws) {
             this._ws.close();

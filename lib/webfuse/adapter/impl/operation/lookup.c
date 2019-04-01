@@ -10,7 +10,7 @@
 
 #include <stdlib.h>
 
-#include "webfuse/adapter/impl/jsonrpc/server.h"
+#include "webfuse/adapter/impl/jsonrpc/proxy.h"
 #include "webfuse/adapter/impl/jsonrpc/util.h"
 #include "webfuse/core/util.h"
 
@@ -90,13 +90,20 @@ void wf_impl_operation_lookup (
 {
     struct fuse_ctx const * context = fuse_req_ctx(request);
     struct wf_impl_operations_context * user_data = fuse_req_userdata(request);
-    struct wf_impl_jsonrpc_server * rpc = user_data->rpc;
+    struct wf_impl_jsonrpc_proxy * rpc = wf_impl_operations_context_get_proxy(user_data, parent);
 
-	struct wf_impl_operation_lookup_context * lookup_context = malloc(sizeof(struct wf_impl_operation_lookup_context));
-	lookup_context->request = request;
-	lookup_context->uid = context->uid;
-	lookup_context->gid = context->gid;
-	lookup_context->timeout = user_data->timeout;
+	if (NULL != rpc)
+	{
+		struct wf_impl_operation_lookup_context * lookup_context = malloc(sizeof(struct wf_impl_operation_lookup_context));
+		lookup_context->request = request;
+		lookup_context->uid = context->uid;
+		lookup_context->gid = context->gid;
+		lookup_context->timeout = user_data->timeout;
 
-	wf_impl_jsonrpc_server_invoke(rpc, &wf_impl_operation_lookup_finished, lookup_context, "lookup", "is", (int) (parent & INT_MAX), name);
+		wf_impl_jsonrpc_proxy_invoke(rpc, &wf_impl_operation_lookup_finished, lookup_context, "lookup", "is", (int) (parent & INT_MAX), name);
+	}
+	else
+	{
+		fuse_reply_err(request, ENOENT);
+	}	
 }

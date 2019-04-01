@@ -7,6 +7,8 @@
 #include "webfuse/core/util.h"
 
 #include "webfuse/adapter/impl/filesystem.h"
+#include "webfuse/adapter/impl/credentials.h"
+#include "webfuse/adapter/impl/jsonrpc/request.h"
 
 static int wf_impl_server_protocol_callback(
 	struct lws * wsi,
@@ -38,7 +40,8 @@ static int wf_impl_server_protocol_callback(
                 &protocol->session_manager,
                 wsi,
                 &protocol->authenticators,
-                &protocol->rpc);
+                &protocol->timeout_manager,
+                &protocol->server);
 
             if (NULL != session)
             {
@@ -69,20 +72,6 @@ static int wf_impl_server_protocol_callback(
 
     return 0;
 }
-
-static bool wf_impl_server_protocol_invoke(
-    void * user_data,
-    json_t const * request)
-{
-    struct wf_server_protocol * protocol = user_data;
-    struct wf_impl_session * session = &protocol->session_manager.session;
-    struct wf_message * message = wf_message_create(request);
-
-    bool const result = wf_impl_session_send(session, message);
-
-    return result;
-}
-
 
 struct wf_server_protocol * wf_impl_server_protocol_create(
     char * mount_point)
@@ -116,6 +105,41 @@ void wf_impl_server_protocol_init_lws(
 	lws_protocol->user = protocol;
 }
 
+static void wf_impl_server_protocol_authenticate(
+    struct wf_impl_jsonrpc_request * request,
+    char const * WF_UNUSED_PARAM(method_name),
+    json_t * params,
+    void * WF_UNUSED_PARAM(user_data))
+{
+    bool result = false;
+
+    json_t * type_holder = json_array_get(params, 0);
+    json_t * creds_holder = json_array_get(params, 1);
+
+    if (json_is_string(type_holder) && json_is_object(creds_holder))
+    {
+        char const * type = json_string_value(type_holder);
+        struct wf_credentials creds;
+         
+        wf_impl_credentials_init(&creds, type, creds_holder);
+        struct wf_impl_session * session = wf_impl_jsonrpc_request_get_userdata(request);
+        result = wf_impl_session_authenticate(session, &creds);
+        
+        wf_impl_credentials_cleanup(&creds);
+    }
+
+
+    if (result)
+    {
+        json_t * result = json_object();
+        wf_impl_jsonrpc_respond(request, result);
+    }
+    else
+    {
+        wf_impl_jsonrpc_respond_error(request, WF_BAD_ACCESS_DENIED);
+    }    
+}
+
 bool wf_impl_server_protocol_init(
     struct wf_server_protocol * protocol,
     char * mount_point)
@@ -124,20 +148,15 @@ bool wf_impl_server_protocol_init(
     wf_impl_session_manager_init(&protocol->session_manager);
     wf_impl_authenticators_init(&protocol->authenticators);
 
-    wf_impl_jsonrpc_server_init(&protocol->rpc, &protocol->timeout_manager);
-    wf_impl_jsonrpc_server_add(&protocol->rpc, "lookup", &wf_impl_server_protocol_invoke, protocol);
-    wf_impl_jsonrpc_server_add(&protocol->rpc, "getattr", &wf_impl_server_protocol_invoke, protocol);
-    wf_impl_jsonrpc_server_add(&protocol->rpc, "readdir", &wf_impl_server_protocol_invoke, protocol);
-    wf_impl_jsonrpc_server_add(&protocol->rpc, "open", &wf_impl_server_protocol_invoke, protocol);
-    wf_impl_jsonrpc_server_add(&protocol->rpc, "close", &wf_impl_server_protocol_invoke, protocol);
-    wf_impl_jsonrpc_server_add(&protocol->rpc, "read", &wf_impl_server_protocol_invoke, protocol);
+    wf_impl_jsonrpc_server_init(&protocol->server);
+    wf_impl_jsonrpc_server_add(&protocol->server, "authenticate", &wf_impl_server_protocol_authenticate, protocol);
 
-    bool const success = wf_impl_filesystem_init(&protocol->filesystem, &protocol->rpc, mount_point);
+    bool const success = wf_impl_filesystem_init(&protocol->filesystem, &protocol->session_manager, mount_point);
 
     // cleanup on error
     if (!success)
     {
-        wf_impl_jsonrpc_server_cleanup(&protocol->rpc);
+        wf_impl_jsonrpc_server_cleanup(&protocol->server);
         wf_impl_authenticators_cleanup(&protocol->authenticators);
         wf_impl_timeout_manager_cleanup(&protocol->timeout_manager);
         wf_impl_session_manager_cleanup(&protocol->session_manager);
@@ -150,7 +169,7 @@ void wf_impl_server_protocol_cleanup(
     struct wf_server_protocol * protocol)
 {
     wf_impl_filesystem_cleanup(&protocol->filesystem);
-    wf_impl_jsonrpc_server_cleanup(&protocol->rpc);
+    wf_impl_jsonrpc_server_cleanup(&protocol->server);
     wf_impl_timeout_manager_cleanup(&protocol->timeout_manager);
     wf_impl_authenticators_cleanup(&protocol->authenticators);
     wf_impl_session_manager_cleanup(&protocol->session_manager);

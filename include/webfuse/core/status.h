@@ -10,7 +10,7 @@
 #define WF_BAD_FORMAT         5
 
 #define WF_BAD_NOENTRY 101
-#define WF_BAD_NOACCESS 102
+#define WF_BAD_ACCESS_DENIED 102
 
 typedef int wf_status;
 

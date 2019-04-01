@@ -12,7 +12,7 @@
 		case WF_BAD_BUSY: return -ENOENT;
 		case WF_BAD_FORMAT: return -ENOENT;
 		case WF_BAD_NOENTRY: return -ENOENT;
-		case WF_BAD_NOACCESS: return -EACCES;
+		case WF_BAD_ACCESS_DENIED: return -EACCES;
 		default: return -ENOENT;
 	}
 }
@@ -28,7 +28,7 @@ char const * wf_status_tostring(wf_status status)
 		case WF_BAD_BUSY: return "Bad (busy)";
 		case WF_BAD_FORMAT: return "Bad (format)";
 		case WF_BAD_NOENTRY: return "Bad (no entry)";
-		case WF_BAD_NOACCESS: return "Bad (no access)";
+		case WF_BAD_ACCESS_DENIED: return "Bad (access denied)";
 		default: return "Bad (unknown)";
 	}
 }

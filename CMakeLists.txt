@@ -74,6 +74,7 @@ add_library(webfuse-adapter-static STATIC
 	lib/webfuse/adapter/impl/authenticator.c
 	lib/webfuse/adapter/impl/authenticators.c
 	lib/webfuse/adapter/impl/credentials.c
+	lib/webfuse/adapter/impl/operations.c
 	lib/webfuse/adapter/impl/time/timepoint.c
 	lib/webfuse/adapter/impl/time/timer.c
 	lib/webfuse/adapter/impl/time/timeout_manager.c
@@ -83,6 +84,7 @@ add_library(webfuse-adapter-static STATIC
 	lib/webfuse/adapter/impl/operation/open.c
 	lib/webfuse/adapter/impl/operation/close.c
 	lib/webfuse/adapter/impl/operation/read.c
+	lib/webfuse/adapter/impl/jsonrpc/proxy.c
 	lib/webfuse/adapter/impl/jsonrpc/server.c
 	lib/webfuse/adapter/impl/jsonrpc/method.c
 	lib/webfuse/adapter/impl/jsonrpc/request.c
@@ -185,6 +187,8 @@ install(FILES "${PROJECT_BINARY_DIR}/libwebfuse-provider.pc" DESTINATION lib${LI
 
 # examples
 
+pkg_check_modules(OPENSSL REQUIRED openssl)
+
 if(NOT WITHOUT_EXAMPLE)
 
 # libuserdb
@@ -211,9 +215,9 @@ add_executable(webfused
 	example/daemon/main.c
 )
 
-target_link_libraries(webfused PUBLIC webfuse-adapter ${EXTRA_LIBS})
+target_link_libraries(webfused PUBLIC webfuse-adapter userdb ${OPENSSL_LIBRARIES} ${EXTRA_LIBS})
 target_include_directories(webfused PUBLIC ${EXTRA_INCLUDE_DIRS})
-target_compile_options(webfused PUBLIC ${EXTRA_CFLAGS})
+target_compile_options(webfused PUBLIC ${C_WARNINGS} ${OPENSSL_CFLAGS_OTHER} ${EXTRA_CFLAGS})
 
 # provider
 
@@ -228,9 +232,6 @@ target_include_directories(webfuse-provider-app PUBLIC ${EXTRA_INCLUDE_DIRS})
 target_compile_options(webfuse-provider-app PUBLIC ${EXTRA_CFLAGS})
 
 # webfuse-passwd
-
-pkg_check_modules(OPENSSL REQUIRED openssl)
-
 
 add_executable(webfuse-passwd
 	example/passwd/main.c

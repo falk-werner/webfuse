@@ -1,10 +1,9 @@
-#include "webfuse/adapter/impl/jsonrpc/method_intern.h"
-
+#include "webfuse/adapter/impl/jsonrpc/method.h"
 #include <stdlib.h>
 #include <string.h>
 
 struct wf_impl_jsonrpc_method * wf_impl_jsonrpc_method_create(
-    char const * name,
+    char const * method_name,
     wf_impl_jsonrpc_method_invoke_fn * invoke,
     void * user_data)
 {
@@ -12,7 +11,7 @@ struct wf_impl_jsonrpc_method * wf_impl_jsonrpc_method_create(
     if (NULL != method)
     {
         method->next = NULL;
-        method->name = strdup(name);
+        method->name = strdup(method_name);
         method->invoke = invoke;
         method->user_data = user_data;
     }

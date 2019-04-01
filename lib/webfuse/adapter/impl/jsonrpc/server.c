@@ -1,186 +1,95 @@
 #include "webfuse/adapter/impl/jsonrpc/server.h"
+#include "webfuse/adapter/impl/jsonrpc/method.h"
+#include "webfuse/adapter/impl/jsonrpc/request.h"
+#include "webfuse/core/util.h"
+
 #include <string.h>
 
-#include "webfuse/adapter/impl/jsonrpc/method_intern.h"
-#include "webfuse/adapter/impl/jsonrpc/request.h"
-#include "webfuse/adapter/impl/jsonrpc/response.h"
-
-#define WF_DEFAULT_TIMEOUT (10 * 1000)
-
-static struct wf_impl_jsonrpc_method const * wf_impl_jsonrpc_server_getmethod(
-    struct wf_impl_jsonrpc_server * server,
-    char const * name)
-{
-    struct wf_impl_jsonrpc_method * method = server->methods;
-    while ((NULL != method) && (0 == strcmp(name, method->name)))
-    {
-        method = method->next;
-    }
-
-    return method;
-}
-
-static void wf_impl_jsonrpc_server_timeout(
-    struct wf_impl_timer * timer)
-{
-    struct wf_impl_jsonrpc_server * server = timer->user_data;
-
-    if (server->request.is_pending)
-    {
-        wf_impl_jsonrpc_method_finished_fn * finished = server->request.finished;
-        void * user_data = server->request.user_data;
-
-        server->request.is_pending = false;
-        server->request.id = 0;
-        server->request.user_data = NULL;
-        server->request.finished = NULL;
-        wf_impl_timer_cancel(&server->request.timer);
-
-        finished(user_data, WF_BAD_TIMEOUT, NULL);
-    }
-}
-
 void wf_impl_jsonrpc_server_init(
-    struct wf_impl_jsonrpc_server * server,
-    struct wf_impl_timeout_manager * timeout_manager)
+    struct wf_impl_jsonrpc_server * server)
 {
     server->methods = NULL;
-    server->request.is_pending = false;
-    
-    wf_impl_timer_init(&server->request.timer, timeout_manager);
 }
 
 void wf_impl_jsonrpc_server_cleanup(
     struct wf_impl_jsonrpc_server * server)
 {
-    wf_impl_timer_cleanup(&server->request.timer);
-
-    if (server->request.is_pending)
+    struct wf_impl_jsonrpc_method * current = server->methods;
+    while (NULL != current)
     {
-        server->request.finished(server->request.user_data, WF_BAD, NULL);
-        server->request.is_pending = false;
-    }
-
-    struct wf_impl_jsonrpc_method * method = server->methods;
-    while (NULL != method)
-    {
-        struct wf_impl_jsonrpc_method * next = method->next;
-        method->next = NULL;
-        wf_impl_jsonrpc_method_dispose(method);
-        method = next;
+        struct wf_impl_jsonrpc_method * next = current->next;
+        wf_impl_jsonrpc_method_dispose(current);
+        current = next;
     }
     server->methods = NULL;
 }
 
 void wf_impl_jsonrpc_server_add(
     struct wf_impl_jsonrpc_server * server,
-    char const * name,
+    char const * method_name,
     wf_impl_jsonrpc_method_invoke_fn * invoke,
     void * user_data)
 {
-    struct wf_impl_jsonrpc_method * method = wf_impl_jsonrpc_method_create(name, invoke, user_data);
+    struct wf_impl_jsonrpc_method * method = wf_impl_jsonrpc_method_create(method_name, invoke, user_data);
     method->next = server->methods;
     server->methods = method;
 }
 
-void wf_impl_jsonrpc_server_invoke(
-	struct wf_impl_jsonrpc_server * server,
-	wf_impl_jsonrpc_method_finished_fn * finished,
-	void * user_data,
-	char const * method_name,
-	char const * param_info,
-	...
-)
+static void wf_impl_jsonrpc_server_invalid_method_invoke(
+    struct wf_impl_jsonrpc_request * request,
+    char const * WF_UNUSED_PARAM(method_name),
+    json_t * WF_UNUSED_PARAM(params),
+    void * WF_UNUSED_PARAM(user_data))
 {
-    if (!server->request.is_pending)
-    {
-        struct wf_impl_jsonrpc_method const * method = wf_impl_jsonrpc_server_getmethod(server, method_name);
-        if (NULL != method)
-        {
-            server->request.is_pending = true;
-            server->request.finished = finished;
-            server->request.user_data = user_data;
-            server->request.id = 42;
-            wf_impl_timer_start(&server->request.timer, wf_impl_timepoint_in_msec(WF_DEFAULT_TIMEOUT), 
-                    &wf_impl_jsonrpc_server_timeout, server);
-            
-            va_list args;
-            va_start(args, param_info);
-            json_t * request = wf_impl_jsonrpc_request_create(method_name, server->request.id, param_info, args);
-            va_end(args);
-            if (NULL != request)
-            {
-                if (!method->invoke(method->user_data, request))
-                {
-                    server->request.is_pending = false;
-                    server->request.finished = NULL;
-                    server->request.user_data = NULL;
-                    server->request.id = 0;
-                    wf_impl_timer_cancel(&server->request.timer);
-
-                    finished(user_data, WF_BAD, NULL);
-                }
-                json_decref(request);
-            }
-        }
-        else
-        {
-            finished(user_data, WF_BAD_NOTIMPLEMENTED, NULL);
-        }        
-    }
-    else
-    {
-        finished(user_data, WF_BAD_BUSY, NULL);
-    }
+    wf_impl_jsonrpc_respond_error(request, WF_BAD_NOTIMPLEMENTED);
 }
 
-extern void wf_impl_jsonrpc_server_notify(
-	struct wf_impl_jsonrpc_server * server,
-	char const * method_name,
-	char const * param_info,
-	...
-)
+static struct wf_impl_jsonrpc_method const wf_impl_jsonrpc_server_invalid_method = 
 {
-        struct wf_impl_jsonrpc_method const * method = wf_impl_jsonrpc_server_getmethod(server, method_name);
-        if (NULL != method)
-        {
-            
-            va_list args;
-            va_start(args, param_info);
-            json_t * request = wf_impl_jsonrpc_request_create(method_name, 0, param_info, args);
-            va_end(args);
-            if (NULL != request)
-            {
-                method->invoke(method->user_data, request);
-                json_decref(request);
-            }
-        }
+    .next = NULL,
+    .name = "<invalid>",
+    .invoke = &wf_impl_jsonrpc_server_invalid_method_invoke,
+    .user_data = NULL    
+};
 
-}
-
-
-void wf_impl_jsonrpc_server_onresult(
+static struct wf_impl_jsonrpc_method const * wf_impl_jsonrpc_server_get_method(
     struct wf_impl_jsonrpc_server * server,
-    char const * message,
-    size_t length)
+    char const * method_name)
 {
-	struct wf_impl_jsonrpc_response response;
-	wf_impl_jsonrpc_response_init(&response, message, length);
-
-    if ((server->request.is_pending) && (response.id == server->request.id))
+    struct wf_impl_jsonrpc_method const * current = server->methods;
+    while (NULL != current) 
     {
-        wf_impl_jsonrpc_method_finished_fn * finished = server->request.finished;
-        void * user_data = server->request.user_data;
+        if (0 == strcmp(method_name, current->name))
+        {
+            return current;
+        }
 
-        server->request.is_pending = false;
-        server->request.id = 0;
-        server->request.user_data = NULL;
-        server->request.finished = NULL;
-        wf_impl_timer_cancel(&server->request.timer);
-
-        finished(user_data, response.status, response.result);
+        current = current->next;
     }
 
-    wf_impl_jsonrpc_response_cleanup(&response);
+    return &wf_impl_jsonrpc_server_invalid_method;
+}
+
+void wf_impl_jsonrpc_server_process(
+    struct wf_impl_jsonrpc_server * server,
+    json_t * request_data,
+    wf_impl_jsonrpc_send_fn * send,
+    void * user_data)
+{
+    json_t * method_holder = json_object_get(request_data, "method");
+    json_t * params = json_object_get(request_data, "params");
+    json_t * id_holder = json_object_get(request_data, "id");
+
+    if (json_is_string(method_holder) &&
+        (json_is_array(params) || (json_is_object(params))) &&
+        json_is_integer(id_holder))
+    {
+        char const * method_name = json_string_value(method_holder);
+        int id = json_integer_value(id_holder);
+        struct wf_impl_jsonrpc_request * request = wf_impl_jsonrpc_request_create(id, send, user_data);
+        struct wf_impl_jsonrpc_method const * method = wf_impl_jsonrpc_server_get_method(server, method_name);
+
+        method->invoke(request, method_name, params, method->user_data);
+    }
 }
 

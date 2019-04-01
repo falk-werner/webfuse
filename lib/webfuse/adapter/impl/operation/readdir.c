@@ -8,7 +8,7 @@
 #include <sys/stat.h>
 #include <unistd.h> 
 
-#include "webfuse/adapter/impl/jsonrpc/server.h"
+#include "webfuse/adapter/impl/jsonrpc/proxy.h"
 #include "webfuse/core/util.h"
 
 
@@ -137,11 +137,19 @@ void wf_impl_operation_readdir (
 	struct fuse_file_info * WF_UNUSED_PARAM(file_info))
 {
     struct wf_impl_operations_context * user_data = fuse_req_userdata(request);
-    struct wf_impl_jsonrpc_server * rpc = user_data->rpc;
+    struct wf_impl_jsonrpc_proxy * rpc = wf_impl_operations_context_get_proxy(user_data, inode);
+
+	if (NULL != rpc)
+	{
 	struct wf_impl_operation_readdir_context * readdir_context = malloc(sizeof(struct wf_impl_operation_readdir_context));
 	readdir_context->request = request;
 	readdir_context->size = size;
 	readdir_context->offset = offset;
 
-	wf_impl_jsonrpc_server_invoke(rpc, &wf_impl_operation_readdir_finished, readdir_context, "readdir", "i", inode);
+	wf_impl_jsonrpc_proxy_invoke(rpc, &wf_impl_operation_readdir_finished, readdir_context, "readdir", "i", inode);
+	}
+	else
+	{
+		fuse_reply_err(request, ENOENT);
+	}	
 }

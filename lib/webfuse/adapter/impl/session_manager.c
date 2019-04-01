@@ -1,10 +1,11 @@
 #include "webfuse/adapter/impl/session_manager.h"
+#include "webfuse/core/util.h"
 #include <stddef.h>
 
 void wf_impl_session_manager_init(
     struct wf_impl_session_manager * manager)
 {
-    wf_impl_session_init(&manager->session, NULL, NULL, NULL);
+    wf_impl_session_init(&manager->session, NULL, NULL, NULL, NULL);
 }
 
 void wf_impl_session_manager_cleanup(
@@ -17,13 +18,14 @@ struct wf_impl_session * wf_impl_session_manager_add(
     struct wf_impl_session_manager * manager,
     struct lws * wsi,
     struct wf_impl_authenticators * authenticators,
-    struct wf_impl_jsonrpc_server * rpc)
+    struct wf_impl_timeout_manager * timeout_manager,
+    struct wf_impl_jsonrpc_server * server)
 {
     struct wf_impl_session * session = NULL; 
     if (NULL == manager->session.wsi)
     {
         session = &manager->session;
-        wf_impl_session_init(&manager->session, wsi, authenticators, rpc);        
+        wf_impl_session_init(&manager->session, wsi, authenticators, timeout_manager, server);        
     }
 
     return session;
@@ -41,6 +43,22 @@ struct wf_impl_session * wf_impl_session_manager_get(
 
     return session;
 }
+
+struct wf_impl_session * wf_impl_session_manager_get_by_inode(
+    struct wf_impl_session_manager * manager,
+    fuse_ino_t WF_UNUSED_PARAM(inode))
+{
+    // ToDo: use inode to determine session manager
+
+    struct wf_impl_session * session = NULL;
+    if (NULL != manager->session.wsi)
+    {
+        session = &manager->session;
+    }
+
+    return session;
+}
+
 
 void wf_impl_session_manager_remove(
     struct wf_impl_session_manager * manager,

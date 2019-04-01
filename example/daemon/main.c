@@ -7,9 +7,9 @@
 
 #include <unistd.h>
 #include <getopt.h>
-#include <jansson.h>
 
 #include <webfuse_adapter.h>
+#include <userdb.h>
 
 
 struct args
@@ -50,24 +50,16 @@ static bool authenticate(struct wf_credentials * creds, void * user_data)
 	char const * password = wf_credentials_get(creds, "password");
 	if ((NULL != username) && (NULL != password))
 	{
-		json_t * passwd = json_load_file(args->passwd_path, 0, NULL);
-		if (NULL != passwd)
+		struct userdb * db = userdb_create("<pepper>");
+		result = userdb_load(db, args->passwd_path); 
+		if (result)
 		{
-			json_t * user = json_object_get(passwd, username);
-			if (json_is_object(user)) 
-			{
-				json_t * password_holder = json_object_get(user, "password");
-				if (json_is_string(password_holder)) 
-				{
-					result = (0 == strcmp(password, json_string_value(password_holder)));					
-				} 
-			}
-
-			json_decref(passwd);
+			result = userdb_check(db, username, password);
+			userdb_dispose(db);
 		}
 	}
 
-	return result; 
+	return result;
 }
 
 static int parse_arguments(int argc, char * argv[], struct args * args)
