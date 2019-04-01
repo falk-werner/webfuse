@@ -13,4 +13,4 @@ DOCKER_RUNCMD=( %DOCKER_RUNCMD% )
 
 set -- "${DOCKER_RUNFLAGS[@]}" "%DOCKER_IMAGE%" "${DOCKER_RUNCMD[@]}" "$@"
 
-exec docker run "$@"
+exec "$DOCKER" run "$@"
