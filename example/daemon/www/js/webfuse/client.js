@@ -24,7 +24,7 @@ export class Client {
         };
     }
 
-    authenticate(type ,credentials) {
+    authenticate(type, credentials) {
         const request = {
             "method": "authenticate",
             "params": [type, credentials],
