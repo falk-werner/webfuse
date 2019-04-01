@@ -335,8 +335,8 @@ The `wf_credentials`struct represents a map to access credentials as key-value p
 
 The authenticator type **username** is used to authenticate via username and password. Valid credentials should contain two keys.
 
-- **username** refers to the name of the user
-- **password** refers to the password of the user
+-   **username** refers to the name of the user
+-   **password** refers to the password of the user
 
 **Note** that no further encryption is done, so this authenticator type should not be used over unencrypted websocket connections.
 
