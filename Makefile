@@ -168,7 +168,7 @@ image = \
   && $(DOCKER) build $(DOCKER_BUILDFLAGS) --iidfile $@ --file $< --tag $(call image_name,$1) $(OUT)
 
 configure_rule = \
-  $$(OUT)/$1/$$(BUILDTYPE)/CMakeCache.txt: $$(PROJECT_ROOT)/CMakeLists.txt $$(OUT)/docker/$1; \
+  $$(OUT)/$1/$$(BUILDTYPE)/CMakeCache.txt: $$(PROJECT_ROOT)/CMakeLists.txt $$(OUT)/docker/$1 | $$(OUT)/$1/$$(BUILDTYPE)/gdbserver; \
     $$(SILENT)$$(call configure,$1)
 configure = \
      $(call run,$1,sh -c 'cmake $(CMAKEFLAGS) $(CONTAINER_PROJECT_ROOT) && $(CONTAINER_PROJECT_ROOT)/build/discover_cc_settings.sh $(notdir $@) $(realpath $(dir $@))') \
@@ -214,11 +214,10 @@ wrapper_rule = \
 wrapper = \
      $(call echo_if_silent,generating $@) \
   && sed \
-       -e 's@%PROJECT_ROOT%@$(abspath $(PROJECT_ROOT))@g' \
        -e 's@%DOCKER%@$(DOCKER)@g' \
-       -e 's@%RUNFLAGS%@$(DOCKER_RUNFLAGS) $(call image_run_volumes,$1)@g' \
-       -e 's@%IMAGE%@$(call image_name,$1)@g' \
-       -e 's@%RUNCMD%@$(notdir $@)@g' \
+       -e 's@%DOCKER_RUNFLAGS%@$(DOCKER_RUNFLAGS) $(addprefix --volume ,$(call image_run_volumes,$1))@g' \
+       -e 's@%DOCKER_IMAGE%@$(call image_name,$1)@g' \
+       -e 's@%DOCKER_RUNCMD%@$(notdir $@)@g' \
        $< > $@ \
   && chmod +x $@
 
