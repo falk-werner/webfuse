@@ -311,7 +311,7 @@ By default, unit tests and example application are enabled. You can disable them
 -   **WITHOUT_TESTS**: disable tests  
     `cmake -DWITHOUT_TESTS=ON ..`
 
--   **WITHOUT_EXAMPLE**: disable example
+-   **WITHOUT_EXAMPLE**: disable example  
     `cmake -DWITHOUD_EXAMPLE=ON ..`
 
 ## Dependencies
