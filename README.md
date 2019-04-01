@@ -31,7 +31,7 @@ To avoid Steps 1 and 2, it would be great to keep the update file entirely in we
 
 webfuse solves this problem by using the [WebSocket](https://en.wikipedia.org/wiki/WebSocket) protocol. The emdedded device runs a service, known as webfuse adapter, awaiting incoming connections, e.g. from a web browser. The browser acts as a file system provider, providing the update file to the device.
 
-## Concecpt
+## Concept
 
     +---------------------+  +-------------+      +------+
     | Filesystem Provider |  |   webfuse   |      | user |
