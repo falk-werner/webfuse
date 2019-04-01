@@ -23,7 +23,7 @@ group directory listing
 user     -> daemon : ls
 daemon   -> provider : readdir
 provider --> daemon : readdir_resp
-daemon   --> user : "[., ..]"
+daemon   --> user : [., ..]
 end
 ...
 
