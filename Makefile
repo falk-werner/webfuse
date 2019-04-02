@@ -39,6 +39,7 @@ $(PORTABLE_WORSPACE)CONTAINER_PROJECT_ROOT = $(abspath $(PROJECT_ROOT))
 $(PORTABLE_WORSPACE)CONTAINER_OUT = $(abspath $(OUT))
 
 UBUNTU_CODENAME ?= bionic
+DEBIAN_CODENAME ?= testing-slim
 
 # Dependencies
 
@@ -80,12 +81,17 @@ MARCH := $(MARCH)
 
 MARCH_AMD64 := $(filter-out amd64,$(MARCH))
 $(MARCH_AMD64)MARCHS += amd64
-$(MARCH_AMD64)TARGETS += amd64-ubuntu-builder
+$(MARCH_AMD64)$(BUILDTARGET)TARGETS += amd64-ubuntu-builder
 $(OUT)/amd64-ubuntu-builder/rules.mk: TARGET := amd64-ubuntu-builder
+
+MARCH_AMD64 := $(filter-out amd64,$(MARCH))
+$(MARCH_AMD64)MARCHS += amd64
+$(MARCH_AMD64)$(BUILDTARGET)TARGETS += amd64-debian-builder
+$(OUT)/amd64-debian-builder/rules.mk: TARGET := amd64-debian-builder
 
 MARCH_ARM32V7 := $(filter-out arm32v7,$(MARCH))
 $(MARCH_ARM32V7)MARCHS += arm32v7
-$(MARCH_ARM32V7)TARGETS += arm32v7-ubuntu-builder
+$(MARCH_ARM32V7)$(BUILDTARGET)TARGETS += arm32v7-ubuntu-builder
 $(OUT)/arm32v7-ubuntu-builder/rules.mk: TARGET := arm32v7-ubuntu-builder
 
 $(MARCH_AMD64)MEMCHECK_TARGETS += $(addprefix memcheck-,$(TARGETS))
@@ -95,6 +101,9 @@ $(addprefix $(OUT)/docker/,$(ARM_TARGETS)): $(OUT)/docker/qemu-arm-static-$(QEMU
 
 UBUNTU_TARGETS = $(filter $(addsuffix -ubuntu%,$(MARCHS)),$(TARGETS))
 $(addprefix $(OUT)/docker/,$(UBUNTU_TARGETS)): CODENAME := $(UBUNTU_CODENAME)
+
+DEBIAN_TARGETS = $(filter $(addsuffix -debian%,$(MARCHS)),$(TARGETS))
+$(addprefix $(OUT)/docker/,$(DEBIAN_TARGETS)): CODENAME := $(DEBIAN_CODENAME)
 
 # Common rule target configuration
 
@@ -142,6 +151,7 @@ EXTRACT_TARGETS += $(patsubst $(OUT)/%.tar.gz,$(OUT)/src/%,$(FETCH_TARGETS))
 DISCOVER_CC_TARGETS += $(addprefix discover-cc-,$(firstword $(TARGETS)))
 RULE_TARGETS += $(addsuffix /rules.mk,$(OUT_TARGETS))
 
+MARCHS := $(sort $(MARCHS))
 TARGETS := $(sort $(TARGETS))
 
 # Macros
