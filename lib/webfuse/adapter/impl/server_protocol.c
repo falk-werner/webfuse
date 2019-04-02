@@ -6,7 +6,6 @@
 #include "webfuse/core/message.h"
 #include "webfuse/core/util.h"
 
-#include "webfuse/adapter/impl/filesystem.h"
 #include "webfuse/adapter/impl/credentials.h"
 #include "webfuse/adapter/impl/jsonrpc/request.h"
 
@@ -25,23 +24,15 @@ static int wf_impl_server_protocol_callback(
 
     switch (reason)
     {
-        case LWS_CALLBACK_PROTOCOL_INIT:
-            {            
-                lws_sock_file_fd_type fd;
-                fd.filefd = wf_impl_filesystem_get_fd(&protocol->filesystem);
-                if (!lws_adopt_descriptor_vhost(lws_get_vhost(wsi), LWS_ADOPT_RAW_FILE_DESC, fd, ws_protocol->name, NULL))
-                {
-                    fprintf(stderr, "error: unable to adopt fd");
-                }
-            }
-            break;
 		case LWS_CALLBACK_ESTABLISHED:
             session = wf_impl_session_manager_add(
                 &protocol->session_manager,
                 wsi,
                 &protocol->authenticators,
                 &protocol->timeout_manager,
-                &protocol->server);
+                &protocol->server,
+                protocol->mount_point,
+                ws_protocol->name);
 
             if (NULL != session)
             {
@@ -64,7 +55,10 @@ static int wf_impl_server_protocol_callback(
             }
             break;
         case LWS_CALLBACK_RAW_RX_FILE:
-            wf_impl_filesystem_process_request(&protocol->filesystem);
+            if (NULL != session)
+            {
+                wf_impl_filesystem_process_request(&session->filesystem);
+            }
             break;
         default:
             break;
@@ -79,11 +73,7 @@ struct wf_server_protocol * wf_impl_server_protocol_create(
     struct wf_server_protocol * protocol = malloc(sizeof(struct wf_server_protocol));
     if (NULL != protocol)
     {
-        if (!wf_impl_server_protocol_init(protocol, mount_point))
-        {
-            free(protocol);
-            protocol = NULL;
-        }
+        wf_impl_server_protocol_init(protocol, mount_point);
     }
 
     return protocol;
@@ -140,35 +130,24 @@ static void wf_impl_server_protocol_authenticate(
     }    
 }
 
-bool wf_impl_server_protocol_init(
+void wf_impl_server_protocol_init(
     struct wf_server_protocol * protocol,
     char * mount_point)
 {
+    protocol->mount_point = strdup(mount_point);
+
     wf_impl_timeout_manager_init(&protocol->timeout_manager);
     wf_impl_session_manager_init(&protocol->session_manager);
     wf_impl_authenticators_init(&protocol->authenticators);
 
     wf_impl_jsonrpc_server_init(&protocol->server);
     wf_impl_jsonrpc_server_add(&protocol->server, "authenticate", &wf_impl_server_protocol_authenticate, protocol);
-
-    bool const success = wf_impl_filesystem_init(&protocol->filesystem, &protocol->session_manager, mount_point);
-
-    // cleanup on error
-    if (!success)
-    {
-        wf_impl_jsonrpc_server_cleanup(&protocol->server);
-        wf_impl_authenticators_cleanup(&protocol->authenticators);
-        wf_impl_timeout_manager_cleanup(&protocol->timeout_manager);
-        wf_impl_session_manager_cleanup(&protocol->session_manager);
-    }
-
-    return success;
 }
 
 void wf_impl_server_protocol_cleanup(
     struct wf_server_protocol * protocol)
 {
-    wf_impl_filesystem_cleanup(&protocol->filesystem);
+    free(protocol->mount_point);
     wf_impl_jsonrpc_server_cleanup(&protocol->server);
     wf_impl_timeout_manager_cleanup(&protocol->timeout_manager);
     wf_impl_authenticators_cleanup(&protocol->authenticators);

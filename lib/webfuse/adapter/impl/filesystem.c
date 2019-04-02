@@ -19,8 +19,8 @@ static struct fuse_lowlevel_ops const filesystem_operations =
 
 bool wf_impl_filesystem_init(
     struct wf_impl_filesystem * filesystem,
-    struct wf_impl_session_manager * session_manager,
-    char * mount_point)
+    struct wf_impl_session * session,
+    char const * mount_point)
 {
 	bool result = false;
 
@@ -29,7 +29,7 @@ bool wf_impl_filesystem_init(
 	filesystem->args.argv = argv;
 	filesystem->args.allocated = 0;
 
-	filesystem->user_data.session_manager = session_manager;
+	filesystem->user_data.session = session;
 	filesystem->user_data.timeout = 1.0;
 	memset(&filesystem->buffer, 0, sizeof(struct fuse_buf));
 

@@ -7,12 +7,12 @@
 extern "C" {
 #endif
 
-struct wf_impl_session_manager;
+struct wf_impl_session;
 struct wf_impl_jsonrpc_proxy;
 
 struct wf_impl_operations_context
 {
-	struct wf_impl_session_manager * session_manager;
+	struct wf_impl_session * session;
 	double timeout;
 };
 
@@ -49,8 +49,7 @@ extern void wf_impl_operation_read(
 			struct fuse_file_info *fi);
 
 extern struct wf_impl_jsonrpc_proxy * wf_impl_operations_context_get_proxy(
-	struct wf_impl_operations_context * context,
-	fuse_ino_t inode);
+	struct wf_impl_operations_context * context);
 
 #ifdef __cplusplus
 }

@@ -1,7 +1,6 @@
 #ifndef WF_ADAPTER_IMPL_SERVER_PROTOCOL_H
 #define WF_ADAPTER_IMPL_SERVER_PROTOCOL_H
 
-#include "webfuse/adapter/impl/filesystem.h"
 #include "webfuse/adapter/impl/jsonrpc/proxy.h"
 #include "webfuse/adapter/impl/time/timeout_manager.h"
 #include "webfuse/adapter/impl/authenticators.h"
@@ -17,14 +16,14 @@ struct lws_protocols;
 
 struct wf_server_protocol
 {
+    char * mount_point;
     struct wf_impl_timeout_manager timeout_manager;
-    struct wf_impl_filesystem filesystem;
     struct wf_impl_authenticators authenticators;
     struct wf_impl_session_manager session_manager;
     struct wf_impl_jsonrpc_server server;
 };
 
-extern bool wf_impl_server_protocol_init(
+extern void wf_impl_server_protocol_init(
     struct wf_server_protocol * protocol,
     char * mount_point);
 

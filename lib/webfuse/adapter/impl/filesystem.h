@@ -13,7 +13,7 @@ extern "C"
 {
 #endif
 
-struct wf_impl_session_manager;
+struct wf_impl_session;
 
 struct wf_impl_filesystem
 {
@@ -25,8 +25,8 @@ struct wf_impl_filesystem
 
 extern bool wf_impl_filesystem_init(
     struct wf_impl_filesystem * filesystem,
-    struct wf_impl_session_manager * session_manager,
-    char * mount_point);
+    struct wf_impl_session * session,
+    char const * mount_point);
 
 extern void wf_impl_filesystem_cleanup(
     struct wf_impl_filesystem * filesystem);

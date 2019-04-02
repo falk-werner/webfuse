@@ -33,12 +33,25 @@ static bool wf_impl_session_send(
     return result;
 }
 
-void wf_impl_session_init(
+void wf_impl_session_init_empty(
+    struct wf_impl_session * session)
+{
+    wf_message_queue_init(&session->queue);    
+    session->is_authenticated = false;
+    session->wsi = NULL;
+    session->wsi_fuse = NULL;
+    session->authenticators = NULL;
+    session->server = NULL;    
+}
+
+bool wf_impl_session_init(
     struct wf_impl_session * session,
     struct lws * wsi,
     struct wf_impl_authenticators * authenticators,
     struct wf_impl_timeout_manager * timeout_manager,
-    struct wf_impl_jsonrpc_server * server)
+    struct wf_impl_jsonrpc_server * server,
+    char const * mount_point,
+    char const * protocol_name)
  {
     session->wsi = wsi;
     session->is_authenticated = false;
@@ -46,17 +59,40 @@ void wf_impl_session_init(
     session->server = server;
     wf_impl_jsonrpc_proxy_init(&session->rpc, timeout_manager, &wf_impl_session_send, session);
     wf_message_queue_init(&session->queue);
+
+    bool const success = wf_impl_filesystem_init(&session->filesystem, session, mount_point);
+    if (!success)
+    {
+        wf_impl_jsonrpc_proxy_cleanup(&session->rpc);
+        wf_message_queue_cleanup(&session->queue);
+    }
+
+    lws_sock_file_fd_type fd;
+    fd.filefd = wf_impl_filesystem_get_fd(&session->filesystem);
+    session->wsi_fuse = lws_adopt_descriptor_vhost(lws_get_vhost(wsi), LWS_ADOPT_RAW_FILE_DESC, fd, protocol_name, wsi);
+    if (NULL == session->wsi_fuse)
+    {
+        fprintf(stderr, "error: unable to adopt fd");
+    }    
+
+    return success;
  }
 
 void wf_impl_session_cleanup(
     struct wf_impl_session * session)
 {
-    wf_impl_jsonrpc_proxy_cleanup(&session->rpc);
-    wf_message_queue_cleanup(&session->queue);
-    session->is_authenticated = false;
-    session->wsi = NULL;
-    session->authenticators = NULL;
-    session->server = NULL;
+    if (NULL != session->wsi)
+    {
+        wf_impl_filesystem_cleanup(&session->filesystem);
+
+        wf_impl_jsonrpc_proxy_cleanup(&session->rpc);
+        wf_message_queue_cleanup(&session->queue);
+        session->is_authenticated = false;
+        session->wsi = NULL;
+        session->wsi_fuse = NULL;
+        session->authenticators = NULL;
+        session->server = NULL;
+    }
 }
 
 bool wf_impl_session_authenticate(
