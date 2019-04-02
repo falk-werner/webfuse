@@ -41,6 +41,7 @@ fi
 
 {
   echo '#include <...> search starts here:'
+  # shellcheck disable=SC1117
   sed -n -e "s@\(.*\)@$INCLUDE_DIRS_PREFIX\1@p" "$INCLUDE_DIRS_TMPFILE"
   echo 'End of search list.'
 } > "$INCLUDE_DIRS_FILE"

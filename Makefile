@@ -113,8 +113,6 @@ DOCKER_RUNFLAGS += --user $(CONTAINER_USER):$(CONTAINER_GROUP)
 DOCKER_RUNFLAGS += --env SOURCE_DATE_EPOCH
 DOCKER_RUNFLAGS += --env BUILDTIME
 DOCKER_RUNFLAGS += --env NINJA_STATUS
-DOCKER_RUNFLAGS += $(addprefix --volumes-from ,$(HOST_CONTAINER))
-DOCKER_RUNFLAGS += $(addprefix --cgroup-parent ,$(CONTAINER_CGROUP_PARENT))
 
 DOCKER_BUILDARGS += CODENAME=$(CODENAME)
 DOCKER_BUILDARGS += PARALLELMFLAGS=$(PARALLELMFLAGS)
@@ -148,13 +146,16 @@ echo_if_silent = VERBOSE=1
 $(VERBOSE)echo_if_silent = echo $1
 $(VERBOSE)SILENT := @
 
-$(HOST_CONTAINER)image_run_volumes += '$(realpath $(PROJECT_ROOT)):$(CONTAINER_PROJECT_ROOT):cached'
-$(HOST_CONTAINER)image_run_volumes += '$(realpath $(OUT)/$1):$(CONTAINER_OUT)/$1:delegated'
+$(HOST_CONTAINER)image_run_volumes += --volume '$(realpath $(PROJECT_ROOT)):$(CONTAINER_PROJECT_ROOT):cached'
+$(HOST_CONTAINER)image_run_volumes += --volume '$(realpath $(OUT)/$1):$(CONTAINER_OUT)/$1:delegated'
+image_run_volumes += $(addprefix --volumes-from ,$2)
 
 image_name = $(REGISTRY_PREFIX)$(subst -,/,$1)/$(PROJECT_NAME):$(VERSION)
-image_run = $(DOCKER) run $(DOCKER_RUNFLAGS) $3 \
-  $(addprefix --volume ,$(call image_run_volumes,$1)) \
+image_run = $(DOCKER) run $(DOCKER_RUNFLAGS) \
+  $(call image_run_volumes,$1,$(HOST_CONTAINER)) \
+  $(addprefix --cgroup-parent ,$(CONTAINER_CGROUP_PARENT)) \
   --workdir '$(CONTAINER_OUT)/$1/$(BUILDTYPE)' \
+  $3 \
   $(call image_name,$1) \
   $2
 
@@ -212,10 +213,11 @@ wrapper_rule = \
 wrapper = \
      $(call echo_if_silent,generating $@) \
   && sed \
+       -e 's@%PROJECT_ROOT%@$(abspath $(PROJECT_ROOT))@g' \
        -e 's@%DOCKER%@$(DOCKER)@g' \
-       -e 's@%DOCKER_RUNFLAGS%@$(DOCKER_RUNFLAGS) $(addprefix --volume ,$(call image_run_volumes,$1))@g' \
-       -e 's@%DOCKER_IMAGE%@$(call image_name,$1)@g' \
-       -e 's@%DOCKER_RUNCMD%@$(notdir $@)@g' \
+       -e 's@%RUNFLAGS%@$(DOCKER_RUNFLAGS) $(call image_run_volumes,$1)@g' \
+       -e 's@%IMAGE%@$(call image_name,$1)@g' \
+       -e 's@%RUNCMD%@$(notdir $@)@g' \
        $< > $@ \
   && chmod +x $@
 
