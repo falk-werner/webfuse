@@ -17,6 +17,7 @@ BUILDVERBOSE ?=
 $(MARCH)BUILDTARGET ?= amd64-ubuntu-builder
 BUILDTYPE ?= Debug
 MARCH ?= $(call march,$(BUILDTARGET))
+DISTRO ?=
 
 PROJECT_NAME ?= webfuse
 PROJECT_ROOT ?= .
@@ -156,8 +157,13 @@ EXTRACT_TARGETS += $(patsubst $(OUT)/%.tar.gz,$(OUT)/src/%,$(FETCH_TARGETS))
 DISCOVER_CC_TARGETS += $(addprefix discover-cc-,$(firstword $(TARGETS)))
 RULE_TARGETS += $(addsuffix /rules.mk,$(OUT_TARGETS))
 
+uc = $(shell echo '$1' | sed -e 's/.*/\U&/g')
+
+DISTRO := $(call uc,$(DISTRO))
 MARCHS := $(sort $(MARCHS))
-TARGETS := $(sort $(TARGETS))
+
+_TARGETS := $(TARGETS)
+TARGETS := $(sort $($(DISTRO)_TARGETS))
 
 # Macros
 

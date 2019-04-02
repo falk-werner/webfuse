@@ -12,6 +12,7 @@ addons:
     - qemu-user-static
 env:
   global:
+    - DISTRO=ubuntu
     - PARALLELMFLAGS="-j2"
     - PORTABLE_WORSPACE=1
   matrix:
