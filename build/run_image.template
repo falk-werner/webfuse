@@ -2,15 +2,35 @@
 
 set -e
 
-DOCKER="${DOCKER:-'%DOCKER%'}"
-DOCKER_IMAGE="{DOCKER_IMAGE:-'%DOCKER_IMAGE%'}"
+PROJECT_ROOT="${PROJECT_ROOT:-%PROJECT_ROOT%}"
 
-DOCKER_RUNFLAGS+=( %DOCKER_RUNFLAGS% )
-DOCKER_RUNFLAGS+=( --network host )
-DOCKER_RUNFLAGS+=( --workdir "$PWD" )
+DOCKER="${DOCKER:-%DOCKER%}"
+IMAGE="${IMAGE:-%IMAGE%}"
+NETWORK="${NETWORK:-host}"
+HOST_CONTAINER="${HOST_CONTAINER:-"$("$PROJECT_ROOT/build/get_container_id.sh")"}"
 
-DOCKER_RUNCMD=( %DOCKER_RUNCMD% )
+# shellcheck disable=SC2162
+read -a ADDITIONAL_RUNFLAGS <<< "$RUNFLAGS"
 
-set -- "${DOCKER_RUNFLAGS[@]}" "%DOCKER_IMAGE%" "${DOCKER_RUNCMD[@]}" "$@"
+RUNFLAGS=()
+
+# shellcheck disable=SC2191
+RUNFLAGS+=( %RUNFLAGS% )
+
+if [[ -n "$HOST_CONTAINER" ]]; then
+  RUNFLAGS+=( --volumes-from "$HOST_CONTAINER" )
+fi
+
+RUNFLAGS+=( --network "$NETWORK" )
+
+if [[ -n "$CONTAINER_CGROUP_PARENT" ]]; then
+  RUNFLAGS+=( --cgroup-parent "$CONTAINER_CGROUP_PARENT" )
+fi
+
+RUNFLAGS+=( --workdir "$PWD" )
+
+RUNCMD=( %RUNCMD% )
+
+set -- "${RUNFLAGS[@]}" "${ADDITIONAL_RUNFLAGS[@]}" "$IMAGE" "${RUNCMD[@]}" "$@"
 
 exec "$DOCKER" run "$@"
