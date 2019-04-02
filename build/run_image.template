@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+
+set -e
+
+PROJECT_ROOT="${PROJECT_ROOT:-%PROJECT_ROOT%}"
+
+DOCKER="${DOCKER:-%DOCKER%}"
+IMAGE="${IMAGE:-%IMAGE%}"
+NETWORK="${NETWORK:-host}"
+HOST_CONTAINER="${HOST_CONTAINER:-"$("$PROJECT_ROOT/build/get_container_id.sh")"}"
+
+# shellcheck disable=SC2162
+read -a ADDITIONAL_RUNFLAGS <<< "$RUNFLAGS"
+
+RUNFLAGS=()
+
+# shellcheck disable=SC2191
+RUNFLAGS+=( %RUNFLAGS% )
+
+if [[ -n "$HOST_CONTAINER" ]]; then
+  RUNFLAGS+=( --volumes-from "$HOST_CONTAINER" )
+fi
+
+RUNFLAGS+=( --network "$NETWORK" )
+
+if [[ -n "$CONTAINER_CGROUP_PARENT" ]]; then
+  RUNFLAGS+=( --cgroup-parent "$CONTAINER_CGROUP_PARENT" )
+fi
+
+RUNFLAGS+=( --workdir "$PWD" )
+
+RUNCMD=( %RUNCMD% )
+
+set -- "${RUNFLAGS[@]}" "${ADDITIONAL_RUNFLAGS[@]}" "$IMAGE" "${RUNCMD[@]}" "$@"
+
+exec "$DOCKER" run "$@"
