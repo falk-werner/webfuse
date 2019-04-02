@@ -13,8 +13,7 @@ RUN set -x \
        rsync \
        gdb \
        gdbserver \
-       valgrind \
-  && rm -rf /var/lib/apt/lists/*
+       valgrind
 
 COPY src /usr/local/src
 

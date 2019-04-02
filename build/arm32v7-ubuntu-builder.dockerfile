@@ -14,8 +14,7 @@ RUN set -x \
        pkg-config \
        rsync \
        gdb \
-       gdbserver \
-  && rm -rf /var/lib/apt/lists/*
+       gdbserver
 
 COPY src /usr/local/src
 
