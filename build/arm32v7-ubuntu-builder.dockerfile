@@ -14,61 +14,77 @@ RUN set -x \
        pkg-config \
        rsync \
        gdb \
-       gdbserver \
-  && rm -rf /var/lib/apt/lists/*
+       gdbserver
 
 COPY src /usr/local/src
 
 ARG PARALLELMFLAGS=-j2
 
+ARG DUMB_INIT_VERISON=1.2.2
+
+RUN set -x \
+  && builddeps="xxd" \
+  && apt install --yes --no-install-recommends $builddeps \
+  && builddir="/tmp/out" \
+  && mkdir -p "$builddir" \
+  && cd "$builddir" \
+  && cp -R "/usr/local/src/dumb-init-$DUMB_INIT_VERISON" . \
+  && cd dumb-init-$DUMB_INIT_VERISON \
+  && make "$PARALLELMFLAGS" \
+  && chmod +x dumb-init \
+  && mv dumb-init /usr/local/bin/dumb-init \
+  && dumb-init --version \
+  && rm -rf "$builddir" \
+  && apt purge -y $builddeps
+
 ARG GTEST_VERSION=1.8.1
 
 RUN set -x \
-  && mkdir -p /tmp/out \
-  && cd /tmp/out \
+  && builddir="/tmp/out" \
+  && mkdir -p "$builddir" \
+  && cd "$builddir" \
   && cmake "/usr/local/src/googletest-release-$GTEST_VERSION" \
   && make "$PARALLELMFLAGS" install \
-  && rm -rf /tmp/out
+  && rm -rf "$builddir"
 
 ARG FUSE_VERSION=3.1.1
 
 RUN set -x \
-  && apt update \
-  && apt install --yes --no-install-recommends \
-       libtool \
-       automake \
-       gettext \
+  && builddeps="libtool automake gettext" \
+  && apt install --yes --no-install-recommends $builddeps \
   && cd "/usr/local/src/libfuse-fuse-$FUSE_VERSION" \
   && ./makeconf.sh \
-  && mkdir -p /tmp/out \
-  && cd /tmp/out \
+  && builddir="/tmp/out" \
+  && mkdir -p "$builddir" \
+  && cd "$builddir" \
   && "/usr/local/src/libfuse-fuse-$FUSE_VERSION/configure" \
   && make "$PARALLELMFLAGS" install \
-  && rm -rf /tmp/out \
-  && rm -rf /var/lib/apt/lists/*
+  && rm -rf "$builddir" \
+  && apt purge -y $builddeps
 
 ARG WEBSOCKETS_VERSION=3.1.0
 
 RUN set -x \
-  && apt update \
   && apt install --yes --no-install-recommends \
+       ca-certificates \
        openssl \
        libssl-dev \
-  && mkdir -p /tmp/out \
-  && cd /tmp/out \
+  && builddir="/tmp/out" \
+  && mkdir -p "$builddir" \
+  && cd "$builddir" \
   && cmake "/usr/local/src/libwebsockets-$WEBSOCKETS_VERSION" \
   && make "$PARALLELMFLAGS" install \
-  && rm -rf /tmp/out \
-  && rm -rf /var/lib/apt/lists/*
+  && rm -rf "$builddir"
 
 ARG JANSSON_VERSION=2.12
 
 RUN set -x \
-  && mkdir -p /tmp/out \
-  && cd /tmp/out \
+  && builddir="/tmp/out" \
+  && mkdir -p "$builddir" \
+  && cd "$builddir" \
   && cmake -DJANSSON_BUILD_DOCS=OFF "/usr/local/src/jansson-$JANSSON_VERSION" \
   && make "$PARALLELMFLAGS" install \
-  && rm -rf /tmp/out
+  && rm -rf "$builddir"
 
 ENV LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/usr/local/lib"
 
@@ -83,4 +99,6 @@ RUN set -x \
   && chown user:user "$PROJECT_ROOT" "$OUT"
 
 WORKDIR "$OUT"
+
+ENTRYPOINT ["dumb-init", "--"]
 

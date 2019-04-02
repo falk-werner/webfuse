@@ -42,6 +42,11 @@ UBUNTU_CODENAME ?= bionic
 
 # Dependencies
 
+DUMB_INIT_VERISON ?= 1.2.2
+DOCKER_BUILDARGS += DUMB_INIT_VERISON=$(DUMB_INIT_VERISON)
+FETCH_TARGETS += $(OUT)/dumb-init-$(DUMB_INIT_VERISON).tar.gz
+$(OUT)/dumb-init-$(DUMB_INIT_VERISON).tar.gz: URL := https://github.com/Yelp/dumb-init/archive/v${DUMB_INIT_VERISON}.tar.gz
+
 GTEST_VERSION ?= 1.8.1
 DOCKER_BUILDARGS += GTEST_VERSION=$(GTEST_VERSION)
 FETCH_TARGETS += $(OUT)/googletest-release-$(GTEST_VERSION).tar.gz
@@ -108,7 +113,6 @@ DOCKER_RUNFLAGS += --security-opt seccomp=unconfined
 
 DOCKER_RUNFLAGS += --interactive
 DOCKER_RUNFLAGS += --rm
-DOCKER_RUNFLAGS += --init
 DOCKER_RUNFLAGS += --user $(CONTAINER_USER):$(CONTAINER_GROUP)
 DOCKER_RUNFLAGS += --env SOURCE_DATE_EPOCH
 DOCKER_RUNFLAGS += --env BUILDTIME
