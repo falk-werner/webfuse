@@ -108,18 +108,11 @@ struct wf_server * wf_impl_server_create(
 		server = malloc(sizeof(struct wf_server));
 		if (NULL != server)
 		{
-			if (wf_impl_server_protocol_init(&server->protocol, config->mount_point))
-			{
-				server->shutdown_requested = false;
-				wf_impl_server_config_clone(config, &server->config);
-				wf_impl_authenticators_move(&server->config.authenticators, &server->protocol.authenticators);				
-				server->context = wf_impl_server_context_create(server);
-			}
-			else
-			{
-				free(server);
-				server = NULL;
-			}
+			wf_impl_server_protocol_init(&server->protocol, config->mount_point);
+			server->shutdown_requested = false;
+			wf_impl_server_config_clone(config, &server->config);
+			wf_impl_authenticators_move(&server->config.authenticators, &server->protocol.authenticators);				
+			server->context = wf_impl_server_context_create(server);
 		}   
 	}
 

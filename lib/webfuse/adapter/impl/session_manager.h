@@ -33,15 +33,13 @@ extern struct wf_impl_session * wf_impl_session_manager_add(
     struct lws * wsi,
     struct wf_impl_authenticators * authenticators,
     struct wf_impl_timeout_manager * timeout_manager,
-    struct wf_impl_jsonrpc_server * server);
+    struct wf_impl_jsonrpc_server * server,
+    char const * mount_point,
+    char const * protocol_name);
 
 extern struct wf_impl_session * wf_impl_session_manager_get(
     struct wf_impl_session_manager * manager,
     struct lws * wsi);
-
-extern struct wf_impl_session * wf_impl_session_manager_get_by_inode(
-    struct wf_impl_session_manager * session_manger,
-    fuse_ino_t inode);
 
 extern void wf_impl_session_manager_remove(
     struct wf_impl_session_manager * manager,

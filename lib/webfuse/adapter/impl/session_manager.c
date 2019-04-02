@@ -5,7 +5,7 @@
 void wf_impl_session_manager_init(
     struct wf_impl_session_manager * manager)
 {
-    wf_impl_session_init(&manager->session, NULL, NULL, NULL, NULL);
+    wf_impl_session_init_empty(&manager->session);
 }
 
 void wf_impl_session_manager_cleanup(
@@ -19,13 +19,15 @@ struct wf_impl_session * wf_impl_session_manager_add(
     struct lws * wsi,
     struct wf_impl_authenticators * authenticators,
     struct wf_impl_timeout_manager * timeout_manager,
-    struct wf_impl_jsonrpc_server * server)
+    struct wf_impl_jsonrpc_server * server,
+    char const * mount_point,
+    char const * protocol_name)
 {
     struct wf_impl_session * session = NULL; 
     if (NULL == manager->session.wsi)
     {
         session = &manager->session;
-        wf_impl_session_init(&manager->session, wsi, authenticators, timeout_manager, server);        
+        wf_impl_session_init(&manager->session, wsi, authenticators, timeout_manager, server, mount_point, protocol_name);        
     }
 
     return session;
@@ -36,29 +38,13 @@ struct wf_impl_session * wf_impl_session_manager_get(
     struct lws * wsi)
 {
     struct wf_impl_session * session = NULL;
-    if (wsi == manager->session.wsi)
+    if ((wsi == manager->session.wsi) || (wsi == manager->session.wsi_fuse))
     {
         session = &manager->session;
     }
 
     return session;
 }
-
-struct wf_impl_session * wf_impl_session_manager_get_by_inode(
-    struct wf_impl_session_manager * manager,
-    fuse_ino_t WF_UNUSED_PARAM(inode))
-{
-    // ToDo: use inode to determine session manager
-
-    struct wf_impl_session * session = NULL;
-    if (NULL != manager->session.wsi)
-    {
-        session = &manager->session;
-    }
-
-    return session;
-}
-
 
 void wf_impl_session_manager_remove(
     struct wf_impl_session_manager * manager,
