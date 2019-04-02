@@ -14,7 +14,7 @@ DOCKER_BUILDKIT ?=
 
 VERBOSE ?= 
 BUILDVERBOSE ?= 
-BUILDTARGET ?= 
+$(MARCH)BUILDTARGET ?= amd64-ubuntu-builder
 BUILDTYPE ?= Debug
 MARCH ?= $(call march,$(BUILDTARGET))
 
