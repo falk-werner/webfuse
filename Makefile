@@ -94,6 +94,11 @@ $(MARCH_ARM32V7)MARCHS += arm32v7
 $(MARCH_ARM32V7)$(BUILDTARGET)TARGETS += arm32v7-ubuntu-builder
 $(OUT)/arm32v7-ubuntu-builder/rules.mk: TARGET := arm32v7-ubuntu-builder
 
+MARCH_ARM32V7 := $(filter-out arm32v7,$(MARCH))
+$(MARCH_ARM32V7)MARCHS += arm32v7
+$(MARCH_ARM32V7)$(BUILDTARGET)TARGETS += arm32v7-debian-builder
+$(OUT)/arm32v7-debian-builder/rules.mk: TARGET := arm32v7-debian-builder
+
 $(MARCH_AMD64)MEMCHECK_TARGETS += $(addprefix memcheck-,$(TARGETS))
 
 ARM_TARGETS = $(filter arm%,$(TARGETS))
