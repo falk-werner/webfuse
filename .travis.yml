@@ -13,7 +13,7 @@ addons:
 env:
   global:
     - DISTRO=ubuntu
-    - PARALLELMFLAGS="-j2"
+    - PARALLELMFLAGS="-j4"
     - PORTABLE_WORSPACE=1
   matrix:
     - BUILDTYPE=Debug      MARCH=amd64   CHECK_TARGET=memcheck
