@@ -1,4 +1,4 @@
-PARALLELMFLAGS ?= -j$(shell nproc)
+PARALLELMFLAGS ?= $(addprefix -j,$(shell echo "$$(($(NPROC)/$(TASKS)))"))
 MAKEFLAGS += $(PARALLELMFLAGS) --no-builtin-rules
 
 .PHONY: default
@@ -6,14 +6,14 @@ default: all
 
 # Overridable defaults
 
-export SOURCE_DATE_EPOCH ?= $(shell $(PROJECT_ROOT)/build/get_source_date_epoch.sh)
-export BUILDTIME ?= $(shell date -u -d '@$(SOURCE_DATE_EPOCH)' --rfc-3339 ns 2>/dev/null | sed -e 's/ /T/')
-export DOCKER ?= docker
-
+DOCKER ?= docker
 DOCKER_BUILDKIT ?= 
+
+NPROC ?= $(shell nproc)
 
 VERBOSE ?= 
 BUILDVERBOSE ?= 
+
 $(MARCH)BUILDTARGET ?= amd64-ubuntu-builder
 BUILDTYPE ?= Debug
 MARCH ?= $(call march,$(BUILDTARGET))
@@ -21,10 +21,13 @@ DISTRO ?=
 
 PROJECT_NAME ?= webfuse
 PROJECT_ROOT ?= .
-VERSION ?= $(shell cat $(PROJECT_ROOT)/VERSION)
 OUT ?= $(PROJECT_ROOT)/.build
 
+VERSION ?= $(shell cat $(PROJECT_ROOT)/VERSION)
+VERSION := $(VERSION)
+
 UID ?= $(shell id -u)
+UID := $(UID)
 
 CONTAINER_USER ?= user
 CONTAINER_GROUP ?= user
@@ -33,14 +36,22 @@ CONTAINER_CGROUP_PARENT ?=
 HOST_CONTAINER ?= $(shell $(PROJECT_ROOT)/build/get_container_id.sh)
 HOST_CONTAINER := $(HOST_CONTAINER)
 
+UBUNTU_CODENAME ?= bionic
+DEBIAN_CODENAME ?= testing-slim
+
+SOURCE_DATE_EPOCH ?= $(shell $(PROJECT_ROOT)/build/get_source_date_epoch.sh)
+SOURCE_DATE_EPOCH := $(SOURCE_DATE_EPOCH)
+export SOURCE_DATE_EPOCH
+
+BUILDTIME ?= $(shell date -u -d '@$(SOURCE_DATE_EPOCH)' --rfc-3339 ns 2>/dev/null | sed -e 's/ /T/')
+BUILDTIME := $(BUILDTIME)
+export BUILDTIME
+
 $(HOST_CONTAINER)PORTABLE_WORSPACE ?= 
 CONTAINER_PROJECT_ROOT ?= /workspace/src
 CONTAINER_OUT ?= /workspace/out
 $(PORTABLE_WORSPACE)CONTAINER_PROJECT_ROOT = $(abspath $(PROJECT_ROOT))
 $(PORTABLE_WORSPACE)CONTAINER_OUT = $(abspath $(OUT))
-
-UBUNTU_CODENAME ?= bionic
-DEBIAN_CODENAME ?= testing-slim
 
 # Dependencies
 
@@ -159,11 +170,12 @@ RULE_TARGETS += $(addsuffix /rules.mk,$(OUT_TARGETS))
 
 uc = $(shell echo '$1' | sed -e 's/.*/\U&/g')
 
-DISTRO := $(call uc,$(DISTRO))
-MARCHS := $(sort $(MARCHS))
+DISTRO_PREFIX = $(addsuffix _,$(call uc,$(DISTRO)))
 
-_TARGETS := $(TARGETS)
-TARGETS := $(sort $($(DISTRO)_TARGETS))
+MARCHS := $(sort $(MARCHS))
+TARGETS := $(sort $($(DISTRO_PREFIX)TARGETS))
+TASKS = $(words $(if $(TARGETS),$(TARGETS),_))
+PARALLELMFLAGS := $(PARALLELMFLAGS)
 
 # Macros
 
@@ -255,26 +267,25 @@ endif
 $(RULE_TARGETS): $(PROJECT_ROOT)/Makefile | $(OUT_DIRS)
 	$(SILENT) \
 	{ \
-		echo; \
-		echo '$(call image_rule,$(TARGET))'; \
-		echo; \
-		echo '$(call configure_rule,$(TARGET))'; \
-		echo; \
-		echo '$(call build_rule,$(TARGET))'; \
-		echo; \
-		echo '$(call check_rule,$(TARGET))'; \
-		echo; \
-		echo '$(call memcheck_rule,$(TARGET))'; \
-		echo; \
-		echo '$(call run_rule,$(TARGET))'; \
-		echo; \
-		echo '$(call clean_rule,$(TARGET))'; \
-		echo; \
-		echo '$(call discover_cc_settings_rule,$(TARGET))'; \
-		echo; \
-		echo '$(call discover_cc_rule,$(TARGET))'; \
-		echo; \
-		echo '$(call wrapper_rule,$(TARGET))'; \
+	  echo '$(call image_rule,$(TARGET))'; \
+	  echo; \
+	  echo '$(call configure_rule,$(TARGET))'; \
+	  echo; \
+	  echo '$(call build_rule,$(TARGET))'; \
+	  echo; \
+	  echo '$(call check_rule,$(TARGET))'; \
+	  echo; \
+	  echo '$(call memcheck_rule,$(TARGET))'; \
+	  echo; \
+	  echo '$(call run_rule,$(TARGET))'; \
+	  echo; \
+	  echo '$(call clean_rule,$(TARGET))'; \
+	  echo; \
+	  echo '$(call discover_cc_settings_rule,$(TARGET))'; \
+	  echo; \
+	  echo '$(call discover_cc_rule,$(TARGET))'; \
+	  echo; \
+	  echo '$(call wrapper_rule,$(TARGET))'; \
 	} > $@
 
 .PHONY: all build-%
