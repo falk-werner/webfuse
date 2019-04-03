@@ -1,5 +1,4 @@
-PARALLELMFLAGS ?= $(addprefix -j,$(shell echo "$$(($(NPROC)/$(TASKS)))"))
-MAKEFLAGS += $(PARALLELMFLAGS) --no-builtin-rules
+MAKEFLAGS += $(_PARALLELMFLAGS) --no-builtin-rules
 
 .PHONY: default
 default: all
@@ -9,7 +8,8 @@ default: all
 DOCKER ?= docker
 DOCKER_BUILDKIT ?= 
 
-NPROC ?= $(shell nproc)
+PARALLELMFLAGS ?= 
+NPROC ?= $(shell echo '$(PARALLELMFLAGS)' | sed -n -e 's@.*-j.*\([0-9]\+\)@\1@p')
 
 VERBOSE ?= 
 BUILDVERBOSE ?= 
@@ -91,27 +91,25 @@ march = $(shell echo '$1' | sed -n -e 's@\([^-]*\)-.*@\1@p')
 TARGETS += $(BUILDTARGET)
 MARCH := $(MARCH)
 
-MARCH_AMD64 := $(filter-out amd64,$(MARCH))
-$(MARCH_AMD64)MARCHS += amd64
-$(MARCH_AMD64)$(BUILDTARGET)TARGETS += amd64-ubuntu-builder
+DISABLE_AMD64 := $(filter-out amd64,$(MARCH))
+$(DISABLE_AMD64)MARCHS += amd64
+
+$(DISABLE_AMD64)$(BUILDTARGET)TARGETS += amd64-ubuntu-builder
 $(OUT)/amd64-ubuntu-builder/rules.mk: TARGET := amd64-ubuntu-builder
 
-MARCH_AMD64 := $(filter-out amd64,$(MARCH))
-$(MARCH_AMD64)MARCHS += amd64
-$(MARCH_AMD64)$(BUILDTARGET)TARGETS += amd64-debian-builder
+$(DISABLE_AMD64)$(BUILDTARGET)TARGETS += amd64-debian-builder
 $(OUT)/amd64-debian-builder/rules.mk: TARGET := amd64-debian-builder
 
-MARCH_ARM32V7 := $(filter-out arm32v7,$(MARCH))
-$(MARCH_ARM32V7)MARCHS += arm32v7
-$(MARCH_ARM32V7)$(BUILDTARGET)TARGETS += arm32v7-ubuntu-builder
+DISABLE_ARM32V7 := $(filter-out arm32v7,$(MARCH))
+$(DISABLE_ARM32V7)MARCHS += arm32v7
+
+$(DISABLE_ARM32V7)$(BUILDTARGET)TARGETS += arm32v7-ubuntu-builder
 $(OUT)/arm32v7-ubuntu-builder/rules.mk: TARGET := arm32v7-ubuntu-builder
 
-MARCH_ARM32V7 := $(filter-out arm32v7,$(MARCH))
-$(MARCH_ARM32V7)MARCHS += arm32v7
-$(MARCH_ARM32V7)$(BUILDTARGET)TARGETS += arm32v7-debian-builder
+$(DISABLE_ARM32V7)$(BUILDTARGET)TARGETS += arm32v7-debian-builder
 $(OUT)/arm32v7-debian-builder/rules.mk: TARGET := arm32v7-debian-builder
 
-$(MARCH_AMD64)MEMCHECK_TARGETS += $(addprefix memcheck-,$(TARGETS))
+$(DISABLE_AMD64)MEMCHECK_TARGETS += $(addprefix memcheck-,$(TARGETS))
 
 ARM_TARGETS = $(filter arm%,$(TARGETS))
 $(addprefix $(OUT)/docker/,$(ARM_TARGETS)): $(OUT)/docker/qemu-arm-static-$(QEMU_VERSION)
@@ -145,7 +143,7 @@ DOCKER_RUNFLAGS += --env BUILDTIME
 DOCKER_RUNFLAGS += --env NINJA_STATUS
 
 DOCKER_BUILDARGS += CODENAME=$(CODENAME)
-DOCKER_BUILDARGS += PARALLELMFLAGS=$(PARALLELMFLAGS)
+DOCKER_BUILDARGS += PARALLELMFLAGS=$(_PARALLELMFLAGS)
 DOCKER_BUILDARGS += USERID=$(UID)
 DOCKER_BUILDARGS += PROJECT_ROOT=$(CONTAINER_PROJECT_ROOT)
 DOCKER_BUILDARGS += OUT=$(CONTAINER_OUT)
@@ -174,8 +172,17 @@ DISTRO_PREFIX = $(addsuffix _,$(call uc,$(DISTRO)))
 
 MARCHS := $(sort $(MARCHS))
 TARGETS := $(sort $($(DISTRO_PREFIX)TARGETS))
-TASKS = $(words $(if $(TARGETS),$(TARGETS),_))
-PARALLELMFLAGS := $(PARALLELMFLAGS)
+
+TASKS := $(words $(if $(TARGETS),$(TARGETS),_))
+
+DISBALE_OSYNC ?= $(filter 1,$(TASKS))
+$(DISBALE_OSYNC)GNUMAKEFLAGS += --output-sync
+
+_NPROC = $(NPROC)
+ifeq ($(strip $(_NPROC)),)
+_NPROC = $(shell nproc)
+endif
+_PARALLELMFLAGS := $(addprefix -j,$(shell echo "$$(($(_NPROC)/$(TASKS)))"))
 
 # Macros
 
@@ -213,7 +220,7 @@ configure = \
 build_rule = \
   build-$1: $$(OUT)/$1/$$(BUILDTYPE)/CMakeCache.txt; \
     $$(SILENT)$$(call build,$1)
-build = $(call run,$1,ninja $(PARALLELMFLAGS) $(NINJAFLAGS) $(GOALS))
+build = $(call run,$1,ninja $(_PARALLELMFLAGS) $(NINJAFLAGS) $(GOALS))
 
 check_rule = \
   check-$1: build-$1;
