@@ -7,7 +7,7 @@ PROJECT_ROOT="${PROJECT_ROOT:-%PROJECT_ROOT%}"
 DOCKER="${DOCKER:-%DOCKER%}"
 IMAGE="${IMAGE:-%IMAGE%}"
 NETWORK="${NETWORK:-host}"
-HOST_CONTAINER="${HOST_CONTAINER:-"$("$PROJECT_ROOT/build/get_container_id.sh")"}"
+HOST_CONTAINER="${HOST_CONTAINER:-"$("$PROJECT_ROOT/build/get_container_id.sh")"}" || true
 
 # shellcheck disable=SC2162
 read -a ADDITIONAL_RUNFLAGS <<< "$RUNFLAGS"
