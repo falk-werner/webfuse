@@ -53,36 +53,47 @@ CONTAINER_OUT ?= /workspace/out
 $(PORTABLE_WORSPACE)CONTAINER_PROJECT_ROOT = $(abspath $(PROJECT_ROOT))
 $(PORTABLE_WORSPACE)CONTAINER_OUT = $(abspath $(OUT))
 
-# Dependencies
+filter_out_command = $(filter $1,$(foreach CMD,$1,$(shell command -v $(CMD) 2>&1 1>/dev/null || echo $(CMD))))
+
+DISABLE_MD5SUM ?= $(call filter_out_command,md5sum)
+DISABLE_MD5SUM := $(DISABLE_MD5SUM)
+
+# Project dependencies
 
 DUMB_INIT_VERISON ?= 1.2.2
 DOCKER_BUILDARGS += DUMB_INIT_VERISON=$(DUMB_INIT_VERISON)
 FETCH_TARGETS += $(OUT)/dumb-init-$(DUMB_INIT_VERISON).tar.gz
 $(OUT)/dumb-init-$(DUMB_INIT_VERISON).tar.gz: URL := https://github.com/Yelp/dumb-init/archive/v${DUMB_INIT_VERISON}.tar.gz
+$(DISABLE_MD5SUM)$(OUT)/dumb-init-$(DUMB_INIT_VERISON).tar.gz: MD5 := 6166084b05772cdcf615a762c6f3b32e
 
 GTEST_VERSION ?= 1.8.1
 DOCKER_BUILDARGS += GTEST_VERSION=$(GTEST_VERSION)
 FETCH_TARGETS += $(OUT)/googletest-release-$(GTEST_VERSION).tar.gz
 $(OUT)/googletest-release-$(GTEST_VERSION).tar.gz: URL := https://github.com/google/googletest/archive/release-$(GTEST_VERSION).tar.gz
+$(DISABLE_MD5SUM)$(OUT)/googletest-release-$(GTEST_VERSION).tar.gz: MD5 := 2e6fbeb6a91310a16efe181886c59596
 
 FUSE_VERSION ?= 3.1.1
 DOCKER_BUILDARGS += FUSE_VERSION=$(FUSE_VERSION)
 FETCH_TARGETS += $(OUT)/libfuse-fuse-$(FUSE_VERSION).tar.gz
 $(OUT)/libfuse-fuse-$(FUSE_VERSION).tar.gz: URL := https://github.com/libfuse/libfuse/archive/fuse-$(FUSE_VERSION).tar.gz
+$(DISABLE_MD5SUM)$(OUT)/libfuse-fuse-$(FUSE_VERSION).tar.gz: MD5 := 097f194856938afdd98bea1a5c046edd
 
 WEBSOCKETS_VERSION ?= 3.1.0
 DOCKER_BUILDARGS += WEBSOCKETS_VERSION=$(WEBSOCKETS_VERSION)
 FETCH_TARGETS += $(OUT)/libwebsockets-$(WEBSOCKETS_VERSION).tar.gz
 $(OUT)/libwebsockets-$(WEBSOCKETS_VERSION).tar.gz: URL := https://github.com/warmcat/libwebsockets/archive/v$(WEBSOCKETS_VERSION).tar.gz
+$(DISABLE_MD5SUM)$(OUT)/libwebsockets-$(WEBSOCKETS_VERSION).tar.gz: MD5 := 325359a25d5f6d22725ff5d086db1c76
 
 JANSSON_VERSION ?= 2.12
 DOCKER_BUILDARGS += JANSSON_VERSION=$(JANSSON_VERSION)
 FETCH_TARGETS += $(OUT)/jansson-$(JANSSON_VERSION).tar.gz
 $(OUT)/jansson-$(JANSSON_VERSION).tar.gz: URL := https://github.com/akheron/jansson/archive/v$(JANSSON_VERSION).tar.gz
+$(DISABLE_MD5SUM)$(OUT)/jansson-$(JANSSON_VERSION).tar.gz: MD5 := c4b106528d5ffb521178565de1ba950d
 
 QEMU_VERSION ?= v3.1.0-2
 FETCH_TARGETS += $(OUT)/docker/qemu-arm-static-$(QEMU_VERSION)
 $(OUT)/docker/qemu-arm-static-$(QEMU_VERSION): URL := https://github.com/multiarch/qemu-user-static/releases/download/$(QEMU_VERSION)/qemu-arm-static
+$(DISABLE_MD5SUM)$(OUT)/docker/qemu-arm-static-$(QEMU_VERSION): MD5 := 8ebd24e63fdfa07c557d45373bd831b1
 
 # Architecture-specific rule target configuration
 
@@ -127,6 +138,8 @@ CMAKEFLAGS += '-DCMAKE_BUILD_TYPE=$(BUILDTYPE)'
 
 BUILDSILENT := $(if $(BUILDVERBOSE),,1)
 $(BUILDSILENT)NINJAFLAGS += -v
+
+CURLFLAGS += -s
 
 DOCKER_RUNFLAGS += --device /dev/fuse
 DOCKER_RUNFLAGS += --cap-add SYS_ADMIN
@@ -184,11 +197,22 @@ _NPROC = $(shell nproc)
 endif
 _PARALLELMFLAGS := $(addprefix -j,$(shell echo "$$(($(_NPROC)/$(TASKS)))"))
 
-# Macros
+# Common macros
 
 echo_if_silent = VERBOSE=1
 $(VERBOSE)echo_if_silent = echo $1
 $(VERBOSE)SILENT := @
+
+curl = $(call echo_if_silent,curl -fSL $(CURLFLAGS) -o $1 $2) \
+  && curl -fSL $(CURLFLAGS) -o $1 $2 \
+  && { \
+       if [ -n "$3" ]; then \
+         echo "$3\t$1" > $1.md5; \
+         md5sum -c $1.md5; \
+       else \
+         echo 'warning:$1: no md5 skipping verification' 1>&2; \
+       fi; \
+     }
 
 $(HOST_CONTAINER)image_run_volumes += --volume '$(realpath $(PROJECT_ROOT)):$(CONTAINER_PROJECT_ROOT):cached'
 $(HOST_CONTAINER)image_run_volumes += --volume '$(realpath $(OUT)/$1):$(CONTAINER_OUT)/$1:delegated'
@@ -265,13 +289,31 @@ wrapper = \
        $< > $@ \
   && chmod +x $@
 
+# Makefile dependencies
+
+MAKEDEPS += $(DOCKER)
+MAKEDEPS += id
+MAKEDEPS += cat
+MAKEDEPS += cp
+MAKEDEPS += rm
+MAKEDEPS += mkdir
+MAKEDEPS += sed
+MAKEDEPS += chmod
+MAKEDEPS += test
+MAKEDEPS += touch
+MAKEDEPS += curl
+MAKEDEPS += tar
+MAKEDEPS += gunzip
+
+MISSING_MAKEDEPS += $(call filter_out_command,$(MAKEDEPS))
+
 # Rules
 
 ifneq ($(MAKECMDGOALS),distclean)
 -include $(RULE_TARGETS)
 endif
 
-$(RULE_TARGETS): $(PROJECT_ROOT)/Makefile | $(OUT_DIRS)
+$(RULE_TARGETS): $(PROJECT_ROOT)/Makefile | $(MISSING_MAKEDEPS) $(OUT_DIRS)
 	$(SILENT) \
 	{ \
 	  echo '$(call image_rule,$(TARGET))'; \
@@ -329,17 +371,14 @@ debug-print-%:
 
 $(CHECK_TARGETS): GOALS := test
 
-$(OUT)/docker/qemu-arm-static-$(QEMU_VERSION):
-	$(SILENT) \
-	     $(call echo_if_silent,curl -fsSL -o $@ $(URL)) \
-	  && curl -fsSL -o $@ $(URL) \
-	  && chmod +x $@ 
-
 $(OUT)/docker/% : $(PROJECT_ROOT)/build/% | $(OUT_DIRS)
 	cp $< $@
 
-$(OUT)/%.tar.gz: | $(OUT_DIRS)
-	curl -fsSL -o $@ $(URL)
+$(OUT)/docker/qemu-arm-static-$(QEMU_VERSION): $(PROJECT_ROOT)/Makefile
+	$(SILENT)$(call curl,$@,$(URL),$(MD5)) && chmod +x $@ 
+
+$(OUT)/%.tar.gz: $(PROJECT_ROOT)/Makefile | $(OUT_DIRS)
+	$(SILENT)$(call curl,$@,$(URL),$(MD5))
 
 $(OUT)/src/%: $(OUT)/%.tar.gz | $(OUT_DIRS)
 	$(SILENT) \
@@ -349,4 +388,9 @@ $(OUT)/src/%: $(OUT)/%.tar.gz | $(OUT_DIRS)
 
 $(OUT_DIRS):
 	$(SILENT)mkdir -p $@
+
+$(MISSING_MAKEDEPS):
+	$(error 'required commands $(MISSING_MAKEDEPS) not found; install appropriate packages e.g. docker-ce, busybox and curl')
+
+.DELETE_ON_ERROR: $(FETCH_TARGETS)
 
