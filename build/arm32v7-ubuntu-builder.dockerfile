@@ -30,7 +30,7 @@ RUN set -x \
   && builddir="/tmp/out" \
   && mkdir -p "$builddir" \
   && cd "$builddir" \
-  && cp -R "/usr/local/src/dumb-init-$DUMB_INIT_VERISON" . \
+  && cp -R "/usr/local/src/dumb-init-$DUMB_INIT_VERSION" . \
   && cd dumb-init-$DUMB_INIT_VERISON \
   && make "$PARALLELMFLAGS" \
   && chmod +x dumb-init \
