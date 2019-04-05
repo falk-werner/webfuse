@@ -60,11 +60,11 @@ DISABLE_MD5SUM := $(DISABLE_MD5SUM)
 
 # Project dependencies
 
-DUMB_INIT_VERISON ?= 1.2.2
-DOCKER_BUILDARGS += DUMB_INIT_VERISON=$(DUMB_INIT_VERISON)
-FETCH_TARGETS += $(OUT)/dumb-init-$(DUMB_INIT_VERISON).tar.gz
-$(OUT)/dumb-init-$(DUMB_INIT_VERISON).tar.gz: URL := https://github.com/Yelp/dumb-init/archive/v${DUMB_INIT_VERISON}.tar.gz
-$(DISABLE_MD5SUM)$(OUT)/dumb-init-$(DUMB_INIT_VERISON).tar.gz: MD5 := 6166084b05772cdcf615a762c6f3b32e
+DUMB_INIT_VERSION ?= 1.2.2
+DOCKER_BUILDARGS += DUMB_INIT_VERSION=$(DUMB_INIT_VERSION)
+FETCH_TARGETS += $(OUT)/dumb-init-$(DUMB_INIT_VERSION).tar.gz
+$(OUT)/dumb-init-$(DUMB_INIT_VERSION).tar.gz: URL := https://github.com/Yelp/dumb-init/archive/v${DUMB_INIT_VERSION}.tar.gz
+$(DISABLE_MD5SUM)$(OUT)/dumb-init-$(DUMB_INIT_VERSION).tar.gz: MD5 := 6166084b05772cdcf615a762c6f3b32e
 
 GTEST_VERSION ?= 1.8.1
 DOCKER_BUILDARGS += GTEST_VERSION=$(GTEST_VERSION)
@@ -91,6 +91,7 @@ $(OUT)/jansson-$(JANSSON_VERSION).tar.gz: URL := https://github.com/akheron/jans
 $(DISABLE_MD5SUM)$(OUT)/jansson-$(JANSSON_VERSION).tar.gz: MD5 := c4b106528d5ffb521178565de1ba950d
 
 QEMU_VERSION ?= v3.1.0-2
+DOCKER_BUILDARGS += QEMU_VERSION_=$(QEMU_VERSION)
 FETCH_TARGETS += $(OUT)/docker/qemu-arm-static-$(QEMU_VERSION)
 $(OUT)/docker/qemu-arm-static-$(QEMU_VERSION): URL := https://github.com/multiarch/qemu-user-static/releases/download/$(QEMU_VERSION)/qemu-arm-static
 $(DISABLE_MD5SUM)$(OUT)/docker/qemu-arm-static-$(QEMU_VERSION): MD5 := 8ebd24e63fdfa07c557d45373bd831b1
