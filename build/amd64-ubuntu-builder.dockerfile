@@ -1,6 +1,7 @@
+ARG REGISTRY_PREFIX=''
 ARG CODENAME=bionic
 
-FROM ubuntu:$CODENAME as builder
+FROM ${REGISTRY_PREFIX}ubuntu:${CODENAME} as builder
 
 RUN set -x \
   && apt update \

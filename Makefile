@@ -26,8 +26,8 @@ OUT ?= $(PROJECT_ROOT)/.build
 VERSION ?= $(shell cat $(PROJECT_ROOT)/VERSION)
 VERSION := $(VERSION)
 
-UID ?= $(shell id -u)
-UID := $(UID)
+USERID ?= $(shell id -u)
+USERID := $(USERID)
 
 CONTAINER_USER ?= user
 CONTAINER_GROUP ?= user
@@ -158,9 +158,10 @@ DOCKER_RUNFLAGS += --env NINJA_STATUS
 
 DOCKER_BUILDARGS += CODENAME=$(CODENAME)
 DOCKER_BUILDARGS += PARALLELMFLAGS=$(_PARALLELMFLAGS)
-DOCKER_BUILDARGS += USERID=$(UID)
+DOCKER_BUILDARGS += USERID=$(USERID)
 DOCKER_BUILDARGS += PROJECT_ROOT=$(CONTAINER_PROJECT_ROOT)
 DOCKER_BUILDARGS += OUT=$(CONTAINER_OUT)
+DOCKER_BUILDARGS += REGISTRY_PREFIX=$(REGISTRY_PREFIX)
 
 DOCKER_BUILDFLAGS += --rm
 DOCKER_BUILDFLAGS += $(addprefix --build-arg ,$(DOCKER_BUILDARGS))
@@ -277,7 +278,7 @@ discover_cc_rule = \
 discover_cc = cat $<
 
 wrapper_rule = \
-  $$(OUT)/$1/$$(BUILDTYPE)/gdbserver: $$(PROJECT_ROOT)/build/run_image.template $$(OUT)/docker/$1; \
+  $$(OUT)/$1/$$(BUILDTYPE)/gdbserver: $$(PROJECT_ROOT)/build/run_image.sh.template $$(OUT)/docker/$1; \
     $$(SILENT)$$(call wrapper,$1)
 wrapper = \
      $(call echo_if_silent,generating $@) \

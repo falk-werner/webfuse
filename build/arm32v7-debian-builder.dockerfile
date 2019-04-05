@@ -1,6 +1,7 @@
+ARG REGISTRY_PREFIX=''
 ARG CODENAME=testing-slim
 
-FROM arm32v7/debian:$CODENAME as builder
+FROM ${REGISTRY_PREFIX}arm32v7/debian:${CODENAME} as builder
 
 ARG QEMU_VERSION_=v3.1.0-2
 

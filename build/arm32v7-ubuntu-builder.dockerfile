@@ -1,6 +1,7 @@
+ARG REGISTRY_PREFIX=''
 ARG CODENAME=bionic
 
-FROM arm32v7/ubuntu:$CODENAME as builder
+FROM ${REGISTRY_PREFIX}arm32v7/ubuntu:${CODENAME} as builder
 
 ARG QEMU_VERSION_=v3.1.0-2
 

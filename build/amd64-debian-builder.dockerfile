@@ -1,6 +1,7 @@
+ARG REGISTRY_PREFIX=''
 ARG CODENAME=testing-slim
 
-FROM debian:$CODENAME as builder
+FROM ${REGISTRY_PREFIX}debian:${CODENAME} as builder
 
 RUN set -x \
   && apt update \
