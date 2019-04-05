@@ -5,7 +5,6 @@ set -e
 DOCKER="${DOCKER:-%DOCKER%}"
 IMAGE="${IMAGE:-%IMAGE%}"
 NETWORK="${NETWORK:-host}"
-USERID="${USERID:-$(id -u)}"
 PROJECT_ROOT="${PROJECT_ROOT:-%PROJECT_ROOT%}"
 SCRIPT_ROOT="${SCRIPT_ROOT:-"$PROJECT_ROOT/build"}"
 ENTRYPOINT="${ENTRYPOINT:-%RUNCMD%}"
@@ -42,7 +41,13 @@ if [ -t 0 ] && ! "$SCRIPT_ROOT/is_running_in_bg.sh" $$; then
   RUNFLAGS="$RUNFLAGS --interactive"
 fi
 
-RUNFLAGS="$RUNFLAGS --user $USERID:$USERID"
+if [ -n "$USERID" ]; then
+  RUNFLAGS="$RUNFLAGS --user $USERID:$USERID"
+fi
+
+if [ -n "$PID" ]; then
+  RUNFLAGS="$RUNFLAGS --pid $PID"
+fi
 
 # shellcheck disable=SC2086
 set -- $RUNFLAGS --entrypoint "$ENTRYPOINT" "$IMAGE" "$@"
