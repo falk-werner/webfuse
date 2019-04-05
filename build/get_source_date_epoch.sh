@@ -13,6 +13,12 @@ try_git() {
   [ -n "$SOURCE_DATE_EPOCH" ]
 }
 
+try_svn() {
+  [ -d .svn ] || return 1
+  SOURCE_DATE_EPOCH="$(date -d "$(svn info | sed -n -e 's/^Last Changed Date: //p')" +%s)"
+  [ -n "$SOURCE_DATE_EPOCH" ]
+}
+
 try_hg() {
   [ -d .hg ] || return 1
   SOURCE_DATE_EPOCH="$(hg log --template '{date}' -l 1 | cut -d. -f1)"
@@ -24,5 +30,5 @@ try_mtime() {
   [ -n "$SOURCE_DATE_EPOCH" ]
 }
 
-try_git || try_hg || try_mtime || SOURCE_DATE_EPOCH=""
+try_git || try_svn || try_hg || try_mtime || SOURCE_DATE_EPOCH=""
 echo "$SOURCE_DATE_EPOCH"
