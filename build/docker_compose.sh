@@ -9,49 +9,43 @@ NETWORK="${NETWORK:-host}"
 USERID="${USERID:-$(id -u)}"
 SCRIPT_ROOT="${SCRIPT_ROOT:-"$(dirname "$(readlink -f "$0")")"}"
 ENTRYPOINT="${ENTRYPOINT:-docker-compose}"
-HOST_CONTAINER="${HOST_CONTAINER:-"$("$SCRIPT_ROOT/get_container_id.sh")"}" || true
 HOST_ENVFILTER="${HOST_ENVFILTER:-^DOCKER_\|^COMPOSE_}"
 
-RUNFLAGS='--rm'
+set -- --entrypoint "$ENTRYPOINT" "$IMAGE" "$@"
+set -- --user "$USERID:$USERID" --network "$NETWORK" --workdir "$PWD" "$@"
+
+ENVFLAGS="$(printenv | grep -e "$HOST_ENVFILTER" | sed -n -e 's/\([^=]*\)=.*/-e \1/p')" || true
+#shellcheck disable=SC2086
+set -- $ENVFLAGS "$@"
+
+if [ -n "$CONTAINER_CGROUP_PARENT" ]; then
+  set -- --cgroup-parent "$CONTAINER_CGROUP_PARENT" "$@"
+fi
+
+HOST_CONTAINER="${HOST_CONTAINER:-"$("$SCRIPT_ROOT/get_container_id.sh")"}" || true
+if [ -n "$HOST_CONTAINER" ]; then
+  set --  --volumes-from "$HOST_CONTAINER" "$@"
+fi
 
 # setup options for connection to docker host
 if [ -S "$DOCKER_HOST" ]; then
   DOCKER_SOCK_GROUP="$(stat -c '%g' "$DOCKER_HOST")"
-  RUNFLAGS="$RUNFLAGS -e DOCKER_SOCK_GROUP=$DOCKER_SOCK_GROUP --group-add $DOCKER_SOCK_GROUP"
-  RUNFLAGS="$RUNFLAGS -v $DOCKER_HOST:$DOCKER_HOST -e DOCKER_HOST"
+  set -- -e DOCKER_SOCK_GROUP="$DOCKER_SOCK_GROUP" --group-add "$DOCKER_SOCK_GROUP" "$@"
 else
-  RUNFLAGS="$RUNFLAGS -e DOCKER_HOST -e DOCKER_TLS_VERIFY -e DOCKER_CERT_PATH"
+  set -- -e DOCKER_HOST -e DOCKER_TLS_VERIFY -e DOCKER_CERT_PATH "$@"
 fi
 
-if [ -n "$HOST_CONTAINER" ]; then
-  RUNFLAGS="$RUNFLAGS --volumes-from $HOST_CONTAINER"
+if [ -t 0 ] && ! "$SCRIPT_ROOT/is_running_in_bg.sh" $$; then
+  set -- --interactive "$@"
 fi
-
-RUNFLAGS="$RUNFLAGS --network $NETWORK"
-
-if [ -n "$CONTAINER_CGROUP_PARENT" ]; then
-  RUNFLAGS="$RUNFLAGS --cgroup-parent $CONTAINER_CGROUP_PARENT"
-fi
-
-RUNFLAGS="$RUNFLAGS --workdir $PWD"
 
 # if STDIN piped or redirected
 if [ -p /dev/stdin ] || { [ ! -t 0 ] && [ ! -p /dev/stdin ]; }; then
-  RUNFLAGS="$RUNFLAGS --interactive"
+  set -- --interactive "$@"
 elif [ -t 1 ]; then
-  RUNFLAGS="$RUNFLAGS --tty"
-fi
-  
-if [ -t 0 ] && ! "$SCRIPT_ROOT/is_running_in_bg.sh" $$; then
-  RUNFLAGS="$RUNFLAGS --interactive"
+  set -- --tty "$@"
 fi
 
-RUNFLAGS="$RUNFLAGS --user $USERID:$USERID"
-
-ENVVARS="$(printenv | grep -e "$HOST_ENVFILTER" | sed -n -e 's/\([^=]*\)=.*/-e \1/p')" || true
-RUNFLAGS="$RUNFLAGS $ENVVARS"
-
-# shellcheck disable=SC2086
-set -- $RUNFLAGS --entrypoint "$ENTRYPOINT" "$IMAGE" "$@"
+set -- --rm "$@"
 
 exec "$DOCKER" run "$@"

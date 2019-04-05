@@ -14,42 +14,45 @@ if [ ! -d "$SCRIPT_ROOT" ]; then
   exit 1
 fi
 
-HOST_CONTAINER="${HOST_CONTAINER:-"$("$SCRIPT_ROOT/get_container_id.sh")"}" || true
-
-RUNFLAGS='%RUNFLAGS%'
-
-if [ -n "$HOST_CONTAINER" ]; then
-  RUNFLAGS="$RUNFLAGS --volumes-from $HOST_CONTAINER"
-fi
-
-RUNFLAGS="$RUNFLAGS --network $NETWORK"
-
-if [ -n "$CONTAINER_CGROUP_PARENT" ]; then
-  RUNFLAGS="$RUNFLAGS --cgroup-parent $CONTAINER_CGROUP_PARENT"
-fi
-
-RUNFLAGS="$RUNFLAGS --workdir $PWD"
-
-# if STDIN piped or redirected
-if [ -p /dev/stdin ] || { [ ! -t 0 ] && [ ! -p /dev/stdin ]; }; then
-  RUNFLAGS="$RUNFLAGS --interactive"
-elif [ -t 1 ]; then
-  RUNFLAGS="$RUNFLAGS --tty"
-fi
-  
-if [ -t 0 ] && ! "$SCRIPT_ROOT/is_running_in_bg.sh" $$; then
-  RUNFLAGS="$RUNFLAGS --interactive"
-fi
+set -- --entrypoint "$ENTRYPOINT" "$IMAGE" "$@"
+set -- --network "$NETWORK" --workdir "$PWD" "$@"
 
 if [ -n "$USERID" ]; then
-  RUNFLAGS="$RUNFLAGS --user $USERID:$USERID"
+  set -- --user "$USERID:$USERID" "$@"
 fi
 
 if [ -n "$PID" ]; then
-  RUNFLAGS="$RUNFLAGS --pid $PID"
+  set -- --pid "$PID" "$@"
 fi
 
-# shellcheck disable=SC2086
-set -- $RUNFLAGS --entrypoint "$ENTRYPOINT" "$IMAGE" "$@"
+if [ -n "$CONTAINER_CGROUP_PARENT" ]; then
+  set -- --cgroup-parent "$CONTAINER_CGROUP_PARENT" "$@"
+fi
+
+HOST_CONTAINER="${HOST_CONTAINER:-"$("$SCRIPT_ROOT/get_container_id.sh")"}" || true
+if [ -n "$HOST_CONTAINER" ]; then
+  set --  --volumes-from "$HOST_CONTAINER" "$@"
+fi
+
+# setup options for connection to docker host
+if [ -S "$DOCKER_HOST" ]; then
+  DOCKER_SOCK_GROUP="$(stat -c '%g' "$DOCKER_HOST")"
+  set -- -e DOCKER_SOCK_GROUP="$DOCKER_SOCK_GROUP" --group-add "$DOCKER_SOCK_GROUP" "$@"
+else
+  set -- -e DOCKER_HOST -e DOCKER_TLS_VERIFY -e DOCKER_CERT_PATH "$@"
+fi
+
+if [ -t 0 ] && ! "$SCRIPT_ROOT/is_running_in_bg.sh" $$; then
+  set -- --interactive "$@"
+fi
+
+# if STDIN piped or redirected
+if [ -p /dev/stdin ] || { [ ! -t 0 ] && [ ! -p /dev/stdin ]; }; then
+  set -- --interactive "$@"
+elif [ -t 1 ]; then
+  set -- --tty "$@"
+fi
+
+set -- %RUNFLAGS% "$@"
 
 exec "$DOCKER" run "$@"
