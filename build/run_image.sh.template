@@ -34,6 +34,8 @@ if [ -n "$HOST_CONTAINER" ]; then
   set --  --volumes-from "$HOST_CONTAINER" "$@"
 fi
 
+set -- %RUNFLAGS% "$@"
+
 if [ -t 0 ] && ! "$SCRIPT_ROOT/is_running_in_bg.sh" $$; then
   set -- --interactive "$@"
 fi
@@ -45,6 +47,6 @@ elif [ -t 1 ]; then
   set -- --tty "$@"
 fi
 
-set -- %RUNFLAGS% "$@"
+set -- --rm "$@"
 
 exec "$DOCKER" run "$@"

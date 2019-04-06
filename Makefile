@@ -149,8 +149,6 @@ DOCKER_RUNFLAGS += --security-opt apparmor:unconfined
 DOCKER_RUNFLAGS += --cap-add SYS_PTRACE
 DOCKER_RUNFLAGS += --security-opt seccomp=unconfined
 
-DOCKER_RUNFLAGS += --interactive
-DOCKER_RUNFLAGS += --rm
 DOCKER_RUNFLAGS += --user $(CONTAINER_USER):$(CONTAINER_GROUP)
 DOCKER_RUNFLAGS += --env SOURCE_DATE_EPOCH
 DOCKER_RUNFLAGS += --env BUILDTIME
@@ -163,7 +161,6 @@ DOCKER_BUILDARGS += PROJECT_ROOT=$(CONTAINER_PROJECT_ROOT)
 DOCKER_BUILDARGS += OUT=$(CONTAINER_OUT)
 DOCKER_BUILDARGS += REGISTRY_PREFIX=$(REGISTRY_PREFIX)
 
-DOCKER_BUILDFLAGS += --rm
 DOCKER_BUILDFLAGS += $(addprefix --build-arg ,$(DOCKER_BUILDARGS))
 
 OUT_TARGETS += $(addprefix $(OUT)/,$(TARGETS))
@@ -221,7 +218,7 @@ $(HOST_CONTAINER)image_run_volumes += --volume '$(realpath $(OUT)/$1):$(CONTAINE
 image_run_volumes += $(addprefix --volumes-from ,$2)
 
 image_name = $(REGISTRY_PREFIX)$(subst -,/,$1)/$(PROJECT_NAME):$(VERSION)
-image_run = $(DOCKER) run $(DOCKER_RUNFLAGS) \
+image_run = $(DOCKER) run --rm --interactive $(DOCKER_RUNFLAGS) \
   $(call image_run_volumes,$1,$(HOST_CONTAINER)) \
   $(addprefix --cgroup-parent ,$(CONTAINER_CGROUP_PARENT)) \
   --workdir '$(CONTAINER_OUT)/$1/$(BUILDTYPE)' \
@@ -234,7 +231,7 @@ image_rule = \
     $$(SILENT)$$(call image,$1)
 image = \
      $(call echo_if_silent,TARGET=$1 docker build $(call image_name,$1) $(OUT)) \
-  && $(DOCKER) build $(DOCKER_BUILDFLAGS) --iidfile $@ --file $< --tag $(call image_name,$1) $(OUT)
+  && $(DOCKER) build --rm $(DOCKER_BUILDFLAGS) --iidfile $@ --file $< --tag $(call image_name,$1) $(OUT)
 
 configure_rule = \
   $$(OUT)/$1/$$(BUILDTYPE)/CMakeCache.txt: $$(PROJECT_ROOT)/CMakeLists.txt $$(OUT)/docker/$1 | $$(OUT)/$1/$$(BUILDTYPE)/gdbserver; \
