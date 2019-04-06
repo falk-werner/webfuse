@@ -34,14 +34,6 @@ if [ -n "$HOST_CONTAINER" ]; then
   set --  --volumes-from "$HOST_CONTAINER" "$@"
 fi
 
-# setup options for connection to docker host
-if [ -S "$DOCKER_HOST" ]; then
-  DOCKER_SOCK_GROUP="$(stat -c '%g' "$DOCKER_HOST")"
-  set -- -e DOCKER_SOCK_GROUP="$DOCKER_SOCK_GROUP" --group-add "$DOCKER_SOCK_GROUP" "$@"
-else
-  set -- -e DOCKER_HOST -e DOCKER_TLS_VERIFY -e DOCKER_CERT_PATH "$@"
-fi
-
 if [ -t 0 ] && ! "$SCRIPT_ROOT/is_running_in_bg.sh" $$; then
   set -- --interactive "$@"
 fi
