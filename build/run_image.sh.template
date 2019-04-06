@@ -1,0 +1,52 @@
+#!/bin/sh
+
+set -e
+
+DOCKER="${DOCKER:-%DOCKER%}"
+IMAGE="${IMAGE:-%IMAGE%}"
+NETWORK="${NETWORK:-host}"
+PROJECT_ROOT="${PROJECT_ROOT:-%PROJECT_ROOT%}"
+SCRIPT_ROOT="${SCRIPT_ROOT:-"$PROJECT_ROOT/build"}"
+ENTRYPOINT="${ENTRYPOINT:-%RUNCMD%}"
+
+if [ ! -d "$SCRIPT_ROOT" ]; then
+  echo "error:$0: $SCRIPT_ROOT not found; set project root (PROJECT_ROOT=)" 1>&2
+  exit 1
+fi
+
+set -- --entrypoint "$ENTRYPOINT" "$IMAGE" "$@"
+set -- --network "$NETWORK" --workdir "$PWD" "$@"
+
+if [ -n "$USERID" ]; then
+  set -- --user "$USERID:$USERID" "$@"
+fi
+
+if [ -n "$PID" ]; then
+  set -- --pid "$PID" "$@"
+fi
+
+if [ -n "$CONTAINER_CGROUP_PARENT" ]; then
+  set -- --cgroup-parent "$CONTAINER_CGROUP_PARENT" "$@"
+fi
+
+HOST_CONTAINER="${HOST_CONTAINER:-"$("$SCRIPT_ROOT/get_container_id.sh")"}" || true
+if [ -n "$HOST_CONTAINER" ]; then
+  set --  --volumes-from "$HOST_CONTAINER" "$@"
+fi
+
+set -- %RUNFLAGS% "$@"
+
+if [ -t 0 ] && ! "$SCRIPT_ROOT/is_running_in_bg.sh" $$; then
+  set -- --interactive "$@"
+fi
+
+# if STDIN piped or redirected
+if [ -p /dev/stdin ] || { [ ! -t 0 ] && [ ! -p /dev/stdin ]; }; then
+  set -- --interactive "$@"
+elif [ -t 1 ]; then
+  set -- --tty "$@"
+fi
+
+set -- --rm "$@"
+
+exec "$DOCKER" run "$@"

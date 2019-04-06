@@ -1,8 +1,11 @@
+ARG REGISTRY_PREFIX=''
 ARG CODENAME=bionic
 
-FROM arm32v7/ubuntu:$CODENAME as builder
+FROM ${REGISTRY_PREFIX}arm32v7/ubuntu:${CODENAME} as builder
 
-COPY docker/qemu-arm-static-* /usr/bin/qemu-arm-static
+ARG QEMU_VERSION_=v3.1.0-2
+
+COPY docker/qemu-arm-static-$QEMU_VERSION_ /usr/bin/qemu-arm-static
 
 RUN set -x \
   && apt update \
@@ -20,7 +23,7 @@ COPY src /usr/local/src
 
 ARG PARALLELMFLAGS=-j2
 
-ARG DUMB_INIT_VERISON=1.2.2
+ARG DUMB_INIT_VERSION=1.2.2
 
 RUN set -x \
   && builddeps="xxd" \
@@ -28,8 +31,8 @@ RUN set -x \
   && builddir="/tmp/out" \
   && mkdir -p "$builddir" \
   && cd "$builddir" \
-  && cp -R "/usr/local/src/dumb-init-$DUMB_INIT_VERISON" . \
-  && cd dumb-init-$DUMB_INIT_VERISON \
+  && cp -R "/usr/local/src/dumb-init-$DUMB_INIT_VERSION" . \
+  && cd "dumb-init-$DUMB_INIT_VERSION" \
   && make "$PARALLELMFLAGS" \
   && chmod +x dumb-init \
   && mv dumb-init /usr/local/bin/dumb-init \

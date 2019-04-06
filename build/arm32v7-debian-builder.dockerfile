@@ -1,7 +1,11 @@
 ARG REGISTRY_PREFIX=''
-ARG CODENAME=bionic
+ARG CODENAME=testing-slim
 
-FROM ${REGISTRY_PREFIX}ubuntu:${CODENAME} as builder
+FROM ${REGISTRY_PREFIX}arm32v7/debian:${CODENAME} as builder
+
+ARG QEMU_VERSION_=v3.1.0-2
+
+COPY docker/qemu-arm-static-$QEMU_VERSION_ /usr/bin/qemu-arm-static
 
 RUN set -x \
   && apt update \
@@ -13,8 +17,7 @@ RUN set -x \
        pkg-config \
        rsync \
        gdb \
-       gdbserver \
-       valgrind
+       gdbserver
 
 COPY src /usr/local/src
 

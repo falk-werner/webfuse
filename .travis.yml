@@ -12,7 +12,8 @@ addons:
     - qemu-user-static
 env:
   global:
-    - PARALLELMFLAGS="-j2"
+    - DISTRO=ubuntu
+    - PARALLELMFLAGS="-j4"
     - PORTABLE_WORSPACE=1
   matrix:
     - BUILDTYPE=Debug      MARCH=amd64   CHECK_TARGET=memcheck

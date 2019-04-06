@@ -1,7 +1,7 @@
 ARG REGISTRY_PREFIX=''
-ARG CODENAME=bionic
+ARG CODENAME=testing-slim
 
-FROM ${REGISTRY_PREFIX}ubuntu:${CODENAME} as builder
+FROM ${REGISTRY_PREFIX}debian:${CODENAME} as builder
 
 RUN set -x \
   && apt update \
