@@ -7,7 +7,7 @@ DOCKER_HOST="${DOCKER_HOST:-/var/run/docker.sock}"
 IMAGE="${IMAGE:-${REGISTRY_PREFIX}docker/compose:1.24.0}"
 NETWORK="${NETWORK:-host}"
 USERID="${USERID:-$(id -u)}"
-SCRIPT_ROOT="${SCRIPT_ROOT:-"$(dirname "$(readlink -f "$0")")"}"
+SCRIPT_ROOT="${SCRIPT_ROOT:-"$(cd "$(dirname "$0")" && echo "$PWD")"}"
 ENTRYPOINT="${ENTRYPOINT:-docker-compose}"
 HOST_ENVFILTER="${HOST_ENVFILTER:-^DOCKER_\|^COMPOSE_}"
 
