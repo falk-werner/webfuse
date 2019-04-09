@@ -4,10 +4,12 @@ set -e
 
 DOCKER="${DOCKER:-docker}"
 DOCKER_HOST="${DOCKER_HOST:-/var/run/docker.sock}"
-IMAGE="${IMAGE:-${REGISTRY_PREFIX}docker/compose:1.24.0}"
+VERSION="${VERSION:-1.24.0}"
+IMAGE="${IMAGE:-${REGISTRY_PREFIX}docker/compose:${VERSION}}"
 NETWORK="${NETWORK:-host}"
 USERID="${USERID:-$(id -u)}"
 SCRIPT_ROOT="${SCRIPT_ROOT:-"$(cd "$(dirname "$0")" && echo "$PWD")"}"
+PROJECT_ROOT="${PROJECT_ROOT:-"$(cd "$SCRIPT_ROOT/.." && echo "$PWD")"}"
 ENTRYPOINT="${ENTRYPOINT:-docker-compose}"
 HOST_ENVFILTER="${HOST_ENVFILTER:-^DOCKER_\|^COMPOSE_}"
 
@@ -24,7 +26,9 @@ fi
 
 HOST_CONTAINER="${HOST_CONTAINER:-"$("$SCRIPT_ROOT/get_container_id.sh")"}" || true
 if [ -n "$HOST_CONTAINER" ]; then
-  set --  --volumes-from "$HOST_CONTAINER" "$@"
+  set -- --volumes-from "$HOST_CONTAINER" "$@"
+else
+  set -- --volume "$PROJECT_ROOT:$PROJECT_ROOT:cached" "$@"
 fi
 
 # setup options for connection to docker host
