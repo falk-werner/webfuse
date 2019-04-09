@@ -44,14 +44,14 @@ struct wf_impl_session * wf_impl_session_create(
     char const * protocol_name)
 {
     static int session_id = 0;
-    char path[PATH_MAX];
-    snprintf(path, PATH_MAX, "%s/%d", mount_point, session_id);
-    session_id++;
-    mkdir(path, 0755);
 
     struct wf_impl_session * session = malloc(sizeof(struct wf_impl_session));
     if (NULL != session)
     {
+        snprintf(session->mount_point, PATH_MAX, "%s/%d", mount_point, session_id);
+        session_id++;
+        mkdir(session->mount_point, 0755);
+
         wf_dlist_item_init(&session->item);
         
         session->wsi = wsi;
@@ -61,7 +61,7 @@ struct wf_impl_session * wf_impl_session_create(
         wf_impl_jsonrpc_proxy_init(&session->rpc, timeout_manager, &wf_impl_session_send, session);
         wf_message_queue_init(&session->queue);
 
-        bool success = wf_impl_filesystem_init(&session->filesystem, session, path);
+        bool success = wf_impl_filesystem_init(&session->filesystem, session, session->mount_point);
         if (success)
         {
             lws_sock_file_fd_type fd;
@@ -76,6 +76,7 @@ struct wf_impl_session * wf_impl_session_create(
 
         if (!success)
         {
+            rmdir(session->mount_point);
             wf_impl_jsonrpc_proxy_cleanup(&session->rpc);
             wf_message_queue_cleanup(&session->queue);
             free(session);
@@ -90,6 +91,7 @@ void wf_impl_session_dispose(
     struct wf_impl_session * session)
 {
     wf_impl_filesystem_cleanup(&session->filesystem);
+    rmdir(session->mount_point);
 
     wf_impl_jsonrpc_proxy_cleanup(&session->rpc);
     wf_message_queue_cleanup(&session->queue);

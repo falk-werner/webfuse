@@ -9,6 +9,8 @@
 using std::size_t;
 #endif
 
+#include <limits.h>
+
 #include "webfuse/core/message_queue.h"
 #include "webfuse/adapter/impl/jsonrpc/proxy.h"
 #include "webfuse/adapter/impl/jsonrpc/server.h"
@@ -29,6 +31,7 @@ struct wf_impl_timeout_manager;
 struct wf_impl_session
 {
     struct wf_dlist_item item;
+    char mount_point[PATH_MAX];
     struct lws * wsi;
     struct lws * wsi_fuse;
     bool is_authenticated;

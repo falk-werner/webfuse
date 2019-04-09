@@ -11,6 +11,7 @@ find_package(PkgConfig REQUIRED)
 pkg_check_modules(FUSE3 REQUIRED fuse3)
 pkg_check_modules(LWS REQUIRED libwebsockets)
 pkg_check_modules(JANSSON REQUIRED jansson)
+pkg_check_modules(UUID REQUIRED uuid)
 
 add_definitions(-D_FILE_OFFSET_BITS=64)
 
@@ -26,6 +27,7 @@ set(EXTRA_INCLUDE_DIRS
 	${FUSE3_INCLUDE_DIRS} 
 	${LWS_INCLUDE_DIRS} 
 	${JANSSON_INCLUDE_DIRS}
+	${UUID_INCLUDE_DIRS}
 )
 
 set(EXTRA_LIBS 
@@ -33,6 +35,7 @@ set(EXTRA_LIBS
 	${FUSE3_LIBRARIES}
 	${LWS_LIBRARIES}
 	${JANSSON_LIBRARIES}
+	${UUID_LIBRARIES}
 	${CMAKE_THREAD_LIBS_INIT}
 )
 
@@ -41,6 +44,7 @@ set(EXTRA_CFLAGS
 	${FUSE3_CFLAGS_OTHER}
 	${LWS_CFLAGS_OTHER}
 	${JANSSON_CFLAGS_OTHER}
+	${UUID_CFLAGS_OTHER}
 	"-pthread"
 )
 
