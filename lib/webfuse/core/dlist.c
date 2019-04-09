@@ -2,6 +2,20 @@
 #include "webfuse/core/util.h"
 #include <stddef.h>
 
+void wf_dlist_item_init(
+    struct wf_dlist_item * item)
+{
+    item->next = NULL;
+    item->prev = NULL;
+}
+
+void wf_dlist_item_cleanup(
+    struct wf_dlist_item * item)
+{
+    item->next = NULL;
+    item->prev = NULL;
+}
+
 void wf_dlist_init(
     struct wf_dlist * list)
 {

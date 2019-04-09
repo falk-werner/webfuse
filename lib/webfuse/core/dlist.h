@@ -21,6 +21,7 @@ struct wf_dlist
     struct wf_dlist_item * first;
 };
 
+
 typedef void wf_dlist_item_cleanup_fn(
     struct wf_dlist_item * item,
     void * user_data);
@@ -29,6 +30,11 @@ typedef bool wf_dlist_item_predicate_fn(
     struct wf_dlist_item * item,
     void * user_data);
 
+extern void wf_dlist_item_init(
+    struct wf_dlist_item * item);
+
+extern void wf_dlist_item_cleanup(
+    struct wf_dlist_item * item);
 
 extern void wf_dlist_init(
     struct wf_dlist * list);

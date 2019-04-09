@@ -7,6 +7,7 @@
 
 #include "webfuse/adapter/impl/session.h"
 #include "webfuse/adapter/impl/fuse_wrapper.h"
+#include "webfuse/core/dlist.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -19,7 +20,7 @@ struct wf_impl_jsonrpc_server;
 
 struct wf_impl_session_manager
 {
-    struct wf_impl_session session;
+    struct wf_dlist sessions;
 };
 
 extern void wf_impl_session_manager_init(
