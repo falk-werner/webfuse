@@ -8,8 +8,8 @@ VERSION="${VERSION:-1.24.0}"
 IMAGE="${IMAGE:-${REGISTRY_PREFIX}docker/compose:${VERSION}}"
 NETWORK="${NETWORK:-host}"
 USERID="${USERID:-$(id -u)}"
-SCRIPT_ROOT="${SCRIPT_ROOT:-"$(cd "$(dirname "$0")" && echo "$PWD")"}"
-PROJECT_ROOT="${PROJECT_ROOT:-"$(cd "$SCRIPT_ROOT/.." && echo "$PWD")"}"
+SCRIPTDIR="${SCRIPTDIR:-"$(cd "$(dirname "$0")" && echo "$PWD")"}"
+PROJECTDIR="${PROJECTDIR:-"$PWD"}"
 ENTRYPOINT="${ENTRYPOINT:-docker-compose}"
 HOST_ENVFILTER="${HOST_ENVFILTER:-^DOCKER_\|^COMPOSE_}"
 
@@ -24,11 +24,11 @@ if [ -n "$CONTAINER_CGROUP_PARENT" ]; then
   set -- --cgroup-parent "$CONTAINER_CGROUP_PARENT" "$@"
 fi
 
-HOST_CONTAINER="${HOST_CONTAINER:-"$("$SCRIPT_ROOT/get_container_id.sh")"}" || true
+HOST_CONTAINER="${HOST_CONTAINER:-"$("$SCRIPTDIR/get_container_id.sh")"}" || true
 if [ -n "$HOST_CONTAINER" ]; then
   set -- --volumes-from "$HOST_CONTAINER" "$@"
 else
-  set -- --volume "$PROJECT_ROOT:$PROJECT_ROOT:cached" "$@"
+  set -- --volume "$PROJECTDIR:$PROJECTDIR:cached" "$@"
 fi
 
 # setup options for connection to docker host
@@ -39,7 +39,7 @@ else
   set -- -e DOCKER_HOST -e DOCKER_TLS_VERIFY -e DOCKER_CERT_PATH "$@"
 fi
 
-if [ -t 0 ] && ! "$SCRIPT_ROOT/is_running_in_bg.sh" $$; then
+if [ -t 0 ] && ! "$SCRIPTDIR/is_running_in_bg.sh" $$; then
   set -- --interactive "$@"
 fi
 
