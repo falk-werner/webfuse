@@ -11,6 +11,7 @@ MAKEFILE := $(MAKEFILE)
 PROJECTDIR ?= $(realpath $(dir $(MAKEFILE)))
 SCRIPTDIR ?= $(realpath $(dir $(CURRENT_MAKEFILE)))
 OUTDIR ?= $(PROJECTDIR)/.build
+OFFLINE_CACHEDIR ?= $(PROJECTDIR)/.deps
 
 BUILDTYPE ?= Debug
 

@@ -15,16 +15,22 @@ $(VERBOSE)SILENT := @
 
 filter_out_command ?= $(filter $1,$(foreach CMD,$1,$(shell command -v $(CMD) 2>&1 1>/dev/null || echo $(CMD))))
 
-curl = $(call echo_if_silent,curl -fSL $(CURLFLAGS) -o $1 $2) \
+md5sum = { \
+  if [ -n "$2" ]; then \
+    echo "$2\t$1" > $1.md5; \
+    md5sum -c $1.md5; \
+  else \
+    echo 'warning:$1: no md5 skipping verification' 1>&2; \
+  fi; \
+}
+
+$(DISABLE_FETCH)curl = $(call echo_if_silent,curl -fSL $(CURLFLAGS) -o $1 $2) \
   && curl -fSL $(CURLFLAGS) -o $1 $2 \
-  && { \
-       if [ -n "$3" ]; then \
-         echo "$3\t$1" > $1.md5; \
-         md5sum -c $1.md5; \
-       else \
-         echo 'warning:$1: no md5 skipping verification' 1>&2; \
-       fi; \
-     }
+  && $(call md5sum,$1,$3)
+
+curl ?= $(call echo_if_silent,cp $(OFFLINE_CACHEDIR)/$(notdir $1) $1) \
+  && cp $(OFFLINE_CACHEDIR)/$(notdir $1) $1 \
+  && $(call md5sum,$1,$3)
 
 check_rule = \
   check-$1: build-$1;
@@ -61,6 +67,7 @@ _PARALLELMFLAGS := $(addprefix -j,$(shell echo "$$(($(_NPROC)/$(TASKS)))"))
 #######################################################################################################################
 # Makefile dependencies
 
+MAKEFILE_DEPS += cp
 MAKEFILE_DEPS += rm
 MAKEFILE_DEPS += mkdir
 MAKEFILE_DEPS += echo
