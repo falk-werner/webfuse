@@ -1,4 +1,4 @@
-.vscode
-.build
-.deps
-.settings/language.settings.xml
+/.vscode/
+/.build/
+/.deps/
+/.settings/language.settings.xml
