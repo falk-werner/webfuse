@@ -4,7 +4,6 @@ participant "webfuse\ndaemon" as daemon
 actor "user" as user
 
 group startup
-daemon -> daemon : fuse_mount
 daemon -> daemon : start ws
 end
 ...
@@ -16,8 +15,14 @@ provider -> daemon : connect
     daemon -> daemon: check credentials
     daemon --> provider: okay
     end
+
+    provider -> daemon: add_filesystem
+    daemon -> daemon : fuse_mount
+    daemon -> provider: okay
+
 end
 ...
+
 
 group directory listing
 user     -> daemon : ls

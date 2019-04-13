@@ -38,11 +38,10 @@ webfuse solves this problem by using the [WebSocket](https://en.wikipedia.org/wi
 With webfuse it is possible to implement remote filesystems based on websockets.
 A reference implementation of such a daemon is provided within the examples. The picture above describes the workflow:
 
--   The websocket filesystem daemon (*webfuse daemon*) mounts a filesystem on startup.  
-    It starts the websocket server and waits for incoming connections.
+-   The websocket filesystem daemon (*webfuse daemon*) waits for incoming connections.
 
--   A remote filesystem provider connects to webfuse daemon via websocket protocol.  
-    The example includes such a provider implemented in HTML and JavaScript.
+-   A remote filesystem provider connects to webfuse daemon via websocket protocol and adds one or more filesystems.  
+    *Note: the examples include such a provider implemented in HTML and JavaScript.*
 
 -   Whenever the user makes filesystem requests, such as *ls*, the request is redirected via webfuse daemon to the connected filesystem provider
 
@@ -275,10 +274,21 @@ Read from an open file.
 
 ### Requests (Provider -> Adapter)
 
+#### add_filesystem
+
+Adds a filesystem.
+
+    fs provider: {"method": "add_filesytem", "params": [<name>], "id": <id>}
+    webfuse daemon: {"result": {"id": <name>}, "id": <id>}
+
+| Item        | Data type | Description                     |
+| ----------- | ----------| ------------------------------- |
+| name        | string    | name and id of filesystem       |
+
 #### authtenticate
 
 Authenticate the provider.  
-If authentication is enabled, a provider must be authenticated by the adapter before the adapter will send any messages.
+If authentication is enabled, a provider must be authenticated by the adapter before filesystems can be added.
 
     fs provider: {"method": "authenticate", "params": [<type>, <credentials>], "id": <id>}
     webfuse daemon: {"result": {}, "id": <id>}
