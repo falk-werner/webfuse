@@ -9,8 +9,6 @@
 using std::size_t;
 #endif
 
-#include <limits.h>
-
 #include "webfuse/core/message_queue.h"
 #include "webfuse/adapter/impl/jsonrpc/proxy.h"
 #include "webfuse/adapter/impl/jsonrpc/server.h"
@@ -31,15 +29,14 @@ struct wf_impl_timeout_manager;
 struct wf_impl_session
 {
     struct wf_dlist_item item;
-    char mount_point[PATH_MAX];
+    char * mount_point;
     struct lws * wsi;
-    struct lws * wsi_fuse;
     bool is_authenticated;
     struct wf_message_queue queue;
-    struct wf_impl_filesystem filesystem;
     struct wf_impl_authenticators * authenticators;
     struct wf_impl_jsonrpc_server * server;
     struct wf_impl_jsonrpc_proxy rpc;
+    struct wf_dlist filesystems;
 };
 
 extern struct wf_impl_session * wf_impl_session_create(
@@ -47,8 +44,7 @@ extern struct wf_impl_session * wf_impl_session_create(
     struct wf_impl_authenticators * authenticators,
     struct wf_impl_timeout_manager * timeout_manager,
     struct wf_impl_jsonrpc_server * server,
-    char const * mount_point,
-    char const * protocol_name);
+    char const * mount_point);
 
 extern void wf_impl_session_dispose(
     struct wf_impl_session * session);
@@ -57,6 +53,10 @@ extern bool wf_impl_session_authenticate(
     struct wf_impl_session * session,
     struct wf_credentials * creds);
 
+extern bool wf_impl_session_add_filesystem(
+    struct wf_impl_session * session,
+    char const * name);
+
 extern void wf_impl_session_receive(
     struct wf_impl_session * session,
     char const * data,
@@ -64,6 +64,15 @@ extern void wf_impl_session_receive(
 
 extern void wf_impl_session_onwritable(
     struct wf_impl_session * session);
+
+extern bool wf_impl_session_contains_wsi(
+    struct wf_dlist_item * item,
+    void * user_data);
+
+extern void wf_impl_session_process_filesystem_request(
+    struct wf_impl_session * session, 
+    struct lws * wsi);
+
 
 #ifdef __cplusplus
 }

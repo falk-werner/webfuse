@@ -35,8 +35,7 @@ extern struct wf_impl_session * wf_impl_session_manager_add(
     struct wf_impl_authenticators * authenticators,
     struct wf_impl_timeout_manager * timeout_manager,
     struct wf_impl_jsonrpc_server * server,
-    char const * mount_point,
-    char const * protocol_name);
+    char const * mount_point);
 
 extern struct wf_impl_session * wf_impl_session_manager_get(
     struct wf_impl_session_manager * manager,

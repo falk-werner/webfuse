@@ -1,5 +1,8 @@
 #include "webfuse/adapter/impl/filesystem.h"
 #include "webfuse/adapter/impl/operations.h"
+#include "webfuse/adapter/impl/session.h"
+
+#include <libwebsockets.h>
 
 #include <stdlib.h>
 #include <stddef.h>
@@ -16,6 +19,31 @@ static struct fuse_lowlevel_ops const filesystem_operations =
 	.read	= &wf_impl_operation_read
 };
 
+struct wf_impl_filesystem * wf_impl_filesystem_create(
+    struct wf_impl_session * session,
+    char const * mount_point)
+{
+	struct wf_impl_filesystem * filesystem = malloc(sizeof(struct wf_impl_filesystem));
+	if (NULL != filesystem)
+	{
+		bool success = wf_impl_filesystem_init(filesystem, session, mount_point);
+		if (!success)
+		{
+			free(filesystem);
+			filesystem = NULL;
+		}
+	}
+
+	return filesystem;
+}
+
+void wf_impl_filesystem_dispose(
+    struct wf_impl_filesystem * filesystem)
+{
+	wf_impl_filesystem_cleanup(filesystem);
+	free(filesystem);
+}
+
 
 bool wf_impl_filesystem_init(
     struct wf_impl_filesystem * filesystem,
@@ -23,6 +51,7 @@ bool wf_impl_filesystem_init(
     char const * mount_point)
 {
 	bool result = false;
+	wf_dlist_item_init(&filesystem->item);
 
 	char * argv[] = {"", NULL};
 	filesystem->args.argc = 1;
@@ -41,6 +70,21 @@ bool wf_impl_filesystem_init(
 	if (NULL != filesystem->session)
 	{
 		result = (0 == fuse_session_mount(filesystem->session, mount_point));
+	}
+
+	if (result)
+	{
+        lws_sock_file_fd_type fd;
+        fd.filefd = fuse_session_fd(filesystem->session);
+		struct lws_protocols const * protocol = lws_get_protocol(session->wsi);
+        filesystem->wsi = lws_adopt_descriptor_vhost(lws_get_vhost(session->wsi), LWS_ADOPT_RAW_FILE_DESC, fd, protocol->name, session->wsi);
+
+		if (NULL == filesystem->wsi)
+		{
+			wf_impl_filesystem_cleanup(filesystem);
+			result = false; 
+		}
+
 	}
 
 	return result;

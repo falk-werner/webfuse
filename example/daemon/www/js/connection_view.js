@@ -1,5 +1,6 @@
 export class ConnectionView {
-    constructor(client) {
+    constructor(client, provider) {
+        this._provider = provider;
         this._client = client;
         this._client.onopen = () => { this._onConnectionOpened(); };
         this._client.onclose = () => { this._onConnectionClosed(); };
@@ -73,6 +74,7 @@ export class ConnectionView {
     }
 
     _onConnectionOpened() {
+        this._client.addProvider("test", this._provider);
         this.connectButton.value = "disconnect";
     }
 

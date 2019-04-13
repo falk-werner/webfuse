@@ -33,11 +33,10 @@ struct wf_impl_session * wf_impl_session_manager_add(
     struct wf_impl_authenticators * authenticators,
     struct wf_impl_timeout_manager * timeout_manager,
     struct wf_impl_jsonrpc_server * server,
-    char const * mount_point,
-    char const * protocol_name)
+    char const * mount_point)
 {
     struct wf_impl_session * session = wf_impl_session_create(
-        wsi, authenticators, timeout_manager, server, mount_point, protocol_name); 
+        wsi, authenticators, timeout_manager, server, mount_point); 
     if (NULL != session)
     {
         wf_dlist_prepend(&manager->sessions, &session->item);
@@ -46,23 +45,13 @@ struct wf_impl_session * wf_impl_session_manager_add(
     return session;
 }
 
-static bool wf_impl_session_manager_get_predicate(
-    struct wf_dlist_item * item,
-    void * user_data)
-{
-    struct lws * wsi = user_data;
-    struct wf_impl_session * session = WF_CONTAINER_OF(item, struct wf_impl_session, item);
-
-    return ((wsi == session->wsi) || (wsi == session->wsi_fuse));
-}
-
 struct wf_impl_session * wf_impl_session_manager_get(
     struct wf_impl_session_manager * manager,
     struct lws * wsi)
 {
     struct wf_impl_session * session = NULL;
     struct wf_dlist_item * item = wf_dlist_find_first(
-        &manager->sessions, &wf_impl_session_manager_get_predicate, wsi);
+        &manager->sessions, &wf_impl_session_contains_wsi, wsi);
     if (NULL != item)
     {
         session = WF_CONTAINER_OF(item, struct wf_impl_session, item);

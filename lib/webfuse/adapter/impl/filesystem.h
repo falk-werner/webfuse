@@ -7,6 +7,7 @@
 
 #include "webfuse/adapter/impl/fuse_wrapper.h"
 #include "webfuse/adapter/impl/operations.h"
+#include "webfuse/core/dlist.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -14,14 +15,24 @@ extern "C"
 #endif
 
 struct wf_impl_session;
+struct lws;
 
 struct wf_impl_filesystem
 {
+    struct wf_dlist_item item;
 	struct fuse_args args;
 	struct fuse_session * session;
 	struct fuse_buf buffer;
 	struct wf_impl_operations_context user_data;
+    struct lws * wsi;
 };
+
+extern struct wf_impl_filesystem * wf_impl_filesystem_create(
+    struct wf_impl_session * session,
+    char const * mount_point);
+
+extern void wf_impl_filesystem_dispose(
+    struct wf_impl_filesystem * filesystem);
 
 extern bool wf_impl_filesystem_init(
     struct wf_impl_filesystem * filesystem,

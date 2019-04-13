@@ -4,7 +4,7 @@ export class Client {
     static get _PROTOCOL() { return "fs"; }
 
     constructor(provider) {
-        this._provider = provider;
+        this._provider = { };
         this._ws = null;
         this.onopen = () => { };
         this.onclose = () => { };
@@ -29,6 +29,17 @@ export class Client {
             "method": "authenticate",
             "params": [type, credentials],
             "id": 42
+        };
+        
+        this._ws.send(JSON.stringify(request));
+    }
+
+    addProvider(name, provider) {
+        this._provider = provider;
+        const request = {
+            "method": "add_filesystem",
+            "params": [name],
+            "id": 23
         };
         
         this._ws.send(JSON.stringify(request));

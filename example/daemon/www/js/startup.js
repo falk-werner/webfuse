@@ -17,8 +17,8 @@ function startup() {
             "say_hello.sh": { inode: 3, mode: mode("0555"), type: "file", contents: "#!/bin/sh\necho hello\n"}
         }
     });
-    const client = new Client(provider);
-    const connectionView = new ConnectionView(client);    
+    const client = new Client();
+    const connectionView = new ConnectionView(client, provider);    
     document.getElementById('connection').appendChild(connectionView.element);
 }
 

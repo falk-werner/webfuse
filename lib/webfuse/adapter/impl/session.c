@@ -6,6 +6,11 @@
 #include "webfuse/adapter/impl/jsonrpc/request.h"
 #include "webfuse/adapter/impl/jsonrpc/response.h"
 
+#include "webfuse/core/container_of.h"
+#include "webfuse/core/util.h"
+
+#include <uuid/uuid.h>
+
 #include <libwebsockets.h>
 #include <stddef.h>
 #include <stdlib.h>
@@ -40,66 +45,48 @@ struct wf_impl_session * wf_impl_session_create(
     struct wf_impl_authenticators * authenticators,
     struct wf_impl_timeout_manager * timeout_manager,
     struct wf_impl_jsonrpc_server * server,
-    char const * mount_point,
-    char const * protocol_name)
+    char const * mount_point)
 {
-    static int session_id = 0;
 
     struct wf_impl_session * session = malloc(sizeof(struct wf_impl_session));
     if (NULL != session)
     {
-        snprintf(session->mount_point, PATH_MAX, "%s/%d", mount_point, session_id);
-        session_id++;
-        mkdir(session->mount_point, 0755);
-
         wf_dlist_item_init(&session->item);
+        wf_dlist_init(&session->filesystems);
         
+        session->mount_point = strdup(mount_point);
         session->wsi = wsi;
         session->is_authenticated = false;
         session->authenticators = authenticators;
         session->server = server;
         wf_impl_jsonrpc_proxy_init(&session->rpc, timeout_manager, &wf_impl_session_send, session);
         wf_message_queue_init(&session->queue);
-
-        bool success = wf_impl_filesystem_init(&session->filesystem, session, session->mount_point);
-        if (success)
-        {
-            lws_sock_file_fd_type fd;
-            fd.filefd = wf_impl_filesystem_get_fd(&session->filesystem);
-            session->wsi_fuse = lws_adopt_descriptor_vhost(lws_get_vhost(wsi), LWS_ADOPT_RAW_FILE_DESC, fd, protocol_name, wsi);
-            if (NULL == session->wsi_fuse)
-            {
-                success = false;
-                fprintf(stderr, "error: unable to adopt fd");
-            }  
-        }
-
-        if (!success)
-        {
-            rmdir(session->mount_point);
-            wf_impl_jsonrpc_proxy_cleanup(&session->rpc);
-            wf_message_queue_cleanup(&session->queue);
-            free(session);
-            session = NULL;
-        }
     }
 
     return session;
 }
 
+static void wf_impl_session_cleanup_filesystem(
+    struct wf_dlist_item * item,
+    void * WF_UNUSED_PARAM(user_data))
+{    
+    struct wf_impl_filesystem * filesystem = WF_CONTAINER_OF(item, struct wf_impl_filesystem, item);
+    wf_impl_filesystem_dispose(filesystem);
+
+}
+
 void wf_impl_session_dispose(
     struct wf_impl_session * session)
 {
-    wf_impl_filesystem_cleanup(&session->filesystem);
-    rmdir(session->mount_point);
+    wf_dlist_cleanup(&session->filesystems, &wf_impl_session_cleanup_filesystem, NULL);
 
     wf_impl_jsonrpc_proxy_cleanup(&session->rpc);
     wf_message_queue_cleanup(&session->queue);
     session->is_authenticated = false;
     session->wsi = NULL;
-    session->wsi_fuse = NULL;
     session->authenticators = NULL;
     session->server = NULL;
+    free(session->mount_point);
     free(session);
 } 
 
@@ -111,6 +98,25 @@ bool wf_impl_session_authenticate(
 
     return session->is_authenticated;
 }
+
+bool wf_impl_session_add_filesystem(
+    struct wf_impl_session * session,
+    char const * name)
+{
+    uuid_t uuid;
+    uuid_generate(uuid);
+    char id[UUID_STR_LEN];
+    uuid_unparse(uuid, id);
+
+    char mount_point[PATH_MAX];
+    snprintf(mount_point, PATH_MAX, "%s/%s/%s", session->mount_point, name, id);
+    mkdir(mount_point, 0755);
+
+    struct wf_impl_filesystem * filesystem = wf_impl_filesystem_create(session, mount_point);
+    wf_dlist_prepend(&session->filesystems, &filesystem->item);
+    return (NULL != filesystem);
+}
+
 
 void wf_impl_session_onwritable(
     struct wf_impl_session * session)
@@ -149,4 +155,48 @@ void wf_impl_session_receive(
 	    json_decref(message);
     }
 
+}
+
+static struct wf_impl_filesystem * wf_impl_session_get_filesystem(
+    struct wf_impl_session * session,
+    struct lws * wsi)
+{
+    struct wf_impl_filesystem * filesystem = WF_CONTAINER_OF(session->filesystems.first, struct wf_impl_filesystem, item);
+    while (NULL != filesystem)
+    {
+        if (wsi == filesystem->wsi)
+        {
+            break;
+        }
+        else
+        {
+            filesystem = WF_CONTAINER_OF(filesystem->item.next, struct wf_impl_filesystem, item);
+        }        
+    }
+
+    return filesystem;
+}
+
+
+bool wf_impl_session_contains_wsi(
+    struct wf_dlist_item * item,
+    void * user_data)
+{
+    struct lws * wsi = user_data;
+    struct wf_impl_session * session = WF_CONTAINER_OF(item, struct wf_impl_session, item);
+
+    bool const result = (NULL != wsi) && ((wsi == session->wsi) || (NULL != wf_impl_session_get_filesystem(session, wsi)));
+    return result;
+}
+
+
+void wf_impl_session_process_filesystem_request(
+    struct wf_impl_session * session, 
+    struct lws * wsi)
+{
+    struct wf_impl_filesystem * filesystem = wf_impl_session_get_filesystem(session, wsi);
+    if (NULL != filesystem)
+    {
+        wf_impl_filesystem_process_request(filesystem);
+    }
 }
