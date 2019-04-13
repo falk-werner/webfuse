@@ -18,7 +18,7 @@ void wf_impl_operation_close(
 	if (NULL != rpc)
 	{
 		int handle = (int) (file_info->fh & INT_MAX);
-		wf_impl_jsonrpc_proxy_notify(rpc, "close", "iii", inode, handle, file_info->flags);
+		wf_impl_jsonrpc_proxy_notify(rpc, "close", "siii", user_data->name, inode, handle, file_info->flags);
 	}
 	
 	fuse_reply_err(request, 0);

@@ -140,7 +140,7 @@ Notfications are used to inform a receiver about something. Unlike requests, not
 
 Retrieve information about a filesystem entry by name.
 
-    webfuse daemon: {"method": "lookup", "params": [<parent>, <name>], "id": <id>}
+    webfuse daemon: {"method": "lookup", "params": [<filesystem>, <parent>, <name>], "id": <id>}
     fs provider: {"result": {
         "inode": <inode>,
         "mode" : <mode>,
@@ -153,6 +153,7 @@ Retrieve information about a filesystem entry by name.
 
 | Item        | Data type       | Description                                 |
 | ----------- | --------------- | ------------------------------------------- |
+| filesystem  | string          | name of the filesystem                      |
 | parent      | integer         | inode of parent directory (1 = root)        |
 | name        | string          | name of the filesystem object to look up    |
 | inode       | integer         | inode of the filesystem object              |
@@ -167,7 +168,7 @@ Retrieve information about a filesystem entry by name.
 
 Get file attributes.
 
-    webfuse daemon: {"method": "getattr", "params": [<inode>], "id": <id>}
+    webfuse daemon: {"method": "getattr", "params": [<filesystem>, <inode>], "id": <id>}
     fs provider: {"result": {
         "mode" : <mode>,
         "type" : <type>,
@@ -179,6 +180,7 @@ Get file attributes.
 
 | Item        | Data type       | Description                                 |
 | ----------- | --------------- | ------------------------------------------- |
+| filesystem  | string          | name of the filesystem                      |
 | inode       | integer         | inode of the filesystem object              |
 | mode        | integer         | unix file mode                              |
 | type        | "file" or "dir" | type of filesystem object                   |
@@ -193,7 +195,7 @@ Read directory contents.
 Result is an array of name-inode pairs for each entry. The generic entries 
 "." and ".." should also be provided.
 
-    webfuse daemon: {"method": "readdir", "params": [<dir_inode>], "id": <id>}
+    webfuse daemon: {"method": "readdir", "params": [<filesystem>, <dir_inode>], "id": <id>}
     fs provider: {"result": [
         {"name": <name>, "inode": <inode>},
         ...
@@ -201,6 +203,7 @@ Result is an array of name-inode pairs for each entry. The generic entries
 
 | Item        | Data type       | Description                    |
 | ----------- | --------------- | ------------------------------ |
+| filesystem  | string          | name of the filesystem         |
 | dir_inode   | integer         | inode of the directory to read |
 | name        | integer         | name of the entry              |
 | inode       | integer         | inode of the entry             |
@@ -209,11 +212,12 @@ Result is an array of name-inode pairs for each entry. The generic entries
 
 Open a file.
 
-    webfuse daemon: {"method": "readdir", "params": [<inode>, <flags>], "id": <id>}
+    webfuse daemon: {"method": "readdir", "params": [<filesystem>, <inode>, <flags>], "id": <id>}
     fs provider: {"result": {"handle": <handle>}, "id": <id>}
 
 | Item        | Data type | Description                   |
 | ----------- | ----------| ----------------------------- |
+| filesystem  | string          | name of the filesystem  |
 | inode       | integer   | inode of the file             |
 | flags       | integer   | access mode flags (see below) |
 | handle      | integer   | handle of the file            |
@@ -236,10 +240,11 @@ Open a file.
 Informs filesystem provider, that a file is closed.  
 Since `close` is a notification, it cannot fail.
 
-    webfuse daemon: {"method": "close", "params": [<inode>, <handle>, <flags>], "id": <id>}
+    webfuse daemon: {"method": "close", "params": [<filesystem>, <inode>, <handle>, <flags>], "id": <id>}
 
 | Item        | Data type | Description                  |
 | ----------- | ----------| ---------------------------- |
+| filesystem  | string    | name of the filesystem       |
 | inode       | integer   | inode of the file            |
 | handle      | integer   | handle of the file           |
 | flags       | integer   | access mode flags (see open) |
@@ -248,7 +253,7 @@ Since `close` is a notification, it cannot fail.
 
 Read from an open file.
 
-    webfuse daemon: {"method": "close", "params": [<inode>, <handle>, <offset>, <length>], "id": <id>}
+    webfuse daemon: {"method": "close", "params": [<filesystem>, <inode>, <handle>, <offset>, <length>], "id": <id>}
     fs provider: {"result": {
         "data": <data>,
         "format": <format>,
@@ -257,6 +262,7 @@ Read from an open file.
 
 | Item        | Data type | Description                   |
 | ----------- | ----------| ----------------------------- |
+| filesystem  | string    | name of the filesystem        |
 | inode       | integer   | inode of the file             |
 | handle      | integer   | handle of the file            |
 | offset      | integer   | Offet to start read operation |

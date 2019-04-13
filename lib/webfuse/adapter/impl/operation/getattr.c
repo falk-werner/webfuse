@@ -91,7 +91,7 @@ void wf_impl_operation_getattr (
 		getattr_context->gid = context->gid;
 		getattr_context->timeout = user_data->timeout;
 
-		wf_impl_jsonrpc_proxy_invoke(rpc, &wf_impl_operation_getattr_finished, getattr_context, "getattr", "i", inode);
+		wf_impl_jsonrpc_proxy_invoke(rpc, &wf_impl_operation_getattr_finished, getattr_context, "getattr", "si", user_data->name, inode);
 	}
 	else
 	{

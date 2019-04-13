@@ -146,7 +146,7 @@ void wf_impl_operation_readdir (
 	readdir_context->size = size;
 	readdir_context->offset = offset;
 
-	wf_impl_jsonrpc_proxy_invoke(rpc, &wf_impl_operation_readdir_finished, readdir_context, "readdir", "i", inode);
+	wf_impl_jsonrpc_proxy_invoke(rpc, &wf_impl_operation_readdir_finished, readdir_context, "readdir", "si", user_data->name, inode);
 	}
 	else
 	{

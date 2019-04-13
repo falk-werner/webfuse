@@ -35,7 +35,7 @@ export class Client {
     }
 
     addProvider(name, provider) {
-        this._provider = provider;
+        this._provider[name] = provider;
         const request = {
             "method": "add_filesystem",
             "params": [name],
@@ -125,28 +125,43 @@ export class Client {
         }
     }
 
-    async _lookup([parent, name]) {
-        return this._provider.lookup(parent, name);
+    _getProvider(name) {
+        if (this._provider.hasOwnProperty(name)) {
+            return this._provider[name];
+        }
+        else {
+            throw new Error('Unknown provider');
+        }
     }
 
-    async _getattr([inode]) {
-        return this._provider.getattr(inode);
+    async _lookup([providerName, parent, name]) {
+        const provider = this._getProvider(providerName);
+        return provider.lookup(parent, name);
     }
 
-    async _readdir([inode]) {
-        return this._provider.readdir(inode);
+    async _getattr([providerName, inode]) {
+        const provider = this._getProvider(providerName);
+        return provider.getattr(inode);
     }
 
-    async _open([inode, mode]) {
-        return this._provider.open(inode, mode);
+    async _readdir([providerName, inode]) {
+        const provider = this._getProvider(providerName);
+        return provider.readdir(inode);
     }
 
-    _close([inode, handle, mode]) {
-        this._provider.close(inode, handle, mode);
+    async _open([providerName, inode, mode]) {
+        const provider = this._getProvider(providerName);
+        return provider.open(inode, mode);
     }
 
-    async _read([inode, handle, offset, length]) {
-        const data = await this._provider.read(inode, handle, offset, length);
+    _close([providerName, inode, handle, mode]) {
+        const provider = this._getProvider(providerName);
+        provider.close(inode, handle, mode);
+    }
+
+    async _read([providerName, inode, handle, offset, length]) {
+        const provider = this._getProvider(providerName);
+        const data = await provider.read(inode, handle, offset, length);
 
         if ("string" === typeof(data)) {
 			return {

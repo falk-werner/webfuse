@@ -51,7 +51,7 @@ void wf_impl_operation_open(
 
 	if (NULL != rpc)
 	{
-		wf_impl_jsonrpc_proxy_invoke(rpc, &wf_impl_operation_open_finished, request, "open", "ii", inode, file_info->flags);
+		wf_impl_jsonrpc_proxy_invoke(rpc, &wf_impl_operation_open_finished, request, "open", "sii", user_data->name, inode, file_info->flags);
 	}
 	else
 	{

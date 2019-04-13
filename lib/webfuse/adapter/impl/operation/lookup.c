@@ -100,7 +100,7 @@ void wf_impl_operation_lookup (
 		lookup_context->gid = context->gid;
 		lookup_context->timeout = user_data->timeout;
 
-		wf_impl_jsonrpc_proxy_invoke(rpc, &wf_impl_operation_lookup_finished, lookup_context, "lookup", "is", (int) (parent & INT_MAX), name);
+		wf_impl_jsonrpc_proxy_invoke(rpc, &wf_impl_operation_lookup_finished, lookup_context, "lookup", "sis", user_data->name, (int) (parent & INT_MAX), name);
 	}
 	else
 	{
