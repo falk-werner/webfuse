@@ -1,6 +1,7 @@
 #include "webfuse/adapter/impl/server_protocol.h"
 
 #include <stdlib.h>
+#include <ctype.h>
 #include <libwebsockets.h>
 
 #include "webfuse/core/message.h"
@@ -129,6 +130,21 @@ static void wf_impl_server_protocol_authenticate(
     }    
 }
 
+static bool wf_impl_server_protocol_check_name(char const * value)
+{
+    while ('\0' != *value)
+    {
+        char const c = * value;
+        if (!isalpha(c) && !isdigit(c) && ('_' != c))
+        {
+            return false;
+        }
+        value++;
+    }
+
+    return true;
+}
+
 static void wf_impl_server_protocol_add_filesystem(
     struct wf_impl_jsonrpc_request * request,
     char const * WF_UNUSED_PARAM(method_name),
@@ -145,12 +161,24 @@ static void wf_impl_server_protocol_add_filesystem(
         if (json_is_string(name_holder))
         {
             name = json_string_value(name_holder);
-            bool const success = wf_impl_session_add_filesystem(session, name);
-            if (!success)
+            if (wf_impl_server_protocol_check_name(name))
             {
-                status = WF_BAD;
+                bool const success = wf_impl_session_add_filesystem(session, name);
+                if (!success)
+                {
+                    status = WF_BAD;
+                }
+            }
+            else 
+            {
+                status = WF_BAD_FORMAT;
             }
         }
+        else
+        {
+            status = WF_BAD_FORMAT;
+        }
+        
     }
 
     if (WF_GOOD == status)
