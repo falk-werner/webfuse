@@ -3,6 +3,11 @@
 #include "webfuse/adapter/impl/session.h"
 
 #include <libwebsockets.h>
+#include <uuid/uuid.h>
+
+#include <sys/stat.h>
+#include <unistd.h>
+#include <limits.h>
 
 #include <stdlib.h>
 #include <stddef.h>
@@ -19,36 +24,44 @@ static struct fuse_lowlevel_ops const filesystem_operations =
 	.read	= &wf_impl_operation_read
 };
 
-struct wf_impl_filesystem * wf_impl_filesystem_create(
-    struct wf_impl_session * session,
-    char const * mount_point)
+static char * wf_impl_filesystem_create_id(void)
 {
-	struct wf_impl_filesystem * filesystem = malloc(sizeof(struct wf_impl_filesystem));
-	if (NULL != filesystem)
-	{
-		bool success = wf_impl_filesystem_init(filesystem, session, mount_point);
-		if (!success)
-		{
-			free(filesystem);
-			filesystem = NULL;
-		}
-	}
+    uuid_t uuid;
+    uuid_generate(uuid);
+    char id[UUID_STR_LEN];
+    uuid_unparse(uuid, id);
 
-	return filesystem;
+	return strdup(id);
 }
 
-void wf_impl_filesystem_dispose(
+static void wf_impl_filesystem_cleanup(
     struct wf_impl_filesystem * filesystem)
 {
-	wf_impl_filesystem_cleanup(filesystem);
-	free(filesystem);
+	fuse_session_reset(filesystem->session);
+	fuse_session_unmount(filesystem->session);
+	fuse_session_destroy(filesystem->session);
+	filesystem->session = NULL;		
+
+	free(filesystem->buffer.mem);
+	fuse_opt_free_args(&filesystem->args);    
+
+	struct wf_impl_session * session = filesystem->user_data.session;
+	char path[PATH_MAX];
+	snprintf(path, PATH_MAX, "%s/%s/%s", session->mount_point, filesystem->user_data.name, filesystem->id);
+	rmdir(path);
+
+	snprintf(path, PATH_MAX, "%s/%s", session->mount_point, filesystem->user_data.name);
+	rmdir(path);
+
+	free(filesystem->user_data.name);
+	free(filesystem->id);
 }
 
 
-bool wf_impl_filesystem_init(
+static bool wf_impl_filesystem_init(
     struct wf_impl_filesystem * filesystem,
     struct wf_impl_session * session,
-    char const * mount_point)
+	char const * name)
 {
 	bool result = false;
 	wf_dlist_item_init(&filesystem->item);
@@ -60,7 +73,16 @@ bool wf_impl_filesystem_init(
 
 	filesystem->user_data.session = session;
 	filesystem->user_data.timeout = 1.0;
+	filesystem->user_data.name = strdup(name);
+	filesystem->id = wf_impl_filesystem_create_id();
 	memset(&filesystem->buffer, 0, sizeof(struct fuse_buf));
+
+	char path[PATH_MAX];
+	snprintf(path, PATH_MAX, "%s/%s", session->mount_point, name);
+	mkdir(path, 0755);
+
+	snprintf(path, PATH_MAX, "%s/%s/%s", session->mount_point, name, filesystem->id);
+	mkdir(path, 0755);
 
 	filesystem->session = fuse_session_new(
         &filesystem->args,
@@ -69,7 +91,7 @@ bool wf_impl_filesystem_init(
         &filesystem->user_data);
 	if (NULL != filesystem->session)
 	{
-		result = (0 == fuse_session_mount(filesystem->session, mount_point));
+		result = (0 == fuse_session_mount(filesystem->session, path));
 	}
 
 	if (result)
@@ -90,25 +112,29 @@ bool wf_impl_filesystem_init(
 	return result;
 }
 
-void wf_impl_filesystem_cleanup(
-    struct wf_impl_filesystem * filesystem)
+struct wf_impl_filesystem * wf_impl_filesystem_create(
+    struct wf_impl_session * session,
+	char const * name)
 {
-	if (NULL != filesystem->session)
+	struct wf_impl_filesystem * filesystem = malloc(sizeof(struct wf_impl_filesystem));
+	if (NULL != filesystem)
 	{
-		fuse_session_reset(filesystem->session);
-		fuse_session_unmount(filesystem->session);
-		fuse_session_destroy(filesystem->session);
-		filesystem->session = NULL;
+		bool success = wf_impl_filesystem_init(filesystem, session, name);
+		if (!success)
+		{
+			free(filesystem);
+			filesystem = NULL;
+		}
 	}
 
-	free(filesystem->buffer.mem);
-	fuse_opt_free_args(&filesystem->args);    
+	return filesystem;
 }
 
-int wf_impl_filesystem_get_fd(
+void wf_impl_filesystem_dispose(
     struct wf_impl_filesystem * filesystem)
 {
-    return fuse_session_fd(filesystem->session);
+	wf_impl_filesystem_cleanup(filesystem);
+	free(filesystem);
 }
 
 void wf_impl_filesystem_process_request(

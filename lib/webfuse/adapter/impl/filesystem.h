@@ -25,24 +25,15 @@ struct wf_impl_filesystem
 	struct fuse_buf buffer;
 	struct wf_impl_operations_context user_data;
     struct lws * wsi;
+    char * name;
+    char * id;
 };
 
 extern struct wf_impl_filesystem * wf_impl_filesystem_create(
     struct wf_impl_session * session,
-    char const * mount_point);
+    char const * name);
 
 extern void wf_impl_filesystem_dispose(
-    struct wf_impl_filesystem * filesystem);
-
-extern bool wf_impl_filesystem_init(
-    struct wf_impl_filesystem * filesystem,
-    struct wf_impl_session * session,
-    char const * mount_point);
-
-extern void wf_impl_filesystem_cleanup(
-    struct wf_impl_filesystem * filesystem);
-
-extern int wf_impl_filesystem_get_fd(
     struct wf_impl_filesystem * filesystem);
 
 extern void wf_impl_filesystem_process_request(

@@ -9,8 +9,6 @@
 #include "webfuse/core/container_of.h"
 #include "webfuse/core/util.h"
 
-#include <uuid/uuid.h>
-
 #include <libwebsockets.h>
 #include <stddef.h>
 #include <stdlib.h>
@@ -103,16 +101,7 @@ bool wf_impl_session_add_filesystem(
     struct wf_impl_session * session,
     char const * name)
 {
-    uuid_t uuid;
-    uuid_generate(uuid);
-    char id[UUID_STR_LEN];
-    uuid_unparse(uuid, id);
-
-    char mount_point[PATH_MAX];
-    snprintf(mount_point, PATH_MAX, "%s/%s/%s", session->mount_point, name, id);
-    mkdir(mount_point, 0755);
-
-    struct wf_impl_filesystem * filesystem = wf_impl_filesystem_create(session, mount_point);
+    struct wf_impl_filesystem * filesystem = wf_impl_filesystem_create(session, name);
     wf_dlist_prepend(&session->filesystems, &filesystem->item);
     return (NULL != filesystem);
 }

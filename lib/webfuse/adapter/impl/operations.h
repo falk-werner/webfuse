@@ -14,6 +14,7 @@ struct wf_impl_operations_context
 {
 	struct wf_impl_session * session;
 	double timeout;
+	char * name;
 };
 
 extern void wf_impl_operation_lookup (
