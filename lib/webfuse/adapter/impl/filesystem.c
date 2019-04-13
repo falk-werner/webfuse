@@ -34,6 +34,13 @@ static char * wf_impl_filesystem_create_id(void)
 	return strdup(id);
 }
 
+static bool wf_impl_filesystem_is_link_broken(char const * path)
+{
+	char buffer[PATH_MAX];
+	ssize_t count = readlink(path, buffer, PATH_MAX);
+	return (0 < count);
+}
+
 static void wf_impl_filesystem_cleanup(
     struct wf_impl_filesystem * filesystem)
 {
@@ -49,6 +56,14 @@ static void wf_impl_filesystem_cleanup(
 	char path[PATH_MAX];
 	snprintf(path, PATH_MAX, "%s/%s/%s", session->mount_point, filesystem->user_data.name, filesystem->id);
 	rmdir(path);
+
+	snprintf(path, PATH_MAX, "%s/%s/default", session->mount_point, filesystem->user_data.name);
+	rmdir(path);
+	if (wf_impl_filesystem_is_link_broken(path))
+	{
+		unlink(path);
+		// ToDo: recreate link, if any directory exists
+	}
 
 	snprintf(path, PATH_MAX, "%s/%s", session->mount_point, filesystem->user_data.name);
 	rmdir(path);
@@ -83,6 +98,10 @@ static bool wf_impl_filesystem_init(
 
 	snprintf(path, PATH_MAX, "%s/%s/%s", session->mount_point, name, filesystem->id);
 	mkdir(path, 0755);
+
+	char defaultPath[PATH_MAX];
+	snprintf(defaultPath, PATH_MAX, "%s/%s/default", session->mount_point, name);
+	symlink(filesystem->id, defaultPath);
 
 	filesystem->session = fuse_session_new(
         &filesystem->args,
