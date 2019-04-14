@@ -27,7 +27,7 @@ export class Client {
     }
 
     _invokeRequest(method, params) {
-        this._id++;
+        this._id += 1;
         const id = this._id;
         const request = {method, params, id};
 
@@ -80,7 +80,7 @@ export class Client {
 
         if (id in this._pendingRequests) {
             result = this._pendingRequests[id];
-            delete this._pendingRequests[id];    
+            Reflect.deleteProperty(this._pendingRequests, id);
         }
 
         return result;
@@ -201,7 +201,7 @@ export class Client {
 
     _close([providerName, inode, handle, mode]) {
         const provider = this._getProvider(providerName);
-        
+
         provider.close(inode, handle, mode);
     }
 
