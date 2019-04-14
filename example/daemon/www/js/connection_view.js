@@ -74,12 +74,11 @@ export class ConnectionView {
 
     _onConnectionOpened() {
         if (this.authenticateCheckbox.checked) {
-            console.log("authenticate");
             const username = this.usernameTextbox.value;
             const password = this.passwordTextbox.value;
 
             const promise = this._client.authenticate("username", { username, password });
-            promise.then(() => { this._client.addProvider("test", this._provider) });
+            promise.then(() => { this._client.addProvider("test", this._provider); });
         } else {
             this._client.addProvider("test", this._provider);
         }

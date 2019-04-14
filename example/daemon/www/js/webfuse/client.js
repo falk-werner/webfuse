@@ -27,15 +27,14 @@ export class Client {
     }
 
     _invokeRequest(method, params) {
-        const id = ++this._id;
+        this._id++;
+        const id = this._id;
         const request = {method, params, id};
 
         return new Promise((resolve, reject) => {
             this._pendingRequests[id] = {resolve, reject};
             this._ws.send(JSON.stringify(request));
-        })
-        
-
+        });
     }
 
     authenticate(type, credentials) {
@@ -67,19 +66,19 @@ export class Client {
     _isRequest(request) {
         const method = request.method;
 
-        return (("string" === typeof(method)) && (request.hasOwnProperty("params")));
+        return (("string" === typeof(method)) && ("params" in request));
     }
 
     _isResponse(response) {
         const id = response.id;
 
-        return (("number" === typeof(id)) && (response.hasOwnProperty("result") || response.hasOwnProperty("error")));
+        return (("number" === typeof(id)) && (("result" in response) || ("error" in response)));
     }
 
     _removePendingRequest(id) {
         let result = null;
 
-        if (this._pendingRequests.hasOwnProperty(id)) {
+        if (id in this._pendingRequests) {
             result = this._pendingRequests[id];
             delete this._pendingRequests[id];    
         }
@@ -168,7 +167,7 @@ export class Client {
     }
 
     _getProvider(name) {
-        if (this._provider.hasOwnProperty(name)) {
+        if (name in this._provider) {
             return this._provider[name];
         }
         else {
@@ -178,26 +177,31 @@ export class Client {
 
     async _lookup([providerName, parent, name]) {
         const provider = this._getProvider(providerName);
+
         return provider.lookup(parent, name);
     }
 
     async _getattr([providerName, inode]) {
         const provider = this._getProvider(providerName);
+
         return provider.getattr(inode);
     }
 
     async _readdir([providerName, inode]) {
         const provider = this._getProvider(providerName);
+
         return provider.readdir(inode);
     }
 
     async _open([providerName, inode, mode]) {
         const provider = this._getProvider(providerName);
+
         return provider.open(inode, mode);
     }
 
     _close([providerName, inode, handle, mode]) {
         const provider = this._getProvider(providerName);
+        
         provider.close(inode, handle, mode);
     }
 
