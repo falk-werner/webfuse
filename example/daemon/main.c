@@ -50,13 +50,14 @@ static bool authenticate(struct wf_credentials * creds, void * user_data)
 	char const * password = wf_credentials_get(creds, "password");
 	if ((NULL != username) && (NULL != password))
 	{
-		struct userdb * db = userdb_create("<pepper>");
+		struct userdb * db = userdb_create("");
 		result = userdb_load(db, args->passwd_path); 
 		if (result)
 		{
 			result = userdb_check(db, username, password);
-			userdb_dispose(db);
 		}
+
+		userdb_dispose(db);
 	}
 
 	return result;
