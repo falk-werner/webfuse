@@ -66,7 +66,7 @@ static bool wf_impl_filesystem_get_first_subdir(
 			if ((DT_DIR == entry->d_type) && ('.' != entry->d_name[0]))
 			{
 				buffer[0] = '\0';
-				strncat(buffer, entry->d_name, buffer_size);
+				strncat(buffer, entry->d_name, buffer_size); /* Flawfinder: ignore */
 				result = true;
 				break;
 			}
