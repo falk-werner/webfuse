@@ -47,6 +47,27 @@ A reference implementation of such a daemon is provided within the examples. The
 
 Currently all requests are initiated by webfuse daemon and responded by filesystem provider. This may change in future, e.g. when authentication is supported.
 
+### Filesystem represenation
+
+![filesystem](doc/filesystem.png)
+
+To handle multiple filesystems, that are registered by one or more providers, webfuse daemon maintains a directory structure as shown above.
+
+-   **mount_point** is the entry point of the drectory structure
+
+-   **fwupdate** is a name defined by the provider when filesystem was registered  
+    *Note: the picture above shows two providers, where both registered a filesystem named "fwupdate"*
+
+-   **&lt;uuid&gt;** is the filesystem id choosen by webfuse daemon to distinguish different filesystems
+
+-   **default** is a symbolic link maintained by webfuse daemon to identify the default filesystem
+
+
+This directoy structure allows to handle multiple filesystems registered by multiple providers.
+It can be used as a kind of service registry, where each filesystem represents a service.
+The named subdirectores distinguish differend service types. The symbolic link *default* can be used to identify the
+default service and the listing of a named subdirectory can be used to list available services of a particular type.
+
 ## Similar Projects
 
 ### Davfs2

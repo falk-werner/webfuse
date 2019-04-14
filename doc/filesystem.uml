@@ -1,0 +1,16 @@
+@startuml
+
+salt
+{
+{T
++ mount_point
+++ fwupdate
++++ default -> 7c029f81-6bdf-4d3c-82dc-26f748164012
++++ 7c029f81-6bdf-4d3c-82dc-26f748164012
+++++ update.raucb
++++ f93de23b-4535-4a47-a287-a381b78a11b8
+++++ update.raucb
+}
+}
+
+@enduml
