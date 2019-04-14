@@ -62,7 +62,6 @@ To handle multiple filesystems, that are registered by one or more providers, we
 
 -   **default** is a symbolic link maintained by webfuse daemon to identify the default filesystem
 
-
 This directoy structure allows to handle multiple filesystems registered by multiple providers.
 It can be used as a kind of service registry, where each filesystem represents a service.
 The named subdirectores distinguish differend service types. The symbolic link *default* can be used to identify the
@@ -238,7 +237,7 @@ Open a file.
 
 | Item        | Data type | Description                   |
 | ----------- | ----------| ----------------------------- |
-| filesystem  | string          | name of the filesystem  |
+| filesystem  | string    | name of the filesystem        |
 | inode       | integer   | inode of the file             |
 | flags       | integer   | access mode flags (see below) |
 | handle      | integer   | handle of the file            |
