@@ -340,7 +340,7 @@ int main(int argc, char* argv[])
                 .parent = 1,
                 .inode = 2,
                 .name = "hello.txt",
-                .mode = 0555,
+                .mode = 0444,
                 .type = FS_FILE,
                 .content="hello, world!",
                 .content_length = 13,
