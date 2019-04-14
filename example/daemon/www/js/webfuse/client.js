@@ -5,6 +5,8 @@ export class Client {
 
     constructor(provider) {
         this._provider = { };
+        this._pendingRequests = {};
+        this._id = 0;
         this._ws = null;
         this.onopen = () => { };
         this.onclose = () => { };
@@ -24,14 +26,20 @@ export class Client {
         };
     }
 
-    authenticate(type, credentials) {
-        const request = {
-            "method": "authenticate",
-            "params": [type, credentials],
-            "id": 42
-        };
+    _invokeRequest(method, params) {
+        const id = ++this._id;
+        const request = {method, params, id};
+
+        return new Promise((resolve, reject) => {
+            this._pendingRequests[id] = {resolve, reject};
+            this._ws.send(JSON.stringify(request));
+        })
         
-        this._ws.send(JSON.stringify(request));
+
+    }
+
+    authenticate(type, credentials) {
+        return this._invokeRequest("authenticate", [type, credentials]);
     }
 
     addProvider(name, provider) {
@@ -56,27 +64,61 @@ export class Client {
         return ((this._ws) && (this._ws.readyState === WebSocket.OPEN));
     }
 
+    _isRequest(request) {
+        const method = request.method;
+
+        return (("string" === typeof(method)) && (request.hasOwnProperty("params")));
+    }
+
+    _isResponse(response) {
+        const id = response.id;
+
+        return (("number" === typeof(id)) && (response.hasOwnProperty("result") || response.hasOwnProperty("error")));
+    }
+
+    _removePendingRequest(id) {
+        let result = null;
+
+        if (this._pendingRequests.hasOwnProperty(id)) {
+            result = this._pendingRequests[id];
+            delete this._pendingRequests[id];    
+        }
+
+        return result;
+    }
+
     _onmessage(message) {
         try {
-            const request = JSON.parse(message.data);
-            const method = request.method;
-            const id = request.id;
-            const params = request.params;
+            const data = JSON.parse(message.data);
 
-            if ("string" !== typeof(method)) {
-                throw new Error("parse error: missing field: \"method\"");
+            if (this._isRequest(data)) {
+                const method = data.method;
+                const id = data.id;
+                const params = data.params;
+        
+                if ("number" === typeof(id)) {
+                    this._invoke(method, params, id);
+                }
+                else {
+                    this._notify(method, params);
+                }    
+            }
+            else if (this._isResponse(data)) {
+                const id = data.id;
+                const result = data.result;
+                const error = data.error;
+
+                const request = this._removePendingRequest(id);
+                if (request) {
+                    if (result) {
+                        request.resolve(result);
+                    }
+                    else {
+                        request.reject(error);
+                    }
+                }
             }
 
-            if (!params) {
-                throw new Error("parse error: missing field: \"params\"");
-            }
-
-            if ("number" === typeof(request.id)) {
-                this._invoke(method, params, id);
-            }
-            else {
-                this._notify(method, params);
-            }
         }
         catch (ex) {
             // swallow

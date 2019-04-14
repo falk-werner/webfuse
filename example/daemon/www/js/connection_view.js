@@ -29,6 +29,14 @@ export class ConnectionView {
         const authenticateBox = document.createElement("div");
         this.element.appendChild(authenticateBox);
 
+        const authLabel = document.createElement("span");
+        authLabel.textContent = "use authentication:";
+        authenticateBox.appendChild(authLabel);
+
+        this.authenticateCheckbox = document.createElement("input");
+        this.authenticateCheckbox.type = "checkbox";
+        authenticateBox.appendChild(this.authenticateCheckbox);
+
         const usernameLabel = document.createElement("span");
         usernameLabel.textContent = "user:";
         authenticateBox.appendChild(usernameLabel);
@@ -46,12 +54,6 @@ export class ConnectionView {
         this.passwordTextbox.type = "password";
         this.passwordTextbox.value = "secret";
         authenticateBox.appendChild(this.passwordTextbox);
-
-        this.authenticateButton = document.createElement("input");
-        this.authenticateButton.type = "button";
-        this.authenticateButton.value = "authenticate";
-        this.authenticateButton.addEventListener("click", () => { this._onAuthenticateButtonClicked(); });
-        authenticateBox.appendChild(this.authenticateButton);
     }
 
     _onConnectButtonClicked() {
@@ -66,15 +68,22 @@ export class ConnectionView {
 
     _onAuthenticateButtonClicked() {
         if (this._client.isConnected()) {
-            const username = this.usernameTextbox.value;
-            const password = this.passwordTextbox.value;
 
-            this._client.authenticate("username", { username, password });
         }
     }
 
     _onConnectionOpened() {
-        this._client.addProvider("test", this._provider);
+        if (this.authenticateCheckbox.checked) {
+            console.log("authenticate");
+            const username = this.usernameTextbox.value;
+            const password = this.passwordTextbox.value;
+
+            const promise = this._client.authenticate("username", { username, password });
+            promise.then(() => { this._client.addProvider("test", this._provider) });
+        } else {
+            this._client.addProvider("test", this._provider);
+        }
+
         this.connectButton.value = "disconnect";
     }
 
