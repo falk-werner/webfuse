@@ -6,7 +6,9 @@
 #include <uuid/uuid.h>
 
 #include <sys/stat.h>
+#include <sys/types.h>
 #include <unistd.h>
+#include <dirent.h>
 #include <limits.h>
 
 #include <stdlib.h>
@@ -34,11 +36,48 @@ static char * wf_impl_filesystem_create_id(void)
 	return strdup(id);
 }
 
-static bool wf_impl_filesystem_is_link_broken(char const * path)
+static bool wf_impl_filesystem_is_link_broken(char const * path, char const * id)
 {
+	bool result = false;
+
 	char buffer[PATH_MAX];
 	ssize_t count = readlink(path, buffer, PATH_MAX);
-	return (0 < count);
+	if ((0 < count) && (count < PATH_MAX))
+	{
+		buffer[count] = '\0';
+		result = (0 == strcmp(buffer, id));
+	}
+
+	return result;
+}
+
+static bool wf_impl_filesystem_get_first_subdir(
+	char const * serviceDir,
+	char * buffer,
+	size_t buffer_size)
+{
+	bool result = false;
+	DIR * dir = opendir(serviceDir);
+	if (NULL != dir)
+	{
+		struct dirent * entry = readdir(dir);
+		while (NULL != entry)
+		{
+			if ((DT_DIR == entry->d_type) && ('.' != entry->d_name[0]))
+			{
+				buffer[0] = '\0';
+				strncat(buffer, entry->d_name, buffer_size);
+				result = true;
+				break;
+			}
+
+			entry = readdir(dir);
+		}
+
+		closedir(dir);
+	}
+
+	return result;
 }
 
 static void wf_impl_filesystem_cleanup(
@@ -57,16 +96,26 @@ static void wf_impl_filesystem_cleanup(
 	snprintf(path, PATH_MAX, "%s/%s/%s", session->mount_point, filesystem->user_data.name, filesystem->id);
 	rmdir(path);
 
+	char serviceDir[PATH_MAX];
+	snprintf(serviceDir, PATH_MAX, "%s/%s", session->mount_point, filesystem->user_data.name);
+
 	snprintf(path, PATH_MAX, "%s/%s/default", session->mount_point, filesystem->user_data.name);
-	rmdir(path);
-	if (wf_impl_filesystem_is_link_broken(path))
+	if (wf_impl_filesystem_is_link_broken(path, filesystem->id))
 	{
 		unlink(path);
-		// ToDo: recreate link, if any directory exists
+
+		char firstDir[PATH_MAX];
+		bool found = wf_impl_filesystem_get_first_subdir(serviceDir, firstDir, PATH_MAX);
+		if (found)
+		{
+			symlink(firstDir, path);
+		}
+		else
+		{
+			rmdir(serviceDir);
+		}
 	}
 
-	snprintf(path, PATH_MAX, "%s/%s", session->mount_point, filesystem->user_data.name);
-	rmdir(path);
 
 	free(filesystem->user_data.name);
 	free(filesystem->id);
