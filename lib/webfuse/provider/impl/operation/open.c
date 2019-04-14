@@ -9,10 +9,10 @@ void wfp_impl_open(
     int id)
 {
     size_t const count = json_array_size(params);
-    if (2 == count)
+    if (3 == count)
     {
-        json_t * inode_holder = json_array_get(params, 0);
-        json_t * flags_holder = json_array_get(params, 1);
+        json_t * inode_holder = json_array_get(params, 1);
+        json_t * flags_holder = json_array_get(params, 2);
 
         if (json_is_integer(inode_holder) &&
             json_is_integer(flags_holder))

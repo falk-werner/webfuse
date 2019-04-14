@@ -13,9 +13,9 @@ void wfp_impl_getattr(
     int id)
 {
     size_t const count = json_array_size(params);
-    if (1 == count)
+    if (2 == count)
     {
-        json_t * inode_holder = json_array_get(params, 0);
+        json_t * inode_holder = json_array_get(params, 1);
 
         if (json_is_integer(inode_holder))
         {

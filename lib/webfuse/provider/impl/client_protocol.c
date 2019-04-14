@@ -45,6 +45,26 @@ static void wfp_impl_client_protocol_process_request(
     }
 }
 
+static void wfp_impl_client_protocol_add_filesystem(
+     struct wfp_client_protocol * protocol)
+{
+    json_t * params = json_array();
+    json_array_append_new(params, json_string("cprovider"));
+
+    json_t * request = json_object();
+    json_object_set_new(request, "method", json_string("add_filesystem"));
+    json_object_set_new(request, "params", params);
+    json_object_set_new(request, "id", json_integer(42));
+
+    struct wf_message * message = wf_message_create(request);
+    if (NULL != message)
+    {
+        wf_message_queue_push(&protocol->queue, message);
+        lws_callback_on_writable(protocol->wsi);
+    }
+
+    json_decref(request);
+}
 
 static int wfp_impl_client_protocol_callback(
 	struct lws * wsi,
@@ -61,6 +81,7 @@ static int wfp_impl_client_protocol_callback(
         switch (reason)
         {
         case LWS_CALLBACK_CLIENT_ESTABLISHED:
+            wfp_impl_client_protocol_add_filesystem(protocol);
             protocol->provider.connected(protocol->user_data);
             break;
         case LWS_CALLBACK_CLIENT_CONNECTION_ERROR:
