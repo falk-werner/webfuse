@@ -24,7 +24,7 @@ USERID ?= $(shell id -u)
 USERID := $(USERID)
 
 HOST_MARCH ?= $(shell dpkg --print-architecture 2>/dev/null)
-HOST_CONTAINER ?= $(shell $(SCRIPTDIR)/get_container_id.sh)
+HOST_CONTAINER ?= $(shell $(SCRIPTDIR)/bin/get_container_id.sh)
 HOST_CONTAINER := $(HOST_CONTAINER)
 
 $(HOST_CONTAINER)PORTABLE_WORSPACE ?= 
@@ -35,7 +35,7 @@ $(PORTABLE_WORSPACE)CONTAINER_PROJECTDIR = $(abspath $(PROJECTDIR))
 $(PORTABLE_WORSPACE)CONTAINER_SCRIPTDIR = $(abspath $(SCRIPTDIR))
 $(PORTABLE_WORSPACE)CONTAINER_OUTDIR = $(abspath $(OUTDIR))
 
-SOURCE_DATE_EPOCH ?= $(shell $(SCRIPTDIR)/get_source_date_epoch.sh)
+SOURCE_DATE_EPOCH ?= $(shell $(SCRIPTDIR)/bin/get_source_date_epoch.sh)
 SOURCE_DATE_EPOCH := $(SOURCE_DATE_EPOCH)
 export SOURCE_DATE_EPOCH
 

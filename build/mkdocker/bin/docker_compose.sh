@@ -12,6 +12,7 @@ SCRIPTDIR="${SCRIPTDIR:-"$(cd "$(dirname "$0")" && echo "$PWD")"}"
 PROJECTDIR="${PROJECTDIR:-"$PWD"}"
 ENTRYPOINT="${ENTRYPOINT:-docker-compose}"
 HOST_ENVFILTER="${HOST_ENVFILTER:-^DOCKER_\|^COMPOSE_}"
+PATH="${SCRIPTDIR}:$PATH"
 
 set -- --entrypoint "$ENTRYPOINT" "$IMAGE" "$@"
 set -- --user "$USERID:$USERID" --network "$NETWORK" --workdir "$PWD" "$@"
@@ -24,7 +25,7 @@ if [ -n "$CONTAINER_CGROUP_PARENT" ]; then
   set -- --cgroup-parent "$CONTAINER_CGROUP_PARENT" "$@"
 fi
 
-HOST_CONTAINER="${HOST_CONTAINER:-"$("$SCRIPTDIR/get_container_id.sh")"}" || true
+HOST_CONTAINER="${HOST_CONTAINER:-"$(get_container_id.sh)"}" || true
 if [ -n "$HOST_CONTAINER" ]; then
   set -- --volumes-from "$HOST_CONTAINER" "$@"
 else
@@ -39,7 +40,7 @@ else
   set -- -e DOCKER_HOST -e DOCKER_TLS_VERIFY -e DOCKER_CERT_PATH "$@"
 fi
 
-if [ -t 0 ] && ! "$SCRIPTDIR/is_running_in_bg.sh" $$; then
+if [ -t 0 ] && ! is_running_in_bg.sh $$; then
   set -- --interactive "$@"
 fi
 

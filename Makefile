@@ -19,7 +19,7 @@ regex_march_distro = '$1-$2-.*'
 
 PROJECTNAME ?= webfuse
 PROJECTDIR ?= $(patsubst %/,%,$(dir $(MAKEFILE)))
-SCRIPTDIR ?= $(PROJECTDIR)/build
+SCRIPTDIR ?= $(PROJECTDIR)/build/mkdocker
 OUTDIR ?= $(PROJECTDIR)/.build
 FETCHDIR ?= $(PROJECTDIR)/.deps
 BUILDTYPE ?= Debug
@@ -106,7 +106,7 @@ DEBIAN_TARGETS = $(addprefix $(OUTDIR)/docker/,$(call filter_targets,$(DEBIAN_FI
 #######################################################################################################################
 # Common rule target configuration
 
-VPATH = $(SCRIPTDIR)
+VPATH = $(PROJECTDIR)/build
 
 CURLFLAGS += -s
 

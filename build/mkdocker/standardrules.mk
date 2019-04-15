@@ -17,7 +17,7 @@ filter_out_command ?= $(filter $1,$(foreach CMD,$1,$(shell command -v $(CMD) 2>&
 
 md5sum = { \
   if [ -n "$2" ]; then \
-    sed -e 's@%MD5%@$2@g' -e 's@%FILE%@$1@g' $(SCRIPTDIR)/md5sum.txt.template > $1.md5; \
+    sed -e 's@%MD5%@$2@g' -e 's@%FILE%@$1@g' $(SCRIPTDIR)/resources/md5sum.txt.template > $1.md5; \
     md5sum -c $1.md5; \
   else \
     echo 'warning:$1: no md5 skipping verification' 1>&2; \

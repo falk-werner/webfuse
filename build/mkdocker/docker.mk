@@ -42,7 +42,7 @@ run_rule = \
 run = $(call echo_if_silent,TARGET=$1 $(addprefix BUILDTYPE=,$(BUILDTYPE)) $2) && $(call image_run,$1,$2,$3)
 
 wrapper_rule = \
-  $$(OUTDIR)/$1/$$(BUILDTYPE)/gdbserver: $$(SCRIPTDIR)/run_image.sh.template $$(OUTDIR)/docker/$1; \
+  $$(OUTDIR)/$1/$$(BUILDTYPE)/gdbserver: $$(SCRIPTDIR)/resources/run_image.sh.template $$(OUTDIR)/docker/$1; \
     $$(SILENT)$$(call wrapper,$1)
 wrapper = \
      $(call echo_if_silent,generating $@) \
