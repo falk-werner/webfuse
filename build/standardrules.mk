@@ -3,7 +3,7 @@
 # Overridable defaults
 
 ifndef _INCLUDE_DEFAULTS
-include $(realpath $(dir $(CURRENT_MAKEFILE)))/defaults.mk
+include $(patsubst %/,%,$(dir $(CURRENT_MAKEFILE)))/defaults.mk
 endif
 
 #######################################################################################################################
@@ -17,20 +17,18 @@ filter_out_command ?= $(filter $1,$(foreach CMD,$1,$(shell command -v $(CMD) 2>&
 
 md5sum = { \
   if [ -n "$2" ]; then \
-    echo "$2\t$1" > $1.md5; \
+    sed -e 's@%MD5%@$2@g' -e 's@%FILE%@$1@g' $(SCRIPTDIR)/md5sum.txt.template > $1.md5; \
     md5sum -c $1.md5; \
   else \
     echo 'warning:$1: no md5 skipping verification' 1>&2; \
   fi; \
 }
 
-$(DISABLE_FETCH)curl = $(call echo_if_silent,curl -fSL $(CURLFLAGS) -o $1 $2) \
+$(SKIP_FETCH)curl = $(call echo_if_silent,curl -fSL $(CURLFLAGS) -o $1 $2) \
   && curl -fSL $(CURLFLAGS) -o $1 $2 \
   && $(call md5sum,$1,$3)
 
-curl ?= $(call echo_if_silent,cp $(OFFLINE_CACHEDIR)/$(notdir $1) $1) \
-  && cp $(OFFLINE_CACHEDIR)/$(notdir $1) $1 \
-  && $(call md5sum,$1,$3)
+curl ?= echo 'warning:$1: download skipped (SKIP_FETCH=$(SKIP_FETCH))'
 
 check_rule = \
   check-$1: build-$1;
@@ -76,6 +74,8 @@ MAKEFILE_DEPS := $(sort $(MAKEFILE_DEPS))
 
 UNSATISFIED_MAKEFILE_DEPS := $(call filter_out_command,$(MAKEFILE_DEPS))
 
+RULE_TARGETS_DEPS := $(filter-out $(RULE_TARGETS) $(addprefix $(PROJECTDIR),$(RULE_TARGETS)),$(MAKEFILE_LIST))
+
 #######################################################################################################################
 # Standard rules
 
@@ -115,7 +115,7 @@ distclean:
 debug-print-%:
 	@printf '%s\n' '$*:' $($*)
 
-$(RULE_TARGETS): $(filter-out $(RULE_TARGETS),$(MAKEFILE_LIST)) | $(UNSATISFIED_MAKEFILE_DEPS) $(OUTDIRS)
+$(RULE_TARGETS): $(RULE_TARGETS_DEPS) | $(UNSATISFIED_MAKEFILE_DEPS) $(OUTDIRS)
 
 $(OUTDIRS):
 	$(SILENT)mkdir -p $@

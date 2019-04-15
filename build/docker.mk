@@ -11,7 +11,7 @@ CONTAINER_USER ?= $(USERID)
 CONTAINER_GROUP ?= $(USERID)
 
 ifndef _INCLUDE_DEFAULTS
-include $(realpath $(dir $(CURRENT_MAKEFILE)))/defaults.mk
+include $(patsubst %/,%,$(dir $(CURRENT_MAKEFILE)))/defaults.mk
 endif
 
 #######################################################################################################################
@@ -30,10 +30,10 @@ image_run = $(DOCKER) run --rm --interactive $(DOCKER_RUNFLAGS) \
   $2
 
 image_rule = \
-  $$(OUTDIR)/docker/$1: $$(OUTDIR)/docker/$1.dockerfile $$(EXTRACT_TARGETS) $$(MAKEFILE_LIST); \
+  $$(OUTDIR)/docker/$1: $1.dockerfile $$(EXTRACT_TARGETS) $$(MAKEFILE_LIST); \
     $$(SILENT)$$(call image,$1)
 image = \
-     $(call echo_if_silent,TARGET=$1 docker build $(call image_name,$1) $(OUTDIR)) \
+     $(call echo_if_silent,TARGET=$1 docker build --file $< --tag $(call image_name,$1) $(OUTDIR)) \
   && $(DOCKER) build --rm $(DOCKER_BUILDFLAGS) --iidfile $@ --file $< --tag $(call image_name,$1) $(OUTDIR)
 
 run_rule = \
@@ -61,14 +61,14 @@ wrapper = \
 
 DOCKER_RUNFLAGS += --env SOURCE_DATE_EPOCH
 DOCKER_RUNFLAGS += --env BUILDTIME
-DOCKER_RUNFLAGS += --user $(CONTAINER_USER):$(CONTAINER_GROUP)
+DOCKER_RUNFLAGS += --user '$(CONTAINER_USER):$(CONTAINER_GROUP)'
 
-DOCKER_BUILDARGS += USERID=$(USERID)
-DOCKER_BUILDARGS += PARALLELMFLAGS=$(_PARALLELMFLAGS)
-DOCKER_BUILDARGS += PROJECTDIR=$(CONTAINER_PROJECTDIR)
-DOCKER_BUILDARGS += SCRIPTDIR=$(CONTAINER_SCRIPTDIR)
-DOCKER_BUILDARGS += OUTDIR=$(CONTAINER_OUTDIR)
-DOCKER_BUILDARGS += REGISTRY_PREFIX=$(REGISTRY_PREFIX)
+DOCKER_BUILDARGS += 'USERID=$(USERID)'
+DOCKER_BUILDARGS += 'PARALLELMFLAGS=$(_PARALLELMFLAGS)'
+DOCKER_BUILDARGS += 'PROJECTDIR=$(CONTAINER_PROJECTDIR)'
+DOCKER_BUILDARGS += 'SCRIPTDIR=$(CONTAINER_SCRIPTDIR)'
+DOCKER_BUILDARGS += 'OUTDIR=$(CONTAINER_OUTDIR)'
+DOCKER_BUILDARGS += 'REGISTRY_PREFIX=$(REGISTRY_PREFIX)'
 
 DOCKER_BUILDFLAGS += $(addprefix --build-arg ,$(DOCKER_BUILDARGS))
 

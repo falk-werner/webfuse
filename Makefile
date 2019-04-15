@@ -18,13 +18,16 @@ regex_march_distro = '$1-$2-.*'
 # Overridable project defaults
 
 PROJECTNAME ?= webfuse
-PROJECTDIR ?= $(realpath $(dir $(MAKEFILE)))
+PROJECTDIR ?= $(patsubst %/,%,$(dir $(MAKEFILE)))
 SCRIPTDIR ?= $(PROJECTDIR)/build
 OUTDIR ?= $(PROJECTDIR)/.build
+FETCHDIR ?= $(PROJECTDIR)/.deps
 BUILDTYPE ?= Debug
 
-DISABLE_DEFAULT_BUILDTARGET := $(or $(MARCH),$(DISTRO))
-$(DISABLE_DEFAULT_BUILDTARGET)BUILDTARGET ?= amd64-ubuntu-builder
+SKIP_FETCH ?= 
+
+SKIP_DEFAULT_BUILDTARGET ?= $(or $(MARCH),$(DISTRO))
+$(SKIP_DEFAULT_BUILDTARGET)BUILDTARGET ?= amd64-ubuntu-builder
 MARCH ?= '.*'
 DISTRO ?= '.*'
 FILTER ?= $(call regex_march_distro,$(MARCH),$(DISTRO))
@@ -35,47 +38,47 @@ CONTAINER_GROUP ?= user
 UBUNTU_CODENAME ?= bionic
 DEBIAN_CODENAME ?= testing-slim
 
-DISABLE_MD5SUM ?= $(call filter_out_command,md5sum)
-DISABLE_MD5SUM := $(DISABLE_MD5SUM)
+SKIP_MD5SUM ?= $(call filter_out_command,md5sum)
+SKIP_MD5SUM := $(SKIP_MD5SUM)
 
 #######################################################################################################################
 # Project dependencies
 
 DUMB_INIT_VERSION ?= 1.2.2
 DOCKER_BUILDARGS += DUMB_INIT_VERSION=$(DUMB_INIT_VERSION)
-FETCH_TARGETS += $(OUTDIR)/dumb-init-$(DUMB_INIT_VERSION).tar.gz
-$(OUTDIR)/dumb-init-$(DUMB_INIT_VERSION).tar.gz: URL := https://github.com/Yelp/dumb-init/archive/v${DUMB_INIT_VERSION}.tar.gz
-$(DISABLE_MD5SUM)$(OUTDIR)/dumb-init-$(DUMB_INIT_VERSION).tar.gz: MD5 := 6166084b05772cdcf615a762c6f3b32e
+FETCH_TARGETS += $(FETCHDIR)/dumb-init-$(DUMB_INIT_VERSION).tar.gz
+$(FETCHDIR)/dumb-init-$(DUMB_INIT_VERSION).tar.gz: URL := https://github.com/Yelp/dumb-init/archive/v${DUMB_INIT_VERSION}.tar.gz
+$(SKIP_MD5SUM)$(FETCHDIR)/dumb-init-$(DUMB_INIT_VERSION).tar.gz: MD5 := 6166084b05772cdcf615a762c6f3b32e
 
 GTEST_VERSION ?= 1.8.1
 DOCKER_BUILDARGS += GTEST_VERSION=$(GTEST_VERSION)
-FETCH_TARGETS += $(OUTDIR)/googletest-release-$(GTEST_VERSION).tar.gz
-$(OUTDIR)/googletest-release-$(GTEST_VERSION).tar.gz: URL := https://github.com/google/googletest/archive/release-$(GTEST_VERSION).tar.gz
-$(DISABLE_MD5SUM)$(OUTDIR)/googletest-release-$(GTEST_VERSION).tar.gz: MD5 := 2e6fbeb6a91310a16efe181886c59596
+FETCH_TARGETS += $(FETCHDIR)/googletest-release-$(GTEST_VERSION).tar.gz
+$(FETCHDIR)/googletest-release-$(GTEST_VERSION).tar.gz: URL := https://github.com/google/googletest/archive/release-$(GTEST_VERSION).tar.gz
+$(SKIP_MD5SUM)$(FETCHDIR)/googletest-release-$(GTEST_VERSION).tar.gz: MD5 := 2e6fbeb6a91310a16efe181886c59596
 
 FUSE_VERSION ?= 3.1.1
 DOCKER_BUILDARGS += FUSE_VERSION=$(FUSE_VERSION)
-FETCH_TARGETS += $(OUTDIR)/libfuse-fuse-$(FUSE_VERSION).tar.gz
-$(OUTDIR)/libfuse-fuse-$(FUSE_VERSION).tar.gz: URL := https://github.com/libfuse/libfuse/archive/fuse-$(FUSE_VERSION).tar.gz
-$(DISABLE_MD5SUM)$(OUTDIR)/libfuse-fuse-$(FUSE_VERSION).tar.gz: MD5 := 097f194856938afdd98bea1a5c046edd
+FETCH_TARGETS += $(FETCHDIR)/libfuse-fuse-$(FUSE_VERSION).tar.gz
+$(FETCHDIR)/libfuse-fuse-$(FUSE_VERSION).tar.gz: URL := https://github.com/libfuse/libfuse/archive/fuse-$(FUSE_VERSION).tar.gz
+$(SKIP_MD5SUM)$(FETCHDIR)/libfuse-fuse-$(FUSE_VERSION).tar.gz: MD5 := 097f194856938afdd98bea1a5c046edd
 
 WEBSOCKETS_VERSION ?= 3.1.0
 DOCKER_BUILDARGS += WEBSOCKETS_VERSION=$(WEBSOCKETS_VERSION)
-FETCH_TARGETS += $(OUTDIR)/libwebsockets-$(WEBSOCKETS_VERSION).tar.gz
-$(OUTDIR)/libwebsockets-$(WEBSOCKETS_VERSION).tar.gz: URL := https://github.com/warmcat/libwebsockets/archive/v$(WEBSOCKETS_VERSION).tar.gz
-$(DISABLE_MD5SUM)$(OUTDIR)/libwebsockets-$(WEBSOCKETS_VERSION).tar.gz: MD5 := 325359a25d5f6d22725ff5d086db1c76
+FETCH_TARGETS += $(FETCHDIR)/libwebsockets-$(WEBSOCKETS_VERSION).tar.gz
+$(FETCHDIR)/libwebsockets-$(WEBSOCKETS_VERSION).tar.gz: URL := https://github.com/warmcat/libwebsockets/archive/v$(WEBSOCKETS_VERSION).tar.gz
+$(SKIP_MD5SUM)$(FETCHDIR)/libwebsockets-$(WEBSOCKETS_VERSION).tar.gz: MD5 := 325359a25d5f6d22725ff5d086db1c76
 
 JANSSON_VERSION ?= 2.12
 DOCKER_BUILDARGS += JANSSON_VERSION=$(JANSSON_VERSION)
-FETCH_TARGETS += $(OUTDIR)/jansson-$(JANSSON_VERSION).tar.gz
-$(OUTDIR)/jansson-$(JANSSON_VERSION).tar.gz: URL := https://github.com/akheron/jansson/archive/v$(JANSSON_VERSION).tar.gz
-$(DISABLE_MD5SUM)$(OUTDIR)/jansson-$(JANSSON_VERSION).tar.gz: MD5 := c4b106528d5ffb521178565de1ba950d
+FETCH_TARGETS += $(FETCHDIR)/jansson-$(JANSSON_VERSION).tar.gz
+$(FETCHDIR)/jansson-$(JANSSON_VERSION).tar.gz: URL := https://github.com/akheron/jansson/archive/v$(JANSSON_VERSION).tar.gz
+$(SKIP_MD5SUM)$(FETCHDIR)/jansson-$(JANSSON_VERSION).tar.gz: MD5 := c4b106528d5ffb521178565de1ba950d
 
 QEMU_VERSION ?= v3.1.0-2
 DOCKER_BUILDARGS += QEMU_VERSION_=$(QEMU_VERSION)
 FETCH_TARGETS += $(OUTDIR)/docker/qemu-arm-static-$(QEMU_VERSION)
-$(OUTDIR)/docker/qemu-arm-static-$(QEMU_VERSION): URL := https://github.com/multiarch/qemu-user-static/releases/download/$(QEMU_VERSION)/qemu-arm-static
-$(DISABLE_MD5SUM)$(OUTDIR)/docker/qemu-arm-static-$(QEMU_VERSION): MD5 := 8ebd24e63fdfa07c557d45373bd831b1
+$(FETCHDIR)/qemu-arm-static-$(QEMU_VERSION): URL := https://github.com/multiarch/qemu-user-static/releases/download/$(QEMU_VERSION)/qemu-arm-static
+$(SKIP_MD5SUM)$(FETCHDIR)/qemu-arm-static-$(QEMU_VERSION): MD5 := 8ebd24e63fdfa07c557d45373bd831b1
 
 #######################################################################################################################
 # Architecture-specific rule target configuration
@@ -103,6 +106,8 @@ DEBIAN_TARGETS = $(addprefix $(OUTDIR)/docker/,$(call filter_targets,$(DEBIAN_FI
 #######################################################################################################################
 # Common rule target configuration
 
+VPATH = $(SCRIPTDIR)
+
 CURLFLAGS += -s
 
 DOCKER_RUNFLAGS += --device /dev/fuse
@@ -116,12 +121,12 @@ DOCKER_BUILDARGS += CODENAME=$(CODENAME)
 
 OUTDIRS += $(OUTDIR)/src
 
-EXTRACT_TARGETS += $(patsubst $(OUTDIR)/%.tar.gz,$(OUTDIR)/src/%,$(FETCH_TARGETS))
+EXTRACT_TARGETS += $(patsubst $(FETCHDIR)/%.tar.gz,$(OUTDIR)/src/%,$(FETCH_TARGETS))
 
 #######################################################################################################################
 # Makefile dependencies
 
-MAKEFILE_DEPS += curl
+$(SKIP_FETCH)MAKEFILE_DEPS += curl
 MAKEFILE_DEPS += gunzip
 MAKEFILE_DEPS += tar
 MAKEFILE_DEPS += chmod
@@ -143,16 +148,16 @@ $(UBUNTU_TARGETS): CODENAME := $(UBUNTU_CODENAME)
 
 $(DEBIAN_TARGETS): CODENAME := $(DEBIAN_CODENAME)
 
-$(OUTDIR)/docker/qemu-arm-static-$(QEMU_VERSION): $(MAKEFILE)
+$(FETCHDIR)/qemu-arm-static-$(QEMU_VERSION):
 	$(SILENT)$(call curl,$@,$(URL),$(MD5)) && chmod +x $@ 
 
-$(OUTDIR)/docker/% : $(SCRIPTDIR)/% | $(OUTDIRS)
-	cp $< $@
-
-$(OUTDIR)/%.tar.gz: $(MAKEFILE) | $(OUTDIRS)
+$(FETCHDIR)/%.tar.gz: | $(OUTDIRS)
 	$(SILENT)$(call curl,$@,$(URL),$(MD5))
 
-$(OUTDIR)/src/%: $(OUTDIR)/%.tar.gz | $(OUTDIRS)
+$(OUTDIR)/docker/% : $(FETCHDIR)/% | $(OUTDIRS)
+	cp $< $@
+
+$(OUTDIR)/src/%: $(FETCHDIR)/%.tar.gz | $(OUTDIRS)
 	$(SILENT) \
 	     $(call echo_if_silent,tar -C $(dir $@) -xf $<) \
 	  && tar -C $(dir $@) -xf $< \

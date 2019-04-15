@@ -8,10 +8,9 @@ _INCLUDE_DEFAULTS := T
 MAKEFILE ?= $(firstword $(MAKEFILE_LIST))
 MAKEFILE := $(MAKEFILE)
 
-PROJECTDIR ?= $(realpath $(dir $(MAKEFILE)))
-SCRIPTDIR ?= $(realpath $(dir $(CURRENT_MAKEFILE)))
+PROJECTDIR ?= $(patsubst %/,%,$(dir $(MAKEFILE)))
+SCRIPTDIR ?= $(patsubst %/,%,$(dir $(CURRENT_MAKEFILE)))
 OUTDIR ?= $(PROJECTDIR)/.build
-OFFLINE_CACHEDIR ?= $(PROJECTDIR)/.deps
 
 BUILDTYPE ?= Debug
 
@@ -55,3 +54,4 @@ MAKEFILE_DEPS += cat
 MAKEFILE_DEPS += id
 MAKEFILE_DEPS += echo
 MAKEFILE_DEPS += sed
+

@@ -11,7 +11,7 @@ CMAKE_PROJECTDIR ?= $(CONTAINER_PROJECTDIR)
 CMAKE_SCRIPTDIR ?= $(CONTAINER_SCRIPTDIR)
 
 ifndef _INCLUDE_DEFAULTS
-include $(realpath $(dir $(CURRENT_MAKEFILE)))/defaults.mk
+include $(patsubst %/,%,$(dir $(CURRENT_MAKEFILE)))/defaults.mk
 endif
 
 #######################################################################################################################
@@ -21,14 +21,14 @@ cmake_configure_rule = \
   $$(OUTDIR)/$1/$$(CMAKE_BUILD_TYPE)/CMakeCache.txt: $$(PROJECTDIR)/CMakeLists.txt $$(OUTDIR)/docker/$1 | $$(OUTDIR)/$1/$$(CMAKE_BUILD_TYPE)/gdbserver; \
     $$(SILENT)$$(call cmake_configure,$1)
 cmake_configure = \
-     $(call run,$1,sh -c 'cmake $(CMAKEFLAGS) $(CMAKE_PROJECTDIR) && $(CMAKE_SCRIPTDIR)/cmake_discover_cc_settings.sh $(notdir $@) $(realpath $(dir $@))') \
+     $(call run,$1,sh -c 'cmake $(CMAKEFLAGS) $(CMAKE_PROJECTDIR) && $(CMAKE_SCRIPTDIR)/cmake_discover_cc_settings.sh $(notdir $@) "$(realpath $(dir $@))"') \
   && touch $(addprefix $(dir $@)/,include_dirs.txt) $@
 
 cmake_discover_cc_settings_rule = \
   $$(OUTDIR)/$1/$$(CMAKE_BUILD_TYPE)/include_dirs.txt: $$(OUTDIR)/$1/$$(CMAKE_BUILD_TYPE)/CMakeCache.txt; \
     $$(SILENT)$$(call cmake_discover_cc_settings,$1)
 cmake_discover_cc_settings = \
-  $(call run,$1,$(CMAKE_SCRIPTDIR)/cmake_discover_cc_settings.sh $(notdir $<) $(realpath $(dir $<)))
+  $(call run,$1,$(CMAKE_SCRIPTDIR)/cmake_discover_cc_settings.sh $(notdir $<) '$(realpath $(dir $<))')
 
 ninja_build_rule = \
   build-$1: $$(OUTDIR)/$1/$$(CMAKE_BUILD_TYPE)/CMakeCache.txt; \
