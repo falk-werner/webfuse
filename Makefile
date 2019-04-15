@@ -157,5 +157,8 @@ $(OUTDIR)/src/%: $(FETCHDIR)/%.tar.gz | $(OUTDIRS)
 	  && tar -C $(dir $@) -xf $< \
 	  && touch $@
 
+$(FETCHDIR):
+	$(SILENT)mkdir -p $@
+
 .DELETE_ON_ERROR: $(FETCH_TARGETS)
 
