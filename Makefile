@@ -142,14 +142,14 @@ $(UBUNTU_TARGETS): CODENAME := $(UBUNTU_CODENAME)
 
 $(DEBIAN_TARGETS): CODENAME := $(DEBIAN_CODENAME)
 
+$(FETCH_TARGETS): | $(FETCHDIR)
+	$(SILENT)$(call curl,$@,$(URL),$(MD5))
+
 $(OUTDIR)/docker/qemu-arm-static-$(QEMU_VERSION) : $(FETCHDIR)/qemu-arm-static-$(QEMU_VERSION) | $(OUTDIRS)
 	$(SILENT) \
 	     $(call echo_if_silent,cp $< $@) \
 	  && cp $< $@ \
 	  && chmod +x $@ 
-
-$(FETCH_TARGETS): | $(OUTDIRS)
-	$(SILENT)$(call curl,$@,$(URL),$(MD5))
 
 $(OUTDIR)/src/%: $(FETCHDIR)/%.tar.gz | $(OUTDIRS)
 	$(SILENT) \
