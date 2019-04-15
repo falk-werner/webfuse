@@ -50,19 +50,20 @@ DOCKER_RUNFLAGS += --env NINJA_STATUS
 CMAKEFLAGS += '-GNinja'
 CMAKEFLAGS += '-DCMAKE_BUILD_TYPE=$(CMAKE_BUILD_TYPE)'
 
+CMAKE_TARGETS := $(CMAKE_TARGETS)
 CMAKE_TARGET := $(filter $(BUILDTARGET),$(CMAKE_TARGETS))
 $(CMAKE_TARGET)CMAKE_ACTIVE_TARGETS += $(CMAKE_TARGETS)
 CMAKE_ACTIVE_TARGETS += $(CMAKE_TARGET)
-CMAKE_TARGETS := $(call filter_targets,$(FILTER),$(CMAKE_ACTIVE_TARGETS))
+CMAKE_ACTIVE_TARGETS := $(call filter_targets,$(FILTER),$(CMAKE_ACTIVE_TARGETS))
 
-CMAKE_BUILD_TARGETS += $(addprefix build-,$(CMAKE_TARGETS))
-CMAKE_CLEAN_TARGETS += $(addprefix clean-,$(CMAKE_TARGETS))
-CMAKE_CHECK_TARGETS += $(addprefix check-,$(CMAKE_TARGETS))
-CMAKE_MEMCHECK_TARGETS += $(addprefix memcheck-,$(call filter_targets,$(CMAKE_MEMCHECK_FILTER),$(CMAKE_TARGETS)))
-CMAKE_RUN_TARGETS += $(addprefix run-,$(firstword $(CMAKE_TARGETS)))
-CMAKE_DISCOVER_CC_TARGETS += $(addprefix discover-cc-,$(firstword $(CMAKE_TARGETS)))
-CMAKE_OUTDIRS += $(addsuffix /$(CMAKE_BUILD_TYPE),$(addprefix $(OUTDIR)/,$(CMAKE_TARGETS)))
-CMAKE_RULE_TARGETS += $(addsuffix /cmakerules.mk,$(addprefix $(OUTDIR)/,$(CMAKE_TARGETS)))
+CMAKE_BUILD_TARGETS += $(addprefix build-,$(CMAKE_ACTIVE_TARGETS))
+CMAKE_CLEAN_TARGETS += $(addprefix clean-,$(CMAKE_ACTIVE_TARGETS))
+CMAKE_CHECK_TARGETS += $(addprefix check-,$(CMAKE_ACTIVE_TARGETS))
+CMAKE_MEMCHECK_TARGETS += $(addprefix memcheck-,$(call filter_targets,$(CMAKE_MEMCHECK_FILTER),$(CMAKE_ACTIVE_TARGETS)))
+CMAKE_RUN_TARGETS += $(addprefix run-,$(firstword $(CMAKE_ACTIVE_TARGETS)))
+CMAKE_DISCOVER_CC_TARGETS += $(addprefix discover-cc-,$(firstword $(CMAKE_ACTIVE_TARGETS)))
+CMAKE_OUTDIRS += $(addsuffix /$(CMAKE_BUILD_TYPE),$(addprefix $(OUTDIR)/,$(CMAKE_ACTIVE_TARGETS)))
+CMAKE_RULE_TARGETS += $(addsuffix /cmakerules.mk,$(OUTDIR))
 
 BUILD_TARGETS += $(CMAKE_BUILD_TARGETS)
 CHECK_TARGETS += $(CMAKE_CHECK_TARGETS)
@@ -71,7 +72,7 @@ CLEAN_TARGETS += $(CMAKE_CLEAN_TARGETS)
 RUN_TARGETS += $(CMAKE_RUN_TARGETS)
 DISCOVER_CC_TARGETS += $(CMAKE_DISCOVER_CC_TARGETS)
 RULE_TARGETS += $(CMAKE_RULE_TARGETS)
-TARGETS += $(CMAKE_TARGETS)
+TARGETS += $(CMAKE_ACTIVE_TARGETS)
 OUTDIRS += $(CMAKE_OUTDIRS)
 
 #######################################################################################################################
@@ -86,6 +87,8 @@ MAKEFILE_DEPS += echo
 $(CMAKE_RULE_TARGETS):
 	$(SILENT) \
 	{ \
+	$(foreach TARGET,$(CMAKE_TARGETS),\
+	  echo; \
 	  echo '$(call image_rule,$(TARGET))'; \
 	  echo; \
 	  echo '$(call cmake_configure_rule,$(TARGET))'; \
@@ -105,5 +108,6 @@ $(CMAKE_RULE_TARGETS):
 	  echo '$(call discover_cc_rule,$(TARGET))'; \
 	  echo; \
 	  echo '$(call wrapper_rule,$(TARGET))'; \
+	) \
 	} > $@
 

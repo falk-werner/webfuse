@@ -76,7 +76,7 @@ $(SKIP_MD5SUM)$(FETCHDIR)/jansson-$(JANSSON_VERSION).tar.gz: MD5 := c4b106528d5f
 
 QEMU_VERSION ?= v3.1.0-2
 DOCKER_BUILDARGS += QEMU_VERSION_=$(QEMU_VERSION)
-FETCH_TARGETS += $(OUTDIR)/docker/qemu-arm-static-$(QEMU_VERSION)
+FETCH_TARGETS += $(FETCHDIR)/qemu-arm-static-$(QEMU_VERSION)
 $(FETCHDIR)/qemu-arm-static-$(QEMU_VERSION): URL := https://github.com/multiarch/qemu-user-static/releases/download/$(QEMU_VERSION)/qemu-arm-static
 $(SKIP_MD5SUM)$(FETCHDIR)/qemu-arm-static-$(QEMU_VERSION): MD5 := 8ebd24e63fdfa07c557d45373bd831b1
 
@@ -84,16 +84,9 @@ $(SKIP_MD5SUM)$(FETCHDIR)/qemu-arm-static-$(QEMU_VERSION): MD5 := 8ebd24e63fdfa0
 # Architecture-specific rule target configuration
 
 CMAKE_TARGETS += amd64-ubuntu-builder
-$(OUTDIR)/amd64-ubuntu-builder/cmakerules.mk: TARGET := amd64-ubuntu-builder
-
 CMAKE_TARGETS += amd64-debian-builder
-$(OUTDIR)/amd64-debian-builder/cmakerules.mk: TARGET := amd64-debian-builder
-
 CMAKE_TARGETS += arm32v7-ubuntu-builder
-$(OUTDIR)/arm32v7-ubuntu-builder/cmakerules.mk: TARGET := arm32v7-ubuntu-builder
-
 CMAKE_TARGETS += arm32v7-debian-builder
-$(OUTDIR)/arm32v7-debian-builder/cmakerules.mk: TARGET := arm32v7-debian-builder
 
 MEMCHECK_FILTER = $(call regex_march_distro,'$(HOST_MARCH)','.*')
 
@@ -121,6 +114,7 @@ DOCKER_BUILDARGS += CODENAME=$(CODENAME)
 
 OUTDIRS += $(OUTDIR)/src
 
+EXTRACT_TARGETS += $(OUTDIR)/docker/qemu-arm-static-$(QEMU_VERSION)
 EXTRACT_TARGETS += $(patsubst $(FETCHDIR)/%.tar.gz,$(OUTDIR)/src/%,$(FETCH_TARGETS))
 
 #######################################################################################################################
@@ -148,14 +142,14 @@ $(UBUNTU_TARGETS): CODENAME := $(UBUNTU_CODENAME)
 
 $(DEBIAN_TARGETS): CODENAME := $(DEBIAN_CODENAME)
 
-$(FETCHDIR)/qemu-arm-static-$(QEMU_VERSION):
-	$(SILENT)$(call curl,$@,$(URL),$(MD5)) && chmod +x $@ 
+$(OUTDIR)/docker/qemu-arm-static-$(QEMU_VERSION) : $(FETCHDIR)/qemu-arm-static-$(QEMU_VERSION) | $(OUTDIRS)
+	$(SILENT) \
+	     $(call echo_if_silent,cp $< $@) \
+	  && cp $< $@ \
+	  && chmod +x $@ 
 
-$(FETCHDIR)/%.tar.gz: | $(OUTDIRS)
+$(FETCH_TARGETS): | $(OUTDIRS)
 	$(SILENT)$(call curl,$@,$(URL),$(MD5))
-
-$(OUTDIR)/docker/% : $(FETCHDIR)/% | $(OUTDIRS)
-	cp $< $@
 
 $(OUTDIR)/src/%: $(FETCHDIR)/%.tar.gz | $(OUTDIRS)
 	$(SILENT) \
