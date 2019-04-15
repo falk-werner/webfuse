@@ -99,8 +99,6 @@ DEBIAN_TARGETS = $(addprefix $(OUTDIR)/docker/,$(call filter_targets,$(DEBIAN_FI
 #######################################################################################################################
 # Common rule target configuration
 
-VPATH = $(PROJECTDIR)/build
-
 CURLFLAGS += -s
 
 DOCKER_RUNFLAGS += --device /dev/fuse
@@ -144,6 +142,9 @@ $(DEBIAN_TARGETS): CODENAME := $(DEBIAN_CODENAME)
 
 $(FETCH_TARGETS): | $(FETCHDIR)
 	$(SILENT)$(call curl,$@,$(URL),$(MD5))
+
+$(OUTDIR)/docker/%.dockerfile : $(PROJECTDIR)/build/%.dockerfile | $(OUTDIRS)
+	cp $< $@
 
 $(OUTDIR)/docker/qemu-arm-static-$(QEMU_VERSION) : $(FETCHDIR)/qemu-arm-static-$(QEMU_VERSION) | $(OUTDIRS)
 	$(SILENT) \

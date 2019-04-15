@@ -30,7 +30,7 @@ image_run = $(DOCKER) run --rm --interactive $(DOCKER_RUNFLAGS) \
   $2
 
 image_rule = \
-  $$(OUTDIR)/docker/$1: $1.dockerfile $$(EXTRACT_TARGETS) $$(MAKEFILE_LIST); \
+  $$(OUTDIR)/docker/$1: $$(OUTDIR)/docker/$1.dockerfile $$(EXTRACT_TARGETS) $$(MAKEFILE_LIST); \
     $$(SILENT)$$(call image,$1)
 image = \
      $(call echo_if_silent,TARGET=$1 docker build --file $< --tag $(call image_name,$1) $(OUTDIR)) \
