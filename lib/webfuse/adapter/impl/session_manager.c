@@ -6,25 +6,21 @@
 void wf_impl_session_manager_init(
     struct wf_impl_session_manager * manager)
 {
-    wf_dlist_init(&manager->sessions);
+    wf_slist_init(&manager->sessions);
 }
-
-static void wf_impl_session_manager_cleanup_session(
-    struct wf_dlist_item * item,
-    void * user_data)
-{
-    (void) user_data;
-    struct wf_impl_session * session = WF_CONTAINER_OF(item, struct wf_impl_session, item);
-
-    wf_impl_session_dispose(session);
-}
-
- 
 
 void wf_impl_session_manager_cleanup(
     struct wf_impl_session_manager * manager)
 {
-    wf_dlist_cleanup(&manager->sessions, &wf_impl_session_manager_cleanup_session, NULL);
+    struct wf_slist_item * item = manager->sessions.first;
+    while (NULL != item)
+    {
+        struct wf_slist_item * next = item->next;
+        struct wf_impl_session * session = WF_CONTAINER_OF(item, struct wf_impl_session, item);
+        wf_impl_session_dispose(session);
+
+        item = next;
+    }
 }
 
 struct wf_impl_session * wf_impl_session_manager_add(
@@ -39,7 +35,7 @@ struct wf_impl_session * wf_impl_session_manager_add(
         wsi, authenticators, timeout_manager, server, mount_point); 
     if (NULL != session)
     {
-        wf_dlist_prepend(&manager->sessions, &session->item);
+        wf_slist_append(&manager->sessions, &session->item);
     }
 
     return session;
@@ -50,37 +46,42 @@ struct wf_impl_session * wf_impl_session_manager_get(
     struct lws * wsi)
 {
     struct wf_impl_session * session = NULL;
-    struct wf_dlist_item * item = wf_dlist_find_first(
-        &manager->sessions, &wf_impl_session_contains_wsi, wsi);
-    if (NULL != item)
+
+    struct wf_slist_item * item = manager->sessions.first;
+    while (NULL != item)
     {
-        session = WF_CONTAINER_OF(item, struct wf_impl_session, item);
+        struct wf_slist_item * next = item->next;
+        struct wf_impl_session * current = WF_CONTAINER_OF(item, struct wf_impl_session, item);
+
+        if (wf_impl_session_contains_wsi(current, wsi)) {
+            session = current;
+            break;
+        }
+
+        item = next;
     }
 
     return session;
-}
-
-static bool wf_impl_session_manager_remove_predicate(
-    struct wf_dlist_item * item,
-    void * user_data)
-{
-    struct lws * wsi = user_data;
-    struct wf_impl_session * session = WF_CONTAINER_OF(item, struct wf_impl_session, item);
-
-    return (wsi == session->wsi);
 }
 
 void wf_impl_session_manager_remove(
     struct wf_impl_session_manager * manager,
     struct lws * wsi)
 {
-    struct wf_impl_session * session = NULL;
-    struct wf_dlist_item * item = wf_dlist_find_first(
-        &manager->sessions, &wf_impl_session_manager_remove_predicate, wsi);
-    if (NULL != item)
+    struct wf_slist_item * item = manager->sessions.first;
+    struct wf_slist_item * prev = NULL;
+    while (NULL != item)
     {
-        wf_dlist_remove(&manager->sessions, item);
-        session = WF_CONTAINER_OF(item, struct wf_impl_session, item);
-        wf_impl_session_dispose(session);
+        struct wf_slist_item * next = item->next;
+        struct wf_impl_session * session = WF_CONTAINER_OF(item, struct wf_impl_session, item);
+        if (wsi == session->wsi)
+        {
+            wf_slist_remove_after(&manager->sessions, prev);
+            wf_impl_session_dispose(session);
+            break;
+        }
+
+        prev = item;
+        item = next;
     }
 }

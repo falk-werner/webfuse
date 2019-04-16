@@ -48,8 +48,7 @@ struct wf_impl_session * wf_impl_session_create(
     struct wf_impl_session * session = malloc(sizeof(struct wf_impl_session));
     if (NULL != session)
     {
-        wf_dlist_item_init(&session->item);
-        wf_dlist_init(&session->filesystems);
+        wf_slist_init(&session->filesystems);
         
         session->mount_point = strdup(mount_point);
         session->wsi = wsi;
@@ -63,19 +62,24 @@ struct wf_impl_session * wf_impl_session_create(
     return session;
 }
 
-static void wf_impl_session_cleanup_filesystem(
-    struct wf_dlist_item * item,
-    void * WF_UNUSED_PARAM(user_data))
+static void wf_impl_session_dispose_filesystems(
+    struct wf_slist * filesystems)
 {    
-    struct wf_impl_filesystem * filesystem = WF_CONTAINER_OF(item, struct wf_impl_filesystem, item);
-    wf_impl_filesystem_dispose(filesystem);
-
+    struct wf_slist_item * item = filesystems->first;
+    while (NULL != item)
+    {
+        struct wf_slist_item * next = item->next;
+        struct wf_impl_filesystem * filesystem = WF_CONTAINER_OF(item, struct wf_impl_filesystem, item);
+        wf_impl_filesystem_dispose(filesystem);
+        
+        item = next;
+    }
 }
 
 void wf_impl_session_dispose(
     struct wf_impl_session * session)
 {
-    wf_dlist_cleanup(&session->filesystems, &wf_impl_session_cleanup_filesystem, NULL);
+    wf_impl_session_dispose_filesystems(&session->filesystems);
 
     wf_impl_jsonrpc_proxy_cleanup(&session->rpc);
     wf_message_queue_cleanup(&session->queue);
@@ -101,7 +105,7 @@ bool wf_impl_session_add_filesystem(
     char const * name)
 {
     struct wf_impl_filesystem * filesystem = wf_impl_filesystem_create(session, name);
-    wf_dlist_prepend(&session->filesystems, &filesystem->item);
+    wf_slist_append(&session->filesystems, &filesystem->item);
     return (NULL != filesystem);
 }
 
@@ -149,30 +153,30 @@ static struct wf_impl_filesystem * wf_impl_session_get_filesystem(
     struct wf_impl_session * session,
     struct lws * wsi)
 {
-    struct wf_impl_filesystem * filesystem = WF_CONTAINER_OF(session->filesystems.first, struct wf_impl_filesystem, item);
-    while (NULL != filesystem)
+    struct wf_impl_filesystem * result = NULL;
+
+    struct wf_slist_item * item = session->filesystems.first;
+    while (NULL != item)
     {
+        struct wf_slist_item * next = item->next;
+        struct wf_impl_filesystem * filesystem = WF_CONTAINER_OF(session->filesystems.first, struct wf_impl_filesystem, item);
         if (wsi == filesystem->wsi)
         {
+            result = filesystem;
             break;
         }
-        else
-        {
-            filesystem = WF_CONTAINER_OF(filesystem->item.next, struct wf_impl_filesystem, item);
-        }        
+
+        item = next;
     }
 
-    return filesystem;
+    return result;
 }
 
 
 bool wf_impl_session_contains_wsi(
-    struct wf_dlist_item * item,
-    void * user_data)
+    struct wf_impl_session * session,
+    struct lws * wsi)
 {
-    struct lws * wsi = user_data;
-    struct wf_impl_session * session = WF_CONTAINER_OF(item, struct wf_impl_session, item);
-
     bool const result = (NULL != wsi) && ((wsi == session->wsi) || (NULL != wf_impl_session_get_filesystem(session, wsi)));
     return result;
 }

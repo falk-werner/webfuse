@@ -7,7 +7,7 @@
 
 #include "webfuse/adapter/impl/fuse_wrapper.h"
 #include "webfuse/adapter/impl/operations.h"
-#include "webfuse/core/dlist.h"
+#include "webfuse/core/slist.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -19,7 +19,7 @@ struct lws;
 
 struct wf_impl_filesystem
 {
-    struct wf_dlist_item item;
+    struct wf_slist_item item;
 	struct fuse_args args;
 	struct fuse_session * session;
 	struct fuse_buf buffer;

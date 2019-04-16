@@ -52,7 +52,7 @@ set(EXTRA_CFLAGS
 # libwebfuse-core
 
 add_library(webfuse-core STATIC 
-	lib/webfuse/core/dlist.c
+	lib/webfuse/core/slist.c
 	lib/webfuse/core/message.c
 	lib/webfuse/core/message_queue.c
 	lib/webfuse/core/status.c
@@ -279,7 +279,6 @@ add_executable(alltests
 	test/msleep.cc
 	test/mock_authenticator.cc
 	test/test_container_of.cc
-	test/test_dlist.cc
 	test/test_response_parser.cc
 	test/test_server.cc
 	test/test_timepoint.cc
@@ -289,6 +288,7 @@ add_executable(alltests
 	test/test_authenticator.cc
 	test/test_authenticators.cc
 	test/test_string.cc
+	test/test_slist.cc
 )
 
 target_link_libraries(alltests PUBLIC webfuse-adapter-static webfuse-provider-static webfuse-core ${EXTRA_LIBS} ${GMOCK_LIBRARIES} ${GTEST_LIBRARIES})

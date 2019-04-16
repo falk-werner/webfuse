@@ -118,8 +118,6 @@ static bool wf_impl_filesystem_init(
 	char const * name)
 {
 	bool result = false;
-	wf_dlist_item_init(&filesystem->item);
-
 	
 	char * argv[] = {"", NULL};
 	filesystem->args.argc = 1;

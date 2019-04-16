@@ -13,7 +13,7 @@ using std::size_t;
 #include "webfuse/adapter/impl/jsonrpc/proxy.h"
 #include "webfuse/adapter/impl/jsonrpc/server.h"
 #include "webfuse/adapter/impl/filesystem.h"
-#include "webfuse/core/dlist.h"
+#include "webfuse/core/slist.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -28,7 +28,7 @@ struct wf_impl_timeout_manager;
 
 struct wf_impl_session
 {
-    struct wf_dlist_item item;
+    struct wf_slist_item item;
     char * mount_point;
     struct lws * wsi;
     bool is_authenticated;
@@ -36,7 +36,7 @@ struct wf_impl_session
     struct wf_impl_authenticators * authenticators;
     struct wf_impl_jsonrpc_server * server;
     struct wf_impl_jsonrpc_proxy rpc;
-    struct wf_dlist filesystems;
+    struct wf_slist filesystems;
 };
 
 extern struct wf_impl_session * wf_impl_session_create(
@@ -66,8 +66,8 @@ extern void wf_impl_session_onwritable(
     struct wf_impl_session * session);
 
 extern bool wf_impl_session_contains_wsi(
-    struct wf_dlist_item * item,
-    void * user_data);
+    struct wf_impl_session * session,
+    struct lws * wsi);
 
 extern void wf_impl_session_process_filesystem_request(
     struct wf_impl_session * session, 
