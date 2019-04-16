@@ -32,7 +32,7 @@ struct wf_impl_session
     char * mount_point;
     struct lws * wsi;
     bool is_authenticated;
-    struct wf_message_queue queue;
+    struct wf_slist messages;
     struct wf_impl_authenticators * authenticators;
     struct wf_impl_jsonrpc_server * server;
     struct wf_impl_jsonrpc_proxy rpc;

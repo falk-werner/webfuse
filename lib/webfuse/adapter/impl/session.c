@@ -24,7 +24,7 @@ static bool wf_impl_session_send(
 
     if (result)
     {
-        wf_message_queue_push(&session->queue, message);
+        wf_slist_append(&session->messages, &message->item);
         lws_callback_on_writable(session->wsi);
 
         result = true;
@@ -56,7 +56,7 @@ struct wf_impl_session * wf_impl_session_create(
         session->authenticators = authenticators;
         session->server = server;
         wf_impl_jsonrpc_proxy_init(&session->rpc, timeout_manager, &wf_impl_session_send, session);
-        wf_message_queue_init(&session->queue);
+        wf_slist_init(&session->messages);
     }
 
     return session;
@@ -82,7 +82,7 @@ void wf_impl_session_dispose(
     wf_impl_session_dispose_filesystems(&session->filesystems);
 
     wf_impl_jsonrpc_proxy_cleanup(&session->rpc);
-    wf_message_queue_cleanup(&session->queue);
+    wf_message_queue_cleanup(&session->messages);
     session->is_authenticated = false;
     session->wsi = NULL;
     session->authenticators = NULL;
@@ -113,13 +113,14 @@ bool wf_impl_session_add_filesystem(
 void wf_impl_session_onwritable(
     struct wf_impl_session * session)
 {
-    if (!wf_message_queue_empty(&session->queue))
-    {                
-        struct wf_message * message = wf_message_queue_pop(&session->queue);
+    if (!wf_slist_empty(&session->messages))
+    {
+        struct wf_slist_item * item = wf_slist_remove_first(&session->messages);                
+        struct wf_message * message = WF_CONTAINER_OF(item, struct wf_message, item);
         lws_write(session->wsi, (unsigned char*) message->data, message->length, LWS_WRITE_TEXT);
         wf_message_dispose(message);
 
-        if (!wf_message_queue_empty(&session->queue))
+        if (!wf_slist_empty(&session->messages))
         {
             lws_callback_on_writable(session->wsi);
         }
