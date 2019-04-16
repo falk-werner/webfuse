@@ -8,9 +8,6 @@
 #endif
 
 #define WF_CONTAINER_OF(pointer, type, member) \
-    ({ \
-        const typeof( ((type *)0)->member ) *__member = (pointer); \
-        (type *)( (char *)__member - offsetof(type, member) ); \
-    })
+    (type *)  (((char *) pointer) - offsetof(type, member))
 
 #endif
