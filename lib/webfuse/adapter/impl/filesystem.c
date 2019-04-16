@@ -2,6 +2,8 @@
 #include "webfuse/adapter/impl/operations.h"
 #include "webfuse/adapter/impl/session.h"
 
+#include "webfuse/core/string.h"
+
 #include <libwebsockets.h>
 #include <uuid/uuid.h>
 
@@ -9,7 +11,6 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <dirent.h>
-#include <limits.h>
 
 #include <stdlib.h>
 #include <stddef.h>
@@ -40,9 +41,9 @@ static bool wf_impl_filesystem_is_link_broken(char const * path, char const * id
 {
 	bool result = false;
 
-	char buffer[PATH_MAX];
-	ssize_t count = readlink(path, buffer, PATH_MAX);
-	if ((0 < count) && (count < PATH_MAX))
+	char buffer[UUID_STR_LEN];
+	ssize_t count = readlink(path, buffer, UUID_STR_LEN);
+	if ((0 < count) && (count < UUID_STR_LEN))
 	{
 		buffer[count] = '\0';
 		result = (0 == strcmp(buffer, id));
@@ -51,13 +52,12 @@ static bool wf_impl_filesystem_is_link_broken(char const * path, char const * id
 	return result;
 }
 
-static bool wf_impl_filesystem_get_first_subdir(
-	char const * serviceDir,
-	char * buffer,
-	size_t buffer_size)
+static bool wf_impl_filesystem_link_first_subdir(
+	char const * link_path,
+	char const * path)
 {
 	bool result = false;
-	DIR * dir = opendir(serviceDir);
+	DIR * dir = opendir(path);
 	if (NULL != dir)
 	{
 		struct dirent * entry = readdir(dir);
@@ -65,8 +65,7 @@ static bool wf_impl_filesystem_get_first_subdir(
 		{
 			if ((DT_DIR == entry->d_type) && ('.' != entry->d_name[0]))
 			{
-				buffer[0] = '\0';
-				strncat(buffer, entry->d_name, buffer_size); /* Flawfinder: ignore */
+				symlink(entry->d_name, link_path);
 				result = true;
 				break;
 			}
@@ -91,34 +90,25 @@ static void wf_impl_filesystem_cleanup(
 	free(filesystem->buffer.mem);
 	fuse_opt_free_args(&filesystem->args);    
 
-	struct wf_impl_session * session = filesystem->user_data.session;
-	char path[PATH_MAX];
-	snprintf(path, PATH_MAX, "%s/%s/%s", session->mount_point, filesystem->user_data.name, filesystem->id);
-	rmdir(path);
+	rmdir(filesystem->root_path);
 
-	char serviceDir[PATH_MAX];
-	snprintf(serviceDir, PATH_MAX, "%s/%s", session->mount_point, filesystem->user_data.name);
-
-	snprintf(path, PATH_MAX, "%s/%s/default", session->mount_point, filesystem->user_data.name);
-	if (wf_impl_filesystem_is_link_broken(path, filesystem->id))
+	if (wf_impl_filesystem_is_link_broken(filesystem->default_path, filesystem->id))
 	{
-		unlink(path);
+		unlink(filesystem->default_path);
 
-		char firstDir[PATH_MAX];
-		bool found = wf_impl_filesystem_get_first_subdir(serviceDir, firstDir, PATH_MAX);
-		if (found)
+		bool const success = wf_impl_filesystem_link_first_subdir(filesystem->default_path, filesystem->service_path);
+		if (!success)
 		{
-			symlink(firstDir, path);
-		}
-		else
-		{
-			rmdir(serviceDir);
+			rmdir(filesystem->service_path);
 		}
 	}
 
 
 	free(filesystem->user_data.name);
 	free(filesystem->id);
+	free(filesystem->root_path);
+	free(filesystem->default_path);
+	free(filesystem->service_path);
 }
 
 
@@ -130,6 +120,7 @@ static bool wf_impl_filesystem_init(
 	bool result = false;
 	wf_dlist_item_init(&filesystem->item);
 
+	
 	char * argv[] = {"", NULL};
 	filesystem->args.argc = 1;
 	filesystem->args.argv = argv;
@@ -138,19 +129,17 @@ static bool wf_impl_filesystem_init(
 	filesystem->user_data.session = session;
 	filesystem->user_data.timeout = 1.0;
 	filesystem->user_data.name = strdup(name);
-	filesystem->id = wf_impl_filesystem_create_id();
 	memset(&filesystem->buffer, 0, sizeof(struct fuse_buf));
 
-	char path[PATH_MAX];
-	snprintf(path, PATH_MAX, "%s/%s", session->mount_point, name);
-	mkdir(path, 0755);
+	filesystem->service_path = wf_create_string("%s/%s", session->mount_point, name);
+	mkdir(filesystem->service_path, 0755);
 
-	snprintf(path, PATH_MAX, "%s/%s/%s", session->mount_point, name, filesystem->id);
-	mkdir(path, 0755);
+	filesystem->id = wf_impl_filesystem_create_id();
+	filesystem->root_path =  wf_create_string("%s/%s/%s", session->mount_point, name, filesystem->id);
+	mkdir(filesystem->root_path, 0755);
 
-	char defaultPath[PATH_MAX];
-	snprintf(defaultPath, PATH_MAX, "%s/%s/default", session->mount_point, name);
-	symlink(filesystem->id, defaultPath);
+	filesystem->default_path =  wf_create_string("%s/%s/default", session->mount_point, name);
+	symlink(filesystem->id, filesystem->default_path);
 
 	filesystem->session = fuse_session_new(
         &filesystem->args,
@@ -159,7 +148,7 @@ static bool wf_impl_filesystem_init(
         &filesystem->user_data);
 	if (NULL != filesystem->session)
 	{
-		result = (0 == fuse_session_mount(filesystem->session, path));
+		result = (0 == fuse_session_mount(filesystem->session, filesystem->root_path));
 	}
 
 	if (result)

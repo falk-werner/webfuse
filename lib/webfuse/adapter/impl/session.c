@@ -12,7 +12,6 @@
 #include <libwebsockets.h>
 #include <stddef.h>
 #include <stdlib.h>
-#include <limits.h>
 
 static bool wf_impl_session_send(
     json_t * request,

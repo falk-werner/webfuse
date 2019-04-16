@@ -56,6 +56,7 @@ add_library(webfuse-core STATIC
 	lib/webfuse/core/message.c
 	lib/webfuse/core/message_queue.c
 	lib/webfuse/core/status.c
+	lib/webfuse/core/string.c	
 )
 
 set_target_properties(webfuse-core PROPERTIES OUTPUT_NAME webfuse-core)
@@ -287,6 +288,7 @@ add_executable(alltests
 	test/test_credentials.cc
 	test/test_authenticator.cc
 	test/test_authenticators.cc
+	test/test_string.cc
 )
 
 target_link_libraries(alltests PUBLIC webfuse-adapter-static webfuse-provider-static webfuse-core ${EXTRA_LIBS} ${GMOCK_LIBRARIES} ${GTEST_LIBRARIES})

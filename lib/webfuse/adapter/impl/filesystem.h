@@ -27,6 +27,9 @@ struct wf_impl_filesystem
     struct lws * wsi;
     char * name;
     char * id;
+    char * service_path;
+    char * default_path;
+    char * root_path;
 };
 
 extern struct wf_impl_filesystem * wf_impl_filesystem_create(
