@@ -90,15 +90,19 @@ ENV LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/usr/local/lib"
 
 ARG USERID=1000
 
-ARG PROJECT_ROOT=/workspace/src
-ARG OUT=/workspace/out
+ARG PROJECTDIR=/workspace/src
+ARG OUTDIR=/workspace/out
+ARG SCRIPTDIR=/workspace/bin
 
 RUN set -x \
   && useradd -u "$USERID" -ms /bin/bash user \
-  && mkdir -p "$PROJECT_ROOT" "$OUT" \
-  && chown user:user "$PROJECT_ROOT" "$OUT"
+  && mkdir -p "$PROJECTDIR" "$OUTDIR" "$SCRIPTDIR" \
+  && chown user:user "$PROJECTDIR" "$OUTDIR" "$SCRIPTDIR"
 
-WORKDIR "$OUT"
+WORKDIR "$OUTDIR"
 
 ENTRYPOINT ["dumb-init", "--"]
+
+# unused
+ARG QEMU_VERSION_=v3.1.0-2
 
