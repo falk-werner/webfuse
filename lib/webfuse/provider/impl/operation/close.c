@@ -8,11 +8,11 @@ void wfp_impl_close(
     int WF_UNUSED_PARAM(id))
 {
     size_t const param_count = json_array_size(params);
-    if (3 == param_count)
+    if (4 == param_count)
     {
-        json_t * inode_holder = json_array_get(params, 0);
-        json_t * handle_holder = json_array_get(params, 1);
-        json_t * flags_holder = json_array_get(params, 2);
+        json_t * inode_holder = json_array_get(params, 1);
+        json_t * handle_holder = json_array_get(params, 2);
+        json_t * flags_holder = json_array_get(params, 3);
 
         if (json_is_integer(inode_holder) && 
             json_is_integer(handle_holder) &&

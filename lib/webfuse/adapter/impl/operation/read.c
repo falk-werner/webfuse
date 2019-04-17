@@ -87,13 +87,13 @@ void wf_impl_operation_read(
 	struct fuse_file_info * file_info)
 {
     struct wf_impl_operations_context * user_data = fuse_req_userdata(request);
-    struct wf_impl_jsonrpc_proxy * rpc = wf_impl_operations_context_get_proxy(user_data, inode);
+    struct wf_impl_jsonrpc_proxy * rpc = wf_impl_operations_context_get_proxy(user_data);
 
 	if (NULL != rpc)
 	{
 		int const length = (size <= WF_MAX_READ_LENGTH) ? (int) size : WF_MAX_READ_LENGTH;
 		int handle = (file_info->fh & INT_MAX);
-		wf_impl_jsonrpc_proxy_invoke(rpc, &wf_impl_operation_read_finished, request, "read", "iiii", inode, handle, (int) offset, length);
+		wf_impl_jsonrpc_proxy_invoke(rpc, &wf_impl_operation_read_finished, request, "read", "siiii", user_data->name, inode, handle, (int) offset, length);
 	}
 	else
 	{

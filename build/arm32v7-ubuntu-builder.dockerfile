@@ -17,7 +17,8 @@ RUN set -x \
        pkg-config \
        rsync \
        gdb \
-       gdbserver
+       gdbserver \
+       uuid-dev
 
 COPY src /usr/local/src
 

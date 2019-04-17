@@ -11,6 +11,7 @@ find_package(PkgConfig REQUIRED)
 pkg_check_modules(FUSE3 REQUIRED fuse3)
 pkg_check_modules(LWS REQUIRED libwebsockets)
 pkg_check_modules(JANSSON REQUIRED jansson)
+pkg_check_modules(UUID REQUIRED uuid)
 
 add_definitions(-D_FILE_OFFSET_BITS=64)
 
@@ -26,6 +27,7 @@ set(EXTRA_INCLUDE_DIRS
 	${FUSE3_INCLUDE_DIRS} 
 	${LWS_INCLUDE_DIRS} 
 	${JANSSON_INCLUDE_DIRS}
+	${UUID_INCLUDE_DIRS}
 )
 
 set(EXTRA_LIBS 
@@ -33,6 +35,7 @@ set(EXTRA_LIBS
 	${FUSE3_LIBRARIES}
 	${LWS_LIBRARIES}
 	${JANSSON_LIBRARIES}
+	${UUID_LIBRARIES}
 	${CMAKE_THREAD_LIBS_INIT}
 )
 
@@ -41,6 +44,7 @@ set(EXTRA_CFLAGS
 	${FUSE3_CFLAGS_OTHER}
 	${LWS_CFLAGS_OTHER}
 	${JANSSON_CFLAGS_OTHER}
+	${UUID_CFLAGS_OTHER}
 	"-pthread"
 )
 
@@ -48,9 +52,11 @@ set(EXTRA_CFLAGS
 # libwebfuse-core
 
 add_library(webfuse-core STATIC 
+	lib/webfuse/core/slist.c
 	lib/webfuse/core/message.c
 	lib/webfuse/core/message_queue.c
 	lib/webfuse/core/status.c
+	lib/webfuse/core/string.c	
 )
 
 set_target_properties(webfuse-core PROPERTIES OUTPUT_NAME webfuse-core)
@@ -272,6 +278,7 @@ pkg_check_modules(GMOCK gmock)
 add_executable(alltests
 	test/msleep.cc
 	test/mock_authenticator.cc
+	test/test_container_of.cc
 	test/test_response_parser.cc
 	test/test_server.cc
 	test/test_timepoint.cc
@@ -280,6 +287,8 @@ add_executable(alltests
 	test/test_credentials.cc
 	test/test_authenticator.cc
 	test/test_authenticators.cc
+	test/test_string.cc
+	test/test_slist.cc
 )
 
 target_link_libraries(alltests PUBLIC webfuse-adapter-static webfuse-provider-static webfuse-core ${EXTRA_LIBS} ${GMOCK_LIBRARIES} ${GTEST_LIBRARIES})

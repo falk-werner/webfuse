@@ -16,7 +16,6 @@ extern struct wf_message * wf_message_create(json_t const * value)
         {
             message->data = &data[sizeof(struct wf_message) + LWS_PRE];
             message->length = length;
-            message->next = NULL;
 
             json_dumpb(value, message->data, length, JSON_COMPACT);
         }

@@ -81,7 +81,7 @@ void wf_impl_operation_getattr (
 {
     struct fuse_ctx const * context = fuse_req_ctx(request);
     struct wf_impl_operations_context * user_data = fuse_req_userdata(request);
-    struct wf_impl_jsonrpc_proxy * rpc = wf_impl_operations_context_get_proxy(user_data, inode);
+    struct wf_impl_jsonrpc_proxy * rpc = wf_impl_operations_context_get_proxy(user_data);
 
 	if (NULL != rpc)
 	{
@@ -91,7 +91,7 @@ void wf_impl_operation_getattr (
 		getattr_context->gid = context->gid;
 		getattr_context->timeout = user_data->timeout;
 
-		wf_impl_jsonrpc_proxy_invoke(rpc, &wf_impl_operation_getattr_finished, getattr_context, "getattr", "i", inode);
+		wf_impl_jsonrpc_proxy_invoke(rpc, &wf_impl_operation_getattr_finished, getattr_context, "getattr", "si", user_data->name, inode);
 	}
 	else
 	{

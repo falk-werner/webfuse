@@ -10,6 +10,8 @@
 #include "webfuse/provider/impl/provider.h"
 #include "webfuse/core/util.h"
 #include "webfuse/core/message.h"
+#include "webfuse/core/message_queue.h"
+#include "webfuse/core/container_of.h"
 
 static void wfp_impl_client_protocol_respond(
     json_t * response,
@@ -20,7 +22,7 @@ static void wfp_impl_client_protocol_respond(
     struct wf_message * message = wf_message_create(response);
     if (NULL != message)
     {
-        wf_message_queue_push(&protocol->queue, message);
+        wf_slist_append(&protocol->messages, &message->item);
         lws_callback_on_writable(protocol->wsi);
     }
 }
@@ -45,6 +47,26 @@ static void wfp_impl_client_protocol_process_request(
     }
 }
 
+static void wfp_impl_client_protocol_add_filesystem(
+     struct wfp_client_protocol * protocol)
+{
+    json_t * params = json_array();
+    json_array_append_new(params, json_string("cprovider"));
+
+    json_t * request = json_object();
+    json_object_set_new(request, "method", json_string("add_filesystem"));
+    json_object_set_new(request, "params", params);
+    json_object_set_new(request, "id", json_integer(42));
+
+    struct wf_message * message = wf_message_create(request);
+    if (NULL != message)
+    {
+        wf_slist_append(&protocol->messages, &message->item);
+        lws_callback_on_writable(protocol->wsi);
+    }
+
+    json_decref(request);
+}
 
 static int wfp_impl_client_protocol_callback(
 	struct lws * wsi,
@@ -61,6 +83,7 @@ static int wfp_impl_client_protocol_callback(
         switch (reason)
         {
         case LWS_CALLBACK_CLIENT_ESTABLISHED:
+            wfp_impl_client_protocol_add_filesystem(protocol);
             protocol->provider.connected(protocol->user_data);
             break;
         case LWS_CALLBACK_CLIENT_CONNECTION_ERROR:
@@ -75,13 +98,14 @@ static int wfp_impl_client_protocol_callback(
         case LWS_CALLBACK_SERVER_WRITEABLE:
             // fall-through
         case LWS_CALLBACK_CLIENT_WRITEABLE:
-			if ((wsi == protocol->wsi) && (!wf_message_queue_empty(&protocol->queue)))
+			if ((wsi == protocol->wsi) && (!wf_slist_empty(&protocol->messages)))
 			{                
-				struct wf_message * message = wf_message_queue_pop(&protocol->queue);
+                struct wf_slist_item * item = wf_slist_remove_first(&protocol->messages);
+				struct wf_message * message = WF_CONTAINER_OF(item, struct wf_message, item);
 				lws_write(wsi, (unsigned char*) message->data, message->length, LWS_WRITE_TEXT);
 				wf_message_dispose(message);
 
-                if (!wf_message_queue_empty(&protocol->queue))
+                if (!wf_slist_empty(&protocol->messages))
                 {
                     lws_callback_on_writable(wsi);
 
@@ -102,7 +126,7 @@ void wfp_impl_client_protocol_init(
     struct wfp_provider const * provider,
     void * user_data)
 {
-    wf_message_queue_init(&protocol->queue);
+    wf_slist_init(&protocol->messages);
 
     protocol->wsi = NULL;
 
@@ -116,7 +140,7 @@ void wfp_impl_client_protocol_init(
 void wfp_impl_client_protocol_cleanup(
     struct wfp_client_protocol * protocol)
 {
-    wf_message_queue_cleanup(&protocol->queue);
+    wf_message_queue_cleanup(&protocol->messages);
 }
 
 struct wfp_client_protocol * wfp_impl_client_protocol_create(

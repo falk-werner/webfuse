@@ -13,12 +13,12 @@ void wfp_impl_read(
     int id)
 {
     size_t const count = json_array_size(params);
-    if (4 == count)
+    if (5 == count)
     {
-        json_t * inode_holder = json_array_get(params, 0);
-        json_t * handle_holder = json_array_get(params, 1);
-        json_t * offset_holder = json_array_get(params, 2);
-        json_t * length_holder = json_array_get(params, 3);
+        json_t * inode_holder = json_array_get(params, 1);
+        json_t * handle_holder = json_array_get(params, 2);
+        json_t * offset_holder = json_array_get(params, 3);
+        json_t * length_holder = json_array_get(params, 4);
 
         if (json_is_integer(inode_holder) &&
             json_is_integer(handle_holder) &&

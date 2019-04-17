@@ -4,7 +4,9 @@ export class Client {
     static get _PROTOCOL() { return "fs"; }
 
     constructor(provider) {
-        this._provider = provider;
+        this._provider = { };
+        this._pendingRequests = {};
+        this._id = 0;
         this._ws = null;
         this.onopen = () => { };
         this.onclose = () => { };
@@ -24,11 +26,27 @@ export class Client {
         };
     }
 
+    _invokeRequest(method, params) {
+        this._id += 1;
+        const id = this._id;
+        const request = {method, params, id};
+
+        return new Promise((resolve, reject) => {
+            this._pendingRequests[id] = {resolve, reject};
+            this._ws.send(JSON.stringify(request));
+        });
+    }
+
     authenticate(type, credentials) {
+        return this._invokeRequest("authenticate", [type, credentials]);
+    }
+
+    addProvider(name, provider) {
+        this._provider[name] = provider;
         const request = {
-            "method": "authenticate",
-            "params": [type, credentials],
-            "id": 42
+            "method": "add_filesystem",
+            "params": [name],
+            "id": 23
         };
         
         this._ws.send(JSON.stringify(request));
@@ -45,27 +63,61 @@ export class Client {
         return ((this._ws) && (this._ws.readyState === WebSocket.OPEN));
     }
 
+    _isRequest(request) {
+        const method = request.method;
+
+        return (("string" === typeof(method)) && ("params" in request));
+    }
+
+    _isResponse(response) {
+        const id = response.id;
+
+        return (("number" === typeof(id)) && (("result" in response) || ("error" in response)));
+    }
+
+    _removePendingRequest(id) {
+        let result = null;
+
+        if (id in this._pendingRequests) {
+            result = this._pendingRequests[id];
+            Reflect.deleteProperty(this._pendingRequests, id);
+        }
+
+        return result;
+    }
+
     _onmessage(message) {
         try {
-            const request = JSON.parse(message.data);
-            const method = request.method;
-            const id = request.id;
-            const params = request.params;
+            const data = JSON.parse(message.data);
 
-            if ("string" !== typeof(method)) {
-                throw new Error("parse error: missing field: \"method\"");
+            if (this._isRequest(data)) {
+                const method = data.method;
+                const id = data.id;
+                const params = data.params;
+        
+                if ("number" === typeof(id)) {
+                    this._invoke(method, params, id);
+                }
+                else {
+                    this._notify(method, params);
+                }    
+            }
+            else if (this._isResponse(data)) {
+                const id = data.id;
+                const result = data.result;
+                const error = data.error;
+
+                const request = this._removePendingRequest(id);
+                if (request) {
+                    if (result) {
+                        request.resolve(result);
+                    }
+                    else {
+                        request.reject(error);
+                    }
+                }
             }
 
-            if (!params) {
-                throw new Error("parse error: missing field: \"params\"");
-            }
-
-            if ("number" === typeof(request.id)) {
-                this._invoke(method, params, id);
-            }
-            else {
-                this._notify(method, params);
-            }
         }
         catch (ex) {
             // swallow
@@ -114,28 +166,48 @@ export class Client {
         }
     }
 
-    async _lookup([parent, name]) {
-        return this._provider.lookup(parent, name);
+    _getProvider(name) {
+        if (name in this._provider) {
+            return this._provider[name];
+        }
+        else {
+            throw new Error('Unknown provider');
+        }
     }
 
-    async _getattr([inode]) {
-        return this._provider.getattr(inode);
+    async _lookup([providerName, parent, name]) {
+        const provider = this._getProvider(providerName);
+
+        return provider.lookup(parent, name);
     }
 
-    async _readdir([inode]) {
-        return this._provider.readdir(inode);
+    async _getattr([providerName, inode]) {
+        const provider = this._getProvider(providerName);
+
+        return provider.getattr(inode);
     }
 
-    async _open([inode, mode]) {
-        return this._provider.open(inode, mode);
+    async _readdir([providerName, inode]) {
+        const provider = this._getProvider(providerName);
+
+        return provider.readdir(inode);
     }
 
-    _close([inode, handle, mode]) {
-        this._provider.close(inode, handle, mode);
+    async _open([providerName, inode, mode]) {
+        const provider = this._getProvider(providerName);
+
+        return provider.open(inode, mode);
     }
 
-    async _read([inode, handle, offset, length]) {
-        const data = await this._provider.read(inode, handle, offset, length);
+    _close([providerName, inode, handle, mode]) {
+        const provider = this._getProvider(providerName);
+
+        provider.close(inode, handle, mode);
+    }
+
+    async _read([providerName, inode, handle, offset, length]) {
+        const provider = this._getProvider(providerName);
+        const data = await provider.read(inode, handle, offset, length);
 
         if ("string" === typeof(data)) {
 			return {

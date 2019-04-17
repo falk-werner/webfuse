@@ -4,7 +4,7 @@
 #include "webfuse/provider/impl/provider.h"
 #include "webfuse/provider/impl/request.h"
 
-#include "webfuse/core/message_queue.h"
+#include "webfuse/core/slist.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -20,7 +20,7 @@ struct wfp_client_protocol
     struct wfp_provider provider;
     void * user_data;
     struct lws * wsi;
-    struct wf_message_queue queue;
+    struct wf_slist messages;
 };
 
 extern void wfp_impl_client_protocol_init(

@@ -1,12 +1,10 @@
 @startuml
 participant "Filesystem Provider\n(e.g. Webbrowser)" as provider
 participant "webfuse\ndaemon" as daemon
-actor "user" as user
 
-group directory listing fails without authentication
-user     -> daemon : ls
-daemon   -> daemon : is_authenticated
-daemon   -->x user : error: no entry
+group add filesystem fails without authentication
+provider -> daemon : add_filesystem
+daemon   -->x provider : error: access denied
 end
 
 
@@ -17,12 +15,10 @@ daemon -> daemon: check(credentials)
 daemon --> provider: result
 end
 
-group directory listing succeeds after authentication
-user     -> daemon : ls
-daemon   -> daemon : is_authenticated
-daemon   -> provider : readdir
-provider --> daemon : readdir_resp
-daemon   --> user : [., ..]
+group add filesystem succeeds after authentication
+    provider -> daemon: add_filesystem
+    daemon -> daemon : fuse_mount
+    daemon -> provider: okay
 end
 
 @enduml

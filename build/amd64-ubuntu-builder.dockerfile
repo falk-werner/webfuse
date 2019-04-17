@@ -14,7 +14,8 @@ RUN set -x \
        rsync \
        gdb \
        gdbserver \
-       valgrind
+       valgrind \
+       uuid-dev
 
 COPY src /usr/local/src
 

@@ -38,15 +38,34 @@ webfuse solves this problem by using the [WebSocket](https://en.wikipedia.org/wi
 With webfuse it is possible to implement remote filesystems based on websockets.
 A reference implementation of such a daemon is provided within the examples. The picture above describes the workflow:
 
--   The websocket filesystem daemon (*webfuse daemon*) mounts a filesystem on startup.  
-    It starts the websocket server and waits for incoming connections.
+-   The websocket filesystem daemon (*webfuse daemon*) waits for incoming connections.
 
--   A remote filesystem provider connects to webfuse daemon via websocket protocol.  
-    The example includes such a provider implemented in HTML and JavaScript.
+-   A remote filesystem provider connects to webfuse daemon via websocket protocol and adds one or more filesystems.  
+    *Note: the examples include such a provider implemented in HTML and JavaScript.*
 
 -   Whenever the user makes filesystem requests, such as *ls*, the request is redirected via webfuse daemon to the connected filesystem provider
 
 Currently all requests are initiated by webfuse daemon and responded by filesystem provider. This may change in future, e.g. when authentication is supported.
+
+### Filesystem represenation
+
+![filesystem](doc/filesystem.png)
+
+To handle multiple filesystems, that are registered by one or more providers, webfuse daemon maintains a directory structure as shown above.
+
+-   **mount_point** is the entry point of the drectory structure
+
+-   **fwupdate** is a name defined by the provider when filesystem was registered  
+    *Note: the picture above shows two providers, where both registered a filesystem named "fwupdate"*
+
+-   **&lt;uuid&gt;** is the filesystem id choosen by webfuse daemon to distinguish different filesystems
+
+-   **default** is a symbolic link maintained by webfuse daemon to identify the default filesystem
+
+This directoy structure allows to handle multiple filesystems registered by multiple providers.
+It can be used as a kind of service registry, where each filesystem represents a service.
+The named subdirectores distinguish differend service types. The symbolic link *default* can be used to identify the
+default service and the listing of a named subdirectory can be used to list available services of a particular type.
 
 ## Similar Projects
 
@@ -141,7 +160,7 @@ Notfications are used to inform a receiver about something. Unlike requests, not
 
 Retrieve information about a filesystem entry by name.
 
-    webfuse daemon: {"method": "lookup", "params": [<parent>, <name>], "id": <id>}
+    webfuse daemon: {"method": "lookup", "params": [<filesystem>, <parent>, <name>], "id": <id>}
     fs provider: {"result": {
         "inode": <inode>,
         "mode" : <mode>,
@@ -154,6 +173,7 @@ Retrieve information about a filesystem entry by name.
 
 | Item        | Data type       | Description                                 |
 | ----------- | --------------- | ------------------------------------------- |
+| filesystem  | string          | name of the filesystem                      |
 | parent      | integer         | inode of parent directory (1 = root)        |
 | name        | string          | name of the filesystem object to look up    |
 | inode       | integer         | inode of the filesystem object              |
@@ -168,7 +188,7 @@ Retrieve information about a filesystem entry by name.
 
 Get file attributes.
 
-    webfuse daemon: {"method": "getattr", "params": [<inode>], "id": <id>}
+    webfuse daemon: {"method": "getattr", "params": [<filesystem>, <inode>], "id": <id>}
     fs provider: {"result": {
         "mode" : <mode>,
         "type" : <type>,
@@ -180,6 +200,7 @@ Get file attributes.
 
 | Item        | Data type       | Description                                 |
 | ----------- | --------------- | ------------------------------------------- |
+| filesystem  | string          | name of the filesystem                      |
 | inode       | integer         | inode of the filesystem object              |
 | mode        | integer         | unix file mode                              |
 | type        | "file" or "dir" | type of filesystem object                   |
@@ -194,7 +215,7 @@ Read directory contents.
 Result is an array of name-inode pairs for each entry. The generic entries 
 "." and ".." should also be provided.
 
-    webfuse daemon: {"method": "readdir", "params": [<dir_inode>], "id": <id>}
+    webfuse daemon: {"method": "readdir", "params": [<filesystem>, <dir_inode>], "id": <id>}
     fs provider: {"result": [
         {"name": <name>, "inode": <inode>},
         ...
@@ -202,6 +223,7 @@ Result is an array of name-inode pairs for each entry. The generic entries
 
 | Item        | Data type       | Description                    |
 | ----------- | --------------- | ------------------------------ |
+| filesystem  | string          | name of the filesystem         |
 | dir_inode   | integer         | inode of the directory to read |
 | name        | integer         | name of the entry              |
 | inode       | integer         | inode of the entry             |
@@ -210,11 +232,12 @@ Result is an array of name-inode pairs for each entry. The generic entries
 
 Open a file.
 
-    webfuse daemon: {"method": "readdir", "params": [<inode>, <flags>], "id": <id>}
+    webfuse daemon: {"method": "readdir", "params": [<filesystem>, <inode>, <flags>], "id": <id>}
     fs provider: {"result": {"handle": <handle>}, "id": <id>}
 
 | Item        | Data type | Description                   |
 | ----------- | ----------| ----------------------------- |
+| filesystem  | string    | name of the filesystem        |
 | inode       | integer   | inode of the file             |
 | flags       | integer   | access mode flags (see below) |
 | handle      | integer   | handle of the file            |
@@ -237,10 +260,11 @@ Open a file.
 Informs filesystem provider, that a file is closed.  
 Since `close` is a notification, it cannot fail.
 
-    webfuse daemon: {"method": "close", "params": [<inode>, <handle>, <flags>], "id": <id>}
+    webfuse daemon: {"method": "close", "params": [<filesystem>, <inode>, <handle>, <flags>], "id": <id>}
 
 | Item        | Data type | Description                  |
 | ----------- | ----------| ---------------------------- |
+| filesystem  | string    | name of the filesystem       |
 | inode       | integer   | inode of the file            |
 | handle      | integer   | handle of the file           |
 | flags       | integer   | access mode flags (see open) |
@@ -249,7 +273,7 @@ Since `close` is a notification, it cannot fail.
 
 Read from an open file.
 
-    webfuse daemon: {"method": "close", "params": [<inode>, <handle>, <offset>, <length>], "id": <id>}
+    webfuse daemon: {"method": "close", "params": [<filesystem>, <inode>, <handle>, <offset>, <length>], "id": <id>}
     fs provider: {"result": {
         "data": <data>,
         "format": <format>,
@@ -258,6 +282,7 @@ Read from an open file.
 
 | Item        | Data type | Description                   |
 | ----------- | ----------| ----------------------------- |
+| filesystem  | string    | name of the filesystem        |
 | inode       | integer   | inode of the file             |
 | handle      | integer   | handle of the file            |
 | offset      | integer   | Offet to start read operation |
@@ -275,10 +300,21 @@ Read from an open file.
 
 ### Requests (Provider -> Adapter)
 
+#### add_filesystem
+
+Adds a filesystem.
+
+    fs provider: {"method": "add_filesytem", "params": [<name>], "id": <id>}
+    webfuse daemon: {"result": {"id": <name>}, "id": <id>}
+
+| Item        | Data type | Description                     |
+| ----------- | ----------| ------------------------------- |
+| name        | string    | name and id of filesystem       |
+
 #### authtenticate
 
 Authenticate the provider.  
-If authentication is enabled, a provider must be authenticated by the adapter before the adapter will send any messages.
+If authentication is enabled, a provider must be authenticated by the adapter before filesystems can be added.
 
     fs provider: {"method": "authenticate", "params": [<type>, <credentials>], "id": <id>}
     webfuse daemon: {"result": {}, "id": <id>}
