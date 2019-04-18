@@ -205,16 +205,11 @@ void wfp_client_dispose(
     wfp_impl_client_dispose(client);
 }
 
-void wfp_client_run(
-    struct wfp_client * client)
+void wfp_client_service(
+    struct wfp_client * client,
+    int timeout_ms)
 {
-    wfp_impl_client_run(client);
-}
-
-void wfp_client_shutdown(
-    struct wfp_client * client)
-{
-    wfp_impl_client_shutdown(client);
+    wfp_impl_client_service(client, timeout_ms);
 }
 
 // dirbuffer

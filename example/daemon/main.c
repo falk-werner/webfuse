@@ -11,6 +11,7 @@
 #include <webfuse_adapter.h>
 #include <userdb.h>
 
+#define SERVICE_TIMEOUT (1 * 1000)
 
 struct args
 {
@@ -19,7 +20,7 @@ struct args
 	bool show_help;
 };
 
-static struct wf_server * server;
+static bool shutdown_requested = false;
 
 static void show_help(void)
 {
@@ -150,7 +151,7 @@ static void on_interrupt(int signal_id)
 {
 	(void) signal_id;
 
-	wf_server_shutdown(server);
+	shutdown_requested = true;
 }
 
 int main(int argc, char * argv[])
@@ -167,10 +168,14 @@ int main(int argc, char * argv[])
 	if (!args.show_help)
 	{
 		signal(SIGINT, on_interrupt);
-		server = wf_server_create(args.config);
+		struct wf_server * server = wf_server_create(args.config);
 		if (NULL != server)
 		{
-			wf_server_run(server);
+			while (!shutdown_requested)
+			{
+				wf_server_service(server, SERVICE_TIMEOUT);
+			}
+
 			wf_server_dispose(server);			
 		}
 		else

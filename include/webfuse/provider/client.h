@@ -24,12 +24,9 @@ extern WFP_API void wfp_client_disconnect(
 extern WFP_API void wfp_client_dispose(
     struct wfp_client * client);
 
-extern WFP_API void wfp_client_run(
-    struct wfp_client * client);
-
-extern WFP_API void wfp_client_shutdown(
-    struct wfp_client * client);
-
+extern WFP_API void wfp_client_service(
+    struct wfp_client * client,
+    int timeout_ms);
 
 #ifdef __cplusplus
 }

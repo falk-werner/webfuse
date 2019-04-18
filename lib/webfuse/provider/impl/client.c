@@ -14,11 +14,9 @@
 #define WFP_PROTOCOL ("fs")
 #define WFP_DISABLE_LWS_LOG 0
 #define WFP_CLIENT_PROTOCOL_COUNT 2
-#define WFP_CLIENT_TIMEOUT (1 * 1000)
 
 struct wfp_client
 {
-    volatile bool is_running;
     struct wfp_client_protocol protocol;
     struct lws_context_creation_info info;
     struct lws_protocols protocols[WFP_CLIENT_PROTOCOL_COUNT];
@@ -36,7 +34,6 @@ struct wfp_client * wfp_impl_client_create(
     struct wfp_client * client = malloc(sizeof(struct wfp_client));
     if (NULL != client)
     {
-        client->is_running = true;
         wfp_impl_client_protocol_init(&client->protocol, &config->provider, config->user_data);
 
         memset(client->protocols, 0, sizeof(struct lws_protocols) * WFP_CLIENT_PROTOCOL_COUNT);
@@ -102,18 +99,10 @@ void wfp_impl_client_disconnect(
     // ToDo: implement me
 }
 
-void wfp_impl_client_run(
-    struct wfp_client * client)
+void wfp_impl_client_service(
+    struct wfp_client * client,
+    int timeout_ms)
 {
-    while (client->is_running)
-    {
-        lws_service(client->context, WFP_CLIENT_TIMEOUT);
-    }
-}
-
-void wfp_impl_client_shutdown(
-    struct wfp_client * client)
-{
-    client->is_running = false;
+    lws_service(client->context, timeout_ms);
 }
 

@@ -15,11 +15,9 @@ extern struct wf_server * wf_impl_server_create(
 extern void wf_impl_server_dispose(
     struct wf_server * server);
 
-extern void wf_impl_server_run(
-    struct wf_server * server);
-
-extern void wf_impl_server_shutdown(
-    struct wf_server * server);
+extern void wf_impl_server_service(
+    struct wf_server * server,
+    int timeout_ms);
 
 #ifdef __cplusplus
 }
