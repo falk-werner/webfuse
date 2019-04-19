@@ -17,7 +17,7 @@ struct wf_slist_item
 
 struct wf_slist
 {
-    struct wf_slist_item * first;
+    struct wf_slist_item head;
     struct wf_slist_item * last;
 };
 
@@ -25,6 +25,9 @@ extern void wf_slist_init(
     struct wf_slist * list);
 
 extern bool wf_slist_empty(
+    struct wf_slist * list);
+
+extern struct wf_slist_item * wf_slist_first(
     struct wf_slist * list);
 
 extern void wf_slist_append(

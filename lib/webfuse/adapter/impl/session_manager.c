@@ -12,7 +12,7 @@ void wf_impl_session_manager_init(
 void wf_impl_session_manager_cleanup(
     struct wf_impl_session_manager * manager)
 {
-    struct wf_slist_item * item = manager->sessions.first;
+    struct wf_slist_item * item = wf_slist_first(&manager->sessions);
     while (NULL != item)
     {
         struct wf_slist_item * next = item->next;
@@ -47,7 +47,7 @@ struct wf_impl_session * wf_impl_session_manager_get(
 {
     struct wf_impl_session * session = NULL;
 
-    struct wf_slist_item * item = manager->sessions.first;
+    struct wf_slist_item * item = wf_slist_first(&manager->sessions);
     while (NULL != item)
     {
         struct wf_slist_item * next = item->next;
@@ -68,11 +68,10 @@ void wf_impl_session_manager_remove(
     struct wf_impl_session_manager * manager,
     struct lws * wsi)
 {
-    struct wf_slist_item * item = manager->sessions.first;
-    struct wf_slist_item * prev = NULL;
-    while (NULL != item)
+    struct wf_slist_item * prev = &manager->sessions.head;
+    while (NULL != prev->next)
     {
-        struct wf_slist_item * next = item->next;
+        struct wf_slist_item * item = prev->next;
         struct wf_impl_session * session = WF_CONTAINER_OF(item, struct wf_impl_session, item);
         if (wsi == session->wsi)
         {
@@ -81,7 +80,6 @@ void wf_impl_session_manager_remove(
             break;
         }
 
-        prev = item;
-        item = next;
+        prev = prev->next;
     }
 }
