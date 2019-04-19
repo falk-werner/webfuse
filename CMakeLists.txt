@@ -56,7 +56,8 @@ add_library(webfuse-core STATIC
 	lib/webfuse/core/message.c
 	lib/webfuse/core/message_queue.c
 	lib/webfuse/core/status.c
-	lib/webfuse/core/string.c	
+	lib/webfuse/core/string.c
+	lib/webfuse/core/path.c
 )
 
 set_target_properties(webfuse-core PROPERTIES OUTPUT_NAME webfuse-core)
