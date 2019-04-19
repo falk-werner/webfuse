@@ -3,7 +3,6 @@
 #include "webfuse/provider/dirbuffer.h"
 #include "webfuse/provider/operation/error.h"
 
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
@@ -72,18 +71,27 @@ wfp_static_filesystem_add_entry(
 {
     struct  wfp_static_filesystem_entry * entry = NULL;
 
+    if (filesystem->size >= filesystem->capacity)
+    {
+        struct wfp_static_filesystem_entry * entries;
+
+        size_t new_capacity = 2 * filesystem->capacity;
+        size_t new_size = new_capacity * sizeof(struct wfp_static_filesystem_entry);
+        entries = realloc(filesystem->entries, new_size);
+
+        if (NULL != entries)
+        {
+            filesystem->entries = entries;
+            filesystem->capacity = new_capacity;
+        }
+    }
+
     if (filesystem->size < filesystem->capacity)
     {
         entry = &filesystem->entries[filesystem->size];
         entry->inode = filesystem->size + 1;
         filesystem->size++;
-    }
-    else
-    {
-        fprintf(stderr, "fatal: static filessystem: unable to add entry\n");
-        exit(EXIT_FAILURE);
-    }
-    
+    }    
 
     return entry;
 }
