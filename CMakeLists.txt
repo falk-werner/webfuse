@@ -152,6 +152,7 @@ add_library(webfuse-provider-static STATIC
 	lib/webfuse/provider/impl/operation/open.c
 	lib/webfuse/provider/impl/operation/close.c
 	lib/webfuse/provider/impl/operation/read.c
+	lib/webfuse/provider/impl/static_filesystem.c
 )
 
 set_target_properties(webfuse-provider-static PROPERTIES OUTPUT_NAME webfuse-provider)
@@ -236,6 +237,16 @@ set_target_properties(webfuse-provider-app PROPERTIES OUTPUT_NAME webfuse-provid
 target_link_libraries(webfuse-provider-app PUBLIC webfuse-provider ${EXTRA_LIBS})
 target_include_directories(webfuse-provider-app PUBLIC ${EXTRA_INCLUDE_DIRS})
 target_compile_options(webfuse-provider-app PUBLIC ${EXTRA_CFLAGS})
+
+# static-filesystem-provider
+
+add_executable(static-filesystem-provider
+	example/provider/static_filesystem.c
+)
+
+target_link_libraries(static-filesystem-provider PUBLIC webfuse-provider ${EXTRA_LIBS})
+target_include_directories(static-filesystem-provider PUBLIC ${EXTRA_INCLUDE_DIRS})
+target_compile_options(static-filesystem-provider PUBLIC ${EXTRA_CFLAGS})
 
 # webfuse-passwd
 
