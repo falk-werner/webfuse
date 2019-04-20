@@ -8,6 +8,7 @@
 
 using webfuse_test::request_create;
 using webfuse_test::MockRequest;
+using webfuse_test::GetAttrMatcher;
 using testing::_;
 
 TEST(wfp_static_filesystem, init)
@@ -18,7 +19,7 @@ TEST(wfp_static_filesystem, init)
     MockRequest mock;
     struct wfp_request * request = request_create(&mock, 42);
 
-    EXPECT_CALL(mock, respond_error(_,_)).Times(1);
+    EXPECT_CALL(mock, respond(GetAttrMatcher(1, 0555, "dir"), 42)).Times(1);
 
     config->provider.getattr(request, 1, config->user_data);
 
