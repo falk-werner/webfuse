@@ -34,7 +34,7 @@ TEST(wfp_static_filesystem, contains_default_dirs)
 
     MockRequest mock;
     struct wfp_request * request = request_create(&mock, 23);
-    char const * default_dirs[] = {".", "..a", nullptr};
+    char const * default_dirs[] = {".", "..", nullptr};
     EXPECT_CALL(mock, respond(ReaddirMatcher(default_dirs), 23)).Times(1);
 
     config->provider.readdir(request, 1, config->user_data);

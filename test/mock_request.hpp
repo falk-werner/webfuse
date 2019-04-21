@@ -109,7 +109,7 @@ MATCHER_P(ReaddirMatcher, contained_elements , "")
         if (!found)
         {
             *result_listener << "missing required directory element: " << element;
-            break;
+            return false;
         }
     }
 
