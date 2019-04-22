@@ -100,3 +100,17 @@ wf_path_get_element(
 
     return result;
 }
+
+char const *
+wf_path_get_filename(
+    struct wf_path * path)
+{
+    char const * result = NULL;
+
+    if (0 < path->count)
+    {
+        result = path->elements[path->count - 1];
+    }
+
+    return result;
+}

@@ -32,6 +32,10 @@ wf_path_get_element(
     struct wf_path * path,
     size_t i);
 
+extern char const *
+wf_path_get_filename(
+    struct wf_path * path);
+
 #ifdef __cplusplus
 }
 #endif
