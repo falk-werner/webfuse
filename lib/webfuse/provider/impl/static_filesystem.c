@@ -5,6 +5,7 @@
 
 #include "webfuse/core/path.h"
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
@@ -106,13 +107,14 @@ wfp_static_filesystem_entry_read(
     size_t buffer_size,
     void * user_data)
 {
-    (void) user_data;
-    (void) offset;
-    (void) buffer;
-    (void) buffer_size;
-
-    //struct wfp_static_filesystem_entry * entry = user_data;
     size_t result = 0;
+    struct wfp_static_filesystem_entry * entry = user_data;
+    if (offset < entry->size)
+    {
+        size_t remaining = (entry->size - offset);
+        result = (buffer_size < remaining) ? buffer_size : remaining;
+        memcpy(buffer, entry->content, result);
+    }
 
     return result;
 }
@@ -126,6 +128,44 @@ wfp_static_filesystem_entry_get_info(
     struct wfp_static_filesystem_entry * entry = user_data;
     *result_mode = entry->mode;
     *result_size = entry->size;
+}
+
+static size_t
+wfp_impl_static_filesystem_file_read(
+    size_t offset,
+    char * buffer,
+    size_t buffer_size,
+    void * user_data)
+{
+    size_t result = 0;
+    struct wfp_static_filesystem_entry * entry = user_data;
+    char const * filename = entry->content;
+
+    FILE * file = fopen(filename, "rb");
+    if (NULL != file)
+    {
+        fseek(file, offset, SEEK_SET);
+        result = fread(buffer, buffer_size, 1, file);
+        fclose(file);
+    }
+
+    return result;
+}
+
+static void
+wfp_impl_static_filesystem_file_get_info(
+    void * user_data,
+    int * result_mode,
+    size_t * result_size)
+{
+    struct wfp_static_filesystem_entry * entry = user_data;
+    char const * filename = entry->content;
+
+    struct stat buffer;
+    stat(filename, &buffer);
+
+    *result_mode = (int) (buffer.st_mode & 0777);
+    *result_size = (size_t) buffer.st_size;
 }
 
 
@@ -387,11 +427,23 @@ wfp_impl_static_filesystem_add_file(
     char const * path,
     char const * filename)
 {
-    (void) filesystem;
-    (void) path;
-    (void) filename;
+    struct wf_path * path_ = wf_path_create(path);
+    if (NULL != path_)
+    {
+        size_t parent = wfp_impl_static_filesystem_make_parent(filesystem, path_);
+        struct wfp_static_filesystem_entry * entry = wfp_static_filesystem_add_entry(filesystem);
+        entry->parent = parent;
+        entry->is_file = true;
+        entry->mode = 0;
+        entry->content = strdup(filename);
+        entry->size = 0;
+        entry->name = strdup(wf_path_get_filename(path_));
+        entry->get_info = &wfp_impl_static_filesystem_file_get_info;
+        entry->read = &wfp_impl_static_filesystem_file_read;
+        entry->user_data = entry;
 
-    // ToDo: implement me
+        wf_path_dispose(path_);
+    }
 }
 
 void
@@ -402,11 +454,21 @@ wfp_impl_static_filesystem_add_generic(
     wfp_static_filesystem_get_info_fn * get_info,
     void * user_data)
 {
-    (void) filesystem;
-    (void) path;
-    (void) read;
-    (void) get_info;
-    (void) user_data;
+    struct wf_path * path_ = wf_path_create(path);
+    if (NULL != path_)
+    {
+        size_t parent = wfp_impl_static_filesystem_make_parent(filesystem, path_);
+        struct wfp_static_filesystem_entry * entry = wfp_static_filesystem_add_entry(filesystem);
+        entry->parent = parent;
+        entry->is_file = true;
+        entry->mode = 0;
+        entry->content = NULL;
+        entry->size = 0;
+        entry->name = strdup(wf_path_get_filename(path_));
+        entry->get_info = get_info;
+        entry->read = read;
+        entry->user_data = user_data;
 
-    // ToDo: implement me
+        wf_path_dispose(path_);
+    }
 }
