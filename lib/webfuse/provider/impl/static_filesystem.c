@@ -4,6 +4,11 @@
 #include "webfuse/provider/operation/error.h"
 
 #include "webfuse/core/path.h"
+#include "webfuse/core/util.h"
+
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -12,6 +17,7 @@
 
 #define WFP_STATIC_FILESYSTEM_DEFAULT_CAPACITY (16)
 #define WFP_STATIC_FILSYSTEM_INDOE_ROOT (1)
+#define WFP_STATIC_FILESYSTEM_MAX_READ_SIZE (4 * 1024)
 
 struct wfp_static_filesystem_entry
 {
@@ -315,28 +321,49 @@ static void wfp_static_filesystem_open(
     int flags,
     void * user_data)
 {
-    (void) inode;
-    (void) flags;
-    (void) user_data;
+    struct wfp_static_filesystem * filesystem = user_data;
+    struct wfp_static_filesystem_entry * entry = wfp_static_filesystem_get_entry(filesystem, inode);
 
-    wfp_respond_error(request, WF_BAD_NOENTRY);
+    if ((NULL != entry) && (entry->is_file))
+    {
+        if (O_RDONLY == (flags & O_ACCMODE))
+        {
+            wfp_respond_open(request, 0U);
+        }
+        else
+        {
+            wfp_respond_error(request, WF_BAD_ACCESS_DENIED);
+        }
+    }
+    else
+    {
+        wfp_respond_error(request, WF_BAD_NOENTRY);
+    }
 }
 
 static void wfp_static_filesystem_read(
     struct wfp_request * request,
     ino_t inode,
-    uint32_t handle,
+    uint32_t WF_UNUSED_PARAM(handle),
     size_t offset,
     size_t length,
     void * user_data)
 {
-    (void) inode;
-    (void) handle;
-    (void) offset;
-    (void) length;
-    (void) user_data;
+    struct wfp_static_filesystem * filesystem = user_data;
+    struct wfp_static_filesystem_entry * entry = wfp_static_filesystem_get_entry(filesystem, inode);
 
-    wfp_respond_error(request, WF_BAD_NOENTRY);
+    if ((NULL != entry) && (entry->is_file))
+    {
+        char buffer[WFP_STATIC_FILESYSTEM_MAX_READ_SIZE];
+        size_t max_size = (length < WFP_STATIC_FILESYSTEM_MAX_READ_SIZE) ? length : WFP_STATIC_FILESYSTEM_MAX_READ_SIZE;
+
+        size_t count = entry->read(offset, buffer, max_size, entry->user_data);
+        wfp_respond_read(request, buffer, count);
+    }
+    else
+    {
+        wfp_respond_error(request, WF_BAD_NOENTRY);
+    }    
 }
 
 
