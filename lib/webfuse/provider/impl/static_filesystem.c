@@ -41,7 +41,7 @@ struct wfp_static_filesystem
 };
 
 static struct wfp_static_filesystem_entry *
-wfp_static_filesystem_get_entry(
+wfp_impl_static_filesystem_get_entry(
     struct wfp_static_filesystem * filesystem,
     size_t inode)
 {
@@ -56,7 +56,7 @@ wfp_static_filesystem_get_entry(
 }
 
 static struct wfp_static_filesystem_entry *
-wfp_static_filesystem_get_entry_by_name(
+wfp_impl_static_filesystem_get_entry_by_name(
     struct wfp_static_filesystem * filesystem,
     size_t parent,
     char const * name)
@@ -76,7 +76,7 @@ wfp_static_filesystem_get_entry_by_name(
 }
 
 static struct  wfp_static_filesystem_entry *
-wfp_static_filesystem_add_entry(
+wfp_impl_static_filesystem_add_entry(
     struct wfp_static_filesystem * filesystem)
 {
     struct  wfp_static_filesystem_entry * entry = NULL;
@@ -107,7 +107,7 @@ wfp_static_filesystem_add_entry(
 }
 
 static size_t
-wfp_static_filesystem_entry_read(
+wfp_impl_static_filesystem_entry_read(
     size_t offset,
     char * buffer,
     size_t buffer_size,
@@ -126,7 +126,7 @@ wfp_static_filesystem_entry_read(
 }
 
 static void
-wfp_static_filesystem_entry_get_info(
+wfp_impl_static_filesystem_entry_get_info(
     void * user_data,
     int * result_mode,
     size_t * result_size)
@@ -176,7 +176,7 @@ wfp_impl_static_filesystem_file_get_info(
 
 
 static size_t
-wfp_static_filesystem_add_dir(
+wfp_impl_static_filesystem_add_dir(
     struct wfp_static_filesystem * filesystem,
     size_t parent,
     char const * name
@@ -184,17 +184,17 @@ wfp_static_filesystem_add_dir(
 {
     size_t result = 0;
 
-    struct  wfp_static_filesystem_entry * entry = wfp_static_filesystem_get_entry_by_name(filesystem, parent, name);
+    struct  wfp_static_filesystem_entry * entry = wfp_impl_static_filesystem_get_entry_by_name(filesystem, parent, name);
     if (NULL == entry)
     {
-        entry = wfp_static_filesystem_add_entry(filesystem);
+        entry = wfp_impl_static_filesystem_add_entry(filesystem);
         entry->parent = parent;
         entry->is_file = false;
         entry->mode = 0555;
         entry->name = strdup(name);
         entry->user_data = entry;
-        entry->read = &wfp_static_filesystem_entry_read;
-        entry->get_info = &wfp_static_filesystem_entry_get_info;
+        entry->read = &wfp_impl_static_filesystem_entry_read;
+        entry->get_info = &wfp_impl_static_filesystem_entry_get_info;
         entry->size = 0;
         entry->content = NULL;
 
@@ -217,14 +217,15 @@ wfp_impl_static_filesystem_make_parent(
         for(size_t i = 0; i < (count - 1); i++)
         {
             char const * name = wf_path_get_element(path, i);
-            result = wfp_static_filesystem_add_dir(filesystem, result, name);
+            result = wfp_impl_static_filesystem_add_dir(filesystem, result, name);
         }
     }
 
     return result;
 }
 
-static void wfp_static_filesystem_stat(
+static void
+wfp_impl_static_filesystem_stat(
     struct wfp_static_filesystem_entry * entry,
     struct stat * stat
 )
@@ -241,19 +242,19 @@ static void wfp_static_filesystem_stat(
     stat->st_mode |= (entry->is_file) ? S_IFREG: S_IFDIR;
 }
 
-static void wfp_static_filesystem_lookup(
+static void wfp_impl_static_filesystem_lookup(
     struct wfp_request * request,
     ino_t parent,
     char const * name,
     void * user_data)
 {
     struct wfp_static_filesystem * filesystem = user_data;
-    struct wfp_static_filesystem_entry * entry = wfp_static_filesystem_get_entry_by_name(filesystem, parent, name);
+    struct wfp_static_filesystem_entry * entry = wfp_impl_static_filesystem_get_entry_by_name(filesystem, parent, name);
 
     if (NULL != entry)
     {
         struct stat stat;
-        wfp_static_filesystem_stat(entry, &stat);
+        wfp_impl_static_filesystem_stat(entry, &stat);
         wfp_respond_lookup(request, &stat);
     }
     else
@@ -263,18 +264,18 @@ static void wfp_static_filesystem_lookup(
 }
 
 
-static void wfp_static_filesystem_getattr(
+static void wfp_impl_static_filesystem_getattr(
     struct wfp_request * request,
     ino_t inode,
     void * user_data)
 {
     struct wfp_static_filesystem * filesystem = user_data;
-    struct wfp_static_filesystem_entry * entry = wfp_static_filesystem_get_entry(filesystem, inode);
+    struct wfp_static_filesystem_entry * entry = wfp_impl_static_filesystem_get_entry(filesystem, inode);
 
     if (NULL != entry)
     {
         struct stat stat;
-        wfp_static_filesystem_stat(entry, &stat);
+        wfp_impl_static_filesystem_stat(entry, &stat);
         wfp_respond_getattr(request, &stat);
     }
     else
@@ -283,13 +284,13 @@ static void wfp_static_filesystem_getattr(
     }
 }
 
-static void wfp_static_filesystem_readdir(
+static void wfp_impl_static_filesystem_readdir(
     struct wfp_request * request,
     ino_t directory,
     void * user_data)
 {
     struct wfp_static_filesystem * filesystem = user_data;
-    struct wfp_static_filesystem_entry * dir = wfp_static_filesystem_get_entry(filesystem, directory);
+    struct wfp_static_filesystem_entry * dir = wfp_impl_static_filesystem_get_entry(filesystem, directory);
 
     if ((NULL != dir) && (!dir->is_file))
     {
@@ -315,14 +316,14 @@ static void wfp_static_filesystem_readdir(
     }
 }
 
-static void wfp_static_filesystem_open(
+static void wfp_impl_static_filesystem_open(
     struct wfp_request * request,
     ino_t inode,
     int flags,
     void * user_data)
 {
     struct wfp_static_filesystem * filesystem = user_data;
-    struct wfp_static_filesystem_entry * entry = wfp_static_filesystem_get_entry(filesystem, inode);
+    struct wfp_static_filesystem_entry * entry = wfp_impl_static_filesystem_get_entry(filesystem, inode);
 
     if ((NULL != entry) && (entry->is_file))
     {
@@ -341,7 +342,7 @@ static void wfp_static_filesystem_open(
     }
 }
 
-static void wfp_static_filesystem_read(
+static void wfp_impl_static_filesystem_read(
     struct wfp_request * request,
     ino_t inode,
     uint32_t WF_UNUSED_PARAM(handle),
@@ -350,7 +351,7 @@ static void wfp_static_filesystem_read(
     void * user_data)
 {
     struct wfp_static_filesystem * filesystem = user_data;
-    struct wfp_static_filesystem_entry * entry = wfp_static_filesystem_get_entry(filesystem, inode);
+    struct wfp_static_filesystem_entry * entry = wfp_impl_static_filesystem_get_entry(filesystem, inode);
 
     if ((NULL != entry) && (entry->is_file))
     {
@@ -380,14 +381,14 @@ wfp_impl_static_filesystem_create(
         filesystem->size = 0;
         filesystem->capacity = WFP_STATIC_FILESYSTEM_DEFAULT_CAPACITY;
 
-        wfp_static_filesystem_add_dir(filesystem, 0, "<root>");
+        wfp_impl_static_filesystem_add_dir(filesystem, 0, "<root>");
 
         wfp_client_config_set_userdata(config, filesystem);
-        wfp_client_config_set_onlookup(config, &wfp_static_filesystem_lookup);
-        wfp_client_config_set_ongetattr(config, &wfp_static_filesystem_getattr);
-        wfp_client_config_set_onreaddir(config, &wfp_static_filesystem_readdir);
-        wfp_client_config_set_onopen(config, &wfp_static_filesystem_open);
-        wfp_client_config_set_onread(config, &wfp_static_filesystem_read);
+        wfp_client_config_set_onlookup(config, &wfp_impl_static_filesystem_lookup);
+        wfp_client_config_set_ongetattr(config, &wfp_impl_static_filesystem_getattr);
+        wfp_client_config_set_onreaddir(config, &wfp_impl_static_filesystem_readdir);
+        wfp_client_config_set_onopen(config, &wfp_impl_static_filesystem_open);
+        wfp_client_config_set_onread(config, &wfp_impl_static_filesystem_read);
     }
 
     return filesystem;
@@ -420,14 +421,14 @@ wfp_impl_static_filesystem_add(
     if (NULL != path_)
     {
         size_t parent = wfp_impl_static_filesystem_make_parent(filesystem, path_);
-        struct wfp_static_filesystem_entry * entry = wfp_static_filesystem_add_entry(filesystem);
+        struct wfp_static_filesystem_entry * entry = wfp_impl_static_filesystem_add_entry(filesystem);
         entry->parent = parent;
         entry->is_file = true;
         entry->name = strdup(wf_path_get_filename(path_));
         entry->mode = mode;
         entry->size = length;
-        entry->get_info = &wfp_static_filesystem_entry_get_info;
-        entry->read = &wfp_static_filesystem_entry_read;
+        entry->get_info = &wfp_impl_static_filesystem_entry_get_info;
+        entry->read = &wfp_impl_static_filesystem_entry_read;
         entry->user_data = entry;
 
         entry->content = malloc(length);
@@ -458,7 +459,7 @@ wfp_impl_static_filesystem_add_file(
     if (NULL != path_)
     {
         size_t parent = wfp_impl_static_filesystem_make_parent(filesystem, path_);
-        struct wfp_static_filesystem_entry * entry = wfp_static_filesystem_add_entry(filesystem);
+        struct wfp_static_filesystem_entry * entry = wfp_impl_static_filesystem_add_entry(filesystem);
         entry->parent = parent;
         entry->is_file = true;
         entry->mode = 0;
@@ -485,7 +486,7 @@ wfp_impl_static_filesystem_add_generic(
     if (NULL != path_)
     {
         size_t parent = wfp_impl_static_filesystem_make_parent(filesystem, path_);
-        struct wfp_static_filesystem_entry * entry = wfp_static_filesystem_add_entry(filesystem);
+        struct wfp_static_filesystem_entry * entry = wfp_impl_static_filesystem_add_entry(filesystem);
         entry->parent = parent;
         entry->is_file = true;
         entry->mode = 0;
