@@ -10,7 +10,7 @@ char * wf_create_string(char const * format, ...)
     va_list measure_args;
     va_start(measure_args, format);
     char buffer;
-    int needed = vsnprintf(&buffer, 1, format, measure_args); /* Flawfinder: ignore */
+    int needed = vsnprintf(&buffer, 1, format, measure_args);
     va_end(measure_args);
 
     if (0 <= needed)
@@ -20,7 +20,7 @@ char * wf_create_string(char const * format, ...)
         {
             va_list args;
             va_start(args, format);
-            int count = vsnprintf(result, needed + 1, format, args); /* Flawfinder: ignore */
+            int count = vsnprintf(result, needed + 1, format, args);
             va_end(args);
 
             if ((count < 0) || (needed < count))
