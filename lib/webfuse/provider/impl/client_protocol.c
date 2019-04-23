@@ -101,7 +101,7 @@ static int wfp_impl_client_protocol_callback(
 			if ((wsi == protocol->wsi) && (!wf_slist_empty(&protocol->messages)))
 			{                
                 struct wf_slist_item * item = wf_slist_remove_first(&protocol->messages);
-				struct wf_message * message = WF_CONTAINER_OF(item, struct wf_message, item);
+				struct wf_message * message = wf_container_of(item, struct wf_message, item);
 				lws_write(wsi, (unsigned char*) message->data, message->length, LWS_WRITE_TEXT);
 				wf_message_dispose(message);
 
