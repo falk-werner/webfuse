@@ -9,7 +9,7 @@ void wf_message_queue_cleanup(
     while (NULL != item)
     {
         struct wf_slist_item * next = item->next;
-        struct wf_message * message = WF_CONTAINER_OF(item, struct wf_message, item);
+        struct wf_message * message = wf_container_of(item, struct wf_message, item);
         wf_message_dispose(message);
         item = next;
     }
