@@ -69,7 +69,7 @@ static void wf_impl_session_dispose_filesystems(
     while (NULL != item)
     {
         struct wf_slist_item * next = item->next;
-        struct wf_impl_filesystem * filesystem = WF_CONTAINER_OF(item, struct wf_impl_filesystem, item);
+        struct wf_impl_filesystem * filesystem = wf_container_of(item, struct wf_impl_filesystem, item);
         wf_impl_filesystem_dispose(filesystem);
         
         item = next;
@@ -116,7 +116,7 @@ void wf_impl_session_onwritable(
     if (!wf_slist_empty(&session->messages))
     {
         struct wf_slist_item * item = wf_slist_remove_first(&session->messages);                
-        struct wf_message * message = WF_CONTAINER_OF(item, struct wf_message, item);
+        struct wf_message * message = wf_container_of(item, struct wf_message, item);
         lws_write(session->wsi, (unsigned char*) message->data, message->length, LWS_WRITE_TEXT);
         wf_message_dispose(message);
 
@@ -160,7 +160,7 @@ static struct wf_impl_filesystem * wf_impl_session_get_filesystem(
     while (NULL != item)
     {
         struct wf_slist_item * next = item->next;
-        struct wf_impl_filesystem * filesystem = WF_CONTAINER_OF(item, struct wf_impl_filesystem, item);
+        struct wf_impl_filesystem * filesystem = wf_container_of(item, struct wf_impl_filesystem, item);
         if (wsi == filesystem->wsi)
         {
             result = filesystem;
