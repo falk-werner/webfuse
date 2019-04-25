@@ -18,6 +18,11 @@ static int wf_impl_server_protocol_callback(
 	size_t len)
 {
     struct lws_protocols const * ws_protocol = lws_get_protocol(wsi);
+    if (NULL == ws_protocol)
+    {
+        return 0;
+    }
+
     struct wf_server_protocol * protocol = ws_protocol->user;
 
     wf_impl_timeout_manager_check(&protocol->timeout_manager);
