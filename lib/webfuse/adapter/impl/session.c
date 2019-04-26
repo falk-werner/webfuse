@@ -65,7 +65,7 @@ struct wf_impl_session * wf_impl_session_create(
 static void wf_impl_session_dispose_filesystems(
     struct wf_slist * filesystems)
 {    
-    struct wf_slist_item * item = filesystems->first;
+    struct wf_slist_item * item = wf_slist_first(filesystems);
     while (NULL != item)
     {
         struct wf_slist_item * next = item->next;
@@ -156,11 +156,11 @@ static struct wf_impl_filesystem * wf_impl_session_get_filesystem(
 {
     struct wf_impl_filesystem * result = NULL;
 
-    struct wf_slist_item * item = session->filesystems.first;
+    struct wf_slist_item * item = wf_slist_first(&session->filesystems);
     while (NULL != item)
     {
         struct wf_slist_item * next = item->next;
-        struct wf_impl_filesystem * filesystem = wf_container_of(session->filesystems.first, struct wf_impl_filesystem, item);
+        struct wf_impl_filesystem * filesystem = wf_container_of(item, struct wf_impl_filesystem, item);
         if (wsi == filesystem->wsi)
         {
             result = filesystem;
