@@ -315,4 +315,17 @@ target_compile_options(alltests PUBLIC ${GMOCK_CFLAGS} ${GTEST_CFLAGS})
 enable_testing()
 gtest_discover_tests(alltests TEST_PREFIX alltests:)
 
+add_custom_target(coverage
+	./alltests
+	COMMAND mkdir -p coverage
+	COMMAND lcov --capture --directory . --output-file coverage/lcov.info
+	COMMAND lcov --remove coverage/lcov.info '/usr/*' --output-file coverage/lcov.info
+)
+add_dependencies(coverage alltests)
+
+add_custom_target(coverage-report
+	COMMAND genhtml coverage/lcov.info --output-directory coverage/report
+)
+add_dependencies(coverage-report coverage)
+
 endif(NOT WITHOUT_TESTS)
