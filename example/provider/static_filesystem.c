@@ -6,6 +6,8 @@
 
 #include "webfuse_provider.h"
 
+#define SERVICE_TIMEOUT (1 * 1000)
+
 struct args
 {
     char const * url;
@@ -41,13 +43,12 @@ parse_args(
     return result;
 }
 
-static struct wfp_client * client = NULL;
+static volatile bool shutdown_requested = false;
 
 static void on_interrupt(int signal_id)
 {
 	(void) signal_id;
-
-	wfp_client_shutdown(client);
+    shutdown_requested = true;
 }
 
 static void print_usage()
@@ -81,9 +82,13 @@ int main(int argc, char* argv[])
         struct wfp_static_filesystem * fs = wfp_static_filesystem_create(config);
         wfp_static_filesystem_add_text(fs, "hello.txt", 0444, "Hello, World!");
 
-        client = wfp_client_create(config);
+        struct wfp_client * client = wfp_client_create(config);
         wfp_client_connect(client, args.url);
-        wfp_client_run(client);
+
+        while (!shutdown_requested)
+        {
+            wfp_client_service(client, SERVICE_TIMEOUT);
+        }
         
         wfp_client_dispose(client);
         wfp_static_filesystem_dispose(fs);
