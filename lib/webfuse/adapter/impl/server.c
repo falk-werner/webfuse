@@ -13,7 +13,6 @@
 
 #define WF_DISABLE_LWS_LOG 0
 #define WF_SERVER_PROTOCOL_COUNT 3
-#define WF_SERVER_TIMEOUT (1 * 1000)
 
 struct wf_server
 {
@@ -21,7 +20,6 @@ struct wf_server
     struct wf_server_protocol protocol;
     struct lws_protocols ws_protocols[WF_SERVER_PROTOCOL_COUNT];
     struct lws_context * context;
-    volatile bool shutdown_requested;
 	struct lws_http_mount mount;
 	struct lws_context_creation_info info;
 };
@@ -109,7 +107,6 @@ struct wf_server * wf_impl_server_create(
 		if (NULL != server)
 		{
 			wf_impl_server_protocol_init(&server->protocol, config->mount_point);
-			server->shutdown_requested = false;
 			wf_impl_server_config_clone(config, &server->config);
 			wf_impl_authenticators_move(&server->config.authenticators, &server->protocol.authenticators);				
 			server->context = wf_impl_server_context_create(server);
@@ -128,19 +125,9 @@ void wf_impl_server_dispose(
     free(server);   
 }
 
-void wf_impl_server_run(
-    struct wf_server * server)
+void wf_impl_server_service(
+    struct wf_server * server,
+	int timeout_ms)
 {
-    int n = 0;
-    while ((0 <= n) && (!server->shutdown_requested))
-    {
-        n = lws_service(server->context, WF_SERVER_TIMEOUT);
-    }
+	lws_service(server->context, timeout_ms);
 }
-
-void wf_impl_server_shutdown(
-    struct wf_server * server)
-{
-    server->shutdown_requested = true;
-}
-

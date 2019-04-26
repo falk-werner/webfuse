@@ -19,16 +19,11 @@ void wf_server_dispose(
     wf_impl_server_dispose(server);
 }
 
-void wf_server_run(
-    struct wf_server * server)
+void wf_server_service(
+    struct wf_server * server,
+    int timeout_ms)
 {
-    wf_impl_server_run(server);
-}
-
-void wf_server_shutdown(
-    struct wf_server * server)
-{
-    wf_impl_server_shutdown(server);
+    wf_impl_server_service(server, timeout_ms);
 }
 
 // server protocol
