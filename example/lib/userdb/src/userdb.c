@@ -127,9 +127,9 @@ static char * compute_hash(
     {
         EVP_MD_CTX * context = EVP_MD_CTX_new();        
         EVP_DigestInit_ex(context, digest, NULL);        
-        EVP_DigestUpdate(context, password, strlen(password)); /* Flawfinder: ignore */
-        EVP_DigestUpdate(context, salt, strlen(salt)); /* Flawfinder: ignore */
-        EVP_DigestUpdate(context, db->pepper, strlen(db->pepper)); /* Flawfinder: ignore */
+        EVP_DigestUpdate(context, password, strlen(password));
+        EVP_DigestUpdate(context, salt, strlen(salt));
+        EVP_DigestUpdate(context, db->pepper, strlen(db->pepper));
         EVP_DigestFinal_ex(context, hash, &hash_size);
         EVP_MD_CTX_free(context);
 

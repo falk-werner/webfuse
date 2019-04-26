@@ -23,7 +23,7 @@ static char * wf_impl_fill_buffer(
 	{
 		if (0 == strcmp("identity", format))
 		{
-			memcpy(buffer, data, count); /* Flawfinder: ignore */
+			memcpy(buffer, data, count);
 		}
 		else if (0 == strcmp("base64", format))
 		{

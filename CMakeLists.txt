@@ -56,7 +56,8 @@ add_library(webfuse-core STATIC
 	lib/webfuse/core/message.c
 	lib/webfuse/core/message_queue.c
 	lib/webfuse/core/status.c
-	lib/webfuse/core/string.c	
+	lib/webfuse/core/string.c
+	lib/webfuse/core/path.c
 )
 
 set_target_properties(webfuse-core PROPERTIES OUTPUT_NAME webfuse-core)
@@ -152,6 +153,7 @@ add_library(webfuse-provider-static STATIC
 	lib/webfuse/provider/impl/operation/open.c
 	lib/webfuse/provider/impl/operation/close.c
 	lib/webfuse/provider/impl/operation/read.c
+	lib/webfuse/provider/impl/static_filesystem.c
 )
 
 set_target_properties(webfuse-provider-static PROPERTIES OUTPUT_NAME webfuse-provider)
@@ -237,6 +239,16 @@ target_link_libraries(webfuse-provider-app PUBLIC webfuse-provider ${EXTRA_LIBS}
 target_include_directories(webfuse-provider-app PUBLIC ${EXTRA_INCLUDE_DIRS})
 target_compile_options(webfuse-provider-app PUBLIC ${EXTRA_CFLAGS})
 
+# static-filesystem-provider
+
+add_executable(static-filesystem-provider
+	example/provider/static_filesystem.c
+)
+
+target_link_libraries(static-filesystem-provider PUBLIC webfuse-provider ${EXTRA_LIBS})
+target_include_directories(static-filesystem-provider PUBLIC ${EXTRA_INCLUDE_DIRS})
+target_compile_options(static-filesystem-provider PUBLIC ${EXTRA_CFLAGS})
+
 # webfuse-passwd
 
 add_executable(webfuse-passwd
@@ -278,6 +290,7 @@ pkg_check_modules(GMOCK gmock)
 add_executable(alltests
 	test/msleep.cc
 	test/mock_authenticator.cc
+	test/mock_request.cc
 	test/test_container_of.cc
 	test/test_response_parser.cc
 	test/test_server.cc
@@ -289,6 +302,8 @@ add_executable(alltests
 	test/test_authenticators.cc
 	test/test_string.cc
 	test/test_slist.cc
+	test/test_path.cc
+	test/test_static_filesystem.cc
 )
 
 target_link_libraries(alltests PUBLIC webfuse-adapter-static webfuse-provider-static webfuse-core ${EXTRA_LIBS} ${GMOCK_LIBRARIES} ${GTEST_LIBRARIES})
