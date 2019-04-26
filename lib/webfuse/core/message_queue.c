@@ -5,7 +5,7 @@
 void wf_message_queue_cleanup(
     struct wf_slist * queue)
 {
-    struct wf_slist_item * item = queue->first;
+    struct wf_slist_item * item = wf_slist_first(queue);
     while (NULL != item)
     {
         struct wf_slist_item * next = item->next;

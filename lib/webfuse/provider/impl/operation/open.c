@@ -22,7 +22,7 @@ void wfp_impl_open(
 
             struct wfp_request * request = wfp_impl_request_create(context->request, id);
 
-            context->provider->open(request, inode, flags, context->user_data); /* Flawfinder: ignore */
+            context->provider->open(request, inode, flags, context->user_data);
         }
     }
 }

@@ -4,14 +4,20 @@
 void wf_slist_init(
     struct wf_slist * list)
 {
-    list->first = NULL;
-    list->last = NULL;
+    list->head.next = NULL;
+    list->last = &list->head;
 }
 
 bool wf_slist_empty(
     struct wf_slist * list)
 {
-    return (NULL == list->first);
+    return (list->last == &list->head);
+}
+
+struct wf_slist_item * wf_slist_first(
+    struct wf_slist * list)
+{
+    return list->head.next;
 }
 
 void wf_slist_append(
@@ -19,58 +25,36 @@ void wf_slist_append(
     struct wf_slist_item * item)
 {
     item->next = NULL;
+    list->last->next = item;
+    list->last = item;
 
-    if (NULL != list->last)
+    if (NULL == list->head.next)
     {
-        list->last->next = item;
-        list->last = item;
-    }
-    else
-    {
-        list->first = item;
-        list->last = item;
+        list->head.next = item;
     }
 }
 
 struct wf_slist_item * wf_slist_remove_first(
     struct wf_slist * list)
 {
-    struct wf_slist_item * const result = list->first;
-    if (NULL != result)
-    {
-        list->first = list->first->next;
-        if (NULL == list->first)
-        {
-            list->last = NULL;
-        }
-    } 
-
-    return result;
+    return wf_slist_remove_after(list, &list->head);
 }
 
 struct wf_slist_item * wf_slist_remove_after(
     struct wf_slist * list,
     struct wf_slist_item * prev)
 {
-    struct wf_slist_item * result = NULL;
 
-    if (NULL != prev)
+    struct wf_slist_item * result = prev->next;
+
+    if (NULL != result)
     {
-        result = prev->next;
-        if ((NULL != result) && (NULL != result->next))
-        {
-            prev->next = result->next;
-        }
-        else
+        prev->next = result->next;
+
+        if (list->last == result)
         {
             list->last = prev;
-            prev->next = NULL;
-        }
-        
-    }
-    else
-    {
-        result = wf_slist_remove_first(list);
+        }    
     }
 
     return result;

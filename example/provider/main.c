@@ -11,6 +11,8 @@
 
 #include "webfuse_provider.h"
 
+#define SERVICE_TIMEOUT (1 * 1000)
+
 struct config
 {
     char * url;
@@ -314,13 +316,12 @@ static void fs_read(
     }
 }
 
-static struct wfp_client * client;
+static volatile bool shutdown_requested = false;
 
 static void on_interrupt(int signal_id)
 {
 	(void) signal_id;
-
-	wfp_client_shutdown(client);
+    shutdown_requested = true;
 }
 
 int main(int argc, char* argv[])
@@ -362,10 +363,13 @@ int main(int argc, char* argv[])
         wfp_client_config_set_onopen(config.client_config, &fs_open);
         wfp_client_config_set_onread(config.client_config, &fs_read);
 
-        client = wfp_client_create(config.client_config);
+        struct wfp_client * client = wfp_client_create(config.client_config);
         wfp_client_connect(client, config.url);
 
-        wfp_client_run(client);
+        while (!shutdown_requested)
+        {
+            wfp_client_service(client, SERVICE_TIMEOUT);
+        }
 
         wfp_client_dispose(client);
     }   

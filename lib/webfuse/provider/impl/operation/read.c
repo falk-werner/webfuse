@@ -31,7 +31,7 @@ void wfp_impl_read(
             size_t length = json_integer_value(length_holder);
             struct wfp_request * request = wfp_impl_request_create(context->request, id);
 
-            context->provider->read(request, inode, handle, offset, length, context->user_data); /* Flawfinder: ignore */
+            context->provider->read(request, inode, handle, offset, length, context->user_data);
         }
     } 
 }

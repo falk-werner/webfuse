@@ -34,12 +34,9 @@ extern void wfp_impl_client_settimeout(
 extern void wfp_impl_client_dispose(
     struct wfp_client * client);
 
-extern void wfp_impl_client_run(
-    struct wfp_client * client);
-
-extern void wfp_impl_client_shutdown(
-    struct wfp_client * client);
-
+extern void wfp_impl_client_service(
+    struct wfp_client * client,
+    int timeout_ms);
 
 #ifdef __cplusplus
 }

@@ -17,11 +17,9 @@ extern WF_API struct wf_server * wf_server_create(
 extern WF_API void wf_server_dispose(
     struct wf_server * server);
 
-extern WF_API void wf_server_run(
-    struct wf_server * server);
-
-extern WF_API void wf_server_shutdown(
-    struct wf_server * server);
+extern WF_API void wf_server_service(
+    struct wf_server * server,
+    int timeout_ms);
 
 #ifdef __cplusplus
 }
