@@ -3,6 +3,6 @@
 # Note: lcov is needed to generate coverage report
 #
 
-mkdir -p coverage
-lcov --capture --directory . --output-file coverage/lcov.info
-genhtml coverage/lcov.info --output-directory coverage/report
+mkdir -p .build/coverage
+lcov --capture --directory . --output-file .build/coverage/lcov.info
+genhtml .build/coverage/lcov.info --output-directory .build/coverage/report
