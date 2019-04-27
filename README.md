@@ -1,6 +1,6 @@
 [![Build Status](https://travis-ci.org/falk-werner/webfuse.svg?branch=master)](https://travis-ci.org/falk-werner/webfuse)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/d6c20d37bb3a456a9c0ee224001081b2)](https://www.codacy.com/app/falk.werner/webfuse?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=falk-werner/webfuse&amp;utm_campaign=Badge_Grade)
-[![codecov](https://codecov.io/gh/falk-werner/webfuse/branch/coverage/graph/badge.svg)](https://codecov.io/gh/falk-werner/webfuse)
+[![codecov](https://codecov.io/gh/falk-werner/webfuse/branch/master/graph/badge.svg)](https://codecov.io/gh/falk-werner/webfuse)
 
 # webfuse
 
