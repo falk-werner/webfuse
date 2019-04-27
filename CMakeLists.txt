@@ -307,6 +307,7 @@ add_executable(alltests
 	test/adapter/test_credentials.cc
 	test/adapter/test_authenticator.cc
 	test/adapter/test_authenticators.cc
+	test/adapter/jsonrpc/test_util.cc
 	test/adapter/test_fuse_req.cc
 	test/provider/test_url.cc
 	test/provider/test_static_filesystem.cc
