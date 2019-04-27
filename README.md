@@ -1,5 +1,6 @@
 [![Build Status](https://travis-ci.org/falk-werner/webfuse.svg?branch=master)](https://travis-ci.org/falk-werner/webfuse)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/d6c20d37bb3a456a9c0ee224001081b2)](https://www.codacy.com/app/falk.werner/webfuse?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=falk-werner/webfuse&amp;utm_campaign=Badge_Grade)
+[![codecov](https://codecov.io/gh/falk-werner/webfuse/branch/master/graph/badge.svg)](https://codecov.io/gh/falk-werner/webfuse)
 
 # webfuse
 
@@ -212,7 +213,7 @@ Get file attributes.
 #### readdir
 
 Read directory contents.  
-Result is an array of name-inode pairs for each entry. The generic entries 
+Result is an array of name-inode pairs for each entry. The generic entries
 "." and ".." should also be provided.
 
     webfuse daemon: {"method": "readdir", "params": [<filesystem>, <dir_inode>], "id": <id>}
@@ -331,7 +332,7 @@ If authentication is enabled, a provider must be authenticated by the adapter be
 
 ## Authentication
 
-By default, webfuse daemon will redirect each filesystem call to the first connected provider without any authentication. 
+By default, webfuse daemon will redirect each filesystem call to the first connected provider without any authentication.
 This might be good for testing purposes or when an external authentication mechanism is used. In some use cases, explicit authentication is needed. Therefore, authentication can be enabled within webfuse daemon.
 
 When authentication is enabled, filesystem calls are only redirected to a connected provider, after `authenticate`
@@ -351,7 +352,7 @@ Authentication is enabled, if one or more authenticators are registered via `wf_
        return ((NULL != username) && (0 == strcmp(username, "bob")) &&
                (NULL != password) && (0 == strcmp(password, "???")));
     }
-    
+
     wf_server_config * config = wf_server_config_create();
     wf_server_config_add_authenticator(config, "username", &authenticate, NULL);
 

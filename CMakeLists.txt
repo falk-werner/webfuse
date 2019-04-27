@@ -22,7 +22,26 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(C_WARNINGS -Wall -Wextra)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-set(EXTRA_INCLUDE_DIRS
+if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+
+add_definitions(
+	-pg
+	--coverage
+	-fprofile-arcs
+	-ftest-coverage
+)
+
+if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+	link_libraries(gcov)
+else()
+	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} --coverage")
+endif()
+
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fprofile-arcs")
+
+endif()
+
+include_directories(
 	"include"
 	${FUSE3_INCLUDE_DIRS} 
 	${LWS_INCLUDE_DIRS} 
@@ -39,7 +58,7 @@ set(EXTRA_LIBS
 	${CMAKE_THREAD_LIBS_INIT}
 )
 
-set(EXTRA_CFLAGS
+add_compile_options(
 	${C_WARNINGS}
 	${FUSE3_CFLAGS_OTHER}
 	${LWS_CFLAGS_OTHER}
@@ -47,7 +66,6 @@ set(EXTRA_CFLAGS
 	${UUID_CFLAGS_OTHER}
 	"-pthread"
 )
-
 
 # libwebfuse-core
 
@@ -61,8 +79,7 @@ add_library(webfuse-core STATIC
 )
 
 set_target_properties(webfuse-core PROPERTIES OUTPUT_NAME webfuse-core)
-target_include_directories(webfuse-core PUBLIC lib ${EXTRA_INCLUDE_DIRS})
-target_compile_options(webfuse-core PUBLIC ${EXTRA_CFLAGS})
+target_include_directories(webfuse-core PUBLIC lib)
 set_target_properties(webfuse-core PROPERTIES C_VISIBILITY_PRESET hidden)
 
 install(DIRECTORY include/webfuse/core DESTINATION include/webfuse)
@@ -100,9 +117,8 @@ add_library(webfuse-adapter-static STATIC
 )
 
 set_target_properties(webfuse-adapter-static PROPERTIES OUTPUT_NAME webfuse-adapter)
-target_include_directories(webfuse-adapter-static PUBLIC lib ${EXTRA_INCLUDE_DIRS})
-target_compile_options(webfuse-adapter-static PUBLIC ${EXTRA_CFLAGS})
 set_target_properties(webfuse-adapter-static PROPERTIES C_VISIBILITY_PRESET hidden)
+target_include_directories(webfuse-adapter-static PUBLIC lib)
 
 add_library(webfuse-adapter SHARED 
 	lib/webfuse/adapter/api.c
@@ -113,8 +129,6 @@ set_target_properties(webfuse-adapter PROPERTIES SOVERSION 0)
 set_target_properties(webfuse-adapter PROPERTIES C_VISIBILITY_PRESET hidden)
 set_target_properties(webfuse-adapter PROPERTIES COMPILE_DEFINITIONS "WF_API=WF_EXPORT")
 
-target_include_directories(webfuse-adapter PUBLIC lib ${EXTRA_INCLUDE_DIRS})
-target_compile_options(webfuse-adapter PUBLIC  ${EXTRA_CFLAGS})
 target_link_libraries(webfuse-adapter PRIVATE webfuse-adapter-static webfuse-core)
 
 file(WRITE "${PROJECT_BINARY_DIR}/libwebfuse-adapter.pc"
@@ -157,9 +171,8 @@ add_library(webfuse-provider-static STATIC
 )
 
 set_target_properties(webfuse-provider-static PROPERTIES OUTPUT_NAME webfuse-provider)
-target_include_directories(webfuse-provider-static PUBLIC lib ${EXTRA_INCLUDE_DIRS})
-target_compile_options(webfuse-provider-static PUBLIC ${EXTRA_CFLAGS})
 set_target_properties(webfuse-provider-static PROPERTIES C_VISIBILITY_PRESET hidden)
+target_include_directories(webfuse-provider-static PUBLIC lib)
 
 add_library(webfuse-provider SHARED 
 	lib/webfuse/provider/api.c
@@ -170,8 +183,7 @@ set_target_properties(webfuse-provider PROPERTIES SOVERSION 0)
 set_target_properties(webfuse-provider PROPERTIES C_VISIBILITY_PRESET hidden)
 set_target_properties(webfuse-provider PROPERTIES COMPILE_DEFINITIONS "WFP_API=WFP_EXPORT")
 
-target_include_directories(webfuse-provider PUBLIC lib ${EXTRA_INCLUDE_DIRS})
-target_compile_options(webfuse-provider PUBLIC  ${EXTRA_CFLAGS})
+target_include_directories(webfuse-provider PUBLIC lib)
 target_link_libraries(webfuse-provider PRIVATE webfuse-provider-static webfuse-core)
 
 file(WRITE "${PROJECT_BINARY_DIR}/libwebfuse-provider.pc"
@@ -211,11 +223,7 @@ target_include_directories(userdb PUBLIC
 	${JANSSON_INCLUDE_DIRS}
 )
 
-target_compile_options(userdb PUBLIC
-	${C_WARNINGS}
-	${OPENSSL_CFLAGS_OTHER}	
-	${JANSSON_CFLAGS_OTHER}
-)
+target_compile_options(userdb PUBLIC ${OPENSSL_CFLAGS_OTHER})
 
 # daemon
 
@@ -224,8 +232,7 @@ add_executable(webfused
 )
 
 target_link_libraries(webfused PUBLIC webfuse-adapter userdb ${OPENSSL_LIBRARIES} ${EXTRA_LIBS})
-target_include_directories(webfused PUBLIC ${EXTRA_INCLUDE_DIRS})
-target_compile_options(webfused PUBLIC ${C_WARNINGS} ${OPENSSL_CFLAGS_OTHER} ${EXTRA_CFLAGS})
+target_compile_options(webfused PUBLIC ${OPENSSL_CFLAGS_OTHER})
 
 # provider
 
@@ -237,7 +244,6 @@ set_target_properties(webfuse-provider-app PROPERTIES OUTPUT_NAME webfuse-provid
 
 target_link_libraries(webfuse-provider-app PUBLIC webfuse-provider ${EXTRA_LIBS})
 target_include_directories(webfuse-provider-app PUBLIC ${EXTRA_INCLUDE_DIRS})
-target_compile_options(webfuse-provider-app PUBLIC ${EXTRA_CFLAGS})
 
 # static-filesystem-provider
 
@@ -268,11 +274,7 @@ target_include_directories(webfuse-passwd PUBLIC
 	${JANSSON_INCLUDE_DIRS}
 )
 
-target_compile_options(webfuse-passwd PUBLIC
-	${C_WARNINGS}
-	${OPENSSL_CFLAGS_OTHER}
-	${JANSSON_CFLAGS_OTHER}
-)
+target_compile_options(webfuse-passwd PUBLIC ${OPENSSL_CFLAGS_OTHER})
 
 
 endif(NOT WITHOUT_EXAMPLE)
@@ -307,10 +309,23 @@ add_executable(alltests
 )
 
 target_link_libraries(alltests PUBLIC webfuse-adapter-static webfuse-provider-static webfuse-core ${EXTRA_LIBS} ${GMOCK_LIBRARIES} ${GTEST_LIBRARIES})
-target_include_directories(alltests PUBLIC lib ${EXTRA_INCLUDE_DIRS} ${GMOCK_INCLUDE_DIRS} ${GTEST_INCLUDE_DIRS})
-target_compile_options(alltests PUBLIC ${EXTRA_CFLAGS} ${GMOCK_CFLAGS} ${GTEST_CFLAGS})
+target_include_directories(alltests PUBLIC lib ${GMOCK_INCLUDE_DIRS} ${GTEST_INCLUDE_DIRS})
+target_compile_options(alltests PUBLIC ${GMOCK_CFLAGS} ${GTEST_CFLAGS})
 
 enable_testing()
 gtest_discover_tests(alltests TEST_PREFIX alltests:)
+
+add_custom_target(coverage
+	./alltests
+	COMMAND mkdir -p coverage
+	COMMAND lcov --capture --directory . --output-file coverage/lcov.info
+	COMMAND lcov --remove coverage/lcov.info '/usr/*' --output-file coverage/lcov.info
+)
+add_dependencies(coverage alltests)
+
+add_custom_target(coverage-report
+	COMMAND genhtml coverage/lcov.info --output-directory coverage/report
+)
+add_dependencies(coverage-report coverage)
 
 endif(NOT WITHOUT_TESTS)
