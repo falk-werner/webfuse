@@ -293,16 +293,6 @@ add_executable(alltests
 	test/msleep.cc
 	test/mock_authenticator.cc
 	test/mock_request.cc
-	test/test_response_parser.cc
-	test/test_server.cc
-	test/test_timepoint.cc
-	test/test_timer.cc
-	test/test_url.cc
-	test/test_credentials.cc
-	test/test_authenticator.cc
-	test/test_authenticators.cc
-	test/test_static_filesystem.cc
-	test/test_fuse_req.cc
 	test/core/test_container_of.cc
 	test/core/test_string.cc
 	test/core/test_slist.cc
@@ -310,10 +300,20 @@ add_executable(alltests
 	test/core/test_status.cc
 	test/core/test_message.cc
 	test/core/test_message_queue.cc
+	test/adapter/test_response_parser.cc
+	test/adapter/test_server.cc
+	test/adapter/test_timepoint.cc
+	test/adapter/test_timer.cc
+	test/adapter/test_credentials.cc
+	test/adapter/test_authenticator.cc
+	test/adapter/test_authenticators.cc
+	test/adapter/test_fuse_req.cc
+	test/test_url.cc
+	test/test_static_filesystem.cc
 )
 
 target_link_libraries(alltests PUBLIC webfuse-adapter-static webfuse-provider-static webfuse-core ${EXTRA_LIBS} ${GMOCK_LIBRARIES} ${GTEST_LIBRARIES})
-target_include_directories(alltests PUBLIC lib ${GMOCK_INCLUDE_DIRS} ${GTEST_INCLUDE_DIRS})
+target_include_directories(alltests PUBLIC test lib ${GMOCK_INCLUDE_DIRS} ${GTEST_INCLUDE_DIRS})
 target_compile_options(alltests PUBLIC ${GMOCK_CFLAGS} ${GTEST_CFLAGS})
 
 enable_testing()
