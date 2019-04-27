@@ -27,11 +27,6 @@ void wf_slist_append(
     item->next = NULL;
     list->last->next = item;
     list->last = item;
-
-    if (NULL == list->head.next)
-    {
-        list->head.next = item;
-    }
 }
 
 struct wf_slist_item * wf_slist_remove_first(
