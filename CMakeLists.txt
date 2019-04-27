@@ -306,6 +306,8 @@ add_executable(alltests
 	test/test_slist.cc
 	test/test_path.cc
 	test/test_static_filesystem.cc
+	test/test_fuse_req.cc
+	test/test_status.cc
 )
 
 target_link_libraries(alltests PUBLIC webfuse-adapter-static webfuse-provider-static webfuse-core ${EXTRA_LIBS} ${GMOCK_LIBRARIES} ${GTEST_LIBRARIES})

@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include "webfuse/adapter/fuse_wrapper.h"
+#include "webfuse/adapter/impl/fuse_wrapper.h"
 
 TEST(libfuse, fuse_req_t_size)
 {
