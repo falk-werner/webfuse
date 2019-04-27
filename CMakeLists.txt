@@ -308,6 +308,8 @@ add_executable(alltests
 	test/adapter/test_authenticator.cc
 	test/adapter/test_authenticators.cc
 	test/adapter/jsonrpc/test_util.cc
+	test/adapter/jsonrpc/test_is_request.cc
+	test/adapter/jsonrpc/test_request.cc
 	test/adapter/test_fuse_req.cc
 	test/provider/test_url.cc
 	test/provider/test_static_filesystem.cc
