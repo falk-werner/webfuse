@@ -308,8 +308,8 @@ add_executable(alltests
 	test/adapter/test_authenticator.cc
 	test/adapter/test_authenticators.cc
 	test/adapter/test_fuse_req.cc
-	test/test_url.cc
-	test/test_static_filesystem.cc
+	test/provider/test_url.cc
+	test/provider/test_static_filesystem.cc
 )
 
 target_link_libraries(alltests PUBLIC webfuse-adapter-static webfuse-provider-static webfuse-core ${EXTRA_LIBS} ${GMOCK_LIBRARIES} ${GTEST_LIBRARIES})
