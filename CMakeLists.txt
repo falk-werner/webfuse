@@ -293,7 +293,6 @@ add_executable(alltests
 	test/msleep.cc
 	test/mock_authenticator.cc
 	test/mock_request.cc
-	test/test_container_of.cc
 	test/test_response_parser.cc
 	test/test_server.cc
 	test/test_timepoint.cc
@@ -302,14 +301,15 @@ add_executable(alltests
 	test/test_credentials.cc
 	test/test_authenticator.cc
 	test/test_authenticators.cc
-	test/test_string.cc
-	test/test_slist.cc
-	test/test_path.cc
 	test/test_static_filesystem.cc
 	test/test_fuse_req.cc
-	test/test_status.cc
-	test/test_message.cc
-	test/test_message_queue.cc
+	test/core/test_container_of.cc
+	test/core/test_string.cc
+	test/core/test_slist.cc
+	test/core/test_path.cc
+	test/core/test_status.cc
+	test/core/test_message.cc
+	test/core/test_message_queue.cc
 )
 
 target_link_libraries(alltests PUBLIC webfuse-adapter-static webfuse-provider-static webfuse-core ${EXTRA_LIBS} ${GMOCK_LIBRARIES} ${GTEST_LIBRARIES})
