@@ -44,7 +44,7 @@ namespace
     };
 }
 
-TEST_F(IntegrationTest, HasMountpoint)
+TEST_F(IntegrationTest, DISABLED_HasMountpoint)
 {
     struct stat buffer;
     int rc = stat(GetBaseDir(), &buffer);
