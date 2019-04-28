@@ -317,6 +317,9 @@ add_executable(alltests
 	test/adapter/jsonrpc/test_proxy.cc
 	test/provider/test_url.cc
 	test/provider/test_static_filesystem.cc
+	test/integration/test_integration.cc
+	test/integration/server.cc
+	test/integration/provider.cc
 )
 
 target_link_libraries(alltests PUBLIC webfuse-adapter-static webfuse-provider-static webfuse-core ${EXTRA_LIBS} ${GMOCK_LIBRARIES} ${GTEST_LIBRARIES})
