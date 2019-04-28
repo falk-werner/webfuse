@@ -13,6 +13,8 @@
 #include <stddef.h>
 #include <stdlib.h>
 
+#define WF_DEFAULT_TIMEOUT (10 * 1000)
+
 static bool wf_impl_session_send(
     json_t * request,
     void * user_data)
@@ -55,7 +57,7 @@ struct wf_impl_session * wf_impl_session_create(
         session->is_authenticated = false;
         session->authenticators = authenticators;
         session->server = server;
-        wf_impl_jsonrpc_proxy_init(&session->rpc, timeout_manager, &wf_impl_session_send, session);
+        wf_impl_jsonrpc_proxy_init(&session->rpc, timeout_manager, WF_DEFAULT_TIMEOUT, &wf_impl_session_send, session);
         wf_slist_init(&session->messages);
     }
 

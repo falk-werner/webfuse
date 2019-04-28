@@ -39,6 +39,7 @@ struct wf_impl_jsonrpc_request
 struct wf_impl_jsonrpc_proxy
 {
     struct wf_impl_jsonrpc_request request;
+    int timeout;
     wf_impl_jsonrpc_send_fn * send;
     void * user_data;
 };
@@ -46,6 +47,7 @@ struct wf_impl_jsonrpc_proxy
 extern void wf_impl_jsonrpc_proxy_init(
     struct wf_impl_jsonrpc_proxy * proxy,
     struct wf_impl_timeout_manager * manager,
+    int timeout,
     wf_impl_jsonrpc_send_fn * send,
     void * user_data);
 
