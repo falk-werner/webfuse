@@ -85,13 +85,21 @@ void wf_impl_jsonrpc_proxy_init(
 void wf_impl_jsonrpc_proxy_cleanup(
     struct wf_impl_jsonrpc_proxy * proxy)
 {
-    wf_impl_timer_cleanup(&proxy->request.timer);
-
     if (proxy->request.is_pending)
     {
-        proxy->request.finished(proxy->request.user_data, WF_BAD, NULL);
+        void * user_data = proxy->request.user_data;
+        wf_impl_jsonrpc_proxy_finished_fn * finished = proxy->request.finished;
+
         proxy->request.is_pending = false;
+        proxy->request.finished = NULL;
+        proxy->request.user_data = NULL;
+        proxy->request.id = 0;
+        wf_impl_timer_cancel(&proxy->request.timer);
+
+        finished(user_data, WF_BAD, NULL);
     }
+
+    wf_impl_timer_cleanup(&proxy->request.timer);
 }
 
 void wf_impl_jsonrpc_proxy_invoke(

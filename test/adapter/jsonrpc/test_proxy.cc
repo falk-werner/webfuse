@@ -309,6 +309,36 @@ TEST(jsonrpc_proxy, timeout)
     wf_impl_timeout_manager_cleanup(&timeout_manager);
 }
 
+TEST(jsonrpc_proxy, cleanup_pending_request)
+{
+    struct wf_impl_timeout_manager timeout_manager;
+    wf_impl_timeout_manager_init(&timeout_manager);
+
+    SendContext send_context;
+    void * send_data = reinterpret_cast<void*>(&send_context);
+    struct wf_impl_jsonrpc_proxy proxy;
+    wf_impl_jsonrpc_proxy_init(&proxy, &timeout_manager, 10, &jsonrpc_send, send_data);
+
+    FinishedContext finished_context;
+    void * finished_data = reinterpret_cast<void*>(&finished_context);
+    wf_impl_jsonrpc_proxy_invoke(&proxy, &jsonrpc_finished, finished_data, "foo", "si", "bar", 42);
+
+    ASSERT_TRUE(send_context.is_called);
+    ASSERT_TRUE(json_is_object(send_context.response));
+
+    ASSERT_FALSE(finished_context.is_called);
+    ASSERT_NE(nullptr, timeout_manager.timers);
+
+    wf_impl_jsonrpc_proxy_cleanup(&proxy);
+
+    ASSERT_TRUE(finished_context.is_called);
+    ASSERT_EQ(nullptr, timeout_manager.timers);
+
+    wf_impl_timeout_manager_cleanup(&timeout_manager);
+}
+
+
+
 TEST(jsonrpc_proxy, notify)
 {
     struct wf_impl_timeout_manager timeout_manager;
