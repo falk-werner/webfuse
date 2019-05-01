@@ -12,6 +12,7 @@
 
 #include <jansson.h>
 #include "webfuse/core/lws_log.h"
+#include "msleep.hpp"
 
 using webfuse_test::Server;
 using webfuse_test::Provider;
@@ -59,7 +60,7 @@ TEST_F(IntegrationTest, HasMountpoint)
     ASSERT_TRUE(S_ISDIR(buffer.st_mode));
 }
 
-TEST_F(IntegrationTest, ProvidesTextFile)
+TEST_F(IntegrationTest, DISABLED_ProvidesTextFile)
 {
     std::string file_name = std::string(GetBaseDir()) + "/cprovider/default/hello.txt";
 
