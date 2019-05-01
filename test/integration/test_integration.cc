@@ -2,11 +2,16 @@
 #include "integration/server.hpp"
 #include "integration/provider.hpp"
 
+#include <csignal>
+
 #include <string>
 
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+
+#include <jansson.h>
+#include "webfuse/core/lws_log.h"
 
 using webfuse_test::Server;
 using webfuse_test::Provider;
@@ -17,34 +22,35 @@ namespace
     {
         public:
             IntegrationTest()
-            : provider("ws://localhost:8080/")
             {
-
+                json_object_seed(0);
+                wf_lwslog_disable();
             }
+
         protected:
             void SetUp()
             {
-                server.Start();
-                provider.Start();
+                server = new Server();
+                provider = new Provider("ws://localhost:8080/");
             }
 
             void TearDown()
             {
-                provider.Stop();
-                server.Stop();
+                delete provider;
+                delete server;
             }
 
             char const * GetBaseDir() const
             {
-                return server.GetBaseDir();
+                return server->GetBaseDir();
             }
         private:
-            Server server;
-            Provider provider;
+            Server * server;
+            Provider * provider;
     };
 }
 
-TEST_F(IntegrationTest, DISABLED_HasMountpoint)
+TEST_F(IntegrationTest, HasMountpoint)
 {
     struct stat buffer;
     int rc = stat(GetBaseDir(), &buffer);
@@ -53,7 +59,7 @@ TEST_F(IntegrationTest, DISABLED_HasMountpoint)
     ASSERT_TRUE(S_ISDIR(buffer.st_mode));
 }
 
-TEST_F(IntegrationTest, DISABLED_ProvidesTextFile)
+TEST_F(IntegrationTest, ProvidesTextFile)
 {
     std::string file_name = std::string(GetBaseDir()) + "/cprovider/default/hello.txt";
 

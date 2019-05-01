@@ -10,8 +10,8 @@
 
 #include "webfuse/adapter/impl/server_config.h"
 #include "webfuse/adapter/impl/server_protocol.h"
+#include "webfuse/core/lws_log.h"
 
-#define WF_DISABLE_LWS_LOG 0
 #define WF_SERVER_PROTOCOL_COUNT 3
 
 struct wf_server
@@ -33,7 +33,7 @@ static bool wf_impl_server_tls_enabled(
 static struct lws_context * wf_impl_server_context_create(
     struct wf_server * server)
 {
-	lws_set_log_level(WF_DISABLE_LWS_LOG, NULL);
+	wf_lwslog_disable();
 
     memset(server->ws_protocols, 0, sizeof(struct lws_protocols) * WF_SERVER_PROTOCOL_COUNT);
     server->ws_protocols[0].name = "http";
@@ -123,6 +123,12 @@ void wf_impl_server_dispose(
     wf_impl_server_protocol_cleanup(&server->protocol);
     wf_impl_server_config_cleanup(&server->config);
     free(server);   
+}
+
+bool wf_impl_server_is_operational(
+    struct wf_server * server)
+{
+	return server->protocol.is_operational;
 }
 
 void wf_impl_server_service(

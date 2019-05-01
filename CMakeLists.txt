@@ -76,6 +76,7 @@ add_library(webfuse-core STATIC
 	lib/webfuse/core/status.c
 	lib/webfuse/core/string.c
 	lib/webfuse/core/path.c
+	lib/webfuse/core/lws_log.c
 )
 
 set_target_properties(webfuse-core PROPERTIES OUTPUT_NAME webfuse-core)

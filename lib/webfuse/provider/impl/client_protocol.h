@@ -16,6 +16,7 @@ struct lws_protocols;
 
 struct wfp_client_protocol
 {
+    bool is_connected;
     struct wfp_request request;
     struct wfp_provider provider;
     void * user_data;

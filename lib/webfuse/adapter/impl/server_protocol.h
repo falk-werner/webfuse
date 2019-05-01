@@ -7,6 +7,10 @@
 #include "webfuse/adapter/impl/session_manager.h"
 #include "webfuse/adapter/impl/jsonrpc/server.h"
 
+#ifndef __cplusplus
+#include <stdbool.h>
+#endif
+
 #ifdef __cplusplus
 extern "C"
 {
@@ -21,6 +25,7 @@ struct wf_server_protocol
     struct wf_impl_authenticators authenticators;
     struct wf_impl_session_manager session_manager;
     struct wf_impl_jsonrpc_server server;
+    bool is_operational;
 };
 
 extern void wf_impl_server_protocol_init(

@@ -9,8 +9,6 @@ class Provider
 public:
     Provider(char const * url);
     ~Provider();
-    void Start(void);
-    void Stop(void);
 private:
     class Private;
     Private * d;
