@@ -81,10 +81,10 @@ static void wf_impl_session_dispose_filesystems(
 void wf_impl_session_dispose(
     struct wf_impl_session * session)
 {
-    wf_impl_session_dispose_filesystems(&session->filesystems);
-
     wf_impl_jsonrpc_proxy_cleanup(&session->rpc);
     wf_message_queue_cleanup(&session->messages);
+
+    wf_impl_session_dispose_filesystems(&session->filesystems);
     session->is_authenticated = false;
     session->wsi = NULL;
     session->authenticators = NULL;
