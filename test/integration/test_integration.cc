@@ -60,14 +60,18 @@ TEST_F(IntegrationTest, HasMountpoint)
     ASSERT_TRUE(S_ISDIR(buffer.st_mode));
 }
 
-TEST_F(IntegrationTest, DISABLED_ProvidesTextFile)
+TEST_F(IntegrationTest, ProvidesTextFile)
 {
+    webfuse_test::msleep(200);
     std::string file_name = std::string(GetBaseDir()) + "/cprovider/default/hello.txt";
 
-    struct stat buffer;
-    int rc = stat(file_name.c_str(), &buffer);
+    ASSERT_EXIT({
+        struct stat buffer;
+        int rc = stat(file_name.c_str(), &buffer);
 
-    ASSERT_EQ(0, rc);
+        exit(rc);
+    }, ::testing::ExitedWithCode(0), ".*");  
+    
     // ASSERT_TRUE(S_ISREG(buffer.st_mode));
     // ASSERT_EQ(0444, (buffer.st_mode & 0777));
     // ASSERT_EQ(12, buffer.st_size);
