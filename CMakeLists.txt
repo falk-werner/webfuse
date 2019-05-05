@@ -335,6 +335,7 @@ add_custom_target(coverage
 	COMMAND mkdir -p coverage
 	COMMAND lcov --capture --directory . --output-file coverage/lcov.info
 	COMMAND lcov --remove coverage/lcov.info '/usr/*' --output-file coverage/lcov.info
+	COMMAND lcov --remove coverage/lcov.info '*/test/*' --output-file coverage/lcov.info
 )
 add_dependencies(coverage alltests)
 
