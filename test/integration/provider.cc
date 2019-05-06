@@ -18,7 +18,7 @@ public:
         config = wfp_client_config_create();
 
         fs = wfp_static_filesystem_create(config);
-        wfp_static_filesystem_add_text(fs, "hello.txt", 0x444, "Hello, World");
+        wfp_static_filesystem_add_text(fs, "hello.txt", 0444, "Hello, World");
 
         client = wfp_client_create(config);
         wfp_client_connect(client, url);

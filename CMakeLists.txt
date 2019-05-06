@@ -292,6 +292,7 @@ pkg_check_modules(GMOCK gmock)
 
 add_executable(alltests
 	test/msleep.cc
+	test/die_if.cc
 	test/mock_authenticator.cc
 	test/mock_request.cc
 	test/core/test_container_of.cc
