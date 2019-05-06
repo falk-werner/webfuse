@@ -28,6 +28,8 @@ namespace
     {
         public:
             IntegrationTest()
+            : server(nullptr)
+            , provider(nullptr)
             {
                 json_object_seed(0);
                 wf_lwslog_disable();

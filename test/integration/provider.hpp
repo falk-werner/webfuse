@@ -7,7 +7,7 @@ namespace webfuse_test
 class Provider
 {
 public:
-    Provider(char const * url);
+    explicit Provider(char const * url);
     ~Provider();
 private:
     class Private;

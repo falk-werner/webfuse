@@ -12,7 +12,7 @@ namespace webfuse_test
 class Provider::Private
 {
 public:
-    Private(char const * url)
+    explicit Private(char const * url)
     : is_shutdown_requested(false)
     {
         config = wfp_client_config_create();
