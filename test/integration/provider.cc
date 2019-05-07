@@ -22,12 +22,13 @@ public:
 
         client = wfp_client_create(config);
         wfp_client_connect(client, url);
-         while (!wfp_impl_client_is_connected(client))
+        while (!wfp_impl_client_is_connected(client))
         {
             wfp_client_service(client, 100);
         }
        
         thread = std::thread(Run, this);
+        webfuse_test::msleep(200);
     }
 
     ~Private()

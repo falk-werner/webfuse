@@ -35,6 +35,15 @@ static void wfp_impl_client_protocol_process_request(
     json_t * request = json_loadb(message, length, 0, NULL);
     if (NULL != request)
     {
+        // FIXME: is_connected should be invoked, when filesystem added
+        if ((!protocol->is_connected) && (NULL != json_object_get(request, "result")))
+        {
+            protocol->is_connected = true;
+            protocol->provider.connected(protocol->user_data);
+        }
+
+
+
         struct wfp_impl_invokation_context context =
         {
             .provider = &protocol->provider,
@@ -84,8 +93,7 @@ static int wfp_impl_client_protocol_callback(
         {
         case LWS_CALLBACK_CLIENT_ESTABLISHED:
             wfp_impl_client_protocol_add_filesystem(protocol);
-            protocol->is_connected = true;
-            protocol->provider.connected(protocol->user_data);
+            // Defer is_connected until response received
             break;
         case LWS_CALLBACK_CLIENT_CONNECTION_ERROR:
             protocol->is_connected = false;

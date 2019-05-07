@@ -15,7 +15,6 @@
 
 #include <jansson.h>
 #include "webfuse/core/lws_log.h"
-#include "msleep.hpp"
 #include "die_if.hpp"
 
 using webfuse_test::Server;
@@ -69,7 +68,6 @@ TEST_F(IntegrationTest, HasMountpoint)
 
 TEST_F(IntegrationTest, ProvidesTextFile)
 {
-    webfuse_test::msleep(200);
     std::string file_name = std::string(GetBaseDir()) + "/cprovider/default/hello.txt";
 
     ASSERT_EXIT({
@@ -87,7 +85,6 @@ TEST_F(IntegrationTest, ProvidesTextFile)
 
 TEST_F(IntegrationTest, ReadTextFile)
 {
-    webfuse_test::msleep(200);
     std::string file_name = std::string(GetBaseDir()) + "/cprovider/default/hello.txt";
 
     ASSERT_EXIT({
@@ -108,8 +105,7 @@ TEST_F(IntegrationTest, ReadTextFile)
 }
 
 TEST_F(IntegrationTest, ReadDir)
-{
-    webfuse_test::msleep(200);
+{    
     std::string dir_name = std::string(GetBaseDir()) + "/cprovider/default";
 
     ASSERT_EXIT({
