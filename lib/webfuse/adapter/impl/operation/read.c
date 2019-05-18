@@ -93,7 +93,7 @@ void wf_impl_operation_read(
 	{
 		int const length = (size <= WF_MAX_READ_LENGTH) ? (int) size : WF_MAX_READ_LENGTH;
 		int handle = (file_info->fh & INT_MAX);
-		wf_impl_jsonrpc_proxy_invoke(rpc, &wf_impl_operation_read_finished, request, "read", "siiii", user_data->name, inode, handle, (int) offset, length);
+		wf_impl_jsonrpc_proxy_invoke(rpc, &wf_impl_operation_read_finished, request, "read", "siiii", user_data->name, (int) inode, handle, (int) offset, length);
 	}
 	else
 	{
