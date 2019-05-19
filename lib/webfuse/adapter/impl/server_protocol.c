@@ -30,6 +30,9 @@ static int wf_impl_server_protocol_callback(
 
     switch (reason)
     {
+        case LWS_CALLBACK_PROTOCOL_INIT:
+            protocol->is_operational = true;
+            break;
 		case LWS_CALLBACK_ESTABLISHED:
             session = wf_impl_session_manager_add(
                 &protocol->session_manager,
@@ -206,6 +209,7 @@ void wf_impl_server_protocol_init(
     char * mount_point)
 {
     protocol->mount_point = strdup(mount_point);
+    protocol->is_operational = false;
 
     wf_impl_timeout_manager_init(&protocol->timeout_manager);
     wf_impl_session_manager_init(&protocol->session_manager);
@@ -220,6 +224,8 @@ void wf_impl_server_protocol_cleanup(
     struct wf_server_protocol * protocol)
 {
     free(protocol->mount_point);
+    protocol->is_operational = false;
+
     wf_impl_jsonrpc_server_cleanup(&protocol->server);
     wf_impl_timeout_manager_cleanup(&protocol->timeout_manager);
     wf_impl_authenticators_cleanup(&protocol->authenticators);

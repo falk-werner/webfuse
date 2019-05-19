@@ -3,8 +3,6 @@
 
 #include "webfuse/adapter/impl/jsonrpc/response.h"
 
-#define WF_DEFAULT_TIMEOUT (10 * 1000)
-
 static void wf_impl_jsonrpc_proxy_timeout(
     struct wf_impl_timer * timer)
 {
@@ -53,8 +51,9 @@ static json_t * wf_impl_jsonrpc_request_create(
 			break;
 			default:
 			fprintf(stderr, "fatal: unknown param_type '%c'\n", *param_type);
-			exit(EXIT_FAILURE);
-			break;
+            json_decref(params);
+            json_decref(request);
+            return NULL;
 		}
 	}
 	
@@ -71,10 +70,12 @@ static json_t * wf_impl_jsonrpc_request_create(
 void wf_impl_jsonrpc_proxy_init(
     struct wf_impl_jsonrpc_proxy * proxy,
     struct wf_impl_timeout_manager * timeout_manager,
+    int timeout,
     wf_impl_jsonrpc_send_fn * send,
     void * user_data)
 {
     proxy->send = send;
+    proxy->timeout = timeout;
     proxy->user_data = user_data;
     proxy->request.is_pending = false;
     
@@ -84,13 +85,21 @@ void wf_impl_jsonrpc_proxy_init(
 void wf_impl_jsonrpc_proxy_cleanup(
     struct wf_impl_jsonrpc_proxy * proxy)
 {
-    wf_impl_timer_cleanup(&proxy->request.timer);
-
     if (proxy->request.is_pending)
     {
-        proxy->request.finished(proxy->request.user_data, WF_BAD, NULL);
+        void * user_data = proxy->request.user_data;
+        wf_impl_jsonrpc_proxy_finished_fn * finished = proxy->request.finished;
+
         proxy->request.is_pending = false;
+        proxy->request.finished = NULL;
+        proxy->request.user_data = NULL;
+        proxy->request.id = 0;
+        wf_impl_timer_cancel(&proxy->request.timer);
+
+        finished(user_data, WF_BAD, NULL);
     }
+
+    wf_impl_timer_cleanup(&proxy->request.timer);
 }
 
 void wf_impl_jsonrpc_proxy_invoke(
@@ -108,25 +117,29 @@ void wf_impl_jsonrpc_proxy_invoke(
         proxy->request.finished = finished;
         proxy->request.user_data = user_data;
         proxy->request.id = 42;
-        wf_impl_timer_start(&proxy->request.timer, wf_impl_timepoint_in_msec(WF_DEFAULT_TIMEOUT), 
+        wf_impl_timer_start(&proxy->request.timer, wf_impl_timepoint_in_msec(proxy->timeout), 
                 &wf_impl_jsonrpc_proxy_timeout, proxy);
         
         va_list args;
         va_start(args, param_info);
         json_t * request = wf_impl_jsonrpc_request_create(method_name, proxy->request.id, param_info, args);
         va_end(args);
+
+        bool const is_send = ((NULL != request) && (proxy->send(request, proxy->user_data)));
+        if (!is_send)
+        {
+            proxy->request.is_pending = false;
+            proxy->request.finished = NULL;
+            proxy->request.user_data = NULL;
+            proxy->request.id = 0;
+            wf_impl_timer_cancel(&proxy->request.timer);
+
+            finished(user_data, WF_BAD, NULL);
+
+        }
+
         if (NULL != request)
         {
-            if (!proxy->send(request, proxy->user_data))
-            {
-                proxy->request.is_pending = false;
-                proxy->request.finished = NULL;
-                proxy->request.user_data = NULL;
-                proxy->request.id = 0;
-                wf_impl_timer_cancel(&proxy->request.timer);
-
-                finished(user_data, WF_BAD, NULL);
-            }
             json_decref(request);
         }
     }

@@ -10,9 +10,9 @@
 #include "webfuse/provider/impl/client_protocol.h"
 #include "webfuse/provider/impl/client_config.h"
 #include "webfuse/provider/impl/url.h"
+#include "webfuse/core/lws_log.h"
 
 #define WFP_PROTOCOL ("fs")
-#define WFP_DISABLE_LWS_LOG 0
 #define WFP_CLIENT_PROTOCOL_COUNT 2
 
 struct wfp_client
@@ -29,7 +29,7 @@ struct wfp_client
 struct wfp_client * wfp_impl_client_create(
     struct wfp_client_config * config)
 {
- 	lws_set_log_level(WFP_DISABLE_LWS_LOG, NULL);
+	wf_lwslog_disable();
    
     struct wfp_client * client = malloc(sizeof(struct wfp_client));
     if (NULL != client)
@@ -97,6 +97,12 @@ void wfp_impl_client_disconnect(
     (void) client;
 
     // ToDo: implement me
+}
+
+bool wfp_impl_client_is_connected(
+    struct wfp_client * client)
+{
+    return client->protocol.is_connected;
 }
 
 void wfp_impl_client_service(

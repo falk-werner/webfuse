@@ -49,6 +49,23 @@ TEST(timer, trigger)
     wf_impl_timeout_manager_cleanup(&manager);
 }
 
+TEST(timer, trigger_on_cleanup)
+{
+    struct wf_impl_timeout_manager manager;
+    struct wf_impl_timer timer;
+
+    wf_impl_timeout_manager_init(&manager);
+    wf_impl_timer_init(&timer, &manager);
+
+    bool triggered = false;
+    wf_impl_timer_start(&timer, wf_impl_timepoint_in_msec(5 * 60 * 1000), &on_timeout, reinterpret_cast<void*>(&triggered));
+
+    wf_impl_timeout_manager_cleanup(&manager);
+    ASSERT_TRUE(triggered);
+
+    wf_impl_timer_cleanup(&timer);
+}
+
 TEST(timer, cancel)
 {
     struct wf_impl_timeout_manager manager;
@@ -66,6 +83,37 @@ TEST(timer, cancel)
     ASSERT_FALSE(triggered);
     
     wf_impl_timer_cleanup(&timer);
+    wf_impl_timeout_manager_cleanup(&manager);
+}
+
+TEST(timer, cancel_multiple_timers)
+{
+    static size_t const count = 5;
+    struct wf_impl_timeout_manager manager;
+    struct wf_impl_timer timer[count];
+
+    wf_impl_timeout_manager_init(&manager);
+
+    bool triggered = false;
+    for(size_t i = 0; i < count; i++)
+    {
+        wf_impl_timer_init(&timer[i], &manager);
+        wf_impl_timer_start(&timer[i], wf_impl_timepoint_in_msec(0), &on_timeout, &triggered);
+    }
+
+    msleep(10);
+    for(size_t i = 0; i < count; i++)
+    {
+        wf_impl_timer_cancel(&timer[i]);
+    }
+
+    wf_impl_timeout_manager_check(&manager);
+    ASSERT_FALSE(triggered);
+    
+    for(size_t i = 0; i < count; i++)
+    {
+        wf_impl_timer_cleanup(&timer[0]);
+    }
     wf_impl_timeout_manager_cleanup(&manager);
 }
 

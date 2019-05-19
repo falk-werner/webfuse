@@ -1,6 +1,10 @@
 #ifndef WF_PROVIDER_IMPL_CLIENT_H
 #define WF_PROVIDER_IMPL_CLIENT_H
 
+#ifndef __cplusplus
+#include <stdbool.h>
+#endif
+
 #ifdef __cplusplus
 extern "C"
 {
@@ -27,11 +31,10 @@ extern void wfp_impl_client_connect(
 extern void wfp_impl_client_disconnect(
     struct wfp_client * client);
 
-extern void wfp_impl_client_settimeout(
-    struct wfp_client * client,
-    unsigned int timepoint);
-
 extern void wfp_impl_client_dispose(
+    struct wfp_client * client);
+
+extern bool wfp_impl_client_is_connected(
     struct wfp_client * client);
 
 extern void wfp_impl_client_service(

@@ -23,7 +23,7 @@ char const * wf_status_tostring(wf_status status)
 	{
 		case WF_GOOD: return "Good";
 		case WF_BAD: return "Bad";
-		case WF_BAD_NOTIMPLEMENTED: return "Bad (not implelemted)";
+		case WF_BAD_NOTIMPLEMENTED: return "Bad (not implemented)";
 		case WF_BAD_TIMEOUT: return "Bad (timeout)";
 		case WF_BAD_BUSY: return "Bad (busy)";
 		case WF_BAD_FORMAT: return "Bad (format)";
