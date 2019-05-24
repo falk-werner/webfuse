@@ -1,20 +1,23 @@
 ARG REGISTRY_PREFIX=''
-ARG CODENAME=testing-slim
+ARG CODENAME=3.9
 
-FROM ${REGISTRY_PREFIX}debian:${CODENAME} as builder
+FROM ${REGISTRY_PREFIX}alpine:${CODENAME} as builder
 
 RUN set -x \
-  && apt update \
-  && apt upgrade -y \
-  && apt install --yes --no-install-recommends \
-       build-essential \
+  && apk add --no-cache \
+       bash \
+       coreutils \
+       gcc \
+       g++ \
+       make \
        cmake \
-       ninja-build \
-       pkg-config \
+       ninja \
+       pkgconf \
        rsync \
        gdb \
-       gdbserver \
-       valgrind
+       valgrind \
+       util-linux \
+       util-linux-dev
 
 COPY src /usr/local/src
 
@@ -23,8 +26,8 @@ ARG PARALLELMFLAGS=-j2
 ARG DUMB_INIT_VERSION=1.2.2
 
 RUN set -x \
-  && builddeps="xxd" \
-  && apt install --yes --no-install-recommends $builddeps \
+  && builddeps="vim" \
+  && apk add --no-cache --virtual .build-deps $builddeps \
   && builddir="/tmp/out" \
   && mkdir -p "$builddir" \
   && cd "$builddir" \
@@ -35,7 +38,7 @@ RUN set -x \
   && mv dumb-init /usr/local/bin/dumb-init \
   && dumb-init --version \
   && rm -rf "$builddir" \
-  && apt purge -y $builddeps
+  && apk del .build-deps
 
 ARG GTEST_VERSION=1.8.1
 
@@ -50,8 +53,8 @@ RUN set -x \
 ARG FUSE_VERSION=3.1.1
 
 RUN set -x \
-  && builddeps="libtool automake gettext" \
-  && apt install --yes --no-install-recommends $builddeps \
+  && builddeps="libtool automake autoconf gettext-dev m4 linux-headers" \
+  && apk add --no-cache --virtual .build-deps $builddeps \
   && cd "/usr/local/src/libfuse-fuse-$FUSE_VERSION" \
   && ./makeconf.sh \
   && builddir="/tmp/out" \
@@ -60,15 +63,15 @@ RUN set -x \
   && "/usr/local/src/libfuse-fuse-$FUSE_VERSION/configure" \
   && make "$PARALLELMFLAGS" install \
   && rm -rf "$builddir" \
-  && apt purge -y $builddeps
+  && apk del .build-deps
 
 ARG WEBSOCKETS_VERSION=3.1.0
 
 RUN set -x \
-  && apt install --yes --no-install-recommends \
+  && apk add --no-cache \
        ca-certificates \
        openssl \
-       libssl-dev \
+       openssl-dev \
   && builddir="/tmp/out" \
   && mkdir -p "$builddir" \
   && cd "$builddir" \
@@ -87,6 +90,7 @@ RUN set -x \
   && rm -rf "$builddir"
 
 ENV LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/usr/local/lib"
+ENV PKG_CONFIG_PATH=/usr/local/lib64/pkgconfig
 
 ARG USERID=1000
 
@@ -95,7 +99,7 @@ ARG OUTDIR=/workspace/out
 ARG SCRIPTDIR=/workspace/bin
 
 RUN set -x \
-  && useradd -u "$USERID" -ms /bin/bash user \
+  && adduser -u "$USERID" -s /bin/bash -D user \
   && mkdir -p "$PROJECTDIR" "$OUTDIR" "$SCRIPTDIR" \
   && chown user:user "$PROJECTDIR" "$OUTDIR" "$SCRIPTDIR"
 
@@ -105,4 +109,3 @@ ENTRYPOINT ["dumb-init", "--"]
 
 # unused
 ARG QEMU_VERSION_=v3.1.0-2
-
