@@ -37,6 +37,7 @@ CONTAINER_GROUP ?= user
 
 UBUNTU_CODENAME ?= bionic
 DEBIAN_CODENAME ?= testing-slim
+ALPINE_CODENAME ?= 3.9
 
 SKIP_MD5SUM ?= $(call filter_out_command,md5sum)
 SKIP_MD5SUM := $(SKIP_MD5SUM)
@@ -84,7 +85,7 @@ $(SKIP_MD5SUM)$(FETCHDIR)/qemu-arm-static-$(QEMU_VERSION): MD5 := 8ebd24e63fdfa0
 # Architecture-specific rule target configuration
 
 CMAKE_TARGETS += amd64-ubuntu-builder
-CMAKE_TARGETS += amd64-debian-builder
+CMAKE_TARGETS += amd64-alpine-builder
 CMAKE_TARGETS += arm32v7-ubuntu-builder
 CMAKE_TARGETS += arm32v7-debian-builder
 
@@ -95,6 +96,9 @@ UBUNTU_TARGETS = $(addprefix $(OUTDIR)/docker/,$(call filter_targets,$(UBUNTU_FI
 
 DEBIAN_FILTER = $(call regex_march_distro,'.*','debian')
 DEBIAN_TARGETS = $(addprefix $(OUTDIR)/docker/,$(call filter_targets,$(DEBIAN_FILTER),$(TARGETS)))
+
+ALPINE_FILTER = $(call regex_march_distro,'.*','alpine')
+ALPINE_TARGETS = $(addprefix $(OUTDIR)/docker/,$(call filter_targets,$(ALPINE_FILTER),$(TARGETS)))
 
 #######################################################################################################################
 # Common rule target configuration
@@ -139,6 +143,8 @@ $(CHECK_TARGETS): GOALS := test
 $(UBUNTU_TARGETS): CODENAME := $(UBUNTU_CODENAME)
 
 $(DEBIAN_TARGETS): CODENAME := $(DEBIAN_CODENAME)
+
+$(ALPINE_TARGETS): CODENAME := $(ALPINE_CODENAME)
 
 $(FETCH_TARGETS): | $(FETCHDIR)
 	$(SILENT)$(call curl,$@,$(URL),$(MD5))

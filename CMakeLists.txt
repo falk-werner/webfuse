@@ -22,24 +22,24 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(C_WARNINGS -Wall -Wextra)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+#if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+#
+#add_definitions(
+#	-pg
+#	--coverage
+#	-fprofile-arcs
+#	-ftest-coverage
+#)
 
-add_definitions(
-	-pg
-	--coverage
-	-fprofile-arcs
-	-ftest-coverage
-)
+#if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+#	link_libraries(gcov)
+#else()
+#	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} --coverage")
+#endif()
 
-if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
-	link_libraries(gcov)
-else()
-	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} --coverage")
-endif()
+#set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pg -fprofile-arcs")
 
-set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fprofile-arcs")
-
-endif()
+#endif()
 
 include_directories(
 	"include"
