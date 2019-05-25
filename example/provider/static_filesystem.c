@@ -75,12 +75,17 @@ int main(int argc, char* argv[])
 
     struct args args;
     int result = parse_args(&args, argc, argv);
-    if (EXIT_SUCCESS == result)
+    if ((EXIT_SUCCESS == result) && (!args.show_help))
     {
         struct wfp_client_config * config = wfp_client_config_create();
 
         struct wfp_static_filesystem * fs = wfp_static_filesystem_create(config);
-        wfp_static_filesystem_add_text(fs, "hello.txt", 0444, "Hello, World!");
+        wfp_static_filesystem_add_text(fs, "brummni/hello_world.txt", 0444, "Hello, World!\n");
+        wfp_static_filesystem_add_text(fs, "brummni/hello_bob.txt", 0444, "Hello, Bob!\n");
+        wfp_static_filesystem_add_text(fs, "brummni/hello_bob.txt", 0444, "Hello, Alice!\n");
+        wfp_static_filesystem_add_text(fs, "bla/hello_world.txt", 0444, "Hello, World!\n");
+        wfp_static_filesystem_add_text(fs, "foo.txt", 0444, "foo\n");
+        wfp_static_filesystem_add_text(fs, "bar.txt", 0444, "bar\n");
 
         struct wfp_client * client = wfp_client_create(config);
         wfp_client_connect(client, args.url);
