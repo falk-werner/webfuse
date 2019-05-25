@@ -36,7 +36,6 @@ CONTAINER_USER ?= user
 CONTAINER_GROUP ?= user
 
 UBUNTU_CODENAME ?= bionic
-DEBIAN_CODENAME ?= testing-slim
 ALPINE_CODENAME ?= 3.9
 
 SKIP_MD5SUM ?= $(call filter_out_command,md5sum)
@@ -87,15 +86,12 @@ $(SKIP_MD5SUM)$(FETCHDIR)/qemu-arm-static-$(QEMU_VERSION): MD5 := 8ebd24e63fdfa0
 CMAKE_TARGETS += amd64-ubuntu-builder
 CMAKE_TARGETS += amd64-alpine-builder
 CMAKE_TARGETS += arm32v7-ubuntu-builder
-CMAKE_TARGETS += arm32v7-debian-builder
+CMAKE_TARGETS += arm32v7-alpine-builder
 
 MEMCHECK_FILTER = $(call regex_march_distro,'$(HOST_MARCH)','.*')
 
 UBUNTU_FILTER = $(call regex_march_distro,'.*','ubuntu')
 UBUNTU_TARGETS = $(addprefix $(OUTDIR)/docker/,$(call filter_targets,$(UBUNTU_FILTER),$(TARGETS)))
-
-DEBIAN_FILTER = $(call regex_march_distro,'.*','debian')
-DEBIAN_TARGETS = $(addprefix $(OUTDIR)/docker/,$(call filter_targets,$(DEBIAN_FILTER),$(TARGETS)))
 
 ALPINE_FILTER = $(call regex_march_distro,'.*','alpine')
 ALPINE_TARGETS = $(addprefix $(OUTDIR)/docker/,$(call filter_targets,$(ALPINE_FILTER),$(TARGETS)))
@@ -141,8 +137,6 @@ include $(SCRIPTDIR)/standardrules.mk
 $(CHECK_TARGETS): GOALS := test
 
 $(UBUNTU_TARGETS): CODENAME := $(UBUNTU_CODENAME)
-
-$(DEBIAN_TARGETS): CODENAME := $(DEBIAN_CODENAME)
 
 $(ALPINE_TARGETS): CODENAME := $(ALPINE_CODENAME)
 
