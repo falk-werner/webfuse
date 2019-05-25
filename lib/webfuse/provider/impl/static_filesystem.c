@@ -182,8 +182,6 @@ wfp_impl_static_filesystem_add_dir(
     char const * name
 )
 {
-    size_t result = 0;
-
     struct  wfp_static_filesystem_entry * entry = wfp_impl_static_filesystem_get_entry_by_name(filesystem, parent, name);
     if (NULL == entry)
     {
@@ -197,11 +195,9 @@ wfp_impl_static_filesystem_add_dir(
         entry->get_info = &wfp_impl_static_filesystem_entry_get_info;
         entry->size = 0;
         entry->content = NULL;
-
-        result = entry->inode;
     }
-
-    return result;    
+    
+    return entry->inode;
 }
 
 static size_t
