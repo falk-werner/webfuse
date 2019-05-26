@@ -43,6 +43,7 @@ static void wf_impl_operation_lookup_finished(
             memset(&buffer, 0, sizeof(struct stat));
 
 			buffer.ino = json_integer_value(inode_holder);
+			buffer.attr.st_ino = buffer.ino;
 			buffer.attr.st_mode = json_integer_value(mode_holder) & 0555;
 			char const * type = json_string_value(type_holder);
 			if (0 == strcmp("file", type)) 
