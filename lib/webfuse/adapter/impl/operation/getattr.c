@@ -14,6 +14,7 @@
 struct wf_impl_operation_getattr_context
 {
 	fuse_req_t request;
+	fuse_ino_t inode;
 	double timeout;
 	uid_t uid;
 	gid_t gid;
@@ -36,6 +37,7 @@ static void wf_impl_operation_getattr_finished(
 		{
             memset(&buffer, 0, sizeof(struct stat));
 
+			buffer.st_ino = context->inode;
 			buffer.st_mode = json_integer_value(mode_holder) & 0555;
 			char const * type = json_string_value(type_holder);
 			if (0 == strcmp("file", type)) 
@@ -54,7 +56,6 @@ static void wf_impl_operation_getattr_finished(
 			buffer.st_atime = wf_impl_json_get_int(data, "atime", 0);
 			buffer.st_mtime = wf_impl_json_get_int(data, "mtime", 0);
 			buffer.st_ctime = wf_impl_json_get_int(data, "ctime", 0);
-
 		}
 		else
 		{
@@ -87,6 +88,7 @@ void wf_impl_operation_getattr (
 	{
 		struct wf_impl_operation_getattr_context * getattr_context = malloc(sizeof(struct wf_impl_operation_getattr_context));
 		getattr_context->request = request;
+		getattr_context->inode = inode;		
 		getattr_context->uid = context->uid;
 		getattr_context->gid = context->gid;
 		getattr_context->timeout = user_data->timeout;
