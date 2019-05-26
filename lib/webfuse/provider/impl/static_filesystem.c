@@ -16,7 +16,7 @@
 #include <stdbool.h>
 
 #define WFP_STATIC_FILESYSTEM_DEFAULT_CAPACITY (16)
-#define WFP_STATIC_FILSYSTEM_INDOE_ROOT (1)
+#define WFP_STATIC_FILSYSTEM_INODE_ROOT (1)
 #define WFP_STATIC_FILESYSTEM_MAX_READ_SIZE (4 * 1024)
 
 struct wfp_static_filesystem_entry
@@ -209,7 +209,7 @@ wfp_impl_static_filesystem_make_parent(
     struct wfp_static_filesystem * filesystem,
     struct wf_path * path)
 {
-    size_t result = WFP_STATIC_FILSYSTEM_INDOE_ROOT;
+    size_t result = WFP_STATIC_FILSYSTEM_INODE_ROOT;
 
     size_t count = wf_path_element_count(path);
     if (0 < count)
