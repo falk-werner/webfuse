@@ -3,7 +3,7 @@ ARG CODENAME=bionic
 
 FROM ${REGISTRY_PREFIX}arm32v7/ubuntu:${CODENAME} as builder
 
-ARG QEMU_VERSION_=v3.1.0-2
+ARG QEMU_VERSION_=v4.1.0-1
 
 COPY docker/qemu-arm-static-$QEMU_VERSION_ /usr/bin/qemu-arm-static
 

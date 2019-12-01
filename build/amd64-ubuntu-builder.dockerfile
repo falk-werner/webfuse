@@ -104,7 +104,3 @@ RUN set -x \
 WORKDIR "$OUTDIR"
 
 ENTRYPOINT ["dumb-init", "--"]
-
-# unused
-ARG QEMU_VERSION_=v3.1.0-2
-

@@ -74,11 +74,11 @@ FETCH_TARGETS += $(FETCHDIR)/jansson-$(JANSSON_VERSION).tar.gz
 $(FETCHDIR)/jansson-$(JANSSON_VERSION).tar.gz: URL := https://github.com/akheron/jansson/archive/v$(JANSSON_VERSION).tar.gz
 $(SKIP_MD5SUM)$(FETCHDIR)/jansson-$(JANSSON_VERSION).tar.gz: MD5 := c4b106528d5ffb521178565de1ba950d
 
-QEMU_VERSION ?= v3.1.0-2
+QEMU_VERSION ?= v4.1.0-1
 DOCKER_BUILDARGS += QEMU_VERSION_=$(QEMU_VERSION)
 FETCH_TARGETS += $(FETCHDIR)/qemu-arm-static-$(QEMU_VERSION)
 $(FETCHDIR)/qemu-arm-static-$(QEMU_VERSION): URL := https://github.com/multiarch/qemu-user-static/releases/download/$(QEMU_VERSION)/qemu-arm-static
-$(SKIP_MD5SUM)$(FETCHDIR)/qemu-arm-static-$(QEMU_VERSION): MD5 := 8ebd24e63fdfa07c557d45373bd831b1
+$(SKIP_MD5SUM)$(FETCHDIR)/qemu-arm-static-$(QEMU_VERSION): MD5 := e508e6e4dd7f3a851207aac245a4653f
 
 #######################################################################################################################
 # Architecture-specific rule target configuration
