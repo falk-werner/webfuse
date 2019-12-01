@@ -409,7 +409,7 @@ By default, unit tests and example application are enabled. You can disable them
 
 #### libfuse
 
-To install libfuse, meson is neede. Please refer to [meson quick guide](https://mesonbuild.com/Quick-guide.html) for setup instructions.
+To install libfuse, meson is needed. Please refer to [meson quick guide](https://mesonbuild.com/Quick-guide.html) for setup instructions.
 
     wget -O fuse-3.8.0.tar.gz https://github.com/libfuse/libfuse/archive/fuse-3.8.0.tar.gz
     tar -xf fuse-3.8.0.tar.gz
