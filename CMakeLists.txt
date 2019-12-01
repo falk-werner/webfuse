@@ -19,7 +19,7 @@ pkg_check_modules(UUID REQUIRED uuid)
 add_definitions(-D_FILE_OFFSET_BITS=64)
 
 set(CMAKE_C_STANDARD 99)
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(C_WARNINGS -Wall -Wextra)
