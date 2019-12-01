@@ -17,7 +17,7 @@ env:
     - PORTABLE_WORSPACE=1
   matrix:
     - BUILDTYPE=Debug      MARCH=amd64   CHECK_TARGET=memcheck
-    - BUILDTYPE=Coverage   MARCH=amd64   CHECK_TARGET=memcheck
+    - BUILDTYPE=Coverage   MARCH=amd64   CHECK_TARGET=check
     - BUILDTYPE=Release    MARCH=amd64   CHECK_TARGET=memcheck
     - BUILDTYPE=Debug      MARCH=arm32v7 CHECK_TARGET=check
     - BUILDTYPE=MinSizeRel MARCH=arm32v7 CHECK_TARGET=check
