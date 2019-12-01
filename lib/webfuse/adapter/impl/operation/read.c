@@ -17,7 +17,7 @@ static char * wf_impl_fill_buffer(
 	wf_status * status)
 {
 	*status = WF_GOOD;
-	char * buffer = malloc(count + 1);
+	char * buffer = malloc(count + 4); // FixMe: lws 3.2.0 needs more buffer to decode (bug?)
 
 	if ((NULL != buffer) && (0 < count))
 	{
@@ -27,7 +27,7 @@ static char * wf_impl_fill_buffer(
 		}
 		else if (0 == strcmp("base64", format))
 		{
-			lws_b64_decode_string(data, buffer, count + 1);
+			lws_b64_decode_string(data, buffer, count + 4);
 		}
 		else
 		{
