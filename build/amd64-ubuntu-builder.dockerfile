@@ -64,7 +64,7 @@ RUN set -x \
   && rm -rf "$builddir" \
   && apt purge -y $builddeps
 
-ARG WEBSOCKETS_VERSION=3.1.0
+ARG WEBSOCKETS_VERSION=3.2.0
 
 RUN set -x \
   && apt install --yes --no-install-recommends \

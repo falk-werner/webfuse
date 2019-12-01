@@ -62,11 +62,11 @@ FETCH_TARGETS += $(FETCHDIR)/libfuse-fuse-$(FUSE_VERSION).tar.gz
 $(FETCHDIR)/libfuse-fuse-$(FUSE_VERSION).tar.gz: URL := https://github.com/libfuse/libfuse/archive/fuse-$(FUSE_VERSION).tar.gz
 $(SKIP_MD5SUM)$(FETCHDIR)/libfuse-fuse-$(FUSE_VERSION).tar.gz: MD5 := 097f194856938afdd98bea1a5c046edd
 
-WEBSOCKETS_VERSION ?= 3.1.0
+WEBSOCKETS_VERSION ?= 3.2.0
 DOCKER_BUILDARGS += WEBSOCKETS_VERSION=$(WEBSOCKETS_VERSION)
 FETCH_TARGETS += $(FETCHDIR)/libwebsockets-$(WEBSOCKETS_VERSION).tar.gz
 $(FETCHDIR)/libwebsockets-$(WEBSOCKETS_VERSION).tar.gz: URL := https://github.com/warmcat/libwebsockets/archive/v$(WEBSOCKETS_VERSION).tar.gz
-$(SKIP_MD5SUM)$(FETCHDIR)/libwebsockets-$(WEBSOCKETS_VERSION).tar.gz: MD5 := 325359a25d5f6d22725ff5d086db1c76
+$(SKIP_MD5SUM)$(FETCHDIR)/libwebsockets-$(WEBSOCKETS_VERSION).tar.gz: MD5 := 1d06f5602604e67e6f50cef9857c6b0c
 
 JANSSON_VERSION ?= 2.12
 DOCKER_BUILDARGS += JANSSON_VERSION=$(JANSSON_VERSION)

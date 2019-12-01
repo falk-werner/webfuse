@@ -65,7 +65,7 @@ RUN set -x \
   && rm -rf "$builddir" \
   && apk del .build-deps
 
-ARG WEBSOCKETS_VERSION=3.1.0
+ARG WEBSOCKETS_VERSION=3.2.0
 
 RUN set -x \
   && apk add --no-cache \
