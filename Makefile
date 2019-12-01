@@ -23,7 +23,6 @@ SCRIPTDIR ?= $(PROJECTDIR)/build/mkdocker
 OUTDIR ?= $(PROJECTDIR)/.build
 FETCHDIR ?= $(PROJECTDIR)/.deps
 BUILDTYPE ?= Debug
-COVERAGE ?= OFF
 
 SKIP_FETCH ?= 
 
@@ -115,8 +114,6 @@ OUTDIRS += $(OUTDIR)/src
 
 EXTRACT_TARGETS += $(OUTDIR)/docker/qemu-arm-static-$(QEMU_VERSION)
 EXTRACT_TARGETS += $(patsubst $(FETCHDIR)/%.tar.gz,$(OUTDIR)/src/%,$(FETCH_TARGETS))
-
-CMAKEFLAGS += -DWITH_COVERAGE=$(COVERAGE)
 
 #######################################################################################################################
 # Makefile dependencies

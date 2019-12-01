@@ -3,7 +3,9 @@ project(webfuse VERSION 0.2.0 DESCRIPTION "Websocket filesystem based on libfuse
 
 option(WITHOUT_TESTS   "disable unit tests"   OFF)
 option(WITHOUT_EXAMPLE "disable example"      OFF)
-option(WITH_COVERAGE   "enable code coverage" OFF)
+
+set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+include(coverage)
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
@@ -22,25 +24,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(C_WARNINGS -Wall -Wextra)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-
-if(("${CMAKE_BUILD_TYPE}" STREQUAL "Debug") AND WITHOUT_COVERAGE)
-
-add_definitions(
-	-pg
-	--coverage
-	-fprofile-arcs
-	-ftest-coverage
-)
-
-if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
-	link_libraries(gcov)
-else()
-	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} --coverage")
-endif()
-
-set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pg -fprofile-arcs")
-
-endif()
 
 include_directories(
 	"include"
