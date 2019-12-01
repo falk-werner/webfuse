@@ -50,18 +50,23 @@ RUN set -x \
   && make "$PARALLELMFLAGS" install \
   && rm -rf "$builddir"
 
-ARG FUSE_VERSION=3.1.1
+RUN set -x \
+  && builddeps="linux-headers udev eudev-dev python3 py3-pip py3-setuptools py3-cryptography ninja" \
+  && apk add --no-cache --virtual .build-deps $builddeps \
+  && pip3 install meson
+
+ARG FUSE_VERSION=3.8.0
 
 RUN set -x \
-  && builddeps="libtool automake autoconf gettext-dev m4 linux-headers" \
+  && builddeps="libtool automake autoconf gettext-dev m4" \
   && apk add --no-cache --virtual .build-deps $builddeps \
-  && cd "/usr/local/src/libfuse-fuse-$FUSE_VERSION" \
-  && ./makeconf.sh \
   && builddir="/tmp/out" \
   && mkdir -p "$builddir" \
   && cd "$builddir" \
-  && "/usr/local/src/libfuse-fuse-$FUSE_VERSION/configure" \
-  && make "$PARALLELMFLAGS" install \
+  && meson "/usr/local/src/libfuse-fuse-$FUSE_VERSION" \
+  && meson configure -Dexamples=false \
+  && ninja \
+  && ninja install \
   && rm -rf "$builddir" \
   && apk del .build-deps
 

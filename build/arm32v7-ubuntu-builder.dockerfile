@@ -52,18 +52,22 @@ RUN set -x \
   && make "$PARALLELMFLAGS" install \
   && rm -rf "$builddir"
 
-ARG FUSE_VERSION=3.1.1
+RUN set -x \
+  && builddeps="udev python3 python3-pip python3-setuptools python3-wheel ninja-build" \
+  && apt install --yes --no-install-recommends $builddeps \
+  && pip3 install --system meson
+
+ARG FUSE_VERSION=3.8.0
 
 RUN set -x \
   && builddeps="libtool automake gettext" \
   && apt install --yes --no-install-recommends $builddeps \
-  && cd "/usr/local/src/libfuse-fuse-$FUSE_VERSION" \
-  && ./makeconf.sh \
   && builddir="/tmp/out" \
   && mkdir -p "$builddir" \
   && cd "$builddir" \
-  && "/usr/local/src/libfuse-fuse-$FUSE_VERSION/configure" \
-  && make "$PARALLELMFLAGS" install \
+  && meson "/usr/local/src/libfuse-fuse-$FUSE_VERSION" \
+  && ninja \
+  && ninja install \
   && rm -rf "$builddir" \
   && apt purge -y $builddeps
 
