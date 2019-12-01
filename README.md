@@ -419,9 +419,9 @@ By default, unit tests and example application are enabled. You can disable them
 
 #### libwebsockets
 
-    wget -O libwebsockets-3.1.0.tar.gz https://github.com/warmcat/libwebsockets/archive/v3.1.0.tar.gz
-    tar -xf libwebsockets-3.1.0.tar.gz
-    cd libwebsockets-3.1.0
+    wget -O libwebsockets-3.2.0.tar.gz https://github.com/warmcat/libwebsockets/archive/v3.2.0.tar.gz
+    tar -xf libwebsockets-3.2.0.tar.gz
+    cd libwebsockets-3.2.0
     mkdir .build
     cd .build
     cmake ..
@@ -443,9 +443,9 @@ By default, unit tests and example application are enabled. You can disable them
 
 Installation of GoogleTest is optional webfuse library, but required to compile tests.
 
-    wget -O gtest-1.8.1.tar.gz https://github.com/google/googletest/archive/release-1.8.1.tar.gz
-    tar -xf gtest-1.8.1.tar.gz
-    cd googletest-release-1.8.1
+    wget -O gtest-1.10.0.tar.gz https://github.com/google/googletest/archive/release-1.10.0.tar.gz
+    tar -xf gtest-1.10.0.tar.gz
+    cd googletest-release-1.10.0
     mkdir .build
     cd .build
     cmake ..
