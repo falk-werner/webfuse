@@ -42,7 +42,7 @@ RUN set -x \
   && rm -rf "$builddir" \
   && apt purge -y $builddeps
 
-ARG GTEST_VERSION=1.8.1
+ARG GTEST_VERSION=1.10.0
 
 RUN set -x \
   && builddir="/tmp/out" \

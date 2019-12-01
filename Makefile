@@ -50,11 +50,11 @@ FETCH_TARGETS += $(FETCHDIR)/dumb-init-$(DUMB_INIT_VERSION).tar.gz
 $(FETCHDIR)/dumb-init-$(DUMB_INIT_VERSION).tar.gz: URL := https://github.com/Yelp/dumb-init/archive/v${DUMB_INIT_VERSION}.tar.gz
 $(SKIP_MD5SUM)$(FETCHDIR)/dumb-init-$(DUMB_INIT_VERSION).tar.gz: MD5 := 6166084b05772cdcf615a762c6f3b32e
 
-GTEST_VERSION ?= 1.8.1
+GTEST_VERSION ?= 1.10.0
 DOCKER_BUILDARGS += GTEST_VERSION=$(GTEST_VERSION)
 FETCH_TARGETS += $(FETCHDIR)/googletest-release-$(GTEST_VERSION).tar.gz
 $(FETCHDIR)/googletest-release-$(GTEST_VERSION).tar.gz: URL := https://github.com/google/googletest/archive/release-$(GTEST_VERSION).tar.gz
-$(SKIP_MD5SUM)$(FETCHDIR)/googletest-release-$(GTEST_VERSION).tar.gz: MD5 := 2e6fbeb6a91310a16efe181886c59596
+$(SKIP_MD5SUM)$(FETCHDIR)/googletest-release-$(GTEST_VERSION).tar.gz: MD5 := ecd1fa65e7de707cd5c00bdac56022cd
 
 FUSE_VERSION ?= 3.1.1
 DOCKER_BUILDARGS += FUSE_VERSION=$(FUSE_VERSION)
