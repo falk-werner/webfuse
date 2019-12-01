@@ -1,11 +1,11 @@
 #include "webfuse/provider/impl/operation/read.h"
 
 #include <stdlib.h>
-#include <libwebsockets.h>
 
 #include "webfuse/provider/impl/operation/error.h"
 #include "webfuse/provider/impl/request.h"
 #include "webfuse/core/util.h"
+#include "webfuse/core/base64.h"
 
 void wfp_impl_read(
     struct wfp_impl_invokation_context * context,
@@ -54,11 +54,11 @@ void wfp_impl_respond_read(
 {
     if (0 < length)
     {
-        size_t const size = 4 * ((length / 3) + 2);
+        size_t const size = wf_base64_encoded_size(length) + 1;
         char * buffer = malloc(size);
         if (NULL != buffer)
         {
-            lws_b64_encode_string(data, length, buffer, size);
+            wf_base64_encode((uint8_t const *) data, length, buffer, size);
 
             json_t * result = json_object();
             json_object_set_new(result, "data", json_string(buffer));

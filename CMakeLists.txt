@@ -60,6 +60,7 @@ add_library(webfuse-core STATIC
 	lib/webfuse/core/status.c
 	lib/webfuse/core/string.c
 	lib/webfuse/core/path.c
+	lib/webfuse/core/base64.c
 	lib/webfuse/core/lws_log.c
 )
 
@@ -283,6 +284,7 @@ add_executable(alltests
 	test/core/test_string.cc
 	test/core/test_slist.cc
 	test/core/test_path.cc
+	test/core/test_base64.cc
 	test/core/test_status.cc
 	test/core/test_message.cc
 	test/core/test_message_queue.cc
