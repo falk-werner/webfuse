@@ -49,22 +49,19 @@ RUN set -x \
   && make "$PARALLELMFLAGS" install \
   && rm -rf "$builddir"
 
-RUN set -x \
-  && builddeps="udev python3 python3-pip python3-setuptools python3-wheel ninja-build" \
-  && apt install --yes --no-install-recommends $builddeps \
-  && pip3 install --system meson
-
 ARG FUSE_VERSION=3.8.0
 
 RUN set -x \
-  && builddeps="libtool automake gettext" \
+  && builddeps="udev gettext python3 python3-pip python3-setuptools python3-wheel" \
   && apt install --yes --no-install-recommends $builddeps \
+  && pip3 install --system meson \
   && builddir="/tmp/out" \
   && mkdir -p "$builddir" \
   && cd "$builddir" \
   && meson "/usr/local/src/libfuse-fuse-$FUSE_VERSION" \
   && ninja \
   && ninja install \
+  && pip3 uninstall -y meson \
   && rm -rf "$builddir" \
   && apt purge -y $builddeps
 
