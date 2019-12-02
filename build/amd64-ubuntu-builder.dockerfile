@@ -39,7 +39,7 @@ RUN set -x \
   && rm -rf "$builddir" \
   && apt purge -y $builddeps
 
-ARG GTEST_VERSION=1.8.1
+ARG GTEST_VERSION=1.10.0
 
 RUN set -x \
   && builddir="/tmp/out" \
@@ -49,22 +49,23 @@ RUN set -x \
   && make "$PARALLELMFLAGS" install \
   && rm -rf "$builddir"
 
-ARG FUSE_VERSION=3.1.1
+ARG FUSE_VERSION=3.8.0
 
 RUN set -x \
-  && builddeps="libtool automake gettext" \
+  && builddeps="udev gettext python3 python3-pip python3-setuptools python3-wheel" \
   && apt install --yes --no-install-recommends $builddeps \
-  && cd "/usr/local/src/libfuse-fuse-$FUSE_VERSION" \
-  && ./makeconf.sh \
+  && pip3 install --system meson \
   && builddir="/tmp/out" \
   && mkdir -p "$builddir" \
   && cd "$builddir" \
-  && "/usr/local/src/libfuse-fuse-$FUSE_VERSION/configure" \
-  && make "$PARALLELMFLAGS" install \
+  && meson "/usr/local/src/libfuse-fuse-$FUSE_VERSION" \
+  && ninja \
+  && ninja install \
+  && pip3 uninstall -y meson \
   && rm -rf "$builddir" \
   && apt purge -y $builddeps
 
-ARG WEBSOCKETS_VERSION=3.1.0
+ARG WEBSOCKETS_VERSION=3.2.0
 
 RUN set -x \
   && apt install --yes --no-install-recommends \
@@ -104,7 +105,3 @@ RUN set -x \
 WORKDIR "$OUTDIR"
 
 ENTRYPOINT ["dumb-init", "--"]
-
-# unused
-ARG QEMU_VERSION_=v3.1.0-2
-

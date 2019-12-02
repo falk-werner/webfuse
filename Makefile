@@ -23,7 +23,6 @@ SCRIPTDIR ?= $(PROJECTDIR)/build/mkdocker
 OUTDIR ?= $(PROJECTDIR)/.build
 FETCHDIR ?= $(PROJECTDIR)/.deps
 BUILDTYPE ?= Debug
-COVERAGE ?= OFF
 
 SKIP_FETCH ?= 
 
@@ -51,23 +50,23 @@ FETCH_TARGETS += $(FETCHDIR)/dumb-init-$(DUMB_INIT_VERSION).tar.gz
 $(FETCHDIR)/dumb-init-$(DUMB_INIT_VERSION).tar.gz: URL := https://github.com/Yelp/dumb-init/archive/v${DUMB_INIT_VERSION}.tar.gz
 $(SKIP_MD5SUM)$(FETCHDIR)/dumb-init-$(DUMB_INIT_VERSION).tar.gz: MD5 := 6166084b05772cdcf615a762c6f3b32e
 
-GTEST_VERSION ?= 1.8.1
+GTEST_VERSION ?= 1.10.0
 DOCKER_BUILDARGS += GTEST_VERSION=$(GTEST_VERSION)
 FETCH_TARGETS += $(FETCHDIR)/googletest-release-$(GTEST_VERSION).tar.gz
 $(FETCHDIR)/googletest-release-$(GTEST_VERSION).tar.gz: URL := https://github.com/google/googletest/archive/release-$(GTEST_VERSION).tar.gz
-$(SKIP_MD5SUM)$(FETCHDIR)/googletest-release-$(GTEST_VERSION).tar.gz: MD5 := 2e6fbeb6a91310a16efe181886c59596
+$(SKIP_MD5SUM)$(FETCHDIR)/googletest-release-$(GTEST_VERSION).tar.gz: MD5 := ecd1fa65e7de707cd5c00bdac56022cd
 
-FUSE_VERSION ?= 3.1.1
+FUSE_VERSION ?= 3.8.0
 DOCKER_BUILDARGS += FUSE_VERSION=$(FUSE_VERSION)
 FETCH_TARGETS += $(FETCHDIR)/libfuse-fuse-$(FUSE_VERSION).tar.gz
 $(FETCHDIR)/libfuse-fuse-$(FUSE_VERSION).tar.gz: URL := https://github.com/libfuse/libfuse/archive/fuse-$(FUSE_VERSION).tar.gz
-$(SKIP_MD5SUM)$(FETCHDIR)/libfuse-fuse-$(FUSE_VERSION).tar.gz: MD5 := 097f194856938afdd98bea1a5c046edd
+$(SKIP_MD5SUM)$(FETCHDIR)/libfuse-fuse-$(FUSE_VERSION).tar.gz: MD5 := 909d6b2cfc2faa9f4b6033d356280540
 
-WEBSOCKETS_VERSION ?= 3.1.0
+WEBSOCKETS_VERSION ?= 3.2.0
 DOCKER_BUILDARGS += WEBSOCKETS_VERSION=$(WEBSOCKETS_VERSION)
 FETCH_TARGETS += $(FETCHDIR)/libwebsockets-$(WEBSOCKETS_VERSION).tar.gz
 $(FETCHDIR)/libwebsockets-$(WEBSOCKETS_VERSION).tar.gz: URL := https://github.com/warmcat/libwebsockets/archive/v$(WEBSOCKETS_VERSION).tar.gz
-$(SKIP_MD5SUM)$(FETCHDIR)/libwebsockets-$(WEBSOCKETS_VERSION).tar.gz: MD5 := 325359a25d5f6d22725ff5d086db1c76
+$(SKIP_MD5SUM)$(FETCHDIR)/libwebsockets-$(WEBSOCKETS_VERSION).tar.gz: MD5 := 1d06f5602604e67e6f50cef9857c6b0c
 
 JANSSON_VERSION ?= 2.12
 DOCKER_BUILDARGS += JANSSON_VERSION=$(JANSSON_VERSION)
@@ -75,11 +74,11 @@ FETCH_TARGETS += $(FETCHDIR)/jansson-$(JANSSON_VERSION).tar.gz
 $(FETCHDIR)/jansson-$(JANSSON_VERSION).tar.gz: URL := https://github.com/akheron/jansson/archive/v$(JANSSON_VERSION).tar.gz
 $(SKIP_MD5SUM)$(FETCHDIR)/jansson-$(JANSSON_VERSION).tar.gz: MD5 := c4b106528d5ffb521178565de1ba950d
 
-QEMU_VERSION ?= v3.1.0-2
+QEMU_VERSION ?= v4.1.0-1
 DOCKER_BUILDARGS += QEMU_VERSION_=$(QEMU_VERSION)
 FETCH_TARGETS += $(FETCHDIR)/qemu-arm-static-$(QEMU_VERSION)
 $(FETCHDIR)/qemu-arm-static-$(QEMU_VERSION): URL := https://github.com/multiarch/qemu-user-static/releases/download/$(QEMU_VERSION)/qemu-arm-static
-$(SKIP_MD5SUM)$(FETCHDIR)/qemu-arm-static-$(QEMU_VERSION): MD5 := 8ebd24e63fdfa07c557d45373bd831b1
+$(SKIP_MD5SUM)$(FETCHDIR)/qemu-arm-static-$(QEMU_VERSION): MD5 := e508e6e4dd7f3a851207aac245a4653f
 
 #######################################################################################################################
 # Architecture-specific rule target configuration
@@ -115,8 +114,6 @@ OUTDIRS += $(OUTDIR)/src
 
 EXTRACT_TARGETS += $(OUTDIR)/docker/qemu-arm-static-$(QEMU_VERSION)
 EXTRACT_TARGETS += $(patsubst $(FETCHDIR)/%.tar.gz,$(OUTDIR)/src/%,$(FETCH_TARGETS))
-
-CMAKEFLAGS += -DWITH_COVERAGE=$(COVERAGE)
 
 #######################################################################################################################
 # Makefile dependencies

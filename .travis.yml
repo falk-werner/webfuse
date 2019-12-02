@@ -16,13 +16,14 @@ env:
     - PARALLELMFLAGS="-j4"
     - PORTABLE_WORSPACE=1
   matrix:
-    - BUILDTYPE=Debug      MARCH=amd64   CHECK_TARGET=memcheck COVERAGE=ON
-    - BUILDTYPE=Release    MARCH=amd64   CHECK_TARGET=memcheck COVERAGE=OFF
-    - BUILDTYPE=Debug      MARCH=arm32v7 CHECK_TARGET=check COVERAGE=OFF
-    - BUILDTYPE=MinSizeRel MARCH=arm32v7 CHECK_TARGET=check COVERAGE=OFF
+    - BUILDTYPE=Debug      MARCH=amd64   CHECK_TARGET=memcheck
+    - BUILDTYPE=Coverage   MARCH=amd64   CHECK_TARGET=check
+    - BUILDTYPE=Release    MARCH=amd64   CHECK_TARGET=memcheck
+    - BUILDTYPE=Debug      MARCH=arm32v7 CHECK_TARGET=check
+    - BUILDTYPE=MinSizeRel MARCH=arm32v7 CHECK_TARGET=check
 before_script:
-- make BUILDTYPE=$BUILDTYPE MARCH=$MARCH COVERAGE=$COVERAGE
+- make BUILDTYPE=$BUILDTYPE MARCH=$MARCH
 script:
-- make BUILDTYPE=$BUILDTYPE MARCH=$MARCH COVERAGE=$COVERAGE $CHECK_TARGET
+- make BUILDTYPE=$BUILDTYPE MARCH=$MARCH $CHECK_TARGET
 after_success:
 - bash <(curl -s https://codecov.io/bash)

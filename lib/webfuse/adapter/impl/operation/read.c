@@ -4,9 +4,9 @@
 #include <string.h>
 #include <limits.h>
 #include <jansson.h>
-#include <libwebsockets.h>
 
 #include "webfuse/adapter/impl/jsonrpc/proxy.h"
+#include "webfuse/core/base64.h"
 
 #define WF_MAX_READ_LENGTH 4096
 
@@ -17,7 +17,7 @@ static char * wf_impl_fill_buffer(
 	wf_status * status)
 {
 	*status = WF_GOOD;
-	char * buffer = malloc(count + 1);
+	char * buffer = malloc(count);
 
 	if ((NULL != buffer) && (0 < count))
 	{
@@ -27,7 +27,7 @@ static char * wf_impl_fill_buffer(
 		}
 		else if (0 == strcmp("base64", format))
 		{
-			lws_b64_decode_string(data, buffer, count + 1);
+			wf_base64_decode(data, strlen(data), (uint8_t *) buffer, count);
 		}
 		else
 		{

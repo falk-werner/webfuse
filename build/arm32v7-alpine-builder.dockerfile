@@ -3,7 +3,7 @@ ARG CODENAME=3.9
 
 FROM ${REGISTRY_PREFIX}arm32v7/alpine:${CODENAME} as builder
 
-ARG QEMU_VERSION_=v3.1.0-2
+ARG QEMU_VERSION_=v4.1.0-1
 
 COPY docker/qemu-arm-static-$QEMU_VERSION_ /usr/bin/qemu-arm-static
 
@@ -44,7 +44,7 @@ RUN set -x \
   && rm -rf "$builddir" \
   && apk del .build-deps
 
-ARG GTEST_VERSION=1.8.1
+ARG GTEST_VERSION=1.10.0
 
 RUN set -x \
   && builddir="/tmp/out" \
@@ -54,22 +54,24 @@ RUN set -x \
   && make "$PARALLELMFLAGS" install \
   && rm -rf "$builddir"
 
-ARG FUSE_VERSION=3.1.1
+ARG FUSE_VERSION=3.8.0
 
 RUN set -x \
-  && builddeps="libtool automake autoconf gettext-dev m4 linux-headers" \
+  && builddeps="linux-headers eudev-dev python3 py3-pip py3-setuptools py3-cryptography" \
   && apk add --no-cache --virtual .build-deps $builddeps \
-  && cd "/usr/local/src/libfuse-fuse-$FUSE_VERSION" \
-  && ./makeconf.sh \
+  && pip3 install meson \
   && builddir="/tmp/out" \
   && mkdir -p "$builddir" \
   && cd "$builddir" \
-  && "/usr/local/src/libfuse-fuse-$FUSE_VERSION/configure" \
-  && make "$PARALLELMFLAGS" install \
+  && meson "/usr/local/src/libfuse-fuse-$FUSE_VERSION" \
+  && meson configure -Dexamples=false \
+  && ninja \
+  && ninja install \
+  && pip3 uninstall -y meson \
   && rm -rf "$builddir" \
   && apk del .build-deps
 
-ARG WEBSOCKETS_VERSION=3.1.0
+ARG WEBSOCKETS_VERSION=3.2.0
 
 RUN set -x \
   && apk add --no-cache \

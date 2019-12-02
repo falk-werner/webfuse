@@ -409,19 +409,22 @@ By default, unit tests and example application are enabled. You can disable them
 
 #### libfuse
 
-    wget -O fuse-3.1.1.tar.gz https://github.com/libfuse/libfuse/archive/fuse-3.1.1.tar.gz
-    tar -xf fuse-3.1.1.tar.gz
-    cd libfuse-fuse-3.1.1
-    ./makeconf.sh
-    ./configure
-    make
-    sudo make install
+To install libfuse, meson is needed. Please refer to [meson quick guide](https://mesonbuild.com/Quick-guide.html) for setup instructions.
+
+    wget -O fuse-3.8.0.tar.gz https://github.com/libfuse/libfuse/archive/fuse-3.8.0.tar.gz
+    tar -xf fuse-3.8.0.tar.gz
+    cd libfuse-fuse-3.8.0
+    mkdir .build
+    cd .build
+    meson ..
+    ninja
+    sudo ninja install
 
 #### libwebsockets
 
-    wget -O libwebsockets-3.1.0.tar.gz https://github.com/warmcat/libwebsockets/archive/v3.1.0.tar.gz
-    tar -xf libwebsockets-3.1.0.tar.gz
-    cd libwebsockets-3.1.0
+    wget -O libwebsockets-3.2.0.tar.gz https://github.com/warmcat/libwebsockets/archive/v3.2.0.tar.gz
+    tar -xf libwebsockets-3.2.0.tar.gz
+    cd libwebsockets-3.2.0
     mkdir .build
     cd .build
     cmake ..
@@ -443,9 +446,9 @@ By default, unit tests and example application are enabled. You can disable them
 
 Installation of GoogleTest is optional webfuse library, but required to compile tests.
 
-    wget -O gtest-1.8.1.tar.gz https://github.com/google/googletest/archive/release-1.8.1.tar.gz
-    tar -xf gtest-1.8.1.tar.gz
-    cd googletest-release-1.8.1
+    wget -O gtest-1.10.0.tar.gz https://github.com/google/googletest/archive/release-1.10.0.tar.gz
+    tar -xf gtest-1.10.0.tar.gz
+    cd googletest-release-1.10.0
     mkdir .build
     cd .build
     cmake ..

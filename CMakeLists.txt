@@ -3,7 +3,9 @@ project(webfuse VERSION 0.2.0 DESCRIPTION "Websocket filesystem based on libfuse
 
 option(WITHOUT_TESTS   "disable unit tests"   OFF)
 option(WITHOUT_EXAMPLE "disable example"      OFF)
-option(WITH_COVERAGE   "enable code coverage" OFF)
+
+set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+include(coverage)
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
@@ -17,30 +19,11 @@ pkg_check_modules(UUID REQUIRED uuid)
 add_definitions(-D_FILE_OFFSET_BITS=64)
 
 set(CMAKE_C_STANDARD 99)
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(C_WARNINGS -Wall -Wextra)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-
-if(("${CMAKE_BUILD_TYPE}" STREQUAL "Debug") AND WITHOUT_COVERAGE)
-
-add_definitions(
-	-pg
-	--coverage
-	-fprofile-arcs
-	-ftest-coverage
-)
-
-if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
-	link_libraries(gcov)
-else()
-	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} --coverage")
-endif()
-
-set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pg -fprofile-arcs")
-
-endif()
 
 include_directories(
 	"include"
@@ -77,6 +60,7 @@ add_library(webfuse-core STATIC
 	lib/webfuse/core/status.c
 	lib/webfuse/core/string.c
 	lib/webfuse/core/path.c
+	lib/webfuse/core/base64.c
 	lib/webfuse/core/lws_log.c
 )
 
@@ -300,6 +284,7 @@ add_executable(alltests
 	test/core/test_string.cc
 	test/core/test_slist.cc
 	test/core/test_path.cc
+	test/core/test_base64.cc
 	test/core/test_status.cc
 	test/core/test_message.cc
 	test/core/test_message_queue.cc
