@@ -54,22 +54,20 @@ RUN set -x \
   && make "$PARALLELMFLAGS" install \
   && rm -rf "$builddir"
 
-RUN set -x \
-  && builddeps="linux-headers udev eudev-dev python3 py3-pip py3-setuptools py3-cryptography ninja" \
-  && apk add --no-cache --virtual .build-deps $builddeps \
-  && pip3 install meson
-
 ARG FUSE_VERSION=3.8.0
 
 RUN set -x \
-  && builddeps="libtool automake autoconf gettext-dev m4" \
+  && builddeps="linux-headers eudev-dev python3 py3-pip py3-setuptools py3-cryptography" \
   && apk add --no-cache --virtual .build-deps $builddeps \
+  && pip3 install meson \
   && builddir="/tmp/out" \
   && mkdir -p "$builddir" \
   && cd "$builddir" \
   && meson "/usr/local/src/libfuse-fuse-$FUSE_VERSION" \
+  && meson configure -Dexamples=false \
   && ninja \
   && ninja install \
+  && pip3 uninstall -y meson \
   && rm -rf "$builddir" \
   && apk del .build-deps
 
