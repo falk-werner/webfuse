@@ -5,7 +5,7 @@
 extern "C" {
 #endif
 
-#define FUSE_USE_VERSION 38
+#define FUSE_USE_VERSION 31
 #include <fuse_lowlevel.h>
 
 #ifdef __cplusplus
