@@ -9,6 +9,7 @@ webfuse combines libwebsockets and libfuse. It allows ot attach a remote filesys
 ## Contents
 
 -   [Motivation](#Motivation)
+-   [Fellow Repositories](#Fellow-Repositories)
 -   [Concept](#Concept)
 -   [Similar Projects](#Similar-Projects)
 -   [API](#API)
@@ -31,6 +32,12 @@ However at least one (unecessary) copy of the upload file is needed on the devic
 To avoid Steps 1 and 2, it would be great to keep the update file entirely in web server, just like [NFS](https://en.wikipedia.org/wiki/Network_File_System) or [WebDAV](https://wiki.archlinux.org/index.php/WebDAV). Unfortunately, NFS is not based on any protocol, natively usable by a web application. WebDAV is based on HTTP, but it needs a server providing the update file.
 
 webfuse solves this problem by using the [WebSocket](https://en.wikipedia.org/wiki/WebSocket) protocol. The emdedded device runs a service, known as webfuse adapter, awaiting incoming connections, e.g. from a web browser. The browser acts as a file system provider, providing the update file to the device.
+
+## Fellow Repositories
+
+-   **[webfuse-example](https://github.com/falk-werner/webfuse-example)**: Example of webfuse
+-   **[webfused](https://github.com/falk-werner/webfused)**: Reference implementation of webfuse daemon
+-   **[webfuse-provider](https://github.com/falk-werner/webfuse-provider)**: Reference implementation of webfuse provider
 
 ## Concept
 
