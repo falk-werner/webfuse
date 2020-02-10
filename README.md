@@ -401,6 +401,16 @@ By default, unit tests are enabled. You can disable them using the following cma
 -   **WITHOUT_TESTS**: disable tests  
     `cmake -DWITHOUT_TESTS=ON ..`
 
+Since webfuse consists of two libraries, it is possible to disable one of them
+in order to reduce build dependencies.  
+*Note that unit tests are only available, when both libraries are built.*
+
+-   **WITHOUT_ADAPTER**: omit adapter library  
+    `cmake -DWITHOUT_ADAPTER=ON`
+
+-   **WIHTOU_PROVIDER**: omit provider library
+    `cmake -DWITHOUT_PROVIDER=ON`
+
 ## Dependencies
 
 -   [libfuse3](https://github.com/libfuse/libfuse/)

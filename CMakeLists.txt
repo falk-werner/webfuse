@@ -1,7 +1,9 @@
 cmake_minimum_required (VERSION 3.10)
 project(webfuse VERSION 0.2.0 DESCRIPTION "Websocket filesystem based on libfuse")
 
-option(WITHOUT_TESTS   "disable unit tests"   OFF)
+option(WITHOUT_TESTS    "disable unit tests"   OFF)
+option(WITHOUT_ADAPTER  "disable adapter library" OFF)
+option(WITHOUT_PROVIDER "disable provider library" OFF)
 
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 include(coverage)
@@ -10,10 +12,8 @@ set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 
 find_package(PkgConfig REQUIRED)
-pkg_check_modules(FUSE3 REQUIRED fuse3)
 pkg_check_modules(LWS REQUIRED libwebsockets)
 pkg_check_modules(JANSSON REQUIRED jansson)
-pkg_check_modules(UUID REQUIRED uuid)
 
 add_definitions(-D_FILE_OFFSET_BITS=64)
 
@@ -26,27 +26,14 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 include_directories(
 	"include"
-	${FUSE3_INCLUDE_DIRS} 
 	${LWS_INCLUDE_DIRS} 
 	${JANSSON_INCLUDE_DIRS}
-	${UUID_INCLUDE_DIRS}
-)
-
-set(EXTRA_LIBS 
-	${EXTRA_LIBS}
-	${FUSE3_LIBRARIES}
-	${LWS_LIBRARIES}
-	${JANSSON_LIBRARIES}
-	${UUID_LIBRARIES}
-	${CMAKE_THREAD_LIBS_INIT}
 )
 
 add_compile_options(
 	${C_WARNINGS}
-	${FUSE3_CFLAGS_OTHER}
 	${LWS_CFLAGS_OTHER}
 	${JANSSON_CFLAGS_OTHER}
-	${UUID_CFLAGS_OTHER}
 	"-pthread"
 )
 
@@ -71,6 +58,11 @@ install(DIRECTORY include/webfuse/core DESTINATION include/webfuse)
 
 
 # libwebfuse-adapter
+
+if(NOT WITHOUT_ADAPTER)
+
+pkg_check_modules(FUSE3 REQUIRED fuse3)
+pkg_check_modules(UUID REQUIRED uuid)
 
 add_library(webfuse-adapter-static STATIC 
 	lib/webfuse/adapter/api.c
@@ -101,13 +93,34 @@ add_library(webfuse-adapter-static STATIC
 	lib/webfuse/adapter/impl/jsonrpc/util.c
 )
 
+target_include_directories(webfuse-adapter-static PRIVATE
+	lib
+	${FUSE3_INCLUDE_DIRS} 
+	${UUID_INCLUDE_DIRS}
+)
+
+target_compile_options(webfuse-adapter-static PUBLIC
+	${FUSE3_CFLAGS_OTHER}
+	${UUID_CFLAGS_OTHER}
+)
+
 set_target_properties(webfuse-adapter-static PROPERTIES OUTPUT_NAME webfuse-adapter)
 set_target_properties(webfuse-adapter-static PROPERTIES C_VISIBILITY_PRESET hidden)
-target_include_directories(webfuse-adapter-static PUBLIC lib)
 
 add_library(webfuse-adapter SHARED 
 	lib/webfuse/adapter/api.c
 )
+
+target_include_directories(webfuse-adapter PRIVATE
+	${FUSE3_INCLUDE_DIRS} 
+	${UUID_INCLUDE_DIRS}
+)
+
+target_compile_options(webfuse-adapter PUBLIC
+	${FUSE3_CFLAGS_OTHER}
+	${UUID_CFLAGS_OTHER}
+)
+
 
 set_target_properties(webfuse-adapter PROPERTIES VERSION ${PROJECT_VERSION})
 set_target_properties(webfuse-adapter PROPERTIES SOVERSION 0)
@@ -135,7 +148,12 @@ install(FILES include/webfuse_adapter.h DESTINATION include)
 install(DIRECTORY include/webfuse/adapter DESTINATION include/webfuse)
 install(FILES "${PROJECT_BINARY_DIR}/libwebfuse-adapter.pc" DESTINATION lib${LIB_SUFFIX}/pkgconfig)
 
+endif(NOT WITHOUT_ADAPTER)
+
+
 #libwebfuse-provider
+
+if(NOT WITHOUT_PROVIDER)
 
 add_library(webfuse-provider-static STATIC 
 	lib/webfuse/provider/api.c
@@ -189,9 +207,11 @@ install(FILES include/webfuse_provider.h DESTINATION include)
 install(DIRECTORY include/webfuse/provider DESTINATION include/webfuse)
 install(FILES "${PROJECT_BINARY_DIR}/libwebfuse-provider.pc" DESTINATION lib${LIB_SUFFIX}/pkgconfig)
 
+endif(NOT WITHOUT_PROVIDER)
+
 # tests
 
-if(NOT WITHOUT_TESTS)
+if(NOT WITHOUT_TESTS AND NOT WITHOUT_ADAPTER AND NOT WITHOUT_PROVIDER)
 
 include (CTest)
 
@@ -234,7 +254,29 @@ add_executable(alltests
 	test/integration/provider.cc
 )
 
-target_link_libraries(alltests PUBLIC webfuse-adapter-static webfuse-provider-static webfuse-core ${EXTRA_LIBS} ${GMOCK_LIBRARIES} ${GTEST_LIBRARIES})
+target_include_directories(alltests PRIVATE
+	${FUSE3_INCLUDE_DIRS} 
+	${UUID_INCLUDE_DIRS}
+)
+
+target_compile_options(alltests PUBLIC
+	${FUSE3_CFLAGS_OTHER}
+	${UUID_CFLAGS_OTHER}
+)
+
+target_link_libraries(alltests PUBLIC 
+	webfuse-adapter-static
+	webfuse-provider-static
+	webfuse-core
+	${FUSE3_LIBRARIES}
+	${LWS_LIBRARIES}
+	${JANSSON_LIBRARIES}
+	${UUID_LIBRARIES}
+	${CMAKE_THREAD_LIBS_INIT}
+	${GMOCK_LIBRARIES}
+	${GTEST_LIBRARIES}
+)
+
 target_include_directories(alltests PUBLIC test lib ${GMOCK_INCLUDE_DIRS} ${GTEST_INCLUDE_DIRS})
 target_compile_options(alltests PUBLIC ${GMOCK_CFLAGS} ${GTEST_CFLAGS})
 
@@ -255,4 +297,4 @@ add_custom_target(coverage-report
 )
 add_dependencies(coverage-report coverage)
 
-endif(NOT WITHOUT_TESTS)
+endif(NOT WITHOUT_TESTS AND NOT WITHOUT_ADAPTER AND NOT WITHOUT_PROVIDER)
