@@ -2,7 +2,6 @@ cmake_minimum_required (VERSION 3.10)
 project(webfuse VERSION 0.2.0 DESCRIPTION "Websocket filesystem based on libfuse")
 
 option(WITHOUT_TESTS   "disable unit tests"   OFF)
-option(WITHOUT_EXAMPLE "disable example"      OFF)
 
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 include(coverage)

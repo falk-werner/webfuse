@@ -13,7 +13,7 @@ webfuse combines libwebsockets and libfuse. It allows ot attach a remote filesys
 -   [Concept](#Concept)
 -   [Similar Projects](#Similar-Projects)
 -   [API](#API)
--   [Build and run](#Build-and-run)
+-   [Build](#Build)
 -   [Dependencies](#Dependencies)
 
 ## Motivation
@@ -384,7 +384,7 @@ The authenticator type **username** is used to authenticate via username and pas
 
 **Note** that no further encryption is done, so this authenticator type should not be used over unencrypted websocket connections.
 
-## Build and run
+## Build
 
 To install dependencies, see below.
 
@@ -392,18 +392,14 @@ To install dependencies, see below.
     mkdir .build
     cd .build
     cmake ..
-    mkdir test
-    ./webfused -m test --document_root=../exmaple/daemon/www --port=4711
+    make
 
 ### Build options
 
-By default, unit tests and example application are enabled. You can disable them using the following cmake options:
+By default, unit tests are enabled. You can disable them using the following cmake options:
 
 -   **WITHOUT_TESTS**: disable tests  
     `cmake -DWITHOUT_TESTS=ON ..`
-
--   **WITHOUT_EXAMPLE**: disable example  
-    `cmake -DWITHOUD_EXAMPLE=ON ..`
 
 ## Dependencies
 
