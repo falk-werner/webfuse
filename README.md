@@ -9,10 +9,11 @@ webfuse combines libwebsockets and libfuse. It allows ot attach a remote filesys
 ## Contents
 
 -   [Motivation](#Motivation)
+-   [Fellow Repositories](#Fellow-Repositories)
 -   [Concept](#Concept)
 -   [Similar Projects](#Similar-Projects)
 -   [API](#API)
--   [Build and run](#Build-and-run)
+-   [Build](#Build)
 -   [Dependencies](#Dependencies)
 
 ## Motivation
@@ -31,6 +32,12 @@ However at least one (unecessary) copy of the upload file is needed on the devic
 To avoid Steps 1 and 2, it would be great to keep the update file entirely in web server, just like [NFS](https://en.wikipedia.org/wiki/Network_File_System) or [WebDAV](https://wiki.archlinux.org/index.php/WebDAV). Unfortunately, NFS is not based on any protocol, natively usable by a web application. WebDAV is based on HTTP, but it needs a server providing the update file.
 
 webfuse solves this problem by using the [WebSocket](https://en.wikipedia.org/wiki/WebSocket) protocol. The emdedded device runs a service, known as webfuse adapter, awaiting incoming connections, e.g. from a web browser. The browser acts as a file system provider, providing the update file to the device.
+
+## Fellow Repositories
+
+-   **[webfuse-example](https://github.com/falk-werner/webfuse-example)**: Example of webfuse
+-   **[webfused](https://github.com/falk-werner/webfused)**: Reference implementation of webfuse daemon
+-   **[webfuse-provider](https://github.com/falk-werner/webfuse-provider)**: Reference implementation of webfuse provider
 
 ## Concept
 
@@ -377,7 +384,7 @@ The authenticator type **username** is used to authenticate via username and pas
 
 **Note** that no further encryption is done, so this authenticator type should not be used over unencrypted websocket connections.
 
-## Build and run
+## Build
 
 To install dependencies, see below.
 
@@ -385,18 +392,14 @@ To install dependencies, see below.
     mkdir .build
     cd .build
     cmake ..
-    mkdir test
-    ./webfused -m test --document_root=../exmaple/daemon/www --port=4711
+    make
 
 ### Build options
 
-By default, unit tests and example application are enabled. You can disable them using the following cmake options:
+By default, unit tests are enabled. You can disable them using the following cmake options:
 
 -   **WITHOUT_TESTS**: disable tests  
     `cmake -DWITHOUT_TESTS=ON ..`
-
--   **WITHOUT_EXAMPLE**: disable example  
-    `cmake -DWITHOUD_EXAMPLE=ON ..`
 
 ## Dependencies
 
