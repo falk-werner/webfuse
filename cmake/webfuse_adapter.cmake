@@ -82,9 +82,10 @@ Libs: -L\${libdir} -lwebfuse-adapter -l${FUSE3_LIBRARIES} -l${LWS_LIBRARIES} -l$
 Cflags: -I\${includedir}"
 )
 
-install(TARGETS webfuse-adapter DESTINATION lib${LIB_SUFFIX})
-install(FILES include/webfuse_adapter.h DESTINATION include)
-install(DIRECTORY include/webfuse/adapter DESTINATION include/webfuse)
-install(FILES "${PROJECT_BINARY_DIR}/libwebfuse-adapter.pc" DESTINATION lib${LIB_SUFFIX}/pkgconfig)
+install(TARGETS webfuse-adapter DESTINATION lib${LIB_SUFFIX} COMPONENT libraries)
+install(FILES "${PROJECT_BINARY_DIR}/libwebfuse-adapter.pc" DESTINATION lib${LIB_SUFFIX}/pkgconfig COMPONENT libraries)
+
+install(FILES include/webfuse_adapter.h DESTINATION include COMPONENT headers)
+install(DIRECTORY include/webfuse/adapter DESTINATION include/webfuse COMPONENT headers)
 
 endif(NOT WITHOUT_ADAPTER)

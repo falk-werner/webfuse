@@ -47,9 +47,10 @@ Libs: -L\${libdir} -lwebfuse-provider  -l${LWS_LIBRARIES} -l${JANSSON_LIBRARIES}
 Cflags: -I\${includedir}"
 )
 
-install(TARGETS webfuse-provider DESTINATION lib${LIB_SUFFIX})
-install(FILES include/webfuse_provider.h DESTINATION include)
-install(DIRECTORY include/webfuse/provider DESTINATION include/webfuse)
-install(FILES "${PROJECT_BINARY_DIR}/libwebfuse-provider.pc" DESTINATION lib${LIB_SUFFIX}/pkgconfig)
+install(TARGETS webfuse-provider DESTINATION lib${LIB_SUFFIX} COMPONENT libraries)
+install(FILES "${PROJECT_BINARY_DIR}/libwebfuse-provider.pc" DESTINATION lib${LIB_SUFFIX}/pkgconfig COMPONENT libraries)
+
+install(FILES include/webfuse_provider.h DESTINATION include COMPONENT headers)
+install(DIRECTORY include/webfuse/provider DESTINATION include/webfuse COMPONENT headers)
 
 endif(NOT WITHOUT_PROVIDER)

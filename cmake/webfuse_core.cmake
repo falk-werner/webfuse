@@ -15,4 +15,4 @@ set_target_properties(webfuse-core PROPERTIES OUTPUT_NAME webfuse-core)
 target_include_directories(webfuse-core PUBLIC lib)
 set_target_properties(webfuse-core PROPERTIES C_VISIBILITY_PRESET hidden)
 
-install(DIRECTORY include/webfuse/core DESTINATION include/webfuse)
+install(DIRECTORY include/webfuse/core DESTINATION include/webfuse COMPONENT headers)
