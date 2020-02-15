@@ -4,6 +4,7 @@
 #include "webfuse/adapter/impl/server_protocol.h"
 #include "webfuse/adapter/impl/server_config.h"
 #include "webfuse/adapter/impl/credentials.h"
+#include "webfuse/adapter/impl/mountpoint.h"
 
 // server
 
@@ -133,4 +134,27 @@ char const * wf_credentials_get(
     char const * key)
 {
     return wf_impl_credentials_get(credentials, key);
+}
+
+// mountpoint
+
+struct wf_mountpoint *
+wf_mountpoint_create(
+    char const * path)
+{
+    return wf_impl_mountpoint_create(path);
+}
+
+void 
+wf_mountpoint_dispose(
+    struct wf_mountpoint * mountpoint)
+{
+    wf_impl_mountpoint_dispose(mountpoint);
+}
+
+char const * 
+wf_mountpoint_get_path(
+    struct wf_mountpoint const * mountpoint)
+{
+    return wf_impl_mountpoint_get_path(mountpoint);
 }

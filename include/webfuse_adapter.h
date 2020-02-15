@@ -9,5 +9,6 @@
 #include <webfuse/adapter/server_protocol.h>
 #include <webfuse/adapter/authenticate.h>
 #include <webfuse/adapter/credentials.h>
+#include <webfuse/adapter/mountpoint.h>
 
 #endif

@@ -26,6 +26,7 @@ add_executable(alltests
 	test/adapter/test_credentials.cc
 	test/adapter/test_authenticator.cc
 	test/adapter/test_authenticators.cc
+	test/adapter/test_mountpoint.cc
 	test/adapter/test_fuse_req.cc
 	test/adapter/jsonrpc/test_util.cc
 	test/adapter/jsonrpc/test_is_request.cc
