@@ -158,3 +158,11 @@ wf_mountpoint_get_path(
 {
     return wf_impl_mountpoint_get_path(mountpoint);
 }
+
+void
+wf_mountpoint_set_ondispose(
+    struct wf_mountpoint * mountpoint,
+    wf_mountpoint_ondispose_fn * ondispose)
+{
+    wf_impl_mountpoint_set_ondispose(mountpoint, ondispose);
+}
