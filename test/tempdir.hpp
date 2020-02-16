@@ -9,7 +9,7 @@ class TempDir
     TempDir(TempDir const &) = delete;
     TempDir & operator=(TempDir const &) = delete;
 public:
-    TempDir(char const * prefix);
+    explicit TempDir(char const * prefix);
     ~TempDir();
     char const * path();
 private:
