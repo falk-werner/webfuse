@@ -23,6 +23,7 @@ add_executable(alltests
 	test/core/test_message_queue.cc
 	test/adapter/test_response_parser.cc
 	test/adapter/test_server.cc
+	test/adapter/test_server_config.cc
 	test/adapter/test_timepoint.cc
 	test/adapter/test_timer.cc
 	test/adapter/test_credentials.cc
