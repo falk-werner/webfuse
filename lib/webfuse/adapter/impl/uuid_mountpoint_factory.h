@@ -10,14 +10,14 @@ struct wf_mountpoint;
 
 extern void *
 wf_impl_uuid_mountpoint_factory_create(
-    char * root_path);
+    char const * root_path);
 
 extern void
 wf_impl_uuid_mountpoint_factory_dispose(
     void * user_data);
 
 extern struct wf_mountpoint *
-wf_impl_uuid_mountpoint_factory_create_mountpiont(
+wf_impl_uuid_mountpoint_factory_create_mountpoint(
     char const * filesystem,
     void * user_data);
 
