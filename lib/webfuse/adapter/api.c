@@ -160,9 +160,10 @@ wf_mountpoint_get_path(
 }
 
 void
-wf_mountpoint_set_ondispose(
+wf_mountpoint_set_userdata(
     struct wf_mountpoint * mountpoint,
-    wf_mountpoint_ondispose_fn * ondispose)
+    void * user_data,
+    wf_mountpoint_userdata_dispose_fn * dispose)
 {
-    wf_impl_mountpoint_set_ondispose(mountpoint, ondispose);
+    wf_impl_mountpoint_set_userdata(mountpoint, user_data, dispose);
 }

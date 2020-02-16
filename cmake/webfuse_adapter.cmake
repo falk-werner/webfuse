@@ -16,6 +16,8 @@ add_library(webfuse-adapter-static STATIC
 	lib/webfuse/adapter/impl/credentials.c
 	lib/webfuse/adapter/impl/operations.c
 	lib/webfuse/adapter/impl/mountpoint.c
+	lib/webfuse/adapter/impl/uuid_mountpoint_factory.c
+	lib/webfuse/adapter/impl/uuid_mountpoint.c
 	lib/webfuse/adapter/impl/time/timepoint.c
 	lib/webfuse/adapter/impl/time/timer.c
 	lib/webfuse/adapter/impl/time/timeout_manager.c

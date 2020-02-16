@@ -21,9 +21,10 @@ wf_impl_mountpoint_get_path(
     struct wf_mountpoint const * mountpoint);
 
 extern void
-wf_impl_mountpoint_set_ondispose(
-    struct wf_mountpoint * mointpoint,
-    wf_mountpoint_ondispose_fn * ondispose);
+wf_impl_mountpoint_set_userdata(
+    struct wf_mountpoint * mountpoint,
+    void * user_data,
+    wf_mountpoint_userdata_dispose_fn * dispose);
 
 #ifdef __cplusplus
 }

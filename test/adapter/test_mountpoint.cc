@@ -4,17 +4,17 @@
 
 namespace
 {
-    class MockMountpointDisposer
+    class MockUserDataDisposer
     {
     public:
-        MOCK_METHOD1(ondispose, void(wf_mountpoint * mountpoint));
+        MOCK_METHOD1(dispose, void(void * mountpoint));
     };
 
-    MockMountpointDisposer * global_disposer = nullptr;
+    MockUserDataDisposer * global_disposer = nullptr;
 
-    void ondispose(wf_mountpoint * mountpoint)
+    void ondispose(void * user_data)
     {
-        global_disposer->ondispose(mountpoint);
+        global_disposer->dispose(user_data);
     }
 }
 
@@ -32,14 +32,16 @@ TEST(mountpoint, get_path)
 
 TEST(mountpoint, ondispose)
 {
-    MockMountpointDisposer disposer;
+    MockUserDataDisposer disposer;
     global_disposer = &disposer;
 
     wf_mountpoint * mountpoint = wf_mountpoint_create("/some/path");
     ASSERT_NE(nullptr, mountpoint);
 
-    wf_mountpoint_set_ondispose(mountpoint, ondispose);
-    EXPECT_CALL(disposer, ondispose(mountpoint)).Times(1);
+    int value = 42;
+    void * user_data = reinterpret_cast<void*>(&value);
+    wf_mountpoint_set_userdata(mountpoint, user_data, ondispose);
+    EXPECT_CALL(disposer, dispose(user_data)).Times(1);
 
     wf_mountpoint_dispose(mountpoint);
 }

@@ -9,8 +9,8 @@ extern "C"
 struct wf_mountpoint;
 
 typedef void
-wf_mountpoint_ondispose_fn(
-    struct wf_mountpoint * mountpoint);
+wf_mountpoint_userdata_dispose_fn(
+    void * user_data);
 
 extern struct wf_mountpoint *
 wf_mountpoint_create(
@@ -25,9 +25,10 @@ wf_mountpoint_get_path(
     struct wf_mountpoint const * mountpoint);
 
 extern void
-wf_mountpoint_set_ondispose(
-    struct wf_mountpoint * mountpoint,
-    wf_mountpoint_ondispose_fn * ondispose);
+wf_mountpoint_set_userdata(
+    struct wf_mountpoint * mointpoint,
+    void * user_data,
+    wf_mountpoint_userdata_dispose_fn * dispose);
 
 #ifdef __cplusplus
 }
