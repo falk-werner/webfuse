@@ -138,7 +138,7 @@ TEST(server_config, set_mountpoint)
     wf_server_config_dispose(config);
 }
 
-TEST(server_cnfig, set_mounpoint_factory)
+TEST(server_config, set_mounpoint_factory)
 {
     wf_server_config * config = wf_server_config_create();
     ASSERT_NE(nullptr, config);
@@ -149,7 +149,7 @@ TEST(server_cnfig, set_mounpoint_factory)
     int value = 42;
     void * user_data = reinterpret_cast<void*>(&value);
     wf_server_config_set_mountpoint_factory(config, &create_mountpoint, user_data);
-    ASSERT_NE(&create_mountpoint, config->mountpoint_factory.create_mountpoint);
+    ASSERT_EQ(&create_mountpoint, config->mountpoint_factory.create_mountpoint);
     ASSERT_EQ(user_data, config->mountpoint_factory.user_data);
     ASSERT_EQ(nullptr, config->mountpoint_factory.dispose);
 
