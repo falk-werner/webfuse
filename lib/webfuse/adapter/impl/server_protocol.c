@@ -9,6 +9,7 @@
 
 #include "webfuse/adapter/impl/credentials.h"
 #include "webfuse/adapter/impl/jsonrpc/request.h"
+#include "webfuse/adapter/impl/uuid_mountpoint_factory.h"
 
 static int wf_impl_server_protocol_callback(
 	struct lws * wsi,
@@ -38,9 +39,9 @@ static int wf_impl_server_protocol_callback(
                 &protocol->session_manager,
                 wsi,
                 &protocol->authenticators,
+                &protocol->mountpoint_factory,
                 &protocol->timeout_manager,
-                &protocol->server,
-                protocol->mount_point);
+                &protocol->server);
 
             if (NULL != session)
             {
@@ -81,11 +82,33 @@ struct wf_server_protocol * wf_impl_server_protocol_create(
     struct wf_server_protocol * protocol = malloc(sizeof(struct wf_server_protocol));
     if (NULL != protocol)
     {
-        wf_impl_server_protocol_init(protocol, mount_point);
+        struct wf_impl_mountpoint_factory mountpoint_factory;
+        wf_impl_uuid_mountpoint_factory_init(&mountpoint_factory, mount_point);
+
+        wf_impl_server_protocol_init(protocol, &mountpoint_factory);
     }
 
     return protocol;
 }
+
+struct wf_server_protocol * wf_impl_server_protocol_create2(
+    wf_create_mountpoint_fn * create_mountpoint,
+    void * create_mountpoint_context)
+{
+    struct wf_server_protocol * protocol = malloc(sizeof(struct wf_server_protocol));
+    if (NULL != protocol)
+    {
+        struct wf_impl_mountpoint_factory mountpoint_factory;
+        wf_impl_mountpoint_factory_init(&mountpoint_factory,
+            create_mountpoint, create_mountpoint_context, NULL);
+
+        wf_impl_server_protocol_init(protocol, &mountpoint_factory);
+    }
+
+    return protocol;
+
+}
+
 
 void wf_impl_server_protocol_dispose(
     struct wf_server_protocol * protocol)
@@ -203,13 +226,13 @@ static void wf_impl_server_protocol_add_filesystem(
 
 }
 
-
 void wf_impl_server_protocol_init(
     struct wf_server_protocol * protocol,
-    char * mount_point)
+    struct wf_impl_mountpoint_factory * mountpoint_factory)
 {
-    protocol->mount_point = strdup(mount_point);
     protocol->is_operational = false;
+
+    wf_impl_mountpoint_factory_move(mountpoint_factory, &protocol->mountpoint_factory);
 
     wf_impl_timeout_manager_init(&protocol->timeout_manager);
     wf_impl_session_manager_init(&protocol->session_manager);
@@ -223,13 +246,13 @@ void wf_impl_server_protocol_init(
 void wf_impl_server_protocol_cleanup(
     struct wf_server_protocol * protocol)
 {
-    free(protocol->mount_point);
     protocol->is_operational = false;
 
     wf_impl_jsonrpc_server_cleanup(&protocol->server);
     wf_impl_timeout_manager_cleanup(&protocol->timeout_manager);
     wf_impl_authenticators_cleanup(&protocol->authenticators);
     wf_impl_session_manager_cleanup(&protocol->session_manager);
+    wf_impl_mountpoint_factory_cleanup(&protocol->mountpoint_factory);
 }
 
 void wf_impl_server_protocol_add_authenticator(

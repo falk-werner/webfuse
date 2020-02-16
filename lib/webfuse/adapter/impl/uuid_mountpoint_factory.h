@@ -1,26 +1,18 @@
 #ifndef WF_IMPL_UUID_MOUNTPOINT_FACTORY_H
 #define WF_IMPL_UUID_MOUNTPOINT_FACTORY_H
 
+#include "webfuse/adapter/impl/mountpoint_factory.h"
+#include <stdbool.h>
+
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
-struct wf_mountpoint;
-
-extern void *
-wf_impl_uuid_mountpoint_factory_create(
+extern bool
+wf_impl_uuid_mountpoint_factory_init(
+    struct wf_impl_mountpoint_factory * factory,
     char const * root_path);
-
-extern void
-wf_impl_uuid_mountpoint_factory_dispose(
-    void * user_data);
-
-extern struct wf_mountpoint *
-wf_impl_uuid_mountpoint_factory_create_mountpoint(
-    char const * filesystem,
-    void * user_data);
-
 
 #ifdef __cplusplus
 }

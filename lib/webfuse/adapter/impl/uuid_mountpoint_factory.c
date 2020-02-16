@@ -15,8 +15,8 @@ struct wf_impl_uuid_mountpoint_factory
     bool root_created;
 };
 
-void *
-wf_impl_uuid_mountpoint_factory_create(
+static void *
+wf_impl_uuid_mountpoint_factory_create_context(
     char const * root_path)
 {
     struct wf_impl_uuid_mountpoint_factory * factory = NULL;
@@ -37,11 +37,10 @@ wf_impl_uuid_mountpoint_factory_create(
         factory->root_created = root_created;
     }
 
-
     return factory;
 }
 
-void
+static void
 wf_impl_uuid_mountpoint_factory_dispose(
     void * user_data)
 {
@@ -56,7 +55,7 @@ wf_impl_uuid_mountpoint_factory_dispose(
     free(factory);
 }
 
-struct wf_mountpoint *
+static struct wf_mountpoint *
 wf_impl_uuid_mountpoint_factory_create_mountpoint(
     char const * filesystem,
     void * user_data)
@@ -64,4 +63,22 @@ wf_impl_uuid_mountpoint_factory_create_mountpoint(
     struct wf_impl_uuid_mountpoint_factory * factory = user_data;
 
     return wf_impl_uuid_mountpoint_create(factory->root_path, filesystem);
+}
+
+bool
+wf_impl_uuid_mountpoint_factory_init(
+    struct wf_impl_mountpoint_factory * factory,
+    char const * root_path)
+{
+    void * context = wf_impl_uuid_mountpoint_factory_create_context(root_path);
+    bool const result = (NULL != context);
+
+    if (result)
+    {
+        factory->create_mountpoint = &wf_impl_uuid_mountpoint_factory_create_mountpoint;
+        factory->user_data = context;
+        factory->dispose = &wf_impl_uuid_mountpoint_factory_dispose;
+    }
+
+    return result;
 }

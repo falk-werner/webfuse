@@ -35,6 +35,13 @@ struct wf_server_protocol * wf_server_protocol_create(
     return wf_impl_server_protocol_create(mount_point);
 }
 
+struct wf_server_protocol * wf_server_protocol_create2(
+    wf_create_mountpoint_fn * create_mountpoint,
+    void * create_mountpoint_context)
+{
+    return wf_impl_server_protocol_create2(create_mountpoint, create_mountpoint_context);
+}
+
 void wf_server_protocol_dispose(
     struct wf_server_protocol * protocol)
 {
@@ -75,6 +82,15 @@ void wf_server_config_set_mountpoint(
 	char const * mount_point)
 {
     wf_impl_server_config_set_mountpoint(config, mount_point);
+}
+
+void wf_server_config_set_mountpoint_factory(
+    struct wf_server_config * config,
+    wf_create_mountpoint_fn * create_mountpoint,
+    void * user_data)
+{
+    wf_impl_server_config_set_mountpoint_factory(
+        config, create_mountpoint, user_data);
 }
 
 void wf_server_config_set_documentroot(

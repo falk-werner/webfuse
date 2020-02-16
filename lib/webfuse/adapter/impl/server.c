@@ -76,37 +76,17 @@ static struct lws_context * wf_impl_server_context_create(
 
 }
 
-static bool wf_impl_server_check_mountpoint(
-	 struct wf_server_config * config)
-{
-	bool result = false;
-
-	if (NULL != config->mount_point)
-	{
-		struct stat info;
-		int const rc = stat(config->mount_point, &info);
-		result = ((0 == rc) && (S_ISDIR(info.st_mode)));
-
-		if (!result)
-		{
-			result = (0 == mkdir(config->mount_point, 0755));
-		}
-	}
-
-	return result;
-}
-
 struct wf_server * wf_impl_server_create(
     struct wf_server_config * config)
 {
 	struct wf_server * server = NULL;
 	
-	if (wf_impl_server_check_mountpoint(config))
+	if (wf_impl_mountpoint_factory_isvalid(&config->mountpoint_factory))
 	{
 		server = malloc(sizeof(struct wf_server));
 		if (NULL != server)
 		{
-			wf_impl_server_protocol_init(&server->protocol, config->mount_point);
+			wf_impl_server_protocol_init(&server->protocol, &config->mountpoint_factory);
 			wf_impl_server_config_clone(config, &server->config);
 			wf_impl_authenticators_move(&server->config.authenticators, &server->protocol.authenticators);				
 			server->context = wf_impl_server_context_create(server);

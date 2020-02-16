@@ -27,12 +27,12 @@ struct wf_impl_session * wf_impl_session_manager_add(
     struct wf_impl_session_manager * manager,
     struct lws * wsi,
     struct wf_impl_authenticators * authenticators,
+    struct wf_impl_mountpoint_factory * mountpoint_factory,
     struct wf_impl_timeout_manager * timeout_manager,
-    struct wf_impl_jsonrpc_server * server,
-    char const * mount_point)
+    struct wf_impl_jsonrpc_server * server)
 {
     struct wf_impl_session * session = wf_impl_session_create(
-        wsi, authenticators, timeout_manager, server, mount_point); 
+        wsi, authenticators, timeout_manager, server, mountpoint_factory); 
     if (NULL != session)
     {
         wf_slist_append(&manager->sessions, &session->item);

@@ -1,4 +1,5 @@
 #include "webfuse/adapter/impl/server_config.h"
+#include "webfuse/adapter/impl/uuid_mountpoint_factory.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -20,14 +21,15 @@ void wf_impl_server_config_init(
     memset(config, 0, sizeof(struct wf_server_config));
 
     wf_impl_authenticators_init(&config->authenticators);
+    wf_impl_mountpoint_factory_init_default(&config->mountpoint_factory);
 }
 
 void wf_impl_server_config_cleanup(
     struct wf_server_config * config)
 {
     wf_impl_authenticators_cleanup(&config->authenticators);
+    wf_impl_mountpoint_factory_cleanup(&config->mountpoint_factory);
 
-    free(config->mount_point);
 	free(config->document_root);
 	free(config->key_path);
 	free(config->cert_path);
@@ -40,7 +42,6 @@ void wf_impl_server_config_clone(
 	struct wf_server_config * config,
 	struct wf_server_config * clone)
 {
-    clone->mount_point = wf_impl_server_config_strdup(config->mount_point);
 	clone->document_root = wf_impl_server_config_strdup(config->document_root);
 	clone->key_path = wf_impl_server_config_strdup(config->key_path);
 	clone->cert_path = wf_impl_server_config_strdup(config->cert_path);
@@ -48,6 +49,9 @@ void wf_impl_server_config_clone(
 	clone->port = config->port;
 
     wf_impl_authenticators_clone(&config->authenticators, &clone->authenticators);
+
+    // ToDo: remove this: move is not clone :-/
+    wf_impl_mountpoint_factory_move(&config->mountpoint_factory, &clone->mountpoint_factory);
 }
 
 struct wf_server_config * wf_impl_server_config_create(void)
@@ -72,9 +76,19 @@ void wf_impl_server_config_set_mountpoint(
     struct wf_server_config * config,
 	char const * mount_point)
 {
-    free(config->mount_point);
-    config->mount_point = strdup(mount_point);
+    wf_impl_uuid_mountpoint_factory_init(&config->mountpoint_factory,
+        mount_point);
 }
+
+void wf_impl_server_config_set_mountpoint_factory(
+    struct wf_server_config * config,
+    wf_create_mountpoint_fn * create_mountpoint,
+    void * create_mountpoint_context)
+{
+    wf_impl_mountpoint_factory_init(&config->mountpoint_factory,
+        create_mountpoint, create_mountpoint_context, NULL);
+}
+
 
 void wf_impl_server_config_set_documentroot(
     struct wf_server_config * config,

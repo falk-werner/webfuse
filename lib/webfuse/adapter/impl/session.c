@@ -5,6 +5,8 @@
 #include "webfuse/adapter/impl/jsonrpc/proxy.h"
 #include "webfuse/adapter/impl/jsonrpc/request.h"
 #include "webfuse/adapter/impl/jsonrpc/response.h"
+#include "webfuse/adapter/impl/mountpoint_factory.h"
+#include "webfuse/adapter/impl/mountpoint.h"
 
 #include "webfuse/core/container_of.h"
 #include "webfuse/core/util.h"
@@ -44,7 +46,7 @@ struct wf_impl_session * wf_impl_session_create(
     struct wf_impl_authenticators * authenticators,
     struct wf_impl_timeout_manager * timeout_manager,
     struct wf_impl_jsonrpc_server * server,
-    char const * mount_point)
+    struct wf_impl_mountpoint_factory * mountpoint_factory)
 {
 
     struct wf_impl_session * session = malloc(sizeof(struct wf_impl_session));
@@ -52,11 +54,11 @@ struct wf_impl_session * wf_impl_session_create(
     {
         wf_slist_init(&session->filesystems);
         
-        session->mount_point = strdup(mount_point);
         session->wsi = wsi;
         session->is_authenticated = false;
         session->authenticators = authenticators;
         session->server = server;
+        session->mountpoint_factory = mountpoint_factory;
         wf_impl_jsonrpc_proxy_init(&session->rpc, timeout_manager, WF_DEFAULT_TIMEOUT, &wf_impl_session_send, session);
         wf_slist_init(&session->messages);
     }
@@ -88,8 +90,8 @@ void wf_impl_session_dispose(
     session->is_authenticated = false;
     session->wsi = NULL;
     session->authenticators = NULL;
+    session->mountpoint_factory = NULL;
     session->server = NULL;
-    free(session->mount_point);
     free(session);
 } 
 
@@ -106,9 +108,28 @@ bool wf_impl_session_add_filesystem(
     struct wf_impl_session * session,
     char const * name)
 {
-    struct wf_impl_filesystem * filesystem = wf_impl_filesystem_create(session, name);
-    wf_slist_append(&session->filesystems, &filesystem->item);
-    return (NULL != filesystem);
+    bool result;
+
+    struct wf_mountpoint * mountpoint = wf_impl_mountpoint_factory_create_mountpoint(session->mountpoint_factory, name);
+    result = (NULL != mountpoint);
+ 
+    if (result)
+    {
+        struct wf_impl_filesystem * filesystem = wf_impl_filesystem_create(session, name, mountpoint);
+        wf_slist_append(&session->filesystems, &filesystem->item);
+        result = (NULL != filesystem);
+    }
+    
+    // cleanup on error
+    if (!result)
+    {
+        if (NULL != mountpoint)
+        {
+            wf_impl_mountpoint_dispose(mountpoint);
+        }
+    }
+
+    return result;
 }
 
 
