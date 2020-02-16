@@ -82,11 +82,11 @@ wf_impl_uuid_mountpoint_data_dispose(
 
 	rmdir(data->full_path);
 
-	if (wf_impl_filesystem_is_link_broken(data->default_path, data->id))
+	if (wf_impl_uuid_mountpoint_is_link_broken(data->default_path, data->id))
 	{
 		unlink(data->default_path);
 
-		bool const success = wf_impl_filesystem_link_first_subdir(data->default_path, data->filesystem_path);
+		bool const success = wf_impl_uuid_mountpoint_link_first_subdir(data->default_path, data->filesystem_path);
 		if (!success)
 		{
 			rmdir(data->filesystem_path);
@@ -110,13 +110,13 @@ wf_impl_uuid_mountpoint_create(
 	mkdir(data->filesystem_path, 0755);
 
 	data->id = wf_impl_uuid_mountpoint_create_id();
-	char * full_path = wf_create_string("%s/%s/%s", root_path, filesystem, data->id);
+	data->full_path = wf_create_string("%s/%s/%s", root_path, filesystem, data->id);
 	mkdir(data->full_path, 0755);
 
-	data->default_path = wf_create_string("%s/%s/default", root_path, data->filesystem_path);
+	data->default_path = wf_create_string("%s/%s/default", root_path, filesystem);
 	symlink(data->id, data->default_path);
 
-	struct wf_mountpoint * mountpoint = wf_impl_mountpoint_create(full_path);
+	struct wf_mountpoint * mountpoint = wf_impl_mountpoint_create(data->full_path);
 	wf_impl_mountpoint_set_userdata(mountpoint, data, &wf_impl_uuid_mountpoint_data_dispose);
 
     return mountpoint;

@@ -7,6 +7,7 @@ include(GoogleTest)
 pkg_check_modules(GMOCK gmock)
 
 add_executable(alltests
+	test/tempdir.cc
 	test/msleep.cc
 	test/die_if.cc
 	test/mock_authenticator.cc
@@ -27,6 +28,7 @@ add_executable(alltests
 	test/adapter/test_authenticator.cc
 	test/adapter/test_authenticators.cc
 	test/adapter/test_mountpoint.cc
+	test/adapter/test_uuid_mountpoint.cc
 	test/adapter/test_fuse_req.cc
 	test/adapter/jsonrpc/test_util.cc
 	test/adapter/jsonrpc/test_is_request.cc
