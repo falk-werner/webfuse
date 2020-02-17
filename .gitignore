@@ -2,3 +2,4 @@
 /.build/
 /.deps/
 /.settings/language.settings.xml
+/doc/api
