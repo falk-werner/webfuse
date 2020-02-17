@@ -3,6 +3,7 @@
 
 #include <webfuse/adapter/api.h>
 #include <webfuse/adapter/authenticate.h>
+#include <webfuse/adapter/mountpoint_factory.h>
 
 #ifdef __cplusplus
 extern "C"
@@ -14,6 +15,10 @@ struct lws_protocols;
 
 extern WF_API struct wf_server_protocol * wf_server_protocol_create(
     char * mount_point);
+
+extern WF_API struct wf_server_protocol * wf_server_protocol_create2(
+    wf_create_mountpoint_fn * create_mountpoint,
+    void * create_mountpoint_context);
 
 extern WF_API void wf_server_protocol_dispose(
     struct wf_server_protocol * protocol);

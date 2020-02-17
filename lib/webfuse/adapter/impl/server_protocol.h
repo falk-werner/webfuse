@@ -4,6 +4,7 @@
 #include "webfuse/adapter/impl/jsonrpc/proxy.h"
 #include "webfuse/adapter/impl/time/timeout_manager.h"
 #include "webfuse/adapter/impl/authenticators.h"
+#include "webfuse/adapter/impl/mountpoint_factory.h"
 #include "webfuse/adapter/impl/session_manager.h"
 #include "webfuse/adapter/impl/jsonrpc/server.h"
 
@@ -20,9 +21,9 @@ struct lws_protocols;
 
 struct wf_server_protocol
 {
-    char * mount_point;
     struct wf_impl_timeout_manager timeout_manager;
     struct wf_impl_authenticators authenticators;
+    struct wf_impl_mountpoint_factory mountpoint_factory;
     struct wf_impl_session_manager session_manager;
     struct wf_impl_jsonrpc_server server;
     bool is_operational;
@@ -30,13 +31,17 @@ struct wf_server_protocol
 
 extern void wf_impl_server_protocol_init(
     struct wf_server_protocol * protocol,
-    char * mount_point);
+    struct wf_impl_mountpoint_factory * mountpoint_factory);
 
 extern void wf_impl_server_protocol_cleanup(
     struct wf_server_protocol * protocol);
 
 extern struct wf_server_protocol * wf_impl_server_protocol_create(
     char * mount_point);
+
+extern WF_API struct wf_server_protocol * wf_impl_server_protocol_create2(
+    wf_create_mountpoint_fn * create_mountpoint,
+    void * create_mountpoint_context);
 
 extern void wf_impl_server_protocol_dispose(
     struct wf_server_protocol * protocol);

@@ -14,6 +14,7 @@ extern "C"
 {
 #endif
 
+struct wf_mountpoint;
 struct wf_impl_session;
 struct lws;
 
@@ -25,16 +26,13 @@ struct wf_impl_filesystem
 	struct fuse_buf buffer;
 	struct wf_impl_operations_context user_data;
     struct lws * wsi;
-    char * name;
-    char * id;
-    char * service_path;
-    char * default_path;
-    char * root_path;
+    struct wf_mountpoint * mountpoint;
 };
 
 extern struct wf_impl_filesystem * wf_impl_filesystem_create(
     struct wf_impl_session * session,
-    char const * name);
+    char const * name,
+    struct wf_mountpoint * mountpoint);
 
 extern void wf_impl_filesystem_dispose(
     struct wf_impl_filesystem * filesystem);
