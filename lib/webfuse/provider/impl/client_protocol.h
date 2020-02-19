@@ -11,8 +11,11 @@ extern "C"
 {
 #endif
 
-struct wfp_provider;
+#define WFP_CLIENT_PROTOCOL_NAME ("fs")
+
+struct wfp_client_config;
 struct lws_protocols;
+struct lws_context;
 
 struct wfp_client_protocol
 {
@@ -33,8 +36,7 @@ extern void wfp_impl_client_protocol_cleanup(
     struct wfp_client_protocol * protocol);
 
 extern struct wfp_client_protocol * wfp_impl_client_protocol_create(
-    struct wfp_provider const * provider,
-    void * user_data);
+    struct wfp_client_config const * config);
 
 extern void wfp_impl_client_protocol_dispose(
     struct wfp_client_protocol * protocol);
@@ -42,6 +44,11 @@ extern void wfp_impl_client_protocol_dispose(
 extern void wfp_impl_client_protocol_init_lws(
     struct wfp_client_protocol * protocol,
     struct lws_protocols * lws_protocol);
+
+extern void wfp_impl_client_protocol_connect(
+    struct wfp_client_protocol * protocol,
+    struct lws_context * context,
+    char const * url);
 
 #ifdef __cplusplus
 } 

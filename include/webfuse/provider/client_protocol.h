@@ -25,33 +25,35 @@ extern "C"
 struct wfp_client_protocol;
 
 //------------------------------------------------------------------------------
-/// \struct wfp_provider
-/// \brief Provider.
-///
-/// \todo How is a user supposed to get a provider's instance?
-//------------------------------------------------------------------------------
-struct wfp_provider;
-
-//------------------------------------------------------------------------------
 /// \struct lws_protocols
 /// \brief Forward declaration of libwebsockets protocols structure.
 //------------------------------------------------------------------------------
 struct lws_protocols;
 
 //------------------------------------------------------------------------------
+/// \struct lws_context
+/// \brief Forward declaration of libwebsockets context structure.
+//------------------------------------------------------------------------------
+struct lws_context;
+
+//------------------------------------------------------------------------------
+/// \struct wfp_client_config
+/// \copydoc wfp_client_config
+//------------------------------------------------------------------------------
+struct wfp_client_config;
+
+//------------------------------------------------------------------------------
 /// \brief Creates a new webfuse provider client protocol.
 ///
-/// \note The user is responsible to manage lifetime of \arg user_data.
+/// \note The user is responsible to manage lifetime of \arg config.
 ///
-/// \todo How is a user supposed to get a provider's instance?
+/// \note TLS configuration is ignored, since TLS is managed by libwebsockets.
 ///
-/// \param provider pointer to provider
-/// \param user_data user defined context
+/// \param config pointer to client config
 /// \return newly created protocol
 //------------------------------------------------------------------------------
 extern WFP_API struct wfp_client_protocol * wfp_client_protocol_create(
-    struct wfp_provider const * provider,
-    void * user_data);
+    struct wfp_client_config const * config);
 
 //------------------------------------------------------------------------------
 /// \brief Disposes a protocol.
@@ -72,6 +74,26 @@ extern WFP_API void wfp_client_protocol_dispose(
 extern WFP_API void wfp_client_protocol_init_lws(
     struct wfp_client_protocol * protocol,
     struct lws_protocols * lws_protocol);
+
+
+//------------------------------------------------------------------------------
+/// \brief Connects the protocol to a remote webfuse adapter server.
+///
+/// \note This call starts to establish a connection. A callback is invoked,
+///       when the connection is estanlished.
+///
+/// \param protocol pointer to protocol
+/// \param context lws context
+/// \param url URL of remote webfuse adapter server
+///
+/// \see wfp_connected_fn
+/// \see wfp_client_config_set_onconnected
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+extern WFP_API void wfp_client_protocol_connect(
+    struct wfp_client_protocol * protocol,
+    struct lws_context * context,
+    char const * url);
 
 #ifdef __cplusplus
 }

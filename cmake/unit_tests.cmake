@@ -11,6 +11,8 @@ add_executable(alltests
 	test/file_utils.cc
 	test/msleep.cc
 	test/die_if.cc
+	test/timeout_watcher.cc
+	test/fake_adapter_server.cc
 	test/mock_authenticator.cc
 	test/mock_request.cc
 	test/core/test_container_of.cc
@@ -42,6 +44,7 @@ add_executable(alltests
 	test/adapter/jsonrpc/test_proxy.cc
 	test/provider/test_url.cc
 	test/provider/test_static_filesystem.cc
+	test/provider/test_client_protocol.cc
 	test/integration/test_integration.cc
 	test/integration/server.cc
 	test/integration/provider.cc

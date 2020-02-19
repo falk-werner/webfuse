@@ -9,10 +9,8 @@
 #include "webfuse/provider/impl/provider.h"
 #include "webfuse/provider/impl/client_protocol.h"
 #include "webfuse/provider/impl/client_config.h"
-#include "webfuse/provider/impl/url.h"
 #include "webfuse/core/lws_log.h"
 
-#define WFP_PROTOCOL ("fs")
 #define WFP_CLIENT_PROTOCOL_COUNT 2
 
 struct wfp_client
@@ -37,7 +35,7 @@ struct wfp_client * wfp_impl_client_create(
         wfp_impl_client_protocol_init(&client->protocol, &config->provider, config->user_data);
 
         memset(client->protocols, 0, sizeof(struct lws_protocols) * WFP_CLIENT_PROTOCOL_COUNT);
-        client->protocols[0].name = "fs";
+        client->protocols[0].name = WFP_CLIENT_PROTOCOL_NAME;
         wfp_impl_client_protocol_init_lws(&client->protocol, &client->protocols[0]);
 
         memset(&client->info, 0, sizeof(struct lws_context_creation_info));
@@ -69,26 +67,7 @@ void wfp_impl_client_connect(
     struct wfp_client * client,
     char const * url)
 {
-    struct wfp_impl_url url_data;
-    bool const success = wfp_impl_url_init(&url_data, url);
-    if (success)
-    {
-        struct lws_client_connect_info info;
-        memset(&info, 0, sizeof(struct lws_client_connect_info));
-        info.context = client->context;
-        info.port = url_data.port;
-        info.address = url_data.host;
-        info.path = url_data.path;
-        info.host = info.address;
-        info.origin = info.address;
-        info.ssl_connection = (url_data.use_tls) ? LCCSCF_USE_SSL : 0;
-        info.protocol = WFP_PROTOCOL;
-        info.pwsi = &client->protocol.wsi;
-
-        lws_client_connect_via_info(&info);
-
-        wfp_impl_url_cleanup(&url_data);
-    }
+    wfp_impl_client_protocol_connect(&client->protocol, client->context, url);
 }
 
 void wfp_impl_client_disconnect(

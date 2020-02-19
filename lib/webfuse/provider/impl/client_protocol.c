@@ -7,11 +7,13 @@
 #include <jansson.h>
 
 
+#include "webfuse/provider/impl/client_config.h"
 #include "webfuse/provider/impl/provider.h"
 #include "webfuse/core/util.h"
 #include "webfuse/core/message.h"
 #include "webfuse/core/message_queue.h"
 #include "webfuse/core/container_of.h"
+#include "webfuse/provider/impl/url.h"
 
 static void wfp_impl_client_protocol_respond(
     json_t * response,
@@ -156,13 +158,12 @@ void wfp_impl_client_protocol_cleanup(
 }
 
 struct wfp_client_protocol * wfp_impl_client_protocol_create(
-    struct wfp_provider const * provider,
-    void * user_data)
+    struct wfp_client_config const * config)
 {
     struct wfp_client_protocol * protocol = malloc(sizeof(struct wfp_client_protocol));
     if (NULL != protocol)
     {
-        wfp_impl_client_protocol_init(protocol, provider, user_data);
+        wfp_impl_client_protocol_init(protocol, &config->provider, config->user_data);
     }
 
     return protocol;
@@ -182,4 +183,36 @@ void wfp_impl_client_protocol_init_lws(
 	lws_protocol->callback = &wfp_impl_client_protocol_callback;
 	lws_protocol->per_session_data_size = 0;
 	lws_protocol->user = protocol;
+}
+
+void wfp_impl_client_protocol_connect(
+    struct wfp_client_protocol * protocol,
+    struct lws_context * context,
+    char const * url)
+{
+    struct wfp_impl_url url_data;
+    bool const success = wfp_impl_url_init(&url_data, url);
+    if (success)
+    {
+        struct lws_client_connect_info info;
+        memset(&info, 0, sizeof(struct lws_client_connect_info));
+        info.context = context;
+        info.port = url_data.port;
+        info.address = url_data.host;
+        info.path = url_data.path;
+        info.host = info.address;
+        info.origin = info.address;
+        info.ssl_connection = (url_data.use_tls) ? LCCSCF_USE_SSL : 0;
+        info.protocol = WFP_CLIENT_PROTOCOL_NAME;
+        info.pwsi = &protocol->wsi;
+
+        lws_client_connect_via_info(&info);
+
+        wfp_impl_url_cleanup(&url_data);
+    }
+    else
+    {
+        protocol->provider.disconnected(protocol->user_data);
+    }
+    
 }

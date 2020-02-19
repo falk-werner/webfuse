@@ -160,10 +160,9 @@ void wfp_client_config_set_onread(
 
 
 struct wfp_client_protocol * wfp_client_protocol_create(
-    struct wfp_provider const * provider,
-    void * user_data)
+    struct wfp_client_config const * config)
 {
-    return wfp_impl_client_protocol_create(provider, user_data);
+    return wfp_impl_client_protocol_create(config);
 }
 
 void wfp_client_protocol_dispose(
@@ -178,6 +177,15 @@ void wfp_client_protocol_init_lws(
 {
     wfp_impl_client_protocol_init_lws(protocol, lws_protocol);
 }
+
+void wfp_client_protocol_connect(
+    struct wfp_client_protocol * protocol,
+    struct lws_context * context,
+    char const * url)
+{
+    wfp_impl_client_protocol_connect(protocol, context, url);
+}
+
 
 // client
 
