@@ -77,7 +77,7 @@ namespace webfuse_test
 class FakeAdapterServer::Private: public IServer
 {
 public:
-    Private(int port)
+    explicit Private(int port)
     : client_wsi(nullptr)
     , message_received(false)
     {

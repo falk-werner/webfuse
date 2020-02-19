@@ -11,7 +11,7 @@ class FakeAdapterServer
     FakeAdapterServer(FakeAdapterServer const &) = delete;
     FakeAdapterServer & operator=(FakeAdapterServer const &) = delete;
 public:
-    FakeAdapterServer(int port);
+    explicit FakeAdapterServer(int port);
     ~FakeAdapterServer();
     void waitForConnection();
 private:
