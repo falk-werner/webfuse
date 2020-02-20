@@ -15,58 +15,72 @@ using testing::_;
 namespace
 {
 
-struct Context
+class ClientProtocolTest: public ::testing::Test
 {
-    lws_context * context;
+protected:
+    void SetUp()
+    {
+        server = new FakeAdapterServer(54321);
+
+        config = wfp_client_config_create();
+        protocol = wfp_client_protocol_create(config);
+
+        struct lws_protocols protocols[2];
+        memset(protocols, 0, sizeof(struct lws_protocols) * 2);
+        protocols[0].name = "fs";
+        wfp_client_protocol_init_lws(protocol, &protocols[0]);
+
+        struct lws_context_creation_info info;
+        memset(&info, 0, sizeof(struct lws_context_creation_info));
+        info.port = CONTEXT_PORT_NO_LISTEN;
+        info.protocols = protocols;
+        info.uid = -1;
+        info.gid = -1;
+
+        context = lws_create_context(&info);
+        wfp_client_protocol_connect(protocol, context, "ws://localhost:54321/");
+
+        isShutdownRequested = false;
+        thread = std::thread(run, this);
+    }
+
+    void TearDown()
+    {
+        isShutdownRequested = true;
+        thread.join();
+
+        lws_context_destroy(context);
+
+        wfp_client_protocol_dispose(protocol);
+        wfp_client_config_dispose(config);
+
+        delete server;
+    }
+
+    FakeAdapterServer * server;
+
+private:
+    static void run(ClientProtocolTest * self)
+    {
+        while (!self->isShutdownRequested)
+        {
+            lws_service(self->context, 100);
+        }
+    }
+
+    wfp_client_config * config;
+    wfp_client_protocol * protocol;
+    std::thread thread;
     std::atomic<bool> isShutdownRequested;
+    lws_context * context;
+
 };
 
-void run(Context * context)
-{
-    while (!context->isShutdownRequested)
-    {
-        lws_service(context->context, 100);
-    }
-}
-
 
 }
 
 
-TEST(client_protocol, connect)
+TEST_F(ClientProtocolTest, connect)
 {
-    FakeAdapterServer server(54321);
-
-    wfp_client_config * config = wfp_client_config_create();
-    wfp_client_protocol * protocol = wfp_client_protocol_create(config);
-
-    struct lws_protocols protocols[2];
-    memset(protocols, 0, sizeof(struct lws_protocols) * 2);
-    protocols[0].name = "fs";
-    wfp_client_protocol_init_lws(protocol, &protocols[0]);
-
-    struct lws_context_creation_info info;
-    memset(&info, 0, sizeof(struct lws_context_creation_info));
-    info.port = CONTEXT_PORT_NO_LISTEN;
-    info.protocols = protocols;
-    info.uid = -1;
-    info.gid = -1;
-
-    struct lws_context * context = lws_create_context(&info);
-    wfp_client_protocol_connect(protocol, context, "ws://localhost:54321/");
-
-    Context ctx;
-    ctx.context = context;
-    ctx.isShutdownRequested = false;
-    std::thread client_thread(run, &ctx);
-
-    server.waitForConnection();
-    
-    ctx.isShutdownRequested = true;
-    client_thread.join();
-
-    lws_context_destroy(context);
-
-    wfp_client_protocol_dispose(protocol);
-    wfp_client_config_dispose(config);
+    server->waitForConnection();    
 }
