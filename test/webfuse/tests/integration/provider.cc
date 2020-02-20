@@ -5,6 +5,7 @@
 #include <mutex>
 #include <string>
 #include "webfuse/utils/msleep.hpp"
+#include "webfuse/utils/static_filesystem.h"
 
 namespace webfuse_test
 {

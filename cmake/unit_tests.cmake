@@ -12,13 +12,14 @@ add_executable(alltests
 	test/webfuse/utils/msleep.cc
 	test/webfuse/utils/die_if.cc
 	test/webfuse/utils/timeout_watcher.cc
+	test/webfuse/utils/path.c
+	test/webfuse/utils/static_filesystem.c
 	test/webfuse/fakes/fake_adapter_server.cc
 	test/webfuse/mocks/mock_authenticator.cc
 	test/webfuse/mocks/mock_request.cc
 	test/webfuse/tests/core/test_container_of.cc
 	test/webfuse/tests/core/test_string.cc
 	test/webfuse/tests/core/test_slist.cc
-	test/webfuse/tests/core/test_path.cc
 	test/webfuse/tests/core/test_base64.cc
 	test/webfuse/tests/core/test_status.cc
 	test/webfuse/tests/core/test_message.cc
@@ -43,7 +44,6 @@ add_executable(alltests
 	test/webfuse/tests/adapter/jsonrpc/test_server.cc
 	test/webfuse/tests/adapter/jsonrpc/test_proxy.cc
 	test/webfuse/tests/provider/test_url.cc
-	test/webfuse/tests/provider/test_static_filesystem.cc
 	test/webfuse/tests/provider/test_client_protocol.cc
 	test/webfuse/tests/integration/test_integration.cc
 	test/webfuse/tests/integration/server.cc

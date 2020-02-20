@@ -6,7 +6,6 @@ add_library(webfuse-core STATIC
 	lib/webfuse/core/message_queue.c
 	lib/webfuse/core/status.c
 	lib/webfuse/core/string.c
-	lib/webfuse/core/path.c
 	lib/webfuse/core/base64.c
 	lib/webfuse/core/lws_log.c
 )

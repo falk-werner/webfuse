@@ -1,4 +1,4 @@
-#include "webfuse/core/path.h"
+#include "webfuse/utils/path.h"
 #include <stdlib.h>
 #include <string.h>
 

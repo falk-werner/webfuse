@@ -22,6 +22,4 @@
 #include <webfuse/provider/operation/close.h>
 #include <webfuse/provider/operation/read.h>
 
-#include <webfuse/provider/static_filesystem.h>
-
 #endif
