@@ -56,20 +56,6 @@ wfp_static_filesystem_add_text(
     int mode,
     char const * content);
 
-extern WFP_API void
-wfp_static_filesystem_add_file(
-    struct wfp_static_filesystem * filesystem,
-    char const * path,
-    char const * filename);
-
-extern WFP_API void
-wfp_static_filesystem_add_generic(
-    struct wfp_static_filesystem * filesystem,
-    char const * path,
-    wfp_static_filesystem_read_fn * read,
-    wfp_static_filesystem_get_info_fn * get_info,
-    void * user_data);
-
 #ifdef __cplusplus
 }
 #endif
