@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
-#include "integration/server.hpp"
-#include "integration/provider.hpp"
+#include "webfuse/tests/integration/server.hpp"
+#include "webfuse/tests/integration/provider.hpp"
 
 #include <cstdio>
 #include <csignal>
@@ -15,7 +15,7 @@
 
 #include <jansson.h>
 #include "webfuse/core/lws_log.h"
-#include "die_if.hpp"
+#include "webfuse/utils/die_if.hpp"
 
 using webfuse_test::Server;
 using webfuse_test::Provider;

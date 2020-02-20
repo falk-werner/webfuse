@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 #include "webfuse/adapter/impl/jsonrpc/proxy.h"
 #include "webfuse/adapter/impl/time/timeout_manager.h"
-#include "msleep.hpp"
+#include "webfuse/utils/msleep.hpp"
 
 using webfuse_test::msleep;
 

@@ -1,8 +1,8 @@
 #include <gtest/gtest.h>
 #include "webfuse_adapter.h"
 #include "webfuse/adapter/impl/uuid_mountpoint_factory.h"
-#include "tempdir.hpp"
-#include "file_utils.hpp"
+#include "webfuse/utils/tempdir.hpp"
+#include "webfuse/utils/file_utils.hpp"
 
 using webfuse_test::TempDir;
 using webfuse_test::is_dir;

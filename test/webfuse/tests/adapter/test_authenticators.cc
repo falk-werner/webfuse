@@ -3,7 +3,7 @@
 
 #include "webfuse/adapter/impl/authenticators.h"
 #include "webfuse/adapter/impl/credentials.h"
-#include "mock_authenticator.hpp"
+#include "webfuse/mocks/mock_authenticator.hpp"
 
 using ::testing::_;
 using ::testing::Return;

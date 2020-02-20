@@ -4,7 +4,7 @@
 #include "webfuse/provider/client_config.h"
 #include "webfuse/provider/impl/client_config.h"
 
-#include "mock_request.hpp"
+#include "webfuse/mocks/mock_request.hpp"
 
 using webfuse_test::request_create;
 using webfuse_test::MockRequest;

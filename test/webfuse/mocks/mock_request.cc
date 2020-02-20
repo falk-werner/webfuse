@@ -1,4 +1,4 @@
-#include "mock_request.hpp"
+#include "webfuse/mocks/mock_request.hpp"
 #include <cstdlib>
 
 namespace

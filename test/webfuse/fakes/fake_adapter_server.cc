@@ -1,5 +1,5 @@
-#include "fake_adapter_server.hpp"
-#include "timeout_watcher.hpp"
+#include "webfuse/fakes/fake_adapter_server.hpp"
+#include "webfuse/utils/timeout_watcher.hpp"
 
 #include "webfuse/core/util.h"
 #include <libwebsockets.h>

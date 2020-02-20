@@ -1,4 +1,4 @@
-#include "mock_authenticator.hpp"
+#include "webfuse/mocks/mock_authenticator.hpp"
 
 #define WF_AUTHENTICATOR_COUNT 3
 

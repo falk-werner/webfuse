@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 
-#include "tempdir.hpp"
-#include "file_utils.hpp"
+#include "webfuse/utils/tempdir.hpp"
+#include "webfuse/utils/file_utils.hpp"
 #include "webfuse_adapter.h"
 #include "webfuse/adapter/impl/uuid_mountpoint.h"
 

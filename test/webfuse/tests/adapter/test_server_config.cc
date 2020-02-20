@@ -2,7 +2,7 @@
 #include "webfuse/adapter/server_config.h"
 #include "webfuse/adapter/impl/server_config.h"
 #include "webfuse/adapter/impl/authenticator.h"
-#include "tempdir.hpp"
+#include "webfuse/utils/tempdir.hpp"
 
 using webfuse_test::TempDir;
 

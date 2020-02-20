@@ -1,4 +1,4 @@
-#include "die_if.hpp"
+#include "webfuse/utils/die_if.hpp"
 #include <cstdlib>
 
 namespace webfuse_test

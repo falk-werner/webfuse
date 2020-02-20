@@ -1,5 +1,5 @@
 #include "webfuse/core/string.h"
-#include "tempdir.hpp"
+#include "webfuse/utils/tempdir.hpp"
 
 #include <unistd.h>
 #include <cstdlib>

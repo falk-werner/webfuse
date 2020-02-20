@@ -1,10 +1,10 @@
-#include "integration/provider.hpp"
+#include "webfuse/tests/integration/provider.hpp"
 #include "webfuse_provider.h"
 #include "webfuse/provider/impl/client.h"
 #include <thread>
 #include <mutex>
 #include <string>
-#include "msleep.hpp"
+#include "webfuse/utils/msleep.hpp"
 
 namespace webfuse_test
 {

@@ -1,4 +1,4 @@
-#include "integration/server.hpp"
+#include "webfuse/tests/integration/server.hpp"
 #include <thread>
 #include <mutex>
 #include <cstdlib>
@@ -6,7 +6,7 @@
 #include <unistd.h>
 #include "webfuse_adapter.h"
 #include "webfuse/adapter/impl/server.h"
-#include "msleep.hpp"
+#include "webfuse/utils/msleep.hpp"
 
 #define WF_PATH_MAX (100)
 

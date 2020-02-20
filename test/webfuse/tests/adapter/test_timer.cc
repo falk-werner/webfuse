@@ -2,7 +2,7 @@
 
 #include <cstddef>
 
-#include "msleep.hpp"
+#include "webfuse/utils/msleep.hpp"
 #include "webfuse/adapter/impl/time/timer.h"
 #include "webfuse/adapter/impl/time/timeout_manager.h"
 

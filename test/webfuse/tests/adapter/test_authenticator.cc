@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
-#include "mock_authenticator.hpp"
+#include "webfuse/mocks/mock_authenticator.hpp"
 
 #include "webfuse/adapter/impl/authenticator.h"
 #include "webfuse/adapter/impl/credentials.h"

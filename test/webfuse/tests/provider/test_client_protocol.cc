@@ -3,7 +3,7 @@
 
 #include <webfuse/provider/client_protocol.h>
 #include <webfuse/provider/client_config.h>
-#include "fake_adapter_server.hpp"
+#include "webfuse/fakes/fake_adapter_server.hpp"
 
 #include <cstring>
 #include <thread>

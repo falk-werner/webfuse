@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include "msleep.hpp"
+#include "webfuse/utils/msleep.hpp"
 #include "webfuse/adapter/impl/time/timepoint.h"
 
 using webfuse_test::msleep;
