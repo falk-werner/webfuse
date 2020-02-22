@@ -17,6 +17,15 @@ namespace
 
 class ClientProtocolTest: public ::testing::Test
 {
+public:
+    ClientProtocolTest()
+    : server(nullptr)
+    , config(nullptr)
+    , protocol(nullptr)
+    {
+        // empty
+    }
+
 protected:
     void SetUp()
     {
