@@ -1,4 +1,4 @@
-#include "webfuse/fakes/fake_adapter_server.hpp"
+#include "webfuse/utils/ws_server.hpp"
 #include "webfuse/utils/timeout_watcher.hpp"
 
 #include "webfuse/core/util.h"
@@ -30,7 +30,7 @@ public:
 extern "C"
 {
 
-static int wf_test_fake_adapter_server_callback(
+static int wf_test_utils_ws_server_callback(
 	struct lws * wsi,
 	enum lws_callback_reasons reason,
 	void * WF_UNUSED_PARAM(user),
@@ -65,7 +65,6 @@ static int wf_test_fake_adapter_server_callback(
             break;
     }
 
-
     return 0;
 }
 
@@ -74,16 +73,15 @@ static int wf_test_fake_adapter_server_callback(
 namespace webfuse_test
 {
 
-class FakeAdapterServer::Private: public IServer
+class WebsocketServer::Private: public IServer
 {
 public:
     explicit Private(int port)
     : client_wsi(nullptr)
-    , message_received(false)
     {
         memset(ws_protocols, 0, sizeof(struct lws_protocols) * 2);
         ws_protocols[0].name = "fs";
-        ws_protocols[0].callback = &wf_test_fake_adapter_server_callback;
+        ws_protocols[0].callback = &wf_test_utils_ws_server_callback;
         ws_protocols[0].per_session_data_size = 0;
         ws_protocols[0].user = reinterpret_cast<void*>(this);
 
@@ -114,6 +112,44 @@ public:
         }
     }
 
+    void sendMessage(json_t * message)
+    {
+        char* message_text = json_dumps(message, JSON_COMPACT);
+        writeQueue.push(message_text);
+        json_decref(message);
+        free(message_text);
+
+        if (nullptr != client_wsi)
+        {
+            lws_callback_on_writable(client_wsi);
+
+            TimeoutWatcher watcher(DEFAULT_TIMEOUT);
+            while (!writeQueue.empty())
+            {
+                watcher.check();
+                lws_service(context, 100);
+            }
+        }
+
+    }
+
+    json_t * receiveMessage()
+    {
+        TimeoutWatcher watcher(DEFAULT_TIMEOUT);
+
+        while (recvQueue.empty())
+        {
+            watcher.check();
+            lws_service(context, 100);
+        }
+
+        std::string const & message_text = recvQueue.front();
+        json_t * message = json_loads(message_text.c_str(), JSON_DECODE_ANY, nullptr);
+        recvQueue.pop();
+
+        return message;
+    }
+
     void onConnectionEstablished(struct lws * wsi) override
     {
         client_wsi = wsi;
@@ -131,24 +167,23 @@ public:
     {
         if (wsi == client_wsi)
         {
-            last_message.assign(length, *data);
-            message_received = true;
+            recvQueue.push(std::string(data, length));
         }
     }
 
     void onWritable(struct lws * wsi) override
     {
-        if (!queue.empty())
+        if (!writeQueue.empty())
         {
-            std::string const & message = queue.front();
+            std::string const & message = writeQueue.front();
 
             unsigned char * data = new unsigned char[LWS_PRE + message.size()];
             memcpy(&data[LWS_PRE], message.c_str(), message.size());
             lws_write(wsi, &data[LWS_PRE], message.size(), LWS_WRITE_TEXT);
             delete[] data;
 
-            queue.pop();
-            if (!queue.empty())
+            writeQueue.pop();
+            if (!writeQueue.empty())
             {
                 lws_callback_on_writable(wsi);
             }
@@ -161,36 +196,46 @@ private:
     {
         if (nullptr != client_wsi)
         {
-            queue.push(message);
+            writeQueue.push(message);
             lws_callback_on_writable(client_wsi);
         }
     }
 
     struct lws * client_wsi;
-    bool message_received;
 
     struct lws_protocols ws_protocols[2];
 	struct lws_context_creation_info info;
     struct lws_context * context;
-    std::vector<char> last_message;
-    std::queue<std::string> queue;
+    std::queue<std::string> writeQueue;
+    std::queue<std::string> recvQueue;
 
 };
 
-FakeAdapterServer::FakeAdapterServer(int port)
+WebsocketServer::WebsocketServer(int port)
 : d(new Private(port))
 {
 
 }
 
-FakeAdapterServer::~FakeAdapterServer()
+WebsocketServer::~WebsocketServer()
 {
     delete d;
 }
 
-void FakeAdapterServer::waitForConnection()
+void WebsocketServer::waitForConnection()
 {
     d->waitForConnection();
 }
+
+void WebsocketServer::sendMessage(json_t * message)
+{
+    d->sendMessage(message);
+}
+
+json_t * WebsocketServer::receiveMessage()
+{
+    return d->receiveMessage();
+}
+
 
 }

@@ -14,7 +14,7 @@ add_executable(alltests
 	test/webfuse/utils/timeout_watcher.cc
 	test/webfuse/utils/path.c
 	test/webfuse/utils/static_filesystem.c
-	test/webfuse/fakes/fake_adapter_server.cc
+	test/webfuse/utils/ws_server.cc
 	test/webfuse/mocks/mock_authenticator.cc
 	test/webfuse/mocks/mock_request.cc
 	test/webfuse/tests/core/test_container_of.cc
