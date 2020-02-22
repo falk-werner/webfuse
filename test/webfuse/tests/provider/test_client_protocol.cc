@@ -22,6 +22,7 @@ public:
     : server(nullptr)
     , config(nullptr)
     , protocol(nullptr)
+    , context(nullptr)
     {
         // empty
     }
