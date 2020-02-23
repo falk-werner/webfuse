@@ -4,17 +4,20 @@
 #include <webfuse/provider/client_protocol.h>
 #include <webfuse/provider/client_config.h>
 #include "webfuse/utils/ws_server.hpp"
+#include "webfuse/mocks/mock_provider_client.hpp"
 
 #include <cstring>
 #include <thread>
 #include <atomic>
 
 using webfuse_test::WebsocketServer;
+using webfuse_test::MockProviderClient;
 using testing::_;
 
 namespace
 {
 
+// ToDo: Refactor Me
 class ClientProtocolTest: public ::testing::Test
 {
 public:
@@ -30,6 +33,22 @@ protected:
     void SetUp()
     {
         config = wfp_client_config_create();
+
+        server = nullptr;
+        protocol = nullptr;
+    }
+
+    void TearDown()
+    {
+        if (nullptr != server)
+        {
+            StopServer();
+        }
+
+    }
+
+    void StartServer()
+    {
         protocol = wfp_client_protocol_create(config);
 
         struct lws_protocols client_protocol;
@@ -39,22 +58,29 @@ protected:
         server = new WebsocketServer(54321, &client_protocol, 1);
     }
 
-    void TearDown()
+    void StopServer()
     {
         delete server;
-
         wfp_client_protocol_dispose(protocol);
         wfp_client_config_dispose(config);
 
+        server = nullptr;
+        protocol = nullptr;
+        config = nullptr;
     }
 
-    void connect()
+    wfp_client_config * GetClientConfig()
+    {
+        return config;
+    }
+
+    void Connect()
     {
         wfp_client_protocol_connect(protocol, server->getContext(), "ws://localhost:54321/");
         server->waitForConnection();
     }
 
-    void awaitAddFilesystem(std::string& filesystemName)
+    void AwaitAddFilesystem(std::string& filesystemName)
     {
         json_t * addFilesystemRequest = server->receiveMessage();
         ASSERT_NE(nullptr, addFilesystemRequest);
@@ -94,24 +120,33 @@ private:
     wfp_client_protocol * protocol;
 };
 
-
-
 }
 
 
 TEST_F(ClientProtocolTest, connect)
 {
-    connect();
+    StartServer();
+    Connect();
     if (HasFatalFailure()) { return; }
+
+    StopServer();
 }
 
 TEST_F(ClientProtocolTest, getattr)
 {
-    connect();
+    MockProviderClient client;
+    client.AttachTo(GetClientConfig());
+
+    EXPECT_CALL(client, OnConnected()).Times(1);
+    EXPECT_CALL(client, OnDisconnected()).Times(1);
+    EXPECT_CALL(client, GetAttr(1, _)).Times(1);
+
+    StartServer();
+    Connect();
     if (HasFatalFailure()) { return; }
 
     std::string filesystem;
-    awaitAddFilesystem(filesystem);
+    AwaitAddFilesystem(filesystem);
     if (HasFatalFailure()) { return; }
 
     json_t * params = json_array();
@@ -127,4 +162,6 @@ TEST_F(ClientProtocolTest, getattr)
     ASSERT_TRUE(json_is_object(response));
 
     json_decref(response);
+
+    StopServer();
 }

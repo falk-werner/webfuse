@@ -17,6 +17,7 @@ add_executable(alltests
 	test/webfuse/utils/ws_server.cc
 	test/webfuse/mocks/mock_authenticator.cc
 	test/webfuse/mocks/mock_request.cc
+	test/webfuse/mocks/mock_provider_client.cc
 	test/webfuse/tests/core/test_container_of.cc
 	test/webfuse/tests/core/test_string.cc
 	test/webfuse/tests/core/test_slist.cc
