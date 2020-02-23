@@ -13,7 +13,9 @@ class WebsocketServer
     WebsocketServer & operator=(WebsocketServer const &) = delete;
 public:
     explicit WebsocketServer(int port);
+    WebsocketServer(int port, struct lws_protocols * additionalProtocols, std::size_t additionalProtocolsCount);
     ~WebsocketServer();
+    struct lws_context * getContext();
     void waitForConnection();
     void sendMessage(json_t * message);
     json_t * receiveMessage();

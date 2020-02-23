@@ -2,6 +2,7 @@
 #include "webfuse/utils/timeout_watcher.hpp"
 
 #include "webfuse/core/util.h"
+#include "webfuse/core/protocol_names.h"
 #include <libwebsockets.h>
 #include <cstring>
 #include <vector>
@@ -76,14 +77,21 @@ namespace webfuse_test
 class WebsocketServer::Private: public IServer
 {
 public:
-    explicit Private(int port)
+    Private(int port, struct lws_protocols * additionalProtocols, size_t additionalProtocolsCount)
     : client_wsi(nullptr)
     {
-        memset(ws_protocols, 0, sizeof(struct lws_protocols) * 2);
-        ws_protocols[0].name = "fs";
+        ws_protocols = new struct lws_protocols[2 + additionalProtocolsCount];
+        memset(ws_protocols, 0, sizeof(struct lws_protocols) * (2 + additionalProtocolsCount));
+
+        ws_protocols[0].name = WF_PROTOCOL_NAME_ADAPTER_SERVER;
         ws_protocols[0].callback = &wf_test_utils_ws_server_callback;
         ws_protocols[0].per_session_data_size = 0;
         ws_protocols[0].user = reinterpret_cast<void*>(this);
+
+        if (0 < additionalProtocolsCount)
+        {
+            memcpy(&ws_protocols[additionalProtocolsCount], additionalProtocols, sizeof(struct lws_protocols) * additionalProtocolsCount);
+        }
 
         memset(&info, 0, sizeof(struct lws_context_creation_info));
         info.port = port;
@@ -94,11 +102,18 @@ public:
         info.options = LWS_SERVER_OPTION_HTTP_HEADERS_SECURITY_BEST_PRACTICES_ENFORCE;
 
 	    context = lws_create_context(&info);
+
     }
 
     virtual ~Private()
     {
         lws_context_destroy(context);
+        delete[] ws_protocols;
+    }
+
+    struct lws_context * getContext()
+    {
+        return context;
     }
 
     void waitForConnection()
@@ -130,7 +145,6 @@ public:
                 lws_service(context, 100);
             }
         }
-
     }
 
     json_t * receiveMessage()
@@ -203,7 +217,7 @@ private:
 
     struct lws * client_wsi;
 
-    struct lws_protocols ws_protocols[2];
+    struct lws_protocols * ws_protocols;
 	struct lws_context_creation_info info;
     struct lws_context * context;
     std::queue<std::string> writeQueue;
@@ -212,7 +226,13 @@ private:
 };
 
 WebsocketServer::WebsocketServer(int port)
-: d(new Private(port))
+: d(new Private(port, nullptr, 0))
+{
+
+}
+
+WebsocketServer::WebsocketServer(int port, struct lws_protocols * additionalProtocols, std::size_t additionalProtocolsCount)
+: d(new Private(port, additionalProtocols, additionalProtocolsCount))
 {
 
 }
@@ -220,6 +240,11 @@ WebsocketServer::WebsocketServer(int port)
 WebsocketServer::~WebsocketServer()
 {
     delete d;
+}
+
+struct lws_context * WebsocketServer::getContext()
+{
+    return d->getContext();
 }
 
 void WebsocketServer::waitForConnection()

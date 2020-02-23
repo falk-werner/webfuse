@@ -22,7 +22,6 @@ public:
     : server(nullptr)
     , config(nullptr)
     , protocol(nullptr)
-    , context(nullptr)
     {
         // empty
     }
@@ -30,41 +29,29 @@ public:
 protected:
     void SetUp()
     {
-        server = new WebsocketServer(54321);
-
         config = wfp_client_config_create();
         protocol = wfp_client_protocol_create(config);
 
-        struct lws_protocols protocols[2];
-        memset(protocols, 0, sizeof(struct lws_protocols) * 2);
-        protocols[0].name = "fs";
-        wfp_client_protocol_init_lws(protocol, &protocols[0]);
+        struct lws_protocols client_protocol;
+        memset(&client_protocol, 0, sizeof(struct lws_protocols));
+        wfp_client_protocol_init_lws(protocol, &client_protocol);
 
-        struct lws_context_creation_info info;
-        memset(&info, 0, sizeof(struct lws_context_creation_info));
-        info.port = CONTEXT_PORT_NO_LISTEN;
-        info.protocols = protocols;
-        info.uid = -1;
-        info.gid = -1;
-
-        context = lws_create_context(&info);
-        wfp_client_protocol_connect(protocol, context, "ws://localhost:54321/");
-
-        isShutdownRequested = false;
-        thread = std::thread(run, this);
+        server = new WebsocketServer(54321, &client_protocol, 1);
     }
 
     void TearDown()
     {
-        isShutdownRequested = true;
-        thread.join();
-
-        lws_context_destroy(context);
+        delete server;
 
         wfp_client_protocol_dispose(protocol);
         wfp_client_config_dispose(config);
 
-        delete server;
+    }
+
+    void connect()
+    {
+        wfp_client_protocol_connect(protocol, server->getContext(), "ws://localhost:54321/");
+        server->waitForConnection();
     }
 
     void awaitAddFilesystem(std::string& filesystemName)
@@ -103,20 +90,8 @@ protected:
     WebsocketServer * server;
 
 private:
-    static void run(ClientProtocolTest * self)
-    {
-        while (!self->isShutdownRequested)
-        {
-            lws_service(self->context, 100);
-        }
-    }
-
     wfp_client_config * config;
     wfp_client_protocol * protocol;
-    std::thread thread;
-    std::atomic<bool> isShutdownRequested;
-    lws_context * context;
-
 };
 
 
@@ -126,12 +101,14 @@ private:
 
 TEST_F(ClientProtocolTest, connect)
 {
-    server->waitForConnection();    
+    connect();
+    if (HasFatalFailure()) { return; }
 }
 
 TEST_F(ClientProtocolTest, getattr)
 {
-    server->waitForConnection();
+    connect();
+    if (HasFatalFailure()) { return; }
 
     std::string filesystem;
     awaitAddFilesystem(filesystem);

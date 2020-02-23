@@ -11,8 +11,6 @@ extern "C"
 {
 #endif
 
-#define WFP_CLIENT_PROTOCOL_NAME ("fs")
-
 struct wfp_client_config;
 struct lws_protocols;
 struct lws_context;
