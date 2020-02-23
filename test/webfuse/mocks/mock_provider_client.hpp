@@ -11,7 +11,7 @@ namespace webfuse_test
     class ProviderClientException: public std::runtime_error
     {
         public:
-            ProviderClientException(wf_status error_code);
+            explicit ProviderClientException(wf_status error_code);
             wf_status GetErrorCode();
         private:
             wf_status error_code_;            
