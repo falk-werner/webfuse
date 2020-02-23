@@ -42,7 +42,7 @@ static void webfuse_test_iproviderclient_onlookup(
         self->Lookup(parent, name, &buffer);
         wfp_respond_lookup(request, &buffer);
     }
-    catch (ProviderClientException ex)
+    catch (ProviderClientException& ex)
     {
         wfp_respond_error(request, ex.GetErrorCode());
     }
@@ -66,7 +66,7 @@ static void webfuse_test_iproviderclient_ongetattr(
         self->GetAttr(inode, &buffer);
         wfp_respond_getattr(request,&buffer);
     }
-    catch (ProviderClientException ex)
+    catch (ProviderClientException& ex)
     {
         wfp_respond_error(request, ex.GetErrorCode());
     }
@@ -90,7 +90,7 @@ static void webfuse_test_iproviderclient_onreaddir(
         self->ReadDir(directory, buffer);
         wfp_respond_readdir(request, buffer);
     }
-    catch (ProviderClientException ex)
+    catch (ProviderClientException& ex)
     {
         wfp_respond_error(request, ex.GetErrorCode());
     }
@@ -117,7 +117,7 @@ static void webfuse_test_iproviderclient_onopen(
         self->Open(inode, flags, &handle);
         wfp_respond_open(request, handle);
     }
-    catch (ProviderClientException ex)
+    catch (ProviderClientException& ex)
     {
         wfp_respond_error(request, ex.GetErrorCode());
     }
@@ -155,7 +155,7 @@ static void webfuse_test_iproviderclient_onread(
         self->Read(inode, handle, offset, length, data, &bytes_read);
         wfp_respond_read(request, data, bytes_read);
     }
-    catch (ProviderClientException ex)
+    catch (ProviderClientException& ex)
     {
         wfp_respond_error(request, ex.GetErrorCode());
     }
