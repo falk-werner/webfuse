@@ -6,6 +6,7 @@
 
 #include "webfuse/core/message.h"
 #include "webfuse/core/util.h"
+#include "webfuse/core/protocol_names.h"
 
 #include "webfuse/adapter/impl/credentials.h"
 #include "webfuse/adapter/impl/jsonrpc/request.h"
@@ -121,6 +122,7 @@ void wf_impl_server_protocol_init_lws(
     struct wf_server_protocol * protocol,
     struct lws_protocols * lws_protocol)
 {
+    lws_protocol->name = WF_PROTOCOL_NAME_ADAPTER_SERVER;
 	lws_protocol->callback = &wf_impl_server_protocol_callback;
 	lws_protocol->per_session_data_size = 0;
 	lws_protocol->user = protocol;

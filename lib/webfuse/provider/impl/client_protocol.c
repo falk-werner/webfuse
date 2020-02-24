@@ -6,7 +6,6 @@
 #include <libwebsockets.h>
 #include <jansson.h>
 
-
 #include "webfuse/provider/impl/client_config.h"
 #include "webfuse/provider/impl/provider.h"
 #include "webfuse/core/util.h"
@@ -14,6 +13,7 @@
 #include "webfuse/core/message_queue.h"
 #include "webfuse/core/container_of.h"
 #include "webfuse/provider/impl/url.h"
+#include "webfuse/core/protocol_names.h"
 
 static void wfp_impl_client_protocol_respond(
     json_t * response,
@@ -112,7 +112,7 @@ static int wfp_impl_client_protocol_callback(
             // fall-through
         case LWS_CALLBACK_CLIENT_WRITEABLE:
 			if ((wsi == protocol->wsi) && (!wf_slist_empty(&protocol->messages)))
-			{                
+            {
                 struct wf_slist_item * item = wf_slist_remove_first(&protocol->messages);
 				struct wf_message * message = wf_container_of(item, struct wf_message, item);
 				lws_write(wsi, (unsigned char*) message->data, message->length, LWS_WRITE_TEXT);
@@ -180,6 +180,7 @@ void wfp_impl_client_protocol_init_lws(
     struct wfp_client_protocol * protocol,
     struct lws_protocols * lws_protocol)
 {
+    lws_protocol->name = WF_PROTOCOL_NAME_PROVIDER_CLIENT;
 	lws_protocol->callback = &wfp_impl_client_protocol_callback;
 	lws_protocol->per_session_data_size = 0;
 	lws_protocol->user = protocol;
@@ -203,7 +204,8 @@ void wfp_impl_client_protocol_connect(
         info.host = info.address;
         info.origin = info.address;
         info.ssl_connection = (url_data.use_tls) ? LCCSCF_USE_SSL : 0;
-        info.protocol = WFP_CLIENT_PROTOCOL_NAME;
+        info.protocol = WF_PROTOCOL_NAME_ADAPTER_SERVER;
+        info.local_protocol_name = WF_PROTOCOL_NAME_PROVIDER_CLIENT;
         info.pwsi = &protocol->wsi;
 
         lws_client_connect_via_info(&info);

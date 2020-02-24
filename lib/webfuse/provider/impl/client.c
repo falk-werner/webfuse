@@ -35,7 +35,6 @@ struct wfp_client * wfp_impl_client_create(
         wfp_impl_client_protocol_init(&client->protocol, &config->provider, config->user_data);
 
         memset(client->protocols, 0, sizeof(struct lws_protocols) * WFP_CLIENT_PROTOCOL_COUNT);
-        client->protocols[0].name = WFP_CLIENT_PROTOCOL_NAME;
         wfp_impl_client_protocol_init_lws(&client->protocol, &client->protocols[0]);
 
         memset(&client->info, 0, sizeof(struct lws_context_creation_info));

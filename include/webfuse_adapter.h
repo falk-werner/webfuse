@@ -7,6 +7,7 @@
 #define WF_ADAPTER_H
 
 #include <webfuse/core/status.h>
+#include <webfuse/core/protocol_names.h>
 
 #include <webfuse/adapter/api.h>
 #include <webfuse/adapter/server.h>

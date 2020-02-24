@@ -227,7 +227,7 @@ Read from an open file.
 
 Adds a filesystem.
 
-    fs provider: {"method": "add_filesytem", "params": [<name>], "id": <id>}
+    fs provider: {"method": "add_filesystem", "params": [<name>], "id": <id>}
     webfuse daemon: {"result": {"id": <name>}, "id": <id>}
 
 | Item        | Data type | Description                     |

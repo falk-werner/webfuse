@@ -11,7 +11,6 @@
 #include "webfuse/provider/impl/client_config.h"
 #include "webfuse/provider/impl/client.h"
 #include "webfuse/provider/impl/dirbuffer.h"
-#include "webfuse/provider/impl/static_filesystem.h"
 
 // respond
 
@@ -240,61 +239,4 @@ void wfp_dirbuffer_add(
     ino_t inode)
 {
     wfp_impl_dirbuffer_add(buffer, name, inode);
-}
-
-// static_filesystem
-
-struct wfp_static_filesystem *
-wfp_static_filesystem_create(
-    struct wfp_client_config * config)
-{
-    return wfp_impl_static_filesystem_create(config);
-}
-
-void
-wfp_static_filesystem_dispose(
-    struct wfp_static_filesystem * filesystem)
-{
-    wfp_impl_static_filesystem_dispose(filesystem);
-}
-
-void
-wfp_static_filesystem_add(
-    struct wfp_static_filesystem * filesystem,
-    char const * path,
-    int mode,
-    char const * content,
-    size_t length)
-{
-    wfp_impl_static_filesystem_add(filesystem, path, mode, content, length);
-}
-
-void
-wfp_static_filesystem_add_text(
-    struct wfp_static_filesystem * filesystem,
-    char const * path,
-    int mode,
-    char const * content)
-{
-    wfp_impl_static_filesystem_add_text(filesystem, path, mode, content);
-}
-
-void
-wfp_static_filesystem_add_file(
-    struct wfp_static_filesystem * filesystem,
-    char const * path,
-    char const * filename)
-{
-    wfp_impl_static_filesystem_add_file(filesystem, path, filename);
-}
-
-void
-wfp_static_filesystem_add_generic(
-    struct wfp_static_filesystem * filesystem,
-    char const * path,
-    wfp_static_filesystem_read_fn * read,
-    wfp_static_filesystem_get_info_fn * get_info,
-    void * user_data)
-{
-    wfp_impl_static_filesystem_add_generic(filesystem, path, read, get_info, user_data);
 }

@@ -38,7 +38,6 @@ static struct lws_context * wf_impl_server_context_create(
     memset(server->ws_protocols, 0, sizeof(struct lws_protocols) * WF_SERVER_PROTOCOL_COUNT);
     server->ws_protocols[0].name = "http";
     server->ws_protocols[0].callback = lws_callback_http_dummy;
-    server->ws_protocols[1].name = "fs";
     wf_impl_server_protocol_init_lws(&server->protocol, &server->ws_protocols[1]);
 
 	memset(&server->mount, 0, sizeof(struct lws_http_mount));
