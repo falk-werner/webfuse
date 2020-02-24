@@ -21,8 +21,10 @@ namespace
 
 class ClientProtocolFixture
 {
+    ClientProtocolFixture(ClientProtocolFixture const &) = delete;
+    ClientProtocolFixture& operator=(ClientProtocolFixture const &) = delete;
 public:
-    ClientProtocolFixture(IProviderClient& client)
+    explicit ClientProtocolFixture(IProviderClient& client)
     {
         config = wfp_client_config_create();
         client.AttachTo(config);
