@@ -70,6 +70,16 @@ extern void wfp_impl_client_config_set_onread(
     struct wfp_client_config * config,
     wfp_read_fn * handler);
 
+extern void wfp_impl_client_config_set_username_credentials(
+    struct wfp_client_config * config,
+    char const * username,
+    char const * password);
+
+extern void wfp_impl_client_config_set_generic_credentials(
+    struct wfp_client_config * config,
+    char const * credentials_type,
+    char const * contents[]); 
+
 #ifdef __cplusplus
 }
 #endif

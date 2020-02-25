@@ -110,3 +110,29 @@ void wfp_impl_client_config_set_onread(
 {
     config->provider.read = handler;
 }
+
+
+void wfp_impl_client_config_set_username_credentials(
+    struct wfp_client_config * config,
+    char const * username,
+    char const * password)
+{
+    (void) config;
+    (void) username;
+    (void) password;
+
+    // ToDo: implement me
+}
+
+void wfp_impl_client_config_set_generic_credentials(
+    struct wfp_client_config * config,
+    char const * credentials_type,
+    char const * contents[])
+{
+    (void) config;
+    (void) credentials_type;
+    (void) contents;
+
+    // ToDo: implement me
+
+}

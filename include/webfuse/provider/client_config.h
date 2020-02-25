@@ -227,6 +227,27 @@ extern WFP_API void wfp_client_config_set_onread(
     struct wfp_client_config * config,
     wfp_read_fn * handler);
 
+//------------------------------------------------------------------------------
+/// \brief Enabled authentication with username and password.
+///
+/// Sets username and password for built-in username authentication.
+///
+/// \param config pointer to client configuration
+/// \param username pointer to username
+/// \param password pointer to password
+//------------------------------------------------------------------------------
+extern WFP_API void wfp_client_config_set_username_credentials(
+    struct wfp_client_config * config,
+    char const * username,
+    char const * password);
+
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+extern WFP_API void wfp_client_config_set_generic_credentials(
+    struct wfp_client_config * config,
+    char const * credentials_type,
+    char const * contents[]); 
+
 #ifdef __cplusplus
 }
 #endif

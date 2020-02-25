@@ -45,6 +45,13 @@ public:
         wfp_client_config_dispose(config);
     }
 
+    void SetUsernameCredentials(
+        std::string const & username,
+        std::string const & password)
+    {
+        wfp_client_config_set_username_credentials(config, username.c_str(), password.c_str());
+    }
+
     void Connect()
     {
         wfp_client_protocol_connect(protocol, server->getContext(), "ws://localhost:54321/");
@@ -59,6 +66,47 @@ public:
     json_t * ReceiveMessageFromClient()
     {
         return server->receiveMessage();
+    }
+
+    void AwaitAuthentication(
+        std::string const & expected_username,
+        std::string const & expected_password)
+    {
+        json_t * request = server->receiveMessage();
+        ASSERT_TRUE(json_is_object(request));
+
+        json_t * method = json_object_get(request, "method");
+        ASSERT_TRUE(json_is_string(method));
+        ASSERT_STREQ("authenticate", json_string_value(method));
+
+        json_t * id = json_object_get(request, "id");
+        ASSERT_TRUE(json_is_integer(id));
+
+        json_t * params = json_object_get(request, "params");
+        ASSERT_TRUE(json_is_array(params));
+        ASSERT_EQ(2, json_array_size(params));
+
+        json_t * type = json_array_get(params, 0);
+        ASSERT_TRUE(json_is_string(type));
+        ASSERT_STREQ("username", json_string_value(type));
+
+        json_t * credentials = json_array_get(params, 1);
+        ASSERT_TRUE(json_is_object(credentials));
+
+        json_t * username = json_object_get(credentials, "username");
+        ASSERT_TRUE(json_is_string(username));
+        ASSERT_STREQ(expected_username.c_str(), json_string_value(username));
+        
+        json_t * password = json_object_get(credentials, "password");
+        ASSERT_TRUE(json_is_string(password));
+        ASSERT_STREQ(expected_password.c_str(), json_string_value(password));
+
+        json_t * response = json_object();
+        json_object_set_new(response, "result", json_object());
+        json_object_set(response, "id", id);
+        server->sendMessage(response);
+
+        json_decref(request);
     }
 
     void AwaitAddFilesystem(std::string& filesystemName)
@@ -91,7 +139,6 @@ public:
         server->sendMessage(response);
 
         json_decref(addFilesystemRequest);
-
     }
 
 private:
@@ -100,9 +147,7 @@ private:
     wfp_client_protocol * protocol;
 };
 
-
 }
-
 
 TEST(client_protocol, connect)
 {
@@ -118,6 +163,27 @@ TEST(client_protocol, connect)
     std::string filesystem;
     fixture.AwaitAddFilesystem(filesystem);
     if (HasFatalFailure()) { return; }
+}
+
+TEST(client_protocol, connect_with_username_authentication)
+{
+    MockProviderClient provider;
+    ClientProtocolFixture fixture(provider);
+    fixture.SetUsernameCredentials("bob", "secret");
+
+    EXPECT_CALL(provider, OnConnected()).Times(AtMost(1));
+    EXPECT_CALL(provider, OnDisconnected()).Times(1);
+    
+    fixture.Connect();
+    if (HasFatalFailure()) { return; }
+
+    fixture.AwaitAuthentication("bob", "secret");
+    if (HasFatalFailure()) { return; }
+
+    std::string filesystem;
+    fixture.AwaitAddFilesystem(filesystem);
+    if (HasFatalFailure()) { return; }
+
 }
 
 TEST(client_protocol, getattr)

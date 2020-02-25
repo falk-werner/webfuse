@@ -155,6 +155,23 @@ void wfp_client_config_set_onread(
     wfp_impl_client_config_set_onread(config, handler);
 }
 
+void wfp_client_config_set_username_credentials(
+    struct wfp_client_config * config,
+    char const * username,
+    char const * password)
+{
+    wfp_impl_client_config_set_username_credentials(config, username, password);
+}
+
+void wfp_client_config_set_generic_credentials(
+    struct wfp_client_config * config,
+    char const * credentials_type,
+    char const * contents[])
+{
+    wfp_impl_client_config_set_generic_credentials(config, credentials_type, contents);
+}
+
+
 // protocol
 
 
