@@ -45,13 +45,6 @@ public:
         wfp_client_config_dispose(config);
     }
 
-    void SetUsernameCredentials(
-        std::string const & username,
-        std::string const & password)
-    {
-        wfp_client_config_set_username_credentials(config, username.c_str(), password.c_str());
-    }
-
     void Connect()
     {
         wfp_client_protocol_connect(protocol, server->getContext(), "ws://localhost:54321/");
@@ -169,7 +162,7 @@ TEST(client_protocol, connect_with_username_authentication)
 {
     MockProviderClient provider;
     ClientProtocolFixture fixture(provider);
-    fixture.SetUsernameCredentials("bob", "secret");
+    // ToDo: enable authentication 
 
     EXPECT_CALL(provider, OnConnected()).Times(AtMost(1));
     EXPECT_CALL(provider, OnDisconnected()).Times(1);

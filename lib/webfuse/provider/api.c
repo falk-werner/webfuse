@@ -11,6 +11,7 @@
 #include "webfuse/provider/impl/client_config.h"
 #include "webfuse/provider/impl/client.h"
 #include "webfuse/provider/impl/dirbuffer.h"
+#include "webfuse/provider/impl/credentials.h"
 
 // respond
 
@@ -155,22 +156,12 @@ void wfp_client_config_set_onread(
     wfp_impl_client_config_set_onread(config, handler);
 }
 
-void wfp_client_config_set_username_credentials(
+void wfp_client_config_enable_authentication(
     struct wfp_client_config * config,
-    char const * username,
-    char const * password)
+    wfp_get_credentials_fn * get_credentials)
 {
-    wfp_impl_client_config_set_username_credentials(config, username, password);
+    wfp_impl_client_config_enable_authentication(config, get_credentials);
 }
-
-void wfp_client_config_set_generic_credentials(
-    struct wfp_client_config * config,
-    char const * credentials_type,
-    char const * contents[])
-{
-    wfp_impl_client_config_set_generic_credentials(config, credentials_type, contents);
-}
-
 
 // protocol
 
@@ -256,4 +247,21 @@ void wfp_dirbuffer_add(
     ino_t inode)
 {
     wfp_impl_dirbuffer_add(buffer, name, inode);
+}
+
+// credentials
+
+void wfp_credentials_set_type(
+    struct wfp_credentials * credentials,
+    char const * type)
+{
+    wfp_impl_credentials_set_type(credentials, type);
+}
+
+void wfp_credentials_add(
+    struct wfp_credentials * credentials,
+    char const * key,
+    char const * value)
+{
+    wfp_impl_credentials_add(credentials, key, value);
 }

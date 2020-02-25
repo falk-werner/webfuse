@@ -9,6 +9,7 @@ add_library(webfuse-provider-static STATIC
 	lib/webfuse/provider/impl/provider.c
 	lib/webfuse/provider/impl/request.c
 	lib/webfuse/provider/impl/dirbuffer.c
+	lib/webfuse/provider/impl/credentials.c
 	lib/webfuse/provider/impl/operation/lookup.c
 	lib/webfuse/provider/impl/operation/getattr.c
 	lib/webfuse/provider/impl/operation/readdir.c

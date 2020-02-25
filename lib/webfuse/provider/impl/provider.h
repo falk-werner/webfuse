@@ -20,6 +20,7 @@ struct wfp_provider
     wfp_open_fn * open;
     wfp_close_fn * close;
     wfp_read_fn * read;
+    wfp_get_credentials_fn * get_credentials;
 };
 
 struct wfp_impl_invokation_context

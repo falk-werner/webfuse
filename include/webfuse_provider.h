@@ -14,6 +14,7 @@
 #include <webfuse/provider/client_config.h>
 #include <webfuse/provider/client_protocol.h>
 #include <webfuse/provider/dirbuffer.h>
+#include <webfuse/provider/credentials.h>
 
 #include <webfuse/provider/operation/error.h>
 #include <webfuse/provider/operation/lookup.h>

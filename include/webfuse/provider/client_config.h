@@ -14,6 +14,7 @@
 #include <webfuse/provider/operation/open.h>
 #include <webfuse/provider/operation/close.h>
 #include <webfuse/provider/operation/read.h>
+#include <webfuse/provider/credentials.h>
 
 #ifdef __cplusplus
 extern "C"
@@ -228,25 +229,15 @@ extern WFP_API void wfp_client_config_set_onread(
     wfp_read_fn * handler);
 
 //------------------------------------------------------------------------------
-/// \brief Enabled authentication with username and password.
-///
-/// Sets username and password for built-in username authentication.
+/// \brief Enabled authentication.
 ///
 /// \param config pointer to client configuration
-/// \param username pointer to username
-/// \param password pointer to password
+/// \param get_credentials pointer to function providing credentials when 
+//         needed.
 //------------------------------------------------------------------------------
-extern WFP_API void wfp_client_config_set_username_credentials(
+extern WFP_API void wfp_client_config_enable_authentication(
     struct wfp_client_config * config,
-    char const * username,
-    char const * password);
-
-//------------------------------------------------------------------------------
-//------------------------------------------------------------------------------
-extern WFP_API void wfp_client_config_set_generic_credentials(
-    struct wfp_client_config * config,
-    char const * credentials_type,
-    char const * contents[]); 
+    wfp_get_credentials_fn * get_credentials);
 
 #ifdef __cplusplus
 }
