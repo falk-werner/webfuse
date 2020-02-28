@@ -7,6 +7,13 @@ include(GoogleTest)
 pkg_check_modules(GMOCK gmock)
 
 add_executable(alltests
+	test/jsonrpc/test_util.cc
+	test/jsonrpc/test_is_request.cc
+	test/jsonrpc/test_request.cc
+	test/jsonrpc/test_is_response.cc
+	test/jsonrpc/test_response.cc
+	test/jsonrpc/test_server.cc
+	test/jsonrpc/test_proxy.cc
 	test/webfuse/utils/tempdir.cc
 	test/webfuse/utils/file_utils.cc
 	test/webfuse/utils/msleep.cc
@@ -37,13 +44,6 @@ add_executable(alltests
 	test/webfuse/tests/adapter/test_uuid_mountpoint.cc
 	test/webfuse/tests/adapter/test_uuid_mountpoint_factory.cc
 	test/webfuse/tests/adapter/test_fuse_req.cc
-	test/webfuse/tests/adapter/jsonrpc/test_util.cc
-	test/webfuse/tests/adapter/jsonrpc/test_is_request.cc
-	test/webfuse/tests/adapter/jsonrpc/test_request.cc
-	test/webfuse/tests/adapter/jsonrpc/test_is_response.cc
-	test/webfuse/tests/adapter/jsonrpc/test_response.cc
-	test/webfuse/tests/adapter/jsonrpc/test_server.cc
-	test/webfuse/tests/adapter/jsonrpc/test_proxy.cc
 	test/webfuse/tests/provider/test_url.cc
 	test/webfuse/tests/provider/test_client_protocol.cc
 	test/webfuse/tests/integration/test_integration.cc
@@ -65,6 +65,7 @@ target_link_libraries(alltests PUBLIC
 	webfuse-adapter-static
 	webfuse-provider-static
 	webfuse-core
+	jsonrpc
 	${FUSE3_LIBRARIES}
 	${LWS_LIBRARIES}
 	${JANSSON_LIBRARIES}

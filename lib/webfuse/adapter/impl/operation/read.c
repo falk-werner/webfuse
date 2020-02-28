@@ -5,8 +5,9 @@
 #include <limits.h>
 #include <jansson.h>
 
-#include "webfuse/adapter/impl/jsonrpc/proxy.h"
+#include "jsonrpc/proxy.h"
 #include "webfuse/core/base64.h"
+#include "webfuse/core/json_util.h"
 
 #define WF_MAX_READ_LENGTH 4096
 
@@ -38,17 +39,21 @@ static char * wf_impl_fill_buffer(
 	return buffer;
 }
 
-static void wf_impl_operation_read_finished(void * user_data, wf_status status, json_t const * data)
+static void wf_impl_operation_read_finished(
+	void * user_data, 
+	json_t const * result,
+	json_t const * error)
 {
+	wf_status status = wf_impl_jsonrpc_get_status(error);
 	fuse_req_t request = user_data;
 
 	char * buffer = NULL;	
 	size_t length = 0;
-	if (NULL != data)
+	if (NULL != result)
 	{
-		json_t * data_holder = json_object_get(data, "data");
-		json_t * format_holder = json_object_get(data, "format");
-		json_t * count_holder = json_object_get(data, "count");
+		json_t * data_holder = json_object_get(result, "data");
+		json_t * format_holder = json_object_get(result, "format");
+		json_t * count_holder = json_object_get(result, "count");
 
 		if (json_is_string(data_holder) &&
         	json_is_string(format_holder) &&
@@ -87,13 +92,13 @@ void wf_impl_operation_read(
 	struct fuse_file_info * file_info)
 {
     struct wf_impl_operations_context * user_data = fuse_req_userdata(request);
-    struct wf_impl_jsonrpc_proxy * rpc = wf_impl_operations_context_get_proxy(user_data);
+    struct jsonrpc_proxy * rpc = wf_impl_operations_context_get_proxy(user_data);
 
 	if (NULL != rpc)
 	{
 		int const length = (size <= WF_MAX_READ_LENGTH) ? (int) size : WF_MAX_READ_LENGTH;
 		int handle = (file_info->fh & INT_MAX);
-		wf_impl_jsonrpc_proxy_invoke(rpc, &wf_impl_operation_read_finished, request, "read", "siiii", user_data->name, (int) inode, handle, (int) offset, length);
+		jsonrpc_proxy_invoke(rpc, &wf_impl_operation_read_finished, request, "read", "siiii", user_data->name, (int) inode, handle, (int) offset, length);
 	}
 	else
 	{

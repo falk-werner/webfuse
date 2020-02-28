@@ -28,12 +28,6 @@ add_library(webfuse-adapter-static STATIC
 	lib/webfuse/adapter/impl/operation/open.c
 	lib/webfuse/adapter/impl/operation/close.c
 	lib/webfuse/adapter/impl/operation/read.c
-	lib/webfuse/adapter/impl/jsonrpc/proxy.c
-	lib/webfuse/adapter/impl/jsonrpc/server.c
-	lib/webfuse/adapter/impl/jsonrpc/method.c
-	lib/webfuse/adapter/impl/jsonrpc/request.c
-	lib/webfuse/adapter/impl/jsonrpc/response.c
-	lib/webfuse/adapter/impl/jsonrpc/util.c
 )
 
 target_include_directories(webfuse-adapter-static PRIVATE
@@ -70,7 +64,7 @@ set_target_properties(webfuse-adapter PROPERTIES SOVERSION 0)
 set_target_properties(webfuse-adapter PROPERTIES C_VISIBILITY_PRESET hidden)
 set_target_properties(webfuse-adapter PROPERTIES COMPILE_DEFINITIONS "WF_API=WF_EXPORT")
 
-target_link_libraries(webfuse-adapter PRIVATE webfuse-adapter-static webfuse-core)
+target_link_libraries(webfuse-adapter PRIVATE webfuse-adapter-static webfuse-core jsonrpc)
 
 file(WRITE "${PROJECT_BINARY_DIR}/libwebfuse-adapter.pc"
 "prefix=\"${CMAKE_INSTALL_PREFIX}\"

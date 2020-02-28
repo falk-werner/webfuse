@@ -1,0 +1,10 @@
+#ifndef JSONRPC_STATUS_H
+#define JSONRPC_STATUS_H
+
+#define JSONRPC_GOOD 0
+#define JSONRPC_BAD  -1
+#define JSONRPC_BAD_TIMEOUT -3
+#define JSONRPC_BAD_BUSY -4
+#define JSONRPC_BAD_FORMAT -5
+
+#endif

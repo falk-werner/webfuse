@@ -16,8 +16,6 @@ namespace webfuse_test
         private:
             wf_status error_code_;            
     };
-    
-
 
     class IProviderClient
     {
@@ -32,8 +30,9 @@ namespace webfuse_test
             virtual void Open(ino_t inode, int flags, uint32_t * handle) = 0;
             virtual void Close(ino_t inode, uint32_t handle, int flags) = 0;
             virtual void Read(ino_t inode, uint32_t handle, size_t offset, size_t length, char * buffer, size_t * bytes_read) = 0;
+            virtual void GetCredentials(wfp_credentials * credentials) = 0;
 
-            void AttachTo(wfp_client_config * config);
+            void AttachTo(wfp_client_config * config, bool enableAuthentication = false);
     };
 
     class MockProviderClient: public IProviderClient
@@ -49,6 +48,7 @@ namespace webfuse_test
             MOCK_METHOD3( Open, void(ino_t inode, int flags, uint32_t * handle));
             MOCK_METHOD3( Close, void(ino_t inode, uint32_t handle, int flags));
             MOCK_METHOD6( Read, void(ino_t inode, uint32_t handle, size_t offset, size_t length, char * buffer, size_t * bytes_read));
+            MOCK_METHOD1( GetCredentials, void (wfp_credentials * credentials));
     };
 }
 

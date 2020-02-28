@@ -1,7 +1,8 @@
 #include <gtest/gtest.h>
-#include "webfuse/adapter/impl/jsonrpc/proxy.h"
+#include "jsonrpc/proxy.h"
 #include "webfuse/adapter/impl/time/timeout_manager.h"
 #include "webfuse/utils/msleep.hpp"
+#include "webfuse/core/json_util.h"
 
 using webfuse_test::msleep;
 
@@ -47,13 +48,13 @@ namespace
     struct FinishedContext
     {
         bool is_called;
-        wf_status status;
         json_t * result;
+        json_t * error;
 
         FinishedContext()
         : is_called(false)
-        , status(WF_BAD)
         , result(nullptr)
+        , error(nullptr)
         {
 
         }
@@ -64,18 +65,23 @@ namespace
             {
                 json_decref(result);
             }
+
+            if (nullptr != error)
+            {
+                json_decref(error);
+            }
         }
     };
 
     void jsonrpc_finished(
         void * user_data,
-        wf_status status,
-        struct json_t const * result)
+        json_t const * result,
+        json_t const * error)
     {
         FinishedContext * context = reinterpret_cast<FinishedContext*>(user_data);
         context->is_called = true;
-        context->status = status;
         context->result = json_deep_copy(result);
+        context->error = json_deep_copy(error);
     }
 }
 
@@ -86,10 +92,10 @@ TEST(jsonrpc_proxy, init)
 
     SendContext context;
     void * user_data = reinterpret_cast<void*>(&context);
-    struct wf_impl_jsonrpc_proxy proxy;
-    wf_impl_jsonrpc_proxy_init(&proxy, &timeout_manager, WF_DEFAULT_TIMEOUT, &jsonrpc_send, user_data);
+    struct jsonrpc_proxy proxy;
+    jsonrpc_proxy_init(&proxy, &timeout_manager, WF_DEFAULT_TIMEOUT, &jsonrpc_send, user_data);
 
-    wf_impl_jsonrpc_proxy_cleanup(&proxy);
+    jsonrpc_proxy_cleanup(&proxy);
     wf_impl_timeout_manager_cleanup(&timeout_manager);
 
     ASSERT_FALSE(context.is_called);
@@ -102,12 +108,12 @@ TEST(jsonrpc_proxy, invoke)
 
     SendContext send_context;
     void * send_data = reinterpret_cast<void*>(&send_context);
-    struct wf_impl_jsonrpc_proxy proxy;
-    wf_impl_jsonrpc_proxy_init(&proxy, &timeout_manager, WF_DEFAULT_TIMEOUT, &jsonrpc_send, send_data);
+    struct jsonrpc_proxy proxy;
+    jsonrpc_proxy_init(&proxy, &timeout_manager, WF_DEFAULT_TIMEOUT, &jsonrpc_send, send_data);
 
     FinishedContext finished_context;
     void * finished_data = reinterpret_cast<void*>(&finished_context);
-    wf_impl_jsonrpc_proxy_invoke(&proxy, &jsonrpc_finished, finished_data, "foo", "si", "bar", 42);
+    jsonrpc_proxy_invoke(&proxy, &jsonrpc_finished, finished_data, "foo", "si", "bar", 42);
 
     ASSERT_TRUE(send_context.is_called);
     ASSERT_TRUE(json_is_object(send_context.response));
@@ -129,11 +135,11 @@ TEST(jsonrpc_proxy, invoke)
 
     ASSERT_FALSE(finished_context.is_called);
 
-    wf_impl_jsonrpc_proxy_cleanup(&proxy);
+    jsonrpc_proxy_cleanup(&proxy);
     wf_impl_timeout_manager_cleanup(&timeout_manager);
 
     ASSERT_TRUE(finished_context.is_called);
-    ASSERT_FALSE(WF_GOOD == finished_context.status);
+    ASSERT_FALSE(nullptr == finished_context.error);
 }
 
 TEST(jsonrpc_proxy, invoke_calls_finish_if_send_fails)
@@ -143,20 +149,20 @@ TEST(jsonrpc_proxy, invoke_calls_finish_if_send_fails)
 
     SendContext send_context(false);
     void * send_data = reinterpret_cast<void*>(&send_context);
-    struct wf_impl_jsonrpc_proxy proxy;
-    wf_impl_jsonrpc_proxy_init(&proxy, &timeout_manager, WF_DEFAULT_TIMEOUT, &jsonrpc_send, send_data);
+    struct jsonrpc_proxy proxy;
+    jsonrpc_proxy_init(&proxy, &timeout_manager, WF_DEFAULT_TIMEOUT, &jsonrpc_send, send_data);
 
     FinishedContext finished_context;
     void * finished_data = reinterpret_cast<void*>(&finished_context);
-    wf_impl_jsonrpc_proxy_invoke(&proxy, &jsonrpc_finished, finished_data, "foo", "si", "bar", 42);
+    jsonrpc_proxy_invoke(&proxy, &jsonrpc_finished, finished_data, "foo", "si", "bar", 42);
 
     ASSERT_TRUE(send_context.is_called);
     ASSERT_TRUE(json_is_object(send_context.response));
 
     ASSERT_TRUE(finished_context.is_called);
-    ASSERT_FALSE(WF_GOOD == finished_context.status);
+    ASSERT_FALSE(nullptr == finished_context.error);
 
-    wf_impl_jsonrpc_proxy_cleanup(&proxy);
+    jsonrpc_proxy_cleanup(&proxy);
     wf_impl_timeout_manager_cleanup(&timeout_manager);
 }
 
@@ -167,16 +173,16 @@ TEST(jsonrpc_proxy, invoke_fails_if_another_request_is_pending)
 
     SendContext send_context;
     void * send_data = reinterpret_cast<void*>(&send_context);
-    struct wf_impl_jsonrpc_proxy proxy;
-    wf_impl_jsonrpc_proxy_init(&proxy, &timeout_manager, WF_DEFAULT_TIMEOUT, &jsonrpc_send, send_data);
+    struct jsonrpc_proxy proxy;
+    jsonrpc_proxy_init(&proxy, &timeout_manager, WF_DEFAULT_TIMEOUT, &jsonrpc_send, send_data);
 
     FinishedContext finished_context;
     void * finished_data = reinterpret_cast<void*>(&finished_context);
-    wf_impl_jsonrpc_proxy_invoke(&proxy, &jsonrpc_finished, finished_data, "foo", "si", "bar", 42);
+    jsonrpc_proxy_invoke(&proxy, &jsonrpc_finished, finished_data, "foo", "si", "bar", 42);
 
     FinishedContext finished_context2;
     void * finished_data2 = reinterpret_cast<void*>(&finished_context2);
-    wf_impl_jsonrpc_proxy_invoke(&proxy, &jsonrpc_finished, finished_data2, "foo", "");
+    jsonrpc_proxy_invoke(&proxy, &jsonrpc_finished, finished_data2, "foo", "");
 
     ASSERT_TRUE(send_context.is_called);
     ASSERT_TRUE(json_is_object(send_context.response));
@@ -184,9 +190,9 @@ TEST(jsonrpc_proxy, invoke_fails_if_another_request_is_pending)
     ASSERT_FALSE(finished_context.is_called);
 
     ASSERT_TRUE(finished_context2.is_called);
-    ASSERT_EQ(WF_BAD_BUSY, finished_context2.status);
+    ASSERT_EQ(WF_BAD_BUSY, wf_impl_jsonrpc_get_status(finished_context2.error));
 
-    wf_impl_jsonrpc_proxy_cleanup(&proxy);
+    jsonrpc_proxy_cleanup(&proxy);
     wf_impl_timeout_manager_cleanup(&timeout_manager);
 }
 
@@ -197,19 +203,19 @@ TEST(jsonrpc_proxy, invoke_fails_if_request_is_invalid)
 
     SendContext send_context;
     void * send_data = reinterpret_cast<void*>(&send_context);
-    struct wf_impl_jsonrpc_proxy proxy;
-    wf_impl_jsonrpc_proxy_init(&proxy, &timeout_manager, WF_DEFAULT_TIMEOUT, &jsonrpc_send, send_data);
+    struct jsonrpc_proxy proxy;
+    jsonrpc_proxy_init(&proxy, &timeout_manager, WF_DEFAULT_TIMEOUT, &jsonrpc_send, send_data);
 
     FinishedContext finished_context;
     void * finished_data = reinterpret_cast<void*>(&finished_context);
-    wf_impl_jsonrpc_proxy_invoke(&proxy, &jsonrpc_finished, finished_data, "foo", "?", "error");
+    jsonrpc_proxy_invoke(&proxy, &jsonrpc_finished, finished_data, "foo", "?", "error");
 
     ASSERT_FALSE(send_context.is_called);
 
     ASSERT_TRUE(finished_context.is_called);
-    ASSERT_EQ(WF_BAD, finished_context.status);
+    ASSERT_EQ(WF_BAD, wf_impl_jsonrpc_get_status(finished_context.error));
 
-    wf_impl_jsonrpc_proxy_cleanup(&proxy);
+    jsonrpc_proxy_cleanup(&proxy);
     wf_impl_timeout_manager_cleanup(&timeout_manager);
 }
 
@@ -220,12 +226,12 @@ TEST(jsonrpc_proxy, on_result)
 
     SendContext send_context;
     void * send_data = reinterpret_cast<void*>(&send_context);
-    struct wf_impl_jsonrpc_proxy proxy;
-    wf_impl_jsonrpc_proxy_init(&proxy, &timeout_manager, WF_DEFAULT_TIMEOUT, &jsonrpc_send, send_data);
+    struct jsonrpc_proxy proxy;
+    jsonrpc_proxy_init(&proxy, &timeout_manager, WF_DEFAULT_TIMEOUT, &jsonrpc_send, send_data);
 
     FinishedContext finished_context;
     void * finished_data = reinterpret_cast<void*>(&finished_context);
-    wf_impl_jsonrpc_proxy_invoke(&proxy, &jsonrpc_finished, finished_data, "foo", "si", "bar", 42);
+    jsonrpc_proxy_invoke(&proxy, &jsonrpc_finished, finished_data, "foo", "si", "bar", 42);
 
     ASSERT_TRUE(send_context.is_called);
     ASSERT_TRUE(json_is_object(send_context.response));
@@ -237,15 +243,15 @@ TEST(jsonrpc_proxy, on_result)
     json_object_set_new(response, "result", json_string("okay"));
     json_object_set(response, "id", id);
 
-    wf_impl_jsonrpc_proxy_onresult(&proxy, response);
+    jsonrpc_proxy_onresult(&proxy, response);
     json_decref(response);
 
     ASSERT_TRUE(finished_context.is_called);
-    ASSERT_EQ(WF_GOOD, finished_context.status);
+    ASSERT_EQ(nullptr, finished_context.error);
     ASSERT_TRUE(json_is_string(finished_context.result));
     ASSERT_STREQ("okay", json_string_value(finished_context.result));
 
-    wf_impl_jsonrpc_proxy_cleanup(&proxy);
+    jsonrpc_proxy_cleanup(&proxy);
     wf_impl_timeout_manager_cleanup(&timeout_manager);
 }
 
@@ -256,12 +262,12 @@ TEST(jsonrpc_proxy, on_result_reject_response_with_unknown_id)
 
     SendContext send_context;
     void * send_data = reinterpret_cast<void*>(&send_context);
-    struct wf_impl_jsonrpc_proxy proxy;
-    wf_impl_jsonrpc_proxy_init(&proxy, &timeout_manager, WF_DEFAULT_TIMEOUT, &jsonrpc_send, send_data);
+    struct jsonrpc_proxy proxy;
+    jsonrpc_proxy_init(&proxy, &timeout_manager, WF_DEFAULT_TIMEOUT, &jsonrpc_send, send_data);
 
     FinishedContext finished_context;
     void * finished_data = reinterpret_cast<void*>(&finished_context);
-    wf_impl_jsonrpc_proxy_invoke(&proxy, &jsonrpc_finished, finished_data, "foo", "si", "bar", 42);
+    jsonrpc_proxy_invoke(&proxy, &jsonrpc_finished, finished_data, "foo", "si", "bar", 42);
 
     ASSERT_TRUE(send_context.is_called);
     ASSERT_TRUE(json_is_object(send_context.response));
@@ -273,12 +279,12 @@ TEST(jsonrpc_proxy, on_result_reject_response_with_unknown_id)
     json_object_set_new(response, "result", json_string("okay"));
     json_object_set_new(response, "id", json_integer(1 + json_integer_value(id)));
 
-    wf_impl_jsonrpc_proxy_onresult(&proxy, response);
+    jsonrpc_proxy_onresult(&proxy, response);
     json_decref(response);
 
     ASSERT_FALSE(finished_context.is_called);
 
-    wf_impl_jsonrpc_proxy_cleanup(&proxy);
+    jsonrpc_proxy_cleanup(&proxy);
     wf_impl_timeout_manager_cleanup(&timeout_manager);
 }
 
@@ -289,12 +295,12 @@ TEST(jsonrpc_proxy, timeout)
 
     SendContext send_context;
     void * send_data = reinterpret_cast<void*>(&send_context);
-    struct wf_impl_jsonrpc_proxy proxy;
-    wf_impl_jsonrpc_proxy_init(&proxy, &timeout_manager, 0, &jsonrpc_send, send_data);
+    struct jsonrpc_proxy proxy;
+    jsonrpc_proxy_init(&proxy, &timeout_manager, 0, &jsonrpc_send, send_data);
 
     FinishedContext finished_context;
     void * finished_data = reinterpret_cast<void*>(&finished_context);
-    wf_impl_jsonrpc_proxy_invoke(&proxy, &jsonrpc_finished, finished_data, "foo", "si", "bar", 42);
+    jsonrpc_proxy_invoke(&proxy, &jsonrpc_finished, finished_data, "foo", "si", "bar", 42);
 
     ASSERT_TRUE(send_context.is_called);
     ASSERT_TRUE(json_is_object(send_context.response));
@@ -303,9 +309,9 @@ TEST(jsonrpc_proxy, timeout)
     wf_impl_timeout_manager_check(&timeout_manager);
 
     ASSERT_TRUE(finished_context.is_called);
-    ASSERT_EQ(WF_BAD_TIMEOUT, finished_context.status);
+    ASSERT_EQ(WF_BAD_TIMEOUT, wf_impl_jsonrpc_get_status(finished_context.error));
 
-    wf_impl_jsonrpc_proxy_cleanup(&proxy);
+    jsonrpc_proxy_cleanup(&proxy);
     wf_impl_timeout_manager_cleanup(&timeout_manager);
 }
 
@@ -316,12 +322,12 @@ TEST(jsonrpc_proxy, cleanup_pending_request)
 
     SendContext send_context;
     void * send_data = reinterpret_cast<void*>(&send_context);
-    struct wf_impl_jsonrpc_proxy proxy;
-    wf_impl_jsonrpc_proxy_init(&proxy, &timeout_manager, 10, &jsonrpc_send, send_data);
+    struct jsonrpc_proxy proxy;
+    jsonrpc_proxy_init(&proxy, &timeout_manager, 10, &jsonrpc_send, send_data);
 
     FinishedContext finished_context;
     void * finished_data = reinterpret_cast<void*>(&finished_context);
-    wf_impl_jsonrpc_proxy_invoke(&proxy, &jsonrpc_finished, finished_data, "foo", "si", "bar", 42);
+    jsonrpc_proxy_invoke(&proxy, &jsonrpc_finished, finished_data, "foo", "si", "bar", 42);
 
     ASSERT_TRUE(send_context.is_called);
     ASSERT_TRUE(json_is_object(send_context.response));
@@ -329,7 +335,7 @@ TEST(jsonrpc_proxy, cleanup_pending_request)
     ASSERT_FALSE(finished_context.is_called);
     ASSERT_NE(nullptr, timeout_manager.timers);
 
-    wf_impl_jsonrpc_proxy_cleanup(&proxy);
+    jsonrpc_proxy_cleanup(&proxy);
 
     ASSERT_TRUE(finished_context.is_called);
     ASSERT_EQ(nullptr, timeout_manager.timers);
@@ -346,10 +352,10 @@ TEST(jsonrpc_proxy, notify)
 
     SendContext send_context;
     void * send_data = reinterpret_cast<void*>(&send_context);
-    struct wf_impl_jsonrpc_proxy proxy;
-    wf_impl_jsonrpc_proxy_init(&proxy, &timeout_manager, WF_DEFAULT_TIMEOUT, &jsonrpc_send, send_data);
+    struct jsonrpc_proxy proxy;
+    jsonrpc_proxy_init(&proxy, &timeout_manager, WF_DEFAULT_TIMEOUT, &jsonrpc_send, send_data);
 
-    wf_impl_jsonrpc_proxy_notify(&proxy, "foo", "si", "bar", 42);
+    jsonrpc_proxy_notify(&proxy, "foo", "si", "bar", 42);
 
     ASSERT_TRUE(send_context.is_called);
     ASSERT_TRUE(json_is_object(send_context.response));
@@ -370,7 +376,7 @@ TEST(jsonrpc_proxy, notify)
     ASSERT_EQ(nullptr, id);
 
 
-    wf_impl_jsonrpc_proxy_cleanup(&proxy);
+    jsonrpc_proxy_cleanup(&proxy);
     wf_impl_timeout_manager_cleanup(&timeout_manager);
 }
 
@@ -381,13 +387,13 @@ TEST(jsonrpc_proxy, notify_dont_send_invalid_request)
 
     SendContext send_context;
     void * send_data = reinterpret_cast<void*>(&send_context);
-    struct wf_impl_jsonrpc_proxy proxy;
-    wf_impl_jsonrpc_proxy_init(&proxy, &timeout_manager, WF_DEFAULT_TIMEOUT, &jsonrpc_send, send_data);
+    struct jsonrpc_proxy proxy;
+    jsonrpc_proxy_init(&proxy, &timeout_manager, WF_DEFAULT_TIMEOUT, &jsonrpc_send, send_data);
 
-    wf_impl_jsonrpc_proxy_notify(&proxy, "foo", "?");
+    jsonrpc_proxy_notify(&proxy, "foo", "?");
 
     ASSERT_FALSE(send_context.is_called);
 
-    wf_impl_jsonrpc_proxy_cleanup(&proxy);
+    jsonrpc_proxy_cleanup(&proxy);
     wf_impl_timeout_manager_cleanup(&timeout_manager);
 }

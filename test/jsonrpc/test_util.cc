@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include "webfuse/adapter/impl/jsonrpc/util.h"
+#include "webfuse/core/json_util.h"
 
 TEST(jsonrpc_util, get_int)
 {

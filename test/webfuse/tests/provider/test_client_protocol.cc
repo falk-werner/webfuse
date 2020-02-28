@@ -15,6 +15,7 @@ using webfuse_test::MockProviderClient;
 using webfuse_test::IProviderClient;
 using testing::_;
 using testing::AtMost;
+using testing::Invoke;
 
 namespace
 {
@@ -24,10 +25,10 @@ class ClientProtocolFixture
     ClientProtocolFixture(ClientProtocolFixture const &) = delete;
     ClientProtocolFixture& operator=(ClientProtocolFixture const &) = delete;
 public:
-    explicit ClientProtocolFixture(IProviderClient& client)
+    explicit ClientProtocolFixture(IProviderClient& client, bool enableAuthentication = false)
     {
         config = wfp_client_config_create();
-        client.AttachTo(config);
+        client.AttachTo(config, enableAuthentication);
 
         protocol = wfp_client_protocol_create(config);
 
@@ -140,6 +141,13 @@ private:
     wfp_client_protocol * protocol;
 };
 
+void GetCredentials(wfp_credentials * credentials)
+{
+    wfp_credentials_set_type(credentials, "username");
+    wfp_credentials_add(credentials, "username", "bob");
+    wfp_credentials_add(credentials, "password", "secret");
+}
+
 }
 
 TEST(client_protocol, connect)
@@ -161,11 +169,11 @@ TEST(client_protocol, connect)
 TEST(client_protocol, connect_with_username_authentication)
 {
     MockProviderClient provider;
-    ClientProtocolFixture fixture(provider);
-    // ToDo: enable authentication 
+    ClientProtocolFixture fixture(provider, true);
 
     EXPECT_CALL(provider, OnConnected()).Times(AtMost(1));
     EXPECT_CALL(provider, OnDisconnected()).Times(1);
+    EXPECT_CALL(provider, GetCredentials(_)).WillOnce(Invoke(GetCredentials)).Times(1);
     
     fixture.Connect();
     if (HasFatalFailure()) { return; }

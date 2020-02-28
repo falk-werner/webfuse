@@ -1,13 +1,13 @@
-#include "webfuse/adapter/impl/jsonrpc/method.h"
+#include "jsonrpc/method.h"
 #include <stdlib.h>
 #include <string.h>
 
-struct wf_impl_jsonrpc_method * wf_impl_jsonrpc_method_create(
+struct jsonrpc_method * jsonrpc_method_create(
     char const * method_name,
-    wf_impl_jsonrpc_method_invoke_fn * invoke,
+    jsonrpc_method_invoke_fn * invoke,
     void * user_data)
 {
-    struct wf_impl_jsonrpc_method * method = malloc(sizeof(struct wf_impl_jsonrpc_method));
+    struct jsonrpc_method * method = malloc(sizeof(struct jsonrpc_method));
     if (NULL != method)
     {
         method->next = NULL;
@@ -19,8 +19,8 @@ struct wf_impl_jsonrpc_method * wf_impl_jsonrpc_method_create(
     return method;
 }
 
-void wf_impl_jsonrpc_method_dispose(
-    struct wf_impl_jsonrpc_method * method)
+void jsonrpc_method_dispose(
+    struct jsonrpc_method * method)
 {
     free(method->name);
     free(method);

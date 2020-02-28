@@ -9,7 +9,7 @@
 #include "webfuse/core/protocol_names.h"
 
 #include "webfuse/adapter/impl/credentials.h"
-#include "webfuse/adapter/impl/jsonrpc/request.h"
+#include "jsonrpc/request.h"
 #include "webfuse/adapter/impl/uuid_mountpoint_factory.h"
 
 static int wf_impl_server_protocol_callback(
@@ -129,7 +129,7 @@ void wf_impl_server_protocol_init_lws(
 }
 
 static void wf_impl_server_protocol_authenticate(
-    struct wf_impl_jsonrpc_request * request,
+    struct jsonrpc_request * request,
     char const * WF_UNUSED_PARAM(method_name),
     json_t * params,
     void * WF_UNUSED_PARAM(user_data))
@@ -145,7 +145,7 @@ static void wf_impl_server_protocol_authenticate(
         struct wf_credentials creds;
          
         wf_impl_credentials_init(&creds, type, creds_holder);
-        struct wf_impl_session * session = wf_impl_jsonrpc_request_get_userdata(request);
+        struct wf_impl_session * session = jsonrpc_request_get_userdata(request);
         result = wf_impl_session_authenticate(session, &creds);
         
         wf_impl_credentials_cleanup(&creds);
@@ -155,11 +155,11 @@ static void wf_impl_server_protocol_authenticate(
     if (result)
     {
         json_t * result = json_object();
-        wf_impl_jsonrpc_respond(request, result);
+        jsonrpc_respond(request, result);
     }
     else
     {
-        wf_impl_jsonrpc_respond_error(request, WF_BAD_ACCESS_DENIED);
+        jsonrpc_respond_error(request, WF_BAD_ACCESS_DENIED);
     }    
 }
 
@@ -179,12 +179,12 @@ static bool wf_impl_server_protocol_check_name(char const * value)
 }
 
 static void wf_impl_server_protocol_add_filesystem(
-    struct wf_impl_jsonrpc_request * request,
+    struct jsonrpc_request * request,
     char const * WF_UNUSED_PARAM(method_name),
     json_t * params,
     void * WF_UNUSED_PARAM(user_data))
 {
-    struct wf_impl_session * session = wf_impl_jsonrpc_request_get_userdata(request);
+    struct wf_impl_session * session = jsonrpc_request_get_userdata(request);
     wf_status status = (session->is_authenticated) ? WF_GOOD : WF_BAD_ACCESS_DENIED;
 
     char const * name = NULL;
@@ -218,11 +218,11 @@ static void wf_impl_server_protocol_add_filesystem(
     {
         json_t * result = json_object();
         json_object_set_new(result, "id", json_string(name));
-        wf_impl_jsonrpc_respond(request, result);
+        jsonrpc_respond(request, result);
     }
     else
     {
-        wf_impl_jsonrpc_respond_error(request, status);
+        jsonrpc_respond_error(request, status);
     }
     
 
@@ -240,9 +240,9 @@ void wf_impl_server_protocol_init(
     wf_impl_session_manager_init(&protocol->session_manager);
     wf_impl_authenticators_init(&protocol->authenticators);
 
-    wf_impl_jsonrpc_server_init(&protocol->server);
-    wf_impl_jsonrpc_server_add(&protocol->server, "authenticate", &wf_impl_server_protocol_authenticate, protocol);
-    wf_impl_jsonrpc_server_add(&protocol->server, "add_filesystem", &wf_impl_server_protocol_add_filesystem, protocol);
+    jsonrpc_server_init(&protocol->server);
+    jsonrpc_server_add(&protocol->server, "authenticate", &wf_impl_server_protocol_authenticate, protocol);
+    jsonrpc_server_add(&protocol->server, "add_filesystem", &wf_impl_server_protocol_add_filesystem, protocol);
 }
 
 void wf_impl_server_protocol_cleanup(
@@ -250,7 +250,7 @@ void wf_impl_server_protocol_cleanup(
 {
     protocol->is_operational = false;
 
-    wf_impl_jsonrpc_server_cleanup(&protocol->server);
+    jsonrpc_server_cleanup(&protocol->server);
     wf_impl_timeout_manager_cleanup(&protocol->timeout_manager);
     wf_impl_authenticators_cleanup(&protocol->authenticators);
     wf_impl_session_manager_cleanup(&protocol->session_manager);

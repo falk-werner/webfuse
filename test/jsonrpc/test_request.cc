@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include "webfuse/adapter/impl/jsonrpc/request.h"
+#include "jsonrpc/request.h"
 
 namespace
 {
@@ -27,13 +27,13 @@ TEST(jsonrpc_request, create_dispose)
     Context context{nullptr};
     void * user_data = reinterpret_cast<void*>(&context);
 
-    struct  wf_impl_jsonrpc_request * request = 
-            wf_impl_jsonrpc_request_create(42, &jsonrpc_send, user_data);
+    struct  jsonrpc_request * request = 
+            jsonrpc_request_create(42, &jsonrpc_send, user_data);
 
     ASSERT_NE(nullptr, request);
-    ASSERT_EQ(user_data, wf_impl_jsonrpc_request_get_userdata(request));
+    ASSERT_EQ(user_data, jsonrpc_request_get_userdata(request));
 
-    wf_impl_jsonrpc_request_dispose(request);
+    jsonrpc_request_dispose(request);
 }
 
 TEST(jsonrpc_request, respond)
@@ -41,10 +41,10 @@ TEST(jsonrpc_request, respond)
     Context context{nullptr};
     void * user_data = reinterpret_cast<void*>(&context);
 
-    struct  wf_impl_jsonrpc_request * request = 
-            wf_impl_jsonrpc_request_create(42, &jsonrpc_send, user_data);
+    struct  jsonrpc_request * request = 
+            jsonrpc_request_create(42, &jsonrpc_send, user_data);
 
-    wf_impl_jsonrpc_respond(request, json_string("okay"));
+    jsonrpc_respond(request, json_string("okay"));
 
     ASSERT_NE(nullptr, context.response);
 
@@ -70,10 +70,10 @@ TEST(jsonrpc_request, respond_error)
     Context context{nullptr};
     void * user_data = reinterpret_cast<void*>(&context);
 
-    struct  wf_impl_jsonrpc_request * request = 
-            wf_impl_jsonrpc_request_create(42, &jsonrpc_send, user_data);
+    struct  jsonrpc_request * request = 
+            jsonrpc_request_create(42, &jsonrpc_send, user_data);
 
-    wf_impl_jsonrpc_respond_error(request, WF_BAD);
+    jsonrpc_respond_error(request, WF_BAD);
 
     ASSERT_NE(nullptr, context.response);
 

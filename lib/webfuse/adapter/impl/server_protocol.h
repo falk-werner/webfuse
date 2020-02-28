@@ -1,12 +1,12 @@
 #ifndef WF_ADAPTER_IMPL_SERVER_PROTOCOL_H
 #define WF_ADAPTER_IMPL_SERVER_PROTOCOL_H
 
-#include "webfuse/adapter/impl/jsonrpc/proxy.h"
+#include "jsonrpc/proxy.h"
 #include "webfuse/adapter/impl/time/timeout_manager.h"
 #include "webfuse/adapter/impl/authenticators.h"
 #include "webfuse/adapter/impl/mountpoint_factory.h"
 #include "webfuse/adapter/impl/session_manager.h"
-#include "webfuse/adapter/impl/jsonrpc/server.h"
+#include "jsonrpc/server.h"
 
 #ifndef __cplusplus
 #include <stdbool.h>
@@ -25,7 +25,7 @@ struct wf_server_protocol
     struct wf_impl_authenticators authenticators;
     struct wf_impl_mountpoint_factory mountpoint_factory;
     struct wf_impl_session_manager session_manager;
-    struct wf_impl_jsonrpc_server server;
+    struct jsonrpc_server server;
     bool is_operational;
 };
 

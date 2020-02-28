@@ -8,7 +8,7 @@ extern "C" {
 #endif
 
 struct wf_impl_session;
-struct wf_impl_jsonrpc_proxy;
+struct jsonrpc_proxy;
 
 struct wf_impl_operations_context
 {
@@ -49,7 +49,7 @@ extern void wf_impl_operation_read(
 	fuse_ino_t ino, size_t size, off_t off,
 			struct fuse_file_info *fi);
 
-extern struct wf_impl_jsonrpc_proxy * wf_impl_operations_context_get_proxy(
+extern struct jsonrpc_proxy * wf_impl_operations_context_get_proxy(
 	struct wf_impl_operations_context * context);
 
 #ifdef __cplusplus

@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include "webfuse/adapter/impl/jsonrpc/response.h"
+#include "jsonrpc/response.h"
 
 TEST(jsonrpc_is_response, valid_result)
 {
@@ -7,7 +7,7 @@ TEST(jsonrpc_is_response, valid_result)
     json_object_set_new(message, "result", json_object());
     json_object_set_new(message, "id", json_integer(42));
 
-    ASSERT_TRUE(wf_impl_jsonrpc_is_response(message));
+    ASSERT_TRUE(jsonrpc_is_response(message));
 
     json_decref(message);
 }
@@ -18,7 +18,7 @@ TEST(jsonrpc_is_response, valid_result_string)
     json_object_set_new(message, "result", json_string("also valid"));
     json_object_set_new(message, "id", json_integer(42));
 
-    ASSERT_TRUE(wf_impl_jsonrpc_is_response(message));
+    ASSERT_TRUE(jsonrpc_is_response(message));
 
     json_decref(message);
 }
@@ -29,14 +29,14 @@ TEST(jsonrpc_is_response, valid_error)
     json_object_set_new(message, "error", json_object());
     json_object_set_new(message, "id", json_integer(42));
 
-    ASSERT_TRUE(wf_impl_jsonrpc_is_response(message));
+    ASSERT_TRUE(jsonrpc_is_response(message));
 
     json_decref(message);
 }
 
 TEST(jsonrpc_is_response, invalid_null)
 {
-    ASSERT_FALSE(wf_impl_jsonrpc_is_response(nullptr));
+    ASSERT_FALSE(jsonrpc_is_response(nullptr));
 }
 
 TEST(jsonrpc_is_response, invalid_message)
@@ -45,7 +45,7 @@ TEST(jsonrpc_is_response, invalid_message)
     json_array_append_new(message, json_object());
     json_array_append_new(message, json_integer(42));
 
-    ASSERT_FALSE(wf_impl_jsonrpc_is_response(message));
+    ASSERT_FALSE(jsonrpc_is_response(message));
 
     json_decref(message);
 }
@@ -55,7 +55,7 @@ TEST(jsonrpc_is_response, invalid_missing_id)
     json_t * message = json_object();
     json_object_set_new(message, "result", json_object());
 
-    ASSERT_FALSE(wf_impl_jsonrpc_is_response(message));
+    ASSERT_FALSE(jsonrpc_is_response(message));
 
     json_decref(message);
 }
@@ -66,7 +66,7 @@ TEST(jsonrpc_is_response, invalid_id_wrong_type)
     json_object_set_new(message, "result", json_object());
     json_object_set_new(message, "id", json_string("42"));
 
-    ASSERT_FALSE(wf_impl_jsonrpc_is_response(message));
+    ASSERT_FALSE(jsonrpc_is_response(message));
 
     json_decref(message);
 }
@@ -77,7 +77,7 @@ TEST(jsonrpc_is_response, invalid_missing_result_and_error)
     json_t * message = json_object();
     json_object_set_new(message, "id", json_integer(42));
 
-    ASSERT_FALSE(wf_impl_jsonrpc_is_response(message));
+    ASSERT_FALSE(jsonrpc_is_response(message));
 
     json_decref(message);
 }
@@ -88,7 +88,7 @@ TEST(jsonrpc_is_response, invalid_error_wrong_type)
     json_object_set_new(message, "error", json_array());
     json_object_set_new(message, "id", json_integer(42));
 
-    ASSERT_FALSE(wf_impl_jsonrpc_is_response(message));
+    ASSERT_FALSE(jsonrpc_is_response(message));
 
     json_decref(message);
 }

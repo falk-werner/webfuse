@@ -37,6 +37,7 @@ add_compile_options(
 	"-pthread"
 )
 
+include(jsonrpc)
 include(webfuse_core)
 include(webfuse_adapter)
 include(webfuse_provider)
