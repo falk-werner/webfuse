@@ -15,7 +15,6 @@ target_link_libraries(jsonrpc PUBLIC wf_timer)
 target_include_directories(jsonrpc PRIVATE 
 	lib/wf/timer/include
 	lib/jsonrpc/src
-	lib
 )
 
 target_include_directories(jsonrpc PUBLIC 
