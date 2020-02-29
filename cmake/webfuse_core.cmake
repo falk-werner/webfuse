@@ -12,7 +12,7 @@ add_library(webfuse-core STATIC
 )
 
 set_target_properties(webfuse-core PROPERTIES OUTPUT_NAME webfuse-core)
-target_include_directories(webfuse-core PUBLIC lib)
+target_include_directories(webfuse-core PUBLIC lib lib/jsonrpc/include)
 set_target_properties(webfuse-core PROPERTIES C_VISIBILITY_PRESET hidden)
 
 install(DIRECTORY include/webfuse/core DESTINATION include/webfuse COMPONENT headers)

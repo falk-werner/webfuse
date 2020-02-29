@@ -32,6 +32,7 @@ add_library(webfuse-adapter-static STATIC
 
 target_include_directories(webfuse-adapter-static PRIVATE
 	lib
+	lib/jsonrpc/include
 	${FUSE3_INCLUDE_DIRS} 
 	${UUID_INCLUDE_DIRS}
 )

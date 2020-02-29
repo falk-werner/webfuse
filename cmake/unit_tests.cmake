@@ -7,14 +7,14 @@ include(GoogleTest)
 pkg_check_modules(GMOCK gmock)
 
 add_executable(alltests
-	test/jsonrpc/test_util.cc
-	test/jsonrpc/test_is_request.cc
-	test/jsonrpc/test_request.cc
-	test/jsonrpc/test_is_response.cc
-	test/jsonrpc/test_response.cc
-	test/jsonrpc/test_server.cc
-	test/jsonrpc/test_proxy.cc
-	test/jsonrpc/test_response_parser.cc
+	lib/jsonrpc/test/jsonrpc/test_util.cc
+	lib/jsonrpc/test/jsonrpc/test_is_request.cc
+	lib/jsonrpc/test/jsonrpc/test_request.cc
+	lib/jsonrpc/test/jsonrpc/test_is_response.cc
+	lib/jsonrpc/test/jsonrpc/test_response.cc
+	lib/jsonrpc/test/jsonrpc/test_server.cc
+	lib/jsonrpc/test/jsonrpc/test_proxy.cc
+	lib/jsonrpc/test/jsonrpc/test_response_parser.cc
 	test/webfuse/utils/tempdir.cc
 	test/webfuse/utils/file_utils.cc
 	test/webfuse/utils/msleep.cc
@@ -52,6 +52,7 @@ add_executable(alltests
 )
 
 target_include_directories(alltests PRIVATE
+	lib/jsonrpc/include
 	${FUSE3_INCLUDE_DIRS} 
 	${UUID_INCLUDE_DIRS}
 )
