@@ -4,13 +4,13 @@
 #include "jsonrpc/proxy_finished_fn.h"
 #include "jsonrpc/send_fn.h"
 
-#include "webfuse/adapter/impl/time/timeout_manager.h"
-#include "webfuse/adapter/impl/time/timer.h"
-
 #ifdef __cplusplus
 extern "C"
 {
 #endif
+
+struct wf_timer_manager;
+struct wf_timer;
 
 struct jsonrpc_request
 {
@@ -18,7 +18,7 @@ struct jsonrpc_request
     jsonrpc_proxy_finished_fn * finished;
     void * user_data;
     int id;
-    struct wf_impl_timer timer;
+    struct wf_timer * timer;
 };
 
 struct jsonrpc_proxy
@@ -32,7 +32,7 @@ struct jsonrpc_proxy
 extern void 
 jsonrpc_impl_proxy_init(
     struct jsonrpc_proxy * proxy,
-    struct wf_impl_timeout_manager * manager,
+    struct wf_timer_manager * manager,
     int timeout,
     jsonrpc_send_fn * send,
     void * user_data);
@@ -43,7 +43,7 @@ jsonrpc_impl_proxy_cleanup(
 
 extern struct jsonrpc_proxy *
 jsonrpc_impl_proxy_create(
-    struct wf_impl_timeout_manager * manager,
+    struct wf_timer_manager * manager,
     int timeout,
     jsonrpc_send_fn * send,
     void * user_data);

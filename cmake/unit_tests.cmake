@@ -15,6 +15,8 @@ add_executable(alltests
 	lib/jsonrpc/test/jsonrpc/test_server.cc
 	lib/jsonrpc/test/jsonrpc/test_proxy.cc
 	lib/jsonrpc/test/jsonrpc/test_response_parser.cc
+	lib/wf/timer/test/wf/timer/test_timepoint.cc
+	lib/wf/timer/test/wf/timer/test_timer.cc
 	test/webfuse/utils/tempdir.cc
 	test/webfuse/utils/file_utils.cc
 	test/webfuse/utils/msleep.cc
@@ -35,8 +37,6 @@ add_executable(alltests
 	test/webfuse/tests/core/test_message_queue.cc
 	test/webfuse/tests/adapter/test_server.cc
 	test/webfuse/tests/adapter/test_server_config.cc
-	test/webfuse/tests/adapter/test_timepoint.cc
-	test/webfuse/tests/adapter/test_timer.cc
 	test/webfuse/tests/adapter/test_credentials.cc
 	test/webfuse/tests/adapter/test_authenticator.cc
 	test/webfuse/tests/adapter/test_authenticators.cc
@@ -53,6 +53,9 @@ add_executable(alltests
 
 target_include_directories(alltests PRIVATE
 	lib/jsonrpc/include
+	lib/jsonrpc/src
+	lib/wf/timer/include
+	lib/wf/timer/src
 	${FUSE3_INCLUDE_DIRS} 
 	${UUID_INCLUDE_DIRS}
 )
@@ -67,6 +70,7 @@ target_link_libraries(alltests PUBLIC
 	webfuse-provider-static
 	webfuse-core
 	jsonrpc
+	wf_timer
 	${FUSE3_LIBRARIES}
 	${LWS_LIBRARIES}
 	${JANSSON_LIBRARIES}

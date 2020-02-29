@@ -16,18 +16,16 @@ using std::size_t;
 #include <jsonrpc/send_fn.h>
 #include <jsonrpc/proxy_finished_fn.h>
 
-#include "webfuse/adapter/impl/time/timeout_manager.h"
-#include "webfuse/adapter/impl/time/timer.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 struct jsonrpc_proxy;
+struct wf_timer_manager;
 
 extern JSONRPC_API struct jsonrpc_proxy *
 jsonrpc_proxy_create(
-    struct wf_impl_timeout_manager * manager,
+    struct wf_timer_manager * manager,
     int timeout,
     jsonrpc_send_fn * send,
     void * user_data);

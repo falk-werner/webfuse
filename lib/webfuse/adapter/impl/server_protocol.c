@@ -13,6 +13,9 @@
 #include "webfuse/adapter/impl/uuid_mountpoint_factory.h"
 #include "webfuse/core/status_intern.h"
 
+#include "wf/timer/manager.h"
+#include "wf/timer/timer.h"
+
 static int wf_impl_server_protocol_callback(
 	struct lws * wsi,
 	enum lws_callback_reasons reason,
@@ -28,7 +31,7 @@ static int wf_impl_server_protocol_callback(
 
     struct wf_server_protocol * protocol = ws_protocol->user;
 
-    wf_impl_timeout_manager_check(&protocol->timeout_manager);
+    wf_timer_manager_check(protocol->timer_manager);
     struct wf_impl_session * session = wf_impl_session_manager_get(&protocol->session_manager, wsi);
 
     switch (reason)
@@ -42,7 +45,7 @@ static int wf_impl_server_protocol_callback(
                 wsi,
                 &protocol->authenticators,
                 &protocol->mountpoint_factory,
-                &protocol->timeout_manager,
+                protocol->timer_manager,
                 protocol->server);
 
             if (NULL != session)
@@ -237,7 +240,7 @@ void wf_impl_server_protocol_init(
 
     wf_impl_mountpoint_factory_move(mountpoint_factory, &protocol->mountpoint_factory);
 
-    wf_impl_timeout_manager_init(&protocol->timeout_manager);
+    protocol->timer_manager = wf_timer_manager_create();
     wf_impl_session_manager_init(&protocol->session_manager);
     wf_impl_authenticators_init(&protocol->authenticators);
 
@@ -252,7 +255,7 @@ void wf_impl_server_protocol_cleanup(
     protocol->is_operational = false;
 
     jsonrpc_server_dispose(protocol->server);
-    wf_impl_timeout_manager_cleanup(&protocol->timeout_manager);
+    wf_timer_manager_dispose(protocol->timer_manager);
     wf_impl_authenticators_cleanup(&protocol->authenticators);
     wf_impl_session_manager_cleanup(&protocol->session_manager);
     wf_impl_mountpoint_factory_cleanup(&protocol->mountpoint_factory);

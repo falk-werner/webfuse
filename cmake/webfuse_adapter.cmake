@@ -19,9 +19,6 @@ add_library(webfuse-adapter-static STATIC
 	lib/webfuse/adapter/impl/mountpoint_factory.c
 	lib/webfuse/adapter/impl/uuid_mountpoint_factory.c
 	lib/webfuse/adapter/impl/uuid_mountpoint.c
-	lib/webfuse/adapter/impl/time/timepoint.c
-	lib/webfuse/adapter/impl/time/timer.c
-	lib/webfuse/adapter/impl/time/timeout_manager.c
 	lib/webfuse/adapter/impl/operation/lookup.c
 	lib/webfuse/adapter/impl/operation/getattr.c
 	lib/webfuse/adapter/impl/operation/readdir.c
@@ -32,6 +29,7 @@ add_library(webfuse-adapter-static STATIC
 
 target_include_directories(webfuse-adapter-static PRIVATE
 	lib
+	lib/wf/timer/include
 	lib/jsonrpc/include
 	${FUSE3_INCLUDE_DIRS} 
 	${UUID_INCLUDE_DIRS}
@@ -65,7 +63,7 @@ set_target_properties(webfuse-adapter PROPERTIES SOVERSION 0)
 set_target_properties(webfuse-adapter PROPERTIES C_VISIBILITY_PRESET hidden)
 set_target_properties(webfuse-adapter PROPERTIES COMPILE_DEFINITIONS "WF_API=WF_EXPORT")
 
-target_link_libraries(webfuse-adapter PRIVATE webfuse-adapter-static webfuse-core jsonrpc)
+target_link_libraries(webfuse-adapter PRIVATE webfuse-adapter-static webfuse-core jsonrpc wf_timer)
 
 file(WRITE "${PROJECT_BINARY_DIR}/libwebfuse-adapter.pc"
 "prefix=\"${CMAKE_INSTALL_PREFIX}\"

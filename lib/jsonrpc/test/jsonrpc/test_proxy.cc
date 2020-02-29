@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 #include "jsonrpc/proxy.h"
-#include "webfuse/adapter/impl/time/timeout_manager.h"
+#include "wf/timer/manager.h"
 #include "webfuse/utils/msleep.hpp"
 #include "webfuse/core/json_util.h"
 
@@ -87,27 +87,25 @@ namespace
 
 TEST(jsonrpc_proxy, init)
 {
-    struct wf_impl_timeout_manager timeout_manager;
-    wf_impl_timeout_manager_init(&timeout_manager);
+    struct wf_timer_manager * timer_manager = wf_timer_manager_create();
 
     SendContext context;
     void * user_data = reinterpret_cast<void*>(&context);
-    struct jsonrpc_proxy * proxy = jsonrpc_proxy_create(&timeout_manager, WF_DEFAULT_TIMEOUT, &jsonrpc_send, user_data);
+    struct jsonrpc_proxy * proxy = jsonrpc_proxy_create(timer_manager, WF_DEFAULT_TIMEOUT, &jsonrpc_send, user_data);
 
     jsonrpc_proxy_dispose(proxy);
-    wf_impl_timeout_manager_cleanup(&timeout_manager);
+    wf_timer_manager_dispose(timer_manager);
 
     ASSERT_FALSE(context.is_called);
 }
 
 TEST(jsonrpc_proxy, invoke)
 {
-    struct wf_impl_timeout_manager timeout_manager;
-    wf_impl_timeout_manager_init(&timeout_manager);
+    struct wf_timer_manager * timer_manager = wf_timer_manager_create();
 
     SendContext send_context;
     void * send_data = reinterpret_cast<void*>(&send_context);
-    struct jsonrpc_proxy * proxy = jsonrpc_proxy_create(&timeout_manager, WF_DEFAULT_TIMEOUT, &jsonrpc_send, send_data);
+    struct jsonrpc_proxy * proxy = jsonrpc_proxy_create(timer_manager, WF_DEFAULT_TIMEOUT, &jsonrpc_send, send_data);
 
     FinishedContext finished_context;
     void * finished_data = reinterpret_cast<void*>(&finished_context);
@@ -134,7 +132,7 @@ TEST(jsonrpc_proxy, invoke)
     ASSERT_FALSE(finished_context.is_called);
 
     jsonrpc_proxy_dispose(proxy);
-    wf_impl_timeout_manager_cleanup(&timeout_manager);
+    wf_timer_manager_dispose(timer_manager);
 
     ASSERT_TRUE(finished_context.is_called);
     ASSERT_FALSE(nullptr == finished_context.error);
@@ -142,12 +140,11 @@ TEST(jsonrpc_proxy, invoke)
 
 TEST(jsonrpc_proxy, invoke_calls_finish_if_send_fails)
 {
-    struct wf_impl_timeout_manager timeout_manager;
-    wf_impl_timeout_manager_init(&timeout_manager);
+    struct wf_timer_manager * timer_manager = wf_timer_manager_create();
 
     SendContext send_context(false);
     void * send_data = reinterpret_cast<void*>(&send_context);
-    struct jsonrpc_proxy * proxy = jsonrpc_proxy_create(&timeout_manager, WF_DEFAULT_TIMEOUT, &jsonrpc_send, send_data);
+    struct jsonrpc_proxy * proxy = jsonrpc_proxy_create(timer_manager, WF_DEFAULT_TIMEOUT, &jsonrpc_send, send_data);
 
     FinishedContext finished_context;
     void * finished_data = reinterpret_cast<void*>(&finished_context);
@@ -160,17 +157,16 @@ TEST(jsonrpc_proxy, invoke_calls_finish_if_send_fails)
     ASSERT_FALSE(nullptr == finished_context.error);
 
     jsonrpc_proxy_dispose(proxy);
-    wf_impl_timeout_manager_cleanup(&timeout_manager);
+    wf_timer_manager_dispose(timer_manager);
 }
 
 TEST(jsonrpc_proxy, invoke_fails_if_another_request_is_pending)
 {
-    struct wf_impl_timeout_manager timeout_manager;
-    wf_impl_timeout_manager_init(&timeout_manager);
+    struct wf_timer_manager * timer_manager = wf_timer_manager_create();
 
     SendContext send_context;
     void * send_data = reinterpret_cast<void*>(&send_context);
-    struct jsonrpc_proxy * proxy = jsonrpc_proxy_create(&timeout_manager, WF_DEFAULT_TIMEOUT, &jsonrpc_send, send_data);
+    struct jsonrpc_proxy * proxy = jsonrpc_proxy_create(timer_manager, WF_DEFAULT_TIMEOUT, &jsonrpc_send, send_data);
 
     FinishedContext finished_context;
     void * finished_data = reinterpret_cast<void*>(&finished_context);
@@ -189,17 +185,16 @@ TEST(jsonrpc_proxy, invoke_fails_if_another_request_is_pending)
     ASSERT_EQ(WF_BAD_BUSY, wf_impl_jsonrpc_get_status(finished_context2.error));
 
     jsonrpc_proxy_dispose(proxy);
-    wf_impl_timeout_manager_cleanup(&timeout_manager);
+    wf_timer_manager_dispose(timer_manager);
 }
 
 TEST(jsonrpc_proxy, invoke_fails_if_request_is_invalid)
 {
-    struct wf_impl_timeout_manager timeout_manager;
-    wf_impl_timeout_manager_init(&timeout_manager);
+    struct wf_timer_manager * timer_manager = wf_timer_manager_create();
 
     SendContext send_context;
     void * send_data = reinterpret_cast<void*>(&send_context);
-    struct jsonrpc_proxy * proxy = jsonrpc_proxy_create(&timeout_manager, WF_DEFAULT_TIMEOUT, &jsonrpc_send, send_data);
+    struct jsonrpc_proxy * proxy = jsonrpc_proxy_create(timer_manager, WF_DEFAULT_TIMEOUT, &jsonrpc_send, send_data);
 
     FinishedContext finished_context;
     void * finished_data = reinterpret_cast<void*>(&finished_context);
@@ -211,17 +206,16 @@ TEST(jsonrpc_proxy, invoke_fails_if_request_is_invalid)
     ASSERT_EQ(WF_BAD, wf_impl_jsonrpc_get_status(finished_context.error));
 
     jsonrpc_proxy_dispose(proxy);
-    wf_impl_timeout_manager_cleanup(&timeout_manager);
+    wf_timer_manager_dispose(timer_manager);
 }
 
 TEST(jsonrpc_proxy, on_result)
 {
-    struct wf_impl_timeout_manager timeout_manager;
-    wf_impl_timeout_manager_init(&timeout_manager);
+    struct wf_timer_manager * timer_manager = wf_timer_manager_create();
 
     SendContext send_context;
     void * send_data = reinterpret_cast<void*>(&send_context);
-    struct jsonrpc_proxy * proxy = jsonrpc_proxy_create(&timeout_manager, WF_DEFAULT_TIMEOUT, &jsonrpc_send, send_data);
+    struct jsonrpc_proxy * proxy = jsonrpc_proxy_create(timer_manager, WF_DEFAULT_TIMEOUT, &jsonrpc_send, send_data);
 
     FinishedContext finished_context;
     void * finished_data = reinterpret_cast<void*>(&finished_context);
@@ -246,17 +240,16 @@ TEST(jsonrpc_proxy, on_result)
     ASSERT_STREQ("okay", json_string_value(finished_context.result));
 
     jsonrpc_proxy_dispose(proxy);
-    wf_impl_timeout_manager_cleanup(&timeout_manager);
+    wf_timer_manager_dispose(timer_manager);
 }
 
 TEST(jsonrpc_proxy, on_result_reject_response_with_unknown_id)
 {
-    struct wf_impl_timeout_manager timeout_manager;
-    wf_impl_timeout_manager_init(&timeout_manager);
+    struct wf_timer_manager * timer_manager = wf_timer_manager_create();
 
     SendContext send_context;
     void * send_data = reinterpret_cast<void*>(&send_context);
-    struct jsonrpc_proxy * proxy = jsonrpc_proxy_create(&timeout_manager, WF_DEFAULT_TIMEOUT, &jsonrpc_send, send_data);
+    struct jsonrpc_proxy * proxy = jsonrpc_proxy_create(timer_manager, WF_DEFAULT_TIMEOUT, &jsonrpc_send, send_data);
 
     FinishedContext finished_context;
     void * finished_data = reinterpret_cast<void*>(&finished_context);
@@ -278,17 +271,16 @@ TEST(jsonrpc_proxy, on_result_reject_response_with_unknown_id)
     ASSERT_FALSE(finished_context.is_called);
 
     jsonrpc_proxy_dispose(proxy);
-    wf_impl_timeout_manager_cleanup(&timeout_manager);
+    wf_timer_manager_dispose(timer_manager);
 }
 
 TEST(jsonrpc_proxy, timeout)
 {
-    struct wf_impl_timeout_manager timeout_manager;
-    wf_impl_timeout_manager_init(&timeout_manager);
+    struct wf_timer_manager * timer_manager = wf_timer_manager_create();
 
     SendContext send_context;
     void * send_data = reinterpret_cast<void*>(&send_context);
-    struct jsonrpc_proxy * proxy = jsonrpc_proxy_create(&timeout_manager, 0, &jsonrpc_send, send_data);
+    struct jsonrpc_proxy * proxy = jsonrpc_proxy_create(timer_manager, 0, &jsonrpc_send, send_data);
 
     FinishedContext finished_context;
     void * finished_data = reinterpret_cast<void*>(&finished_context);
@@ -298,23 +290,22 @@ TEST(jsonrpc_proxy, timeout)
     ASSERT_TRUE(json_is_object(send_context.response));
 
     msleep(10);
-    wf_impl_timeout_manager_check(&timeout_manager);
+    wf_timer_manager_check(timer_manager);
 
     ASSERT_TRUE(finished_context.is_called);
     ASSERT_EQ(WF_BAD_TIMEOUT, wf_impl_jsonrpc_get_status(finished_context.error));
 
     jsonrpc_proxy_dispose(proxy);
-    wf_impl_timeout_manager_cleanup(&timeout_manager);
+    wf_timer_manager_dispose(timer_manager);
 }
 
 TEST(jsonrpc_proxy, cleanup_pending_request)
 {
-    struct wf_impl_timeout_manager timeout_manager;
-    wf_impl_timeout_manager_init(&timeout_manager);
+    struct wf_timer_manager * timer_manager = wf_timer_manager_create();
 
     SendContext send_context;
     void * send_data = reinterpret_cast<void*>(&send_context);
-    struct jsonrpc_proxy * proxy = jsonrpc_proxy_create(&timeout_manager, 10, &jsonrpc_send, send_data);
+    struct jsonrpc_proxy * proxy = jsonrpc_proxy_create(timer_manager, 10, &jsonrpc_send, send_data);
 
     FinishedContext finished_context;
     void * finished_data = reinterpret_cast<void*>(&finished_context);
@@ -324,26 +315,23 @@ TEST(jsonrpc_proxy, cleanup_pending_request)
     ASSERT_TRUE(json_is_object(send_context.response));
 
     ASSERT_FALSE(finished_context.is_called);
-    ASSERT_NE(nullptr, timeout_manager.timers);
 
     jsonrpc_proxy_dispose(proxy);
 
     ASSERT_TRUE(finished_context.is_called);
-    ASSERT_EQ(nullptr, timeout_manager.timers);
 
-    wf_impl_timeout_manager_cleanup(&timeout_manager);
+    wf_timer_manager_dispose(timer_manager);
 }
 
 
 
 TEST(jsonrpc_proxy, notify)
 {
-    struct wf_impl_timeout_manager timeout_manager;
-    wf_impl_timeout_manager_init(&timeout_manager);
+    struct wf_timer_manager * timer_manager = wf_timer_manager_create();
 
     SendContext send_context;
     void * send_data = reinterpret_cast<void*>(&send_context);
-    struct jsonrpc_proxy * proxy = jsonrpc_proxy_create(&timeout_manager, WF_DEFAULT_TIMEOUT, &jsonrpc_send, send_data);
+    struct jsonrpc_proxy * proxy = jsonrpc_proxy_create(timer_manager, WF_DEFAULT_TIMEOUT, &jsonrpc_send, send_data);
 
     jsonrpc_proxy_notify(proxy, "foo", "si", "bar", 42);
 
@@ -365,24 +353,22 @@ TEST(jsonrpc_proxy, notify)
     json_t * id = json_object_get(send_context.response, "id");
     ASSERT_EQ(nullptr, id);
 
-
     jsonrpc_proxy_dispose(proxy);
-    wf_impl_timeout_manager_cleanup(&timeout_manager);
+    wf_timer_manager_dispose(timer_manager);
 }
 
 TEST(jsonrpc_proxy, notify_dont_send_invalid_request)
 {
-    struct wf_impl_timeout_manager timeout_manager;
-    wf_impl_timeout_manager_init(&timeout_manager);
+    struct wf_timer_manager * timer_manager = wf_timer_manager_create();
 
     SendContext send_context;
     void * send_data = reinterpret_cast<void*>(&send_context);
-    struct jsonrpc_proxy * proxy = jsonrpc_proxy_create(&timeout_manager, WF_DEFAULT_TIMEOUT, &jsonrpc_send, send_data);
+    struct jsonrpc_proxy * proxy = jsonrpc_proxy_create(timer_manager, WF_DEFAULT_TIMEOUT, &jsonrpc_send, send_data);
 
     jsonrpc_proxy_notify(proxy, "foo", "?");
 
     ASSERT_FALSE(send_context.is_called);
 
     jsonrpc_proxy_dispose(proxy);
-    wf_impl_timeout_manager_cleanup(&timeout_manager);
+    wf_timer_manager_dispose(timer_manager);
 }

@@ -3,12 +3,14 @@
 #include "jsonrpc/impl/error.h"
 #include "jsonrpc/status.h"
 
+#include <wf/timer/timer.h>
+
 #include <stdlib.h>
 #include <string.h>
 
 struct jsonrpc_proxy *
 jsonrpc_impl_proxy_create(
-    struct wf_impl_timeout_manager * manager,
+    struct wf_timer_manager * manager,
     int timeout,
     jsonrpc_send_fn * send,
     void * user_data)
@@ -29,10 +31,10 @@ void jsonrpc_impl_proxy_dispose(
     free(proxy);
 }
 
-static void jsonrpc_impl_proxy_timeout(
-    struct wf_impl_timer * timer)
+static void jsonrpc_impl_proxy_on_timeout(
+    struct wf_timer * timer, void * proxy_ptr)
 {
-    struct jsonrpc_proxy * proxy = timer->user_data;
+    struct jsonrpc_proxy * proxy = proxy_ptr;
 
     if (proxy->request.is_pending)
     {
@@ -43,7 +45,7 @@ static void jsonrpc_impl_proxy_timeout(
         proxy->request.id = 0;
         proxy->request.user_data = NULL;
         proxy->request.finished = NULL;
-        wf_impl_timer_cancel(&proxy->request.timer);
+        wf_timer_cancel(timer);
 
         jsonrpc_impl_propate_error(finished, user_data, JSONRPC_BAD_TIMEOUT, "Timeout");
     }
@@ -95,7 +97,7 @@ static json_t * jsonrpc_impl_request_create(
 
 void jsonrpc_impl_proxy_init(
     struct jsonrpc_proxy * proxy,
-    struct wf_impl_timeout_manager * timeout_manager,
+    struct wf_timer_manager * timeout_manager,
     int timeout,
     jsonrpc_send_fn * send,
     void * user_data)
@@ -104,8 +106,8 @@ void jsonrpc_impl_proxy_init(
     proxy->timeout = timeout;
     proxy->user_data = user_data;
     proxy->request.is_pending = false;
-    
-    wf_impl_timer_init(&proxy->request.timer, timeout_manager);
+    proxy->request.timer = wf_timer_create(timeout_manager, 
+        &jsonrpc_impl_proxy_on_timeout, proxy);    
 }
 
 void jsonrpc_impl_proxy_cleanup(
@@ -120,12 +122,12 @@ void jsonrpc_impl_proxy_cleanup(
         proxy->request.finished = NULL;
         proxy->request.user_data = NULL;
         proxy->request.id = 0;
-        wf_impl_timer_cancel(&proxy->request.timer);
+        wf_timer_cancel(proxy->request.timer);
 
         jsonrpc_impl_propate_error(finished, user_data, JSONRPC_BAD, "Bad");
     }
 
-    wf_impl_timer_cleanup(&proxy->request.timer);
+    wf_timer_dispose(proxy->request.timer);
 }
 
 void jsonrpc_impl_proxy_invoke(
@@ -143,8 +145,7 @@ void jsonrpc_impl_proxy_invoke(
         proxy->request.finished = finished;
         proxy->request.user_data = user_data;
         proxy->request.id = 42;
-        wf_impl_timer_start(&proxy->request.timer, wf_impl_timepoint_in_msec(proxy->timeout), 
-                &jsonrpc_impl_proxy_timeout, proxy);
+        wf_timer_start(proxy->request.timer, proxy->timeout);
         
         json_t * request = jsonrpc_impl_request_create(method_name, proxy->request.id, param_info, args);
 
@@ -155,7 +156,7 @@ void jsonrpc_impl_proxy_invoke(
             proxy->request.finished = NULL;
             proxy->request.user_data = NULL;
             proxy->request.id = 0;
-            wf_impl_timer_cancel(&proxy->request.timer);
+            wf_timer_cancel(proxy->request.timer);
 
             jsonrpc_impl_propate_error(finished, user_data, JSONRPC_BAD, "Bad");
         }
@@ -203,7 +204,7 @@ void jsonrpc_impl_proxy_onresult(
         proxy->request.id = 0;
         proxy->request.user_data = NULL;
         proxy->request.finished = NULL;
-        wf_impl_timer_cancel(&proxy->request.timer);
+        wf_timer_cancel(proxy->request.timer);
 
         finished(user_data, response.result, response.error);
     }

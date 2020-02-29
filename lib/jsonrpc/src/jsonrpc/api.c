@@ -9,7 +9,7 @@
 
 struct jsonrpc_proxy *
 jsonrpc_proxy_create(
-    struct wf_impl_timeout_manager * manager,
+    struct wf_timer_manager * manager,
     int timeout,
     jsonrpc_send_fn * send,
     void * user_data)
