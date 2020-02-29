@@ -14,6 +14,7 @@ add_executable(alltests
 	test/jsonrpc/test_response.cc
 	test/jsonrpc/test_server.cc
 	test/jsonrpc/test_proxy.cc
+	test/jsonrpc/test_response_parser.cc
 	test/webfuse/utils/tempdir.cc
 	test/webfuse/utils/file_utils.cc
 	test/webfuse/utils/msleep.cc
@@ -32,7 +33,6 @@ add_executable(alltests
 	test/webfuse/tests/core/test_status.cc
 	test/webfuse/tests/core/test_message.cc
 	test/webfuse/tests/core/test_message_queue.cc
-	test/webfuse/tests/adapter/test_response_parser.cc
 	test/webfuse/tests/adapter/test_server.cc
 	test/webfuse/tests/adapter/test_server_config.cc
 	test/webfuse/tests/adapter/test_timepoint.cc

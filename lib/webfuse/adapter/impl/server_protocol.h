@@ -25,7 +25,7 @@ struct wf_server_protocol
     struct wf_impl_authenticators authenticators;
     struct wf_impl_mountpoint_factory mountpoint_factory;
     struct wf_impl_session_manager session_manager;
-    struct jsonrpc_server server;
+    struct jsonrpc_server * server;
     bool is_operational;
 };
 

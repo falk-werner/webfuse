@@ -1,8 +1,8 @@
-#include "jsonrpc/method.h"
+#include "jsonrpc/impl/method.h"
 #include <stdlib.h>
 #include <string.h>
 
-struct jsonrpc_method * jsonrpc_method_create(
+struct jsonrpc_method * jsonrpc_impl_method_create(
     char const * method_name,
     jsonrpc_method_invoke_fn * invoke,
     void * user_data)
@@ -19,7 +19,7 @@ struct jsonrpc_method * jsonrpc_method_create(
     return method;
 }
 
-void jsonrpc_method_dispose(
+void jsonrpc_impl_method_dispose(
     struct jsonrpc_method * method)
 {
     free(method->name);

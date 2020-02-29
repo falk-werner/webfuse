@@ -11,7 +11,7 @@ struct jsonrpc_proxy * wf_impl_operations_context_get_proxy(
     struct wf_impl_session * session = context->session;
     if (NULL != session)
     {
-        proxy = &session->rpc;
+        proxy = session->rpc;
     }
 
     return proxy;

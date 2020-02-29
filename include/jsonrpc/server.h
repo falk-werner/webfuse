@@ -9,32 +9,31 @@
 #endif
 
 #include <jansson.h>
-#include "jsonrpc/send_fn.h"
-#include "jsonrpc/method.h"
+#include <jsonrpc/api.h>
+#include <jsonrpc/send_fn.h>
+#include <jsonrpc/method_invoke_fn.h>
 
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
-struct jsonrpc_server
-{
-    struct jsonrpc_method * methods;
-};
+struct jsonrpc_server;
 
-extern void jsonrpc_server_init(
+extern JSONRPC_API struct jsonrpc_server *
+jsonrpc_server_create(void);
+
+extern JSONRPC_API void
+jsonrpc_server_dispose(
     struct jsonrpc_server * server);
 
-extern void jsonrpc_server_cleanup(
-    struct jsonrpc_server * server);
-
-extern void jsonrpc_server_add(
+extern JSONRPC_API void jsonrpc_server_add(
     struct jsonrpc_server * server,
     char const * method_name,
     jsonrpc_method_invoke_fn * invoke,
     void * user_data);
 
-extern void jsonrpc_server_process(
+extern JSONRPC_API void jsonrpc_server_process(
     struct jsonrpc_server * server,
     json_t * request,
     jsonrpc_send_fn * send,

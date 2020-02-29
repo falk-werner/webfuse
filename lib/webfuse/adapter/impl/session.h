@@ -36,7 +36,7 @@ struct wf_impl_session
     struct wf_impl_authenticators * authenticators;
     struct wf_impl_mountpoint_factory * mountpoint_factory;
     struct jsonrpc_server * server;
-    struct jsonrpc_proxy rpc;
+    struct jsonrpc_proxy * rpc;
     struct wf_slist filesystems;
 };
 

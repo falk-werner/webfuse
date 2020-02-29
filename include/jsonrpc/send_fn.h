@@ -6,6 +6,7 @@
 #endif
 
 #include <jansson.h>
+#include <jsonrpc/api.h>
 
 #ifdef __cplusplus
 extern "C"

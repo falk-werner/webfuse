@@ -1,8 +1,9 @@
-#include "jsonrpc/response.h"
-#include "jsonrpc/error.h"
+#include "jsonrpc/impl/response.h"
+#include "jsonrpc/impl/error.h"
 #include "jsonrpc/status.h"
 
-extern bool jsonrpc_is_response(
+bool
+jsonrpc_impl_is_response(
     json_t * message)
 {
 	json_t * id = json_object_get(message, "id");
@@ -14,7 +15,8 @@ extern bool jsonrpc_is_response(
 }
 
 
-void jsonrpc_response_init(
+void
+jsonrpc_impl_response_init(
 	struct jsonrpc_response * result,
 	json_t * response)
 {
@@ -25,7 +27,7 @@ void jsonrpc_response_init(
 	json_t * id_holder = json_object_get(response, "id");
 	if ((NULL == id_holder) || (!json_is_integer(id_holder)))
 	{
-		result->error = jsonrpc_error(JSONRPC_BAD_FORMAT, "invalid format: missing id");
+		result->error = jsonrpc_impl_error(JSONRPC_BAD_FORMAT, "invalid format: missing id");
 		return;
 	}
 	
@@ -45,12 +47,13 @@ void jsonrpc_response_init(
 		}
 		else
 		{
-			result->error = jsonrpc_error(JSONRPC_BAD_FORMAT, "invalid format: invalid error object");
+			result->error = jsonrpc_impl_error(JSONRPC_BAD_FORMAT, "invalid format: invalid error object");
 		}
 	}
 }
 
-void jsonrpc_response_cleanup(
+void
+jsonrpc_impl_response_cleanup(
 	struct jsonrpc_response * response)
 {
     if (NULL != response->result)

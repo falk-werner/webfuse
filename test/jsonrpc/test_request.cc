@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 #include "jsonrpc/request.h"
+#include "jsonrpc/status.h"
 
 namespace
 {
@@ -73,7 +74,7 @@ TEST(jsonrpc_request, respond_error)
     struct  jsonrpc_request * request = 
             jsonrpc_request_create(42, &jsonrpc_send, user_data);
 
-    jsonrpc_respond_error(request, WF_BAD);
+    jsonrpc_respond_error(request, JSONRPC_BAD, "Bad");
 
     ASSERT_NE(nullptr, context.response);
 
@@ -92,7 +93,7 @@ TEST(jsonrpc_request, respond_error)
 
     json_t * err_code = json_object_get(err, "code");
     ASSERT_TRUE(json_is_integer(err_code));
-    ASSERT_EQ(WF_BAD, json_integer_value(err_code));
+    ASSERT_EQ(JSONRPC_BAD, json_integer_value(err_code));
 
     json_t * err_message = json_object_get(err, "message");
     ASSERT_TRUE(json_is_string(err_message));

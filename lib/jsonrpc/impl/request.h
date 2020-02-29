@@ -1,5 +1,5 @@
-#ifndef JSONRPC_REQUEST_H
-#define JSONRPC_REQUEST_H
+#ifndef JSONRPC_IMPL_REQUEST_H
+#define JSONRPC_IMPL_REQUEST_H
 
 #ifndef __cplusplus
 #include <stdarg.h>
@@ -22,25 +22,25 @@ extern "C"
 
 struct jsonrpc_request;
 
-extern JSONRPC_API bool jsonrpc_is_request(
+extern bool jsonrpc_impl_is_request(
     json_t * message);
 
-extern JSONRPC_API struct jsonrpc_request * jsonrpc_request_create(
+extern struct jsonrpc_request * jsonrpc_impl_request_create(
     int id,
     jsonrpc_send_fn * send,
     void * user_data);
 
-extern JSONRPC_API void jsonrpc_request_dispose(
+extern void jsonrpc_impl_request_dispose(
     struct jsonrpc_request * request);
 
-extern JSONRPC_API void * jsonrpc_request_get_userdata(
+extern void * jsonrpc_impl_request_get_userdata(
     struct jsonrpc_request * request);
 
-extern JSONRPC_API void jsonrpc_respond(
+extern void jsonrpc_impl_respond(
     struct jsonrpc_request * request,
     json_t * result);
 
-extern JSONRPC_API void jsonrpc_respond_error(
+extern void jsonrpc_impl_respond_error(
     struct jsonrpc_request * request,
     int code,
     char const * message);

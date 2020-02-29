@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 #include "jsonrpc/server.h"
 #include "jsonrpc/request.h"
+#include "jsonrpc/status.h"
 
 namespace
 {
@@ -40,9 +41,8 @@ namespace
 
 TEST(jsonrpc_server, process_request)
 {
-    struct jsonrpc_server server;
-    jsonrpc_server_init(&server);
-    jsonrpc_server_add(&server, "sayHello", &sayHello, nullptr);
+    struct jsonrpc_server * server = jsonrpc_server_create();
+    jsonrpc_server_add(server, "sayHello", &sayHello, nullptr);
 
     Context context{nullptr, false};
     void * user_data = reinterpret_cast<void*>(&context);
@@ -50,7 +50,7 @@ TEST(jsonrpc_server, process_request)
     json_object_set_new(request, "method", json_string("sayHello"));
     json_object_set_new(request, "params", json_array());
     json_object_set_new(request, "id", json_integer(23));   
-    jsonrpc_server_process(&server, request, &jsonrpc_send, user_data);
+    jsonrpc_server_process(server, request, &jsonrpc_send, user_data);
 
     ASSERT_TRUE(context.is_called);
     ASSERT_NE(nullptr, context.response);
@@ -66,14 +66,13 @@ TEST(jsonrpc_server, process_request)
 
     json_decref(context.response);
     json_decref(request);
-    jsonrpc_server_cleanup(&server); 
+    jsonrpc_server_dispose(server); 
 }
 
 TEST(jsonrpc_server, invoke_unknown_method)
 {
-    struct jsonrpc_server server;
-    jsonrpc_server_init(&server);
-    jsonrpc_server_add(&server, "sayHello", &sayHello, nullptr);
+    struct jsonrpc_server * server = jsonrpc_server_create();
+    jsonrpc_server_add(server, "sayHello", &sayHello, nullptr);
 
     Context context{nullptr, false};
     void * user_data = reinterpret_cast<void*>(&context);
@@ -81,7 +80,7 @@ TEST(jsonrpc_server, invoke_unknown_method)
     json_object_set_new(request, "method", json_string("greet"));
     json_object_set_new(request, "params", json_array());
     json_object_set_new(request, "id", json_integer(42));   
-    jsonrpc_server_process(&server, request, &jsonrpc_send, user_data);
+    jsonrpc_server_process(server, request, &jsonrpc_send, user_data);
 
     ASSERT_TRUE(context.is_called);
     ASSERT_NE(nullptr, context.response);
@@ -96,30 +95,29 @@ TEST(jsonrpc_server, invoke_unknown_method)
 
     json_t * err_code = json_object_get(err, "code");
     ASSERT_TRUE(json_is_integer(err_code));
-    ASSERT_EQ(WF_BAD_NOTIMPLEMENTED, json_integer_value(err_code));
+    ASSERT_EQ(JSONRPC_BAD_NOTIMPLEMENTED, json_integer_value(err_code));
 
     json_t * err_message = json_object_get(err, "message");
     ASSERT_TRUE(json_is_string(err_message));
 
     json_decref(context.response);
     json_decref(request);
-    jsonrpc_server_cleanup(&server); 
+    jsonrpc_server_dispose(server); 
 }
 
 TEST(jsonrpc_server, skip_invalid_request)
 {
-    struct jsonrpc_server server;
-    jsonrpc_server_init(&server);
+    struct jsonrpc_server * server = jsonrpc_server_create();
 
     Context context{nullptr, false};
     void * user_data = reinterpret_cast<void*>(&context);
     json_t * request = json_object();
     json_object_set_new(request, "method", json_string("sayHello"));
     json_object_set_new(request, "params", json_array());
-    jsonrpc_server_process(&server, request, &jsonrpc_send, user_data);
+    jsonrpc_server_process(server, request, &jsonrpc_send, user_data);
 
     ASSERT_FALSE(context.is_called);
 
     json_decref(request);
-    jsonrpc_server_cleanup(&server); 
+    jsonrpc_server_dispose(server); 
 }

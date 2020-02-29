@@ -1,8 +1,8 @@
-#ifndef JSONRPC_ERROR_H
-#define JSONRPC_ERROR_H
+#ifndef JSONRPC_IMPL_ERROR_H
+#define JSONRPC_IMPL_ERROR_H
 
 #include <jansson.h>
-#include "jsonrpc/proxy.h"
+#include "jsonrpc/proxy_finished_fn.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -10,12 +10,12 @@ extern "C"
 #endif
 
 extern json_t *
-jsonrpc_error(
+jsonrpc_impl_error(
     int code,
     char const * message);
 
 extern void
-jsonrpc_propate_error(
+jsonrpc_impl_propate_error(
     jsonrpc_proxy_finished_fn * finised,
     void * user_data,
     int code,

@@ -59,7 +59,7 @@ struct wf_impl_session * wf_impl_session_create(
         session->authenticators = authenticators;
         session->server = server;
         session->mountpoint_factory = mountpoint_factory;
-        jsonrpc_proxy_init(&session->rpc, timeout_manager, WF_DEFAULT_TIMEOUT, &wf_impl_session_send, session);
+        session->rpc = jsonrpc_proxy_create(timeout_manager, WF_DEFAULT_TIMEOUT, &wf_impl_session_send, session);
         wf_slist_init(&session->messages);
     }
 
@@ -83,15 +83,10 @@ static void wf_impl_session_dispose_filesystems(
 void wf_impl_session_dispose(
     struct wf_impl_session * session)
 {
-    jsonrpc_proxy_cleanup(&session->rpc);
+    jsonrpc_proxy_dispose(session->rpc);
     wf_message_queue_cleanup(&session->messages);
 
     wf_impl_session_dispose_filesystems(&session->filesystems);
-    session->is_authenticated = false;
-    session->wsi = NULL;
-    session->authenticators = NULL;
-    session->mountpoint_factory = NULL;
-    session->server = NULL;
     free(session);
 } 
 
@@ -161,7 +156,7 @@ void wf_impl_session_receive(
     {
         if (jsonrpc_is_response(message))
         {
-            jsonrpc_proxy_onresult(&session->rpc, message);
+            jsonrpc_proxy_onresult(session->rpc, message);
         }
         else if (jsonrpc_is_request(message))
         {

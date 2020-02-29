@@ -11,6 +11,7 @@
 #include "webfuse/adapter/impl/credentials.h"
 #include "jsonrpc/request.h"
 #include "webfuse/adapter/impl/uuid_mountpoint_factory.h"
+#include "webfuse/core/status_intern.h"
 
 static int wf_impl_server_protocol_callback(
 	struct lws * wsi,
@@ -42,7 +43,7 @@ static int wf_impl_server_protocol_callback(
                 &protocol->authenticators,
                 &protocol->mountpoint_factory,
                 &protocol->timeout_manager,
-                &protocol->server);
+                protocol->server);
 
             if (NULL != session)
             {
@@ -159,7 +160,7 @@ static void wf_impl_server_protocol_authenticate(
     }
     else
     {
-        jsonrpc_respond_error(request, WF_BAD_ACCESS_DENIED);
+        jsonrpc_respond_error(request, WF_BAD_ACCESS_DENIED, wf_status_tostring(WF_BAD_ACCESS_DENIED));
     }    
 }
 
@@ -222,7 +223,7 @@ static void wf_impl_server_protocol_add_filesystem(
     }
     else
     {
-        jsonrpc_respond_error(request, status);
+        jsonrpc_respond_error(request, status, wf_status_tostring(status));
     }
     
 
@@ -240,9 +241,9 @@ void wf_impl_server_protocol_init(
     wf_impl_session_manager_init(&protocol->session_manager);
     wf_impl_authenticators_init(&protocol->authenticators);
 
-    jsonrpc_server_init(&protocol->server);
-    jsonrpc_server_add(&protocol->server, "authenticate", &wf_impl_server_protocol_authenticate, protocol);
-    jsonrpc_server_add(&protocol->server, "add_filesystem", &wf_impl_server_protocol_add_filesystem, protocol);
+    protocol->server = jsonrpc_server_create();
+    jsonrpc_server_add(protocol->server, "authenticate", &wf_impl_server_protocol_authenticate, protocol);
+    jsonrpc_server_add(protocol->server, "add_filesystem", &wf_impl_server_protocol_add_filesystem, protocol);
 }
 
 void wf_impl_server_protocol_cleanup(
@@ -250,7 +251,7 @@ void wf_impl_server_protocol_cleanup(
 {
     protocol->is_operational = false;
 
-    jsonrpc_server_cleanup(&protocol->server);
+    jsonrpc_server_dispose(protocol->server);
     wf_impl_timeout_manager_cleanup(&protocol->timeout_manager);
     wf_impl_authenticators_cleanup(&protocol->authenticators);
     wf_impl_session_manager_cleanup(&protocol->session_manager);
