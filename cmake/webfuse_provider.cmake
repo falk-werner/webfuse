@@ -20,7 +20,7 @@ add_library(webfuse-provider-static STATIC
 
 set_target_properties(webfuse-provider-static PROPERTIES OUTPUT_NAME webfuse-provider)
 set_target_properties(webfuse-provider-static PROPERTIES C_VISIBILITY_PRESET hidden)
-target_include_directories(webfuse-provider-static PUBLIC 
+target_include_directories(webfuse-provider-static PRIVATE 
 	lib
 	lib/wf/timer/include
 	lib/wf/jsonrpc/include
@@ -36,7 +36,7 @@ set_target_properties(webfuse-provider PROPERTIES C_VISIBILITY_PRESET hidden)
 set_target_properties(webfuse-provider PROPERTIES COMPILE_DEFINITIONS "WFP_API=WFP_EXPORT")
 
 target_include_directories(webfuse-provider PUBLIC lib)
-target_link_libraries(webfuse-provider PRIVATE webfuse-provider-static webfuse-core)
+target_link_libraries(webfuse-provider PRIVATE webfuse-provider-static webfuse-core wf_jsonrpc wf_timer)
 
 file(WRITE "${PROJECT_BINARY_DIR}/libwebfuse-provider.pc"
 "prefix=\"${CMAKE_INSTALL_PREFIX}\"
