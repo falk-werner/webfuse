@@ -2,7 +2,6 @@
 #include <gtest/gtest.h>
 
 #include "wf/jsonrpc/impl/response.h"
-#include "webfuse/core/json_util.h"
 
 
 static void response_parse_str(
@@ -52,7 +51,7 @@ TEST(response_parser, test)
 
 	// valid response
 	response_parse_str("{\"result\": true, \"id\": 42}", &response);
-	ASSERT_EQ(WF_GOOD, response.error);
+	ASSERT_EQ(nullptr, response.error);
 	ASSERT_EQ(42, response.id);
 	ASSERT_NE(nullptr, response.result);
 	wf_jsonrpc_impl_response_cleanup(&response);

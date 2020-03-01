@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 #include "wf/jsonrpc/proxy.h"
+#include "wf/jsonrpc/status.h"
 #include "wf/timer/manager.h"
-#include "webfuse/core/json_util.h"
 
 #include <thread>
 #include <chrono>
@@ -13,6 +13,11 @@ using namespace std::chrono_literals;
 
 namespace
 {
+    int jsonrpc_get_status(json_t * error)
+    {
+        json_t * code = json_object_get(error, "code");
+        return (json_is_integer(code)) ? json_integer_value(code) : WF_JSONRPC_BAD_FORMAT;
+    }
 
     struct SendContext
     {
@@ -185,7 +190,7 @@ TEST(wf_jsonrpc_proxy, invoke_fails_if_another_request_is_pending)
     ASSERT_FALSE(finished_context.is_called);
 
     ASSERT_TRUE(finished_context2.is_called);
-    ASSERT_EQ(WF_BAD_BUSY, wf_impl_jsonrpc_get_status(finished_context2.error));
+    ASSERT_EQ(WF_JSONRPC_BAD_BUSY, jsonrpc_get_status(finished_context2.error));
 
     wf_jsonrpc_proxy_dispose(proxy);
     wf_timer_manager_dispose(timer_manager);
@@ -206,7 +211,7 @@ TEST(wf_jsonrpc_proxy, invoke_fails_if_request_is_invalid)
     ASSERT_FALSE(send_context.is_called);
 
     ASSERT_TRUE(finished_context.is_called);
-    ASSERT_EQ(WF_BAD, wf_impl_jsonrpc_get_status(finished_context.error));
+    ASSERT_EQ(WF_JSONRPC_BAD, jsonrpc_get_status(finished_context.error));
 
     wf_jsonrpc_proxy_dispose(proxy);
     wf_timer_manager_dispose(timer_manager);
@@ -296,7 +301,7 @@ TEST(wf_jsonrpc_proxy, timeout)
     wf_timer_manager_check(timer_manager);
 
     ASSERT_TRUE(finished_context.is_called);
-    ASSERT_EQ(WF_BAD_TIMEOUT, wf_impl_jsonrpc_get_status(finished_context.error));
+    ASSERT_EQ(WF_JSONRPC_BAD_TIMEOUT, jsonrpc_get_status(finished_context.error));
 
     wf_jsonrpc_proxy_dispose(proxy);
     wf_timer_manager_dispose(timer_manager);
