@@ -1,10 +1,13 @@
 #include <gtest/gtest.h>
 #include "wf/jsonrpc/proxy.h"
 #include "wf/timer/manager.h"
-#include "webfuse/utils/msleep.hpp"
 #include "webfuse/core/json_util.h"
 
-using webfuse_test::msleep;
+#include <thread>
+#include <chrono>
+
+using namespace std::chrono_literals;
+
 
 #define WF_DEFAULT_TIMEOUT (10 * 1000)
 
@@ -289,7 +292,7 @@ TEST(wf_jsonrpc_proxy, timeout)
     ASSERT_TRUE(send_context.is_called);
     ASSERT_TRUE(json_is_object(send_context.response));
 
-    msleep(10);
+    std::this_thread::sleep_for(10ms);
     wf_timer_manager_check(timer_manager);
 
     ASSERT_TRUE(finished_context.is_called);

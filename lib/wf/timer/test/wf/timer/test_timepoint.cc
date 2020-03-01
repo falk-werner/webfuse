@@ -1,14 +1,16 @@
 #include <gtest/gtest.h>
 
-#include "webfuse/utils/msleep.hpp"
 #include "wf/timer/impl/timepoint.h"
 
-using webfuse_test::msleep;
+#include <thread>
+#include <chrono>
+
+using namespace std::chrono_literals;
 
 TEST(wf_timer_timepoint, now)
 {
     wf_timer_timepoint start = wf_timer_impl_timepoint_now();
-    msleep(42);
+    std::this_thread::sleep_for(42ms);
     wf_timer_timepoint end = wf_timer_impl_timepoint_now();
 
     ASSERT_LT(start, end);

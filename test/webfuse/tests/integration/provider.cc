@@ -3,9 +3,11 @@
 #include "webfuse/provider/impl/client.h"
 #include <thread>
 #include <mutex>
+#include <chrono>
 #include <string>
-#include "webfuse/utils/msleep.hpp"
 #include "webfuse/utils/static_filesystem.h"
+
+using namespace std::chrono_literals;
 
 namespace webfuse_test
 {
@@ -29,7 +31,7 @@ public:
         }
        
         thread = std::thread(Run, this);
-        webfuse_test::msleep(200);
+        std::this_thread::sleep_for(200ms);
     }
 
     ~Private()

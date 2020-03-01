@@ -18,7 +18,6 @@ add_executable(alltests
 	lib/wf/timer/test/wf/timer/test_timer.cc
 	test/webfuse/utils/tempdir.cc
 	test/webfuse/utils/file_utils.cc
-	test/webfuse/utils/msleep.cc
 	test/webfuse/utils/die_if.cc
 	test/webfuse/utils/timeout_watcher.cc
 	test/webfuse/utils/path.c

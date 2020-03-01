@@ -1,13 +1,14 @@
 #include <gtest/gtest.h>
 
 #include <cstddef>
+#include <chrono>
+#include <thread>
 
-#include "webfuse/utils/msleep.hpp"
 #include "wf/timer/timer.h"
 #include "wf/timer/manager.h"
 
 using std::size_t;
-using webfuse_test::msleep;
+using namespace std::chrono_literals;
 
 extern "C"
 {
@@ -37,7 +38,7 @@ TEST(wf_timer, trigger)
     struct wf_timer * timer = wf_timer_create(manager, &on_timeout, reinterpret_cast<void*>(&triggered));
 
     wf_timer_start(timer, 250);
-    msleep(500);
+    std::this_thread::sleep_for(500ms);
     wf_timer_manager_check(manager);
 
     ASSERT_TRUE(triggered);
@@ -67,7 +68,7 @@ TEST(wf_timer, cancel)
     struct wf_timer * timer = wf_timer_create(manager, &on_timeout, reinterpret_cast<void*>(&triggered));
 
     wf_timer_start(timer, 250);
-    msleep(500);
+    std::this_thread::sleep_for(500ms);
     wf_timer_cancel(timer);
     wf_timer_manager_check(manager);
 
@@ -90,7 +91,7 @@ TEST(wf_timer, cancel_multiple_timers)
         wf_timer_start(timer[i], 0);
     }
 
-    msleep(10);
+    std::this_thread::sleep_for(10ms);
     for(size_t i = 0; i < count; i++)
     {
         wf_timer_cancel(timer[i]);
@@ -122,7 +123,7 @@ TEST(wf_timer, multiple_timers)
 
     for(size_t i = 0; i < count; i++)
     {
-        msleep(100);
+        std::this_thread::sleep_for(100ms);
         wf_timer_manager_check(manager);
     }
 
