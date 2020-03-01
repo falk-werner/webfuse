@@ -73,7 +73,8 @@ wfp_impl_client_protocol_on_authenticate_finished(
 	json_t const * WF_UNUSED_PARAM(error))    
 {
     struct wfp_client_protocol * protocol = user_data;
-
+    if (NULL == protocol->wsi) { return; }
+    
     if (NULL != result)
     {
         protocol->is_connected = true;
@@ -81,9 +82,9 @@ wfp_impl_client_protocol_on_authenticate_finished(
     }
     else
     {
-        // ToDo: handle error
-    }
-    
+        protocol->is_shutdown_requested = true;
+        lws_callback_on_writable(protocol->wsi);
+    }    
 }
 
 static void wfp_impl_client_protocol_add_filesystem(
@@ -105,6 +106,7 @@ static int wfp_impl_client_protocol_callback(
 	void * in,
 	size_t len)
 {
+    int result = 0;
     struct lws_protocols const * ws_protocol = lws_get_protocol(wsi);     
     struct wfp_client_protocol * protocol = (NULL != ws_protocol) ? ws_protocol->user: NULL;
 
@@ -123,7 +125,8 @@ static int wfp_impl_client_protocol_callback(
             break;
         case LWS_CALLBACK_CLIENT_CLOSED:
             protocol->is_connected = false;
-            protocol->provider.disconnected(protocol->user_data);        
+            protocol->provider.disconnected(protocol->user_data);   
+            protocol->wsi = NULL;
             break;
         case LWS_CALLBACK_CLIENT_RECEIVE:
             wfp_impl_client_protocol_process(protocol, in, len);
@@ -131,26 +134,32 @@ static int wfp_impl_client_protocol_callback(
         case LWS_CALLBACK_SERVER_WRITEABLE:
             // fall-through
         case LWS_CALLBACK_CLIENT_WRITEABLE:
-			if ((wsi == protocol->wsi) && (!wf_slist_empty(&protocol->messages)))
+			if (wsi == protocol->wsi) 
             {
-                struct wf_slist_item * item = wf_slist_remove_first(&protocol->messages);
-				struct wf_message * message = wf_container_of(item, struct wf_message, item);
-				lws_write(wsi, (unsigned char*) message->data, message->length, LWS_WRITE_TEXT);
-				wf_message_dispose(message);
-
-                if (!wf_slist_empty(&protocol->messages))
+                if (protocol->is_shutdown_requested)
                 {
-                    lws_callback_on_writable(wsi);
-
+                    result = 1;
                 }
-			}
+                else if (!wf_slist_empty(&protocol->messages))
+                {
+                    struct wf_slist_item * item = wf_slist_remove_first(&protocol->messages);
+                    struct wf_message * message = wf_container_of(item, struct wf_message, item);
+                    lws_write(wsi, (unsigned char*) message->data, message->length, LWS_WRITE_TEXT);
+                    wf_message_dispose(message);
+
+                    if (!wf_slist_empty(&protocol->messages))
+                    {
+                        lws_callback_on_writable(wsi);
+                    }
+                }
+            }
             break;
         default:
             break;            
         }
     }
 
-    return 0;
+    return result;
 }
 
 static bool wfp_impl_client_protocol_send(
@@ -177,6 +186,7 @@ void wfp_impl_client_protocol_init(
     void * user_data)
 {
     protocol->is_connected = false;
+    protocol->is_shutdown_requested = false;
     wf_slist_init(&protocol->messages);
 
     protocol->wsi = NULL;

@@ -20,6 +20,7 @@ struct wf_timer_manager;
 struct wfp_client_protocol
 {
     bool is_connected;
+    bool is_shutdown_requested;
     struct wfp_request request;
     struct wfp_provider provider;
     void * user_data;
