@@ -8,6 +8,7 @@
 
 #include "webfuse/provider/impl/client_config.h"
 #include "webfuse/provider/impl/provider.h"
+#include "webfuse/provider/impl/credentials.h"
 #include "webfuse/core/util.h"
 #include "webfuse/core/message.h"
 #include "webfuse/core/message_queue.h"
@@ -67,14 +68,14 @@ static void wfp_impl_client_protocol_process(
 }
 
 static void 
-wfp_impl_client_protocol_on_authenticate_finished(
+wfp_impl_client_protocol_on_add_filesystem_finished(
 	void * user_data,
 	json_t const * result,
 	json_t const * WF_UNUSED_PARAM(error))    
 {
     struct wfp_client_protocol * protocol = user_data;
     if (NULL == protocol->wsi) { return; }
-    
+
     if (NULL != result)
     {
         protocol->is_connected = true;
@@ -92,11 +93,67 @@ static void wfp_impl_client_protocol_add_filesystem(
 {
     jsonrpc_proxy_invoke(
         protocol->proxy, 
-        &wfp_impl_client_protocol_on_authenticate_finished,
+        &wfp_impl_client_protocol_on_add_filesystem_finished,
         protocol,
         "add_filesystem",
         "s",
         "cprovider");
+}
+
+static void 
+wfp_impl_client_protocol_on_authenticate_finished(
+	void * user_data,
+	json_t const * result,
+	json_t const * WF_UNUSED_PARAM(error))    
+{
+    struct wfp_client_protocol * protocol = user_data;
+    if (NULL == protocol->wsi) { return; }
+
+    if (NULL != result)
+    {
+        wfp_impl_client_protocol_add_filesystem(protocol);
+    }
+    else
+    {
+        protocol->is_shutdown_requested = true;
+        lws_callback_on_writable(protocol->wsi);
+    }    
+}
+
+static void wfp_impl_client_protocol_authenticate(
+    struct wfp_client_protocol * protocol)
+{
+    struct wfp_credentials credentials;
+    wfp_impl_credentials_init(&credentials);
+
+    protocol->provider.get_credentials(&credentials, protocol->user_data);
+
+    char const * cred_type = wfp_impl_credentials_get_type(&credentials);
+    json_t * creds = wfp_impl_credentials_get(&credentials);
+    json_incref(creds);
+
+    jsonrpc_proxy_invoke(
+        protocol->proxy, 
+        &wfp_impl_client_protocol_on_authenticate_finished, 
+        protocol, 
+        "authenticate", 
+        "sj",
+        cred_type, creds);
+
+    wfp_impl_credentials_cleanup(&credentials);
+}
+
+static void wfp_impl_client_protocol_handshake(
+    struct wfp_client_protocol * protocol)
+{
+    if (wfp_impl_provider_is_authentication_enabled(&protocol->provider))
+    {
+        wfp_impl_client_protocol_authenticate(protocol);
+    }
+    else
+    {
+        wfp_impl_client_protocol_add_filesystem(protocol);
+    }
 }
 
 static int wfp_impl_client_protocol_callback(
@@ -117,7 +174,7 @@ static int wfp_impl_client_protocol_callback(
         switch (reason)
         {
         case LWS_CALLBACK_CLIENT_ESTABLISHED:
-            wfp_impl_client_protocol_add_filesystem(protocol);
+            wfp_impl_client_protocol_handshake(protocol);
             break;
         case LWS_CALLBACK_CLIENT_CONNECTION_ERROR:
             protocol->is_connected = false;

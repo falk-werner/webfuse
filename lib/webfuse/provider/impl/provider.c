@@ -127,3 +127,10 @@ void wfp_impl_ontimer_default(
 
     // empty
 }
+
+ bool wfp_impl_provider_is_authentication_enabled(
+    struct wfp_provider * provider)
+{
+    return (NULL != provider->get_credentials);
+}
+

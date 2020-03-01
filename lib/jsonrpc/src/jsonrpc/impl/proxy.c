@@ -77,6 +77,12 @@ static json_t * jsonrpc_impl_request_create(
 				json_array_append_new(params, json_integer(value));
 			}
 			break;
+            case 'j':
+            {
+                json_t * const value = va_arg(args, json_t *);
+                json_array_append_new(params, value);
+            }
+            break;
 			default:
 			fprintf(stderr, "fatal: unknown param_type '%c'\n", *param_type);
             json_decref(params);

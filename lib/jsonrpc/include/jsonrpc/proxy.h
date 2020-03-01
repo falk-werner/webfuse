@@ -33,7 +33,20 @@ jsonrpc_proxy_create(
 extern JSONRPC_API void jsonrpc_proxy_dispose(
     struct jsonrpc_proxy * proxy);
 
-
+//------------------------------------------------------------------------------
+/// \brief Invokes a method.
+///
+/// Creates a method an sends it using the send function.
+/// Proxy keeps track of method invokation. If no response is returned within
+/// timeout, an error is propagated.
+///
+/// \param proxy pointer to proxy instance
+/// \param finished function which is called exactly once, either on success or
+///                 on failure.
+/// \param method_name name of the method to invoke
+/// \param param_info types of the param (s = string, i = integer, j = json)
+/// \param ... params
+//------------------------------------------------------------------------------
 extern JSONRPC_API void jsonrpc_proxy_invoke(
 	struct jsonrpc_proxy * proxy,
 	jsonrpc_proxy_finished_fn * finished,

@@ -32,3 +32,15 @@ void wfp_impl_credentials_add(
 {
     json_object_set_new(credentials->contents, key, json_string(value));
 }
+
+char const * wfp_impl_credentials_get_type(
+    struct wfp_credentials * credentials)
+{
+    return credentials->type;
+}
+
+json_t * wfp_impl_credentials_get(
+    struct wfp_credentials * credentials)
+{
+    return credentials->contents;
+}

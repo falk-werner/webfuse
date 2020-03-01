@@ -173,7 +173,7 @@ TEST(client_protocol, connect_with_username_authentication)
 
     EXPECT_CALL(provider, OnConnected()).Times(AtMost(1));
     EXPECT_CALL(provider, OnDisconnected()).Times(1);
-    EXPECT_CALL(provider, GetCredentials(_)).WillOnce(Invoke(GetCredentials)).Times(1);
+    EXPECT_CALL(provider, GetCredentials(_)).Times(1).WillOnce(Invoke(GetCredentials));
     
     fixture.Connect();
     if (HasFatalFailure()) { return; }

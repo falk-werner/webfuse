@@ -30,6 +30,11 @@ extern void wfp_impl_credentials_add(
     char const * key,
     char const * value);
 
+extern char const * wfp_impl_credentials_get_type(
+    struct wfp_credentials * credentials);
+
+extern json_t * wfp_impl_credentials_get(
+    struct wfp_credentials * credentials);
 
 #ifdef __cplusplus
 }
