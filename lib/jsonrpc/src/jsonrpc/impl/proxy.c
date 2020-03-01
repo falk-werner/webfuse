@@ -124,7 +124,7 @@ void jsonrpc_impl_proxy_cleanup(
         proxy->request.id = 0;
         wf_timer_cancel(proxy->request.timer);
 
-        jsonrpc_impl_propate_error(finished, user_data, JSONRPC_BAD, "Bad");
+        jsonrpc_impl_propate_error(finished, user_data, JSONRPC_BAD, "Bad: cancelled pending request during shutdown");
     }
 
     wf_timer_dispose(proxy->request.timer);
@@ -158,7 +158,7 @@ void jsonrpc_impl_proxy_invoke(
             proxy->request.id = 0;
             wf_timer_cancel(proxy->request.timer);
 
-            jsonrpc_impl_propate_error(finished, user_data, JSONRPC_BAD, "Bad");
+            jsonrpc_impl_propate_error(finished, user_data, JSONRPC_BAD, "Bad: requenst is not sent");
         }
 
         if (NULL != request)

@@ -20,7 +20,11 @@ add_library(webfuse-provider-static STATIC
 
 set_target_properties(webfuse-provider-static PROPERTIES OUTPUT_NAME webfuse-provider)
 set_target_properties(webfuse-provider-static PROPERTIES C_VISIBILITY_PRESET hidden)
-target_include_directories(webfuse-provider-static PUBLIC lib)
+target_include_directories(webfuse-provider-static PUBLIC 
+	lib
+	lib/wf/timer/include
+	lib/jsonrpc/include
+)
 
 add_library(webfuse-provider SHARED 
 	lib/webfuse/provider/api.c
