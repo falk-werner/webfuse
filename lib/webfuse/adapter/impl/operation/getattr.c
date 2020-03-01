@@ -7,8 +7,8 @@
 #include <sys/stat.h>
 #include <unistd.h> 
 
-#include "webfuse/adapter/impl/jsonrpc/proxy.h"
-#include "webfuse/adapter/impl/jsonrpc/util.h"
+#include "wf/jsonrpc/proxy.h"
+#include "webfuse/core/json_util.h"
 #include "webfuse/core/util.h"
 
 struct wf_impl_operation_getattr_context
@@ -22,16 +22,17 @@ struct wf_impl_operation_getattr_context
 
 static void wf_impl_operation_getattr_finished(
 	void * user_data,
-	wf_status status,
-	json_t const * data)
+	json_t const * result,
+	json_t const * error)
 {
+	wf_status status = wf_impl_jsonrpc_get_status(error);
 	struct wf_impl_operation_getattr_context * context = user_data;
 
     struct stat buffer;
-	if (NULL != data)
+	if (NULL != result)
 	{
-		json_t * mode_holder = json_object_get(data, "mode");
-		json_t * type_holder = json_object_get(data, "type");
+		json_t * mode_holder = json_object_get(result, "mode");
+		json_t * type_holder = json_object_get(result, "type");
 		if ((NULL != mode_holder) && (json_is_integer(mode_holder)) && 
 		    (NULL != type_holder) && (json_is_string(type_holder)))
 		{
@@ -52,10 +53,10 @@ static void wf_impl_operation_getattr_finished(
             buffer.st_uid = context->uid;
             buffer.st_gid = context->gid;
             buffer.st_nlink = 1;
-			buffer.st_size = wf_impl_json_get_int(data, "size", 0);
-			buffer.st_atime = wf_impl_json_get_int(data, "atime", 0);
-			buffer.st_mtime = wf_impl_json_get_int(data, "mtime", 0);
-			buffer.st_ctime = wf_impl_json_get_int(data, "ctime", 0);
+			buffer.st_size = wf_impl_json_get_int(result, "size", 0);
+			buffer.st_atime = wf_impl_json_get_int(result, "atime", 0);
+			buffer.st_mtime = wf_impl_json_get_int(result, "mtime", 0);
+			buffer.st_ctime = wf_impl_json_get_int(result, "ctime", 0);
 		}
 		else
 		{
@@ -82,7 +83,7 @@ void wf_impl_operation_getattr (
 {
     struct fuse_ctx const * context = fuse_req_ctx(request);
     struct wf_impl_operations_context * user_data = fuse_req_userdata(request);
-    struct wf_impl_jsonrpc_proxy * rpc = wf_impl_operations_context_get_proxy(user_data);
+    struct wf_jsonrpc_proxy * rpc = wf_impl_operations_context_get_proxy(user_data);
 
 	if (NULL != rpc)
 	{
@@ -93,7 +94,7 @@ void wf_impl_operation_getattr (
 		getattr_context->gid = context->gid;
 		getattr_context->timeout = user_data->timeout;
 
-		wf_impl_jsonrpc_proxy_invoke(rpc, &wf_impl_operation_getattr_finished, getattr_context, "getattr", "si", user_data->name, inode);
+		wf_jsonrpc_proxy_invoke(rpc, &wf_impl_operation_getattr_finished, getattr_context, "getattr", "si", user_data->name, inode);
 	}
 	else
 	{

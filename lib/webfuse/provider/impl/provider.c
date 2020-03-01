@@ -67,6 +67,7 @@ void wfp_impl_provider_init(
     provider->connected = &wfp_impl_connected_default;
     provider->disconnected = &wfp_impl_disconnected_default;
     provider->ontimer = &wfp_impl_ontimer_default;
+    provider->get_credentials = NULL;
 }
 
 void wfp_impl_provider_init_from_prototype(
@@ -82,6 +83,7 @@ void wfp_impl_provider_init_from_prototype(
     provider->connected =  prototype->connected;
     provider->disconnected = prototype->disconnected;
     provider->ontimer = prototype->ontimer;
+    provider->get_credentials = prototype->get_credentials;
 }
 
 void wfp_impl_provider_invoke(
@@ -125,3 +127,10 @@ void wfp_impl_ontimer_default(
 
     // empty
 }
+
+ bool wfp_impl_provider_is_authentication_enabled(
+    struct wfp_provider * provider)
+{
+    return (NULL != provider->get_credentials);
+}
+

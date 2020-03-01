@@ -1,8 +1,13 @@
 #ifndef WF_PROVIDER_IMPL_PROVIDER_H
 #define WF_PROVIDER_IMPL_PROVIDER_H
 
+#ifndef __cplusplus
+#include <stdbool.h>
+#endif
+
 #include <jansson.h>
 #include "webfuse/provider/client_config.h"
+
 
 #ifdef __cplusplus
 extern "C"
@@ -20,6 +25,7 @@ struct wfp_provider
     wfp_open_fn * open;
     wfp_close_fn * close;
     wfp_read_fn * read;
+    wfp_get_credentials_fn * get_credentials;
 };
 
 struct wfp_impl_invokation_context
@@ -41,6 +47,9 @@ extern void wfp_impl_provider_invoke(
     struct wfp_impl_invokation_context * context,
     json_t * request);
 
+extern bool wfp_impl_provider_is_authentication_enabled(
+    struct wfp_provider * provider);
+    
 extern void wfp_impl_connected_default(
     void * user_data);
 

@@ -167,6 +167,22 @@ static void webfuse_test_iproviderclient_onread(
     delete[] data;
 }
 
+static void webfuse_test_iproviderclient_get_credentials(
+    wfp_credentials * credentials,
+    void * user_data)
+{
+    auto * self = reinterpret_cast<IProviderClient*>(user_data);
+
+    try
+    {
+        self->GetCredentials(credentials);
+    }
+    catch (...)
+    {
+        // swallow
+    }
+}
+
 }
 
 namespace webfuse_test
@@ -185,7 +201,7 @@ wf_status ProviderClientException::GetErrorCode()
 }
 
 
-void IProviderClient::AttachTo(wfp_client_config * config)
+void IProviderClient::AttachTo(wfp_client_config * config, bool enableAuthentication)
 {
     void * self = reinterpret_cast<void *>(this);
     wfp_client_config_set_userdata(config, self);
@@ -199,6 +215,11 @@ void IProviderClient::AttachTo(wfp_client_config * config)
     wfp_client_config_set_onopen(config, &webfuse_test_iproviderclient_onopen);
     wfp_client_config_set_onclose(config, &webfuse_test_iproviderclient_onclose);
     wfp_client_config_set_onread(config, &webfuse_test_iproviderclient_onread);
+
+    if (enableAuthentication)
+    {
+        wfp_client_config_enable_authentication(config, &webfuse_test_iproviderclient_get_credentials);
+    }
 }
 
 }

@@ -14,14 +14,19 @@ extern "C"
 struct wfp_client_config;
 struct lws_protocols;
 struct lws_context;
+struct wf_jsonrpc_proxy;
+struct wf_timer_manager;
 
 struct wfp_client_protocol
 {
     bool is_connected;
+    bool is_shutdown_requested;
     struct wfp_request request;
     struct wfp_provider provider;
     void * user_data;
     struct lws * wsi;
+    struct wf_timer_manager * timer_manager;
+    struct wf_jsonrpc_proxy * proxy;
     struct wf_slist messages;
 };
 

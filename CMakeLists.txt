@@ -21,7 +21,7 @@ set(CMAKE_C_STANDARD 99)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-set(C_WARNINGS -Wall -Wextra)
+set(C_WARNINGS -Wall -Wextra -Werror)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 include_directories(
@@ -37,6 +37,8 @@ add_compile_options(
 	"-pthread"
 )
 
+include(wf_timer)
+include(wf_jsonrpc)
 include(webfuse_core)
 include(webfuse_adapter)
 include(webfuse_provider)

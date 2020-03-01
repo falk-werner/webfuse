@@ -7,9 +7,17 @@ include(GoogleTest)
 pkg_check_modules(GMOCK gmock)
 
 add_executable(alltests
+	lib/wf/jsonrpc/test/wf/jsonrpc/test_is_request.cc
+	lib/wf/jsonrpc/test/wf/jsonrpc/test_request.cc
+	lib/wf/jsonrpc/test/wf/jsonrpc/test_is_response.cc
+	lib/wf/jsonrpc/test/wf/jsonrpc/test_response.cc
+	lib/wf/jsonrpc/test/wf/jsonrpc/test_server.cc
+	lib/wf/jsonrpc/test/wf/jsonrpc/test_proxy.cc
+	lib/wf/jsonrpc/test/wf/jsonrpc/test_response_parser.cc
+	lib/wf/timer/test/wf/timer/test_timepoint.cc
+	lib/wf/timer/test/wf/timer/test_timer.cc
 	test/webfuse/utils/tempdir.cc
 	test/webfuse/utils/file_utils.cc
-	test/webfuse/utils/msleep.cc
 	test/webfuse/utils/die_if.cc
 	test/webfuse/utils/timeout_watcher.cc
 	test/webfuse/utils/path.c
@@ -18,6 +26,7 @@ add_executable(alltests
 	test/webfuse/mocks/mock_authenticator.cc
 	test/webfuse/mocks/mock_request.cc
 	test/webfuse/mocks/mock_provider_client.cc
+	test/webfuse//tests/core/test_util.cc
 	test/webfuse/tests/core/test_container_of.cc
 	test/webfuse/tests/core/test_string.cc
 	test/webfuse/tests/core/test_slist.cc
@@ -25,11 +34,8 @@ add_executable(alltests
 	test/webfuse/tests/core/test_status.cc
 	test/webfuse/tests/core/test_message.cc
 	test/webfuse/tests/core/test_message_queue.cc
-	test/webfuse/tests/adapter/test_response_parser.cc
 	test/webfuse/tests/adapter/test_server.cc
 	test/webfuse/tests/adapter/test_server_config.cc
-	test/webfuse/tests/adapter/test_timepoint.cc
-	test/webfuse/tests/adapter/test_timer.cc
 	test/webfuse/tests/adapter/test_credentials.cc
 	test/webfuse/tests/adapter/test_authenticator.cc
 	test/webfuse/tests/adapter/test_authenticators.cc
@@ -37,13 +43,6 @@ add_executable(alltests
 	test/webfuse/tests/adapter/test_uuid_mountpoint.cc
 	test/webfuse/tests/adapter/test_uuid_mountpoint_factory.cc
 	test/webfuse/tests/adapter/test_fuse_req.cc
-	test/webfuse/tests/adapter/jsonrpc/test_util.cc
-	test/webfuse/tests/adapter/jsonrpc/test_is_request.cc
-	test/webfuse/tests/adapter/jsonrpc/test_request.cc
-	test/webfuse/tests/adapter/jsonrpc/test_is_response.cc
-	test/webfuse/tests/adapter/jsonrpc/test_response.cc
-	test/webfuse/tests/adapter/jsonrpc/test_server.cc
-	test/webfuse/tests/adapter/jsonrpc/test_proxy.cc
 	test/webfuse/tests/provider/test_url.cc
 	test/webfuse/tests/provider/test_client_protocol.cc
 	test/webfuse/tests/integration/test_integration.cc
@@ -52,6 +51,10 @@ add_executable(alltests
 )
 
 target_include_directories(alltests PRIVATE
+	lib/wf/jsonrpc/include
+	lib/wf/jsonrpc/src
+	lib/wf/timer/include
+	lib/wf/timer/src
 	${FUSE3_INCLUDE_DIRS} 
 	${UUID_INCLUDE_DIRS}
 )
@@ -65,6 +68,8 @@ target_link_libraries(alltests PUBLIC
 	webfuse-adapter-static
 	webfuse-provider-static
 	webfuse-core
+	wf_jsonrpc
+	wf_timer
 	${FUSE3_LIBRARIES}
 	${LWS_LIBRARIES}
 	${JANSSON_LIBRARIES}

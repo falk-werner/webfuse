@@ -8,8 +8,9 @@
 #include <sys/stat.h>
 #include <unistd.h> 
 
-#include "webfuse/adapter/impl/jsonrpc/proxy.h"
+#include "wf/jsonrpc/proxy.h"
 #include "webfuse/core/util.h"
+#include "webfuse/core/json_util.h"
 
 
 #define WF_DIRBUFFER_INITIAL_SIZE 1024
@@ -73,9 +74,10 @@ static size_t wf_impl_min(size_t a, size_t b)
 
 static void wf_impl_operation_readdir_finished(
 	void * user_data,
-	wf_status status,
-	json_t const * result)
+	json_t const * result,
+	json_t const * error)
 {
+	wf_status status = wf_impl_jsonrpc_get_status(error);
 	struct wf_impl_operation_readdir_context * context = user_data;
 
 	struct wf_impl_dirbuffer buffer;
@@ -137,16 +139,16 @@ void wf_impl_operation_readdir (
 	struct fuse_file_info * WF_UNUSED_PARAM(file_info))
 {
     struct wf_impl_operations_context * user_data = fuse_req_userdata(request);
-    struct wf_impl_jsonrpc_proxy * rpc = wf_impl_operations_context_get_proxy(user_data);
+    struct wf_jsonrpc_proxy * rpc = wf_impl_operations_context_get_proxy(user_data);
 
 	if (NULL != rpc)
 	{
-	struct wf_impl_operation_readdir_context * readdir_context = malloc(sizeof(struct wf_impl_operation_readdir_context));
-	readdir_context->request = request;
-	readdir_context->size = size;
-	readdir_context->offset = offset;
+		struct wf_impl_operation_readdir_context * readdir_context = malloc(sizeof(struct wf_impl_operation_readdir_context));
+		readdir_context->request = request;
+		readdir_context->size = size;
+		readdir_context->offset = offset;
 
-	wf_impl_jsonrpc_proxy_invoke(rpc, &wf_impl_operation_readdir_finished, readdir_context, "readdir", "si", user_data->name, inode);
+		wf_jsonrpc_proxy_invoke(rpc, &wf_impl_operation_readdir_finished, readdir_context, "readdir", "si", user_data->name, inode);
 	}
 	else
 	{

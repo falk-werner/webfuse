@@ -8,12 +8,21 @@
 
 #include "webfuse/provider/impl/client_config.h"
 #include "webfuse/provider/impl/provider.h"
+#include "webfuse/provider/impl/credentials.h"
 #include "webfuse/core/util.h"
 #include "webfuse/core/message.h"
 #include "webfuse/core/message_queue.h"
 #include "webfuse/core/container_of.h"
 #include "webfuse/provider/impl/url.h"
 #include "webfuse/core/protocol_names.h"
+
+#include "wf/timer/manager.h"
+
+#include "wf/jsonrpc/response.h"
+#include "wf/jsonrpc/request.h"
+#include "wf/jsonrpc/proxy.h"
+
+#define WF_DEFAULT_TIMEOUT (10 * 1000)
 
 static void wfp_impl_client_protocol_respond(
     json_t * response,
@@ -29,54 +38,122 @@ static void wfp_impl_client_protocol_respond(
     }
 }
 
-static void wfp_impl_client_protocol_process_request(
+static void wfp_impl_client_protocol_process(
      struct wfp_client_protocol * protocol, 
-     char const * message,
+     char const * data,
      size_t length)
 {
-    json_t * request = json_loadb(message, length, 0, NULL);
-    if (NULL != request)
+    json_t * message = json_loadb(data, length, 0, NULL);
+    if (NULL != message)
     {
-        // FIXME: is_connected should be invoked, when filesystem added
-        if ((!protocol->is_connected) && (NULL != json_object_get(request, "result")))
+        if (wf_jsonrpc_is_response(message))
         {
-            protocol->is_connected = true;
-            protocol->provider.connected(protocol->user_data);
+            wf_jsonrpc_proxy_onresult(protocol->proxy, message);
         }
 
-
-
-        struct wfp_impl_invokation_context context =
+        if (wf_jsonrpc_is_request(message))
         {
-            .provider = &protocol->provider,
-            .user_data = protocol->user_data,
-            .request = &protocol->request
-        };
+            struct wfp_impl_invokation_context context =
+            {
+                .provider = &protocol->provider,
+                .user_data = protocol->user_data,
+                .request = &protocol->request
+            };
 
-        wfp_impl_provider_invoke(&context, request);
-        json_decref(request);
+            wfp_impl_provider_invoke(&context, message);
+        }
+
+        json_decref(message);
     }
+}
+
+static void 
+wfp_impl_client_protocol_on_add_filesystem_finished(
+	void * user_data,
+	json_t const * result,
+	json_t const * WF_UNUSED_PARAM(error))    
+{
+    struct wfp_client_protocol * protocol = user_data;
+    if (NULL == protocol->wsi) { return; }
+
+    if (NULL != result)
+    {
+        protocol->is_connected = true;
+        protocol->provider.connected(protocol->user_data);
+    }
+    else
+    {
+        protocol->is_shutdown_requested = true;
+        lws_callback_on_writable(protocol->wsi);
+    }    
 }
 
 static void wfp_impl_client_protocol_add_filesystem(
      struct wfp_client_protocol * protocol)
 {
-    json_t * params = json_array();
-    json_array_append_new(params, json_string("cprovider"));
+    wf_jsonrpc_proxy_invoke(
+        protocol->proxy, 
+        &wfp_impl_client_protocol_on_add_filesystem_finished,
+        protocol,
+        "add_filesystem",
+        "s",
+        "cprovider");
+}
 
-    json_t * request = json_object();
-    json_object_set_new(request, "method", json_string("add_filesystem"));
-    json_object_set_new(request, "params", params);
-    json_object_set_new(request, "id", json_integer(42));
+static void 
+wfp_impl_client_protocol_on_authenticate_finished(
+	void * user_data,
+	json_t const * result,
+	json_t const * WF_UNUSED_PARAM(error))    
+{
+    struct wfp_client_protocol * protocol = user_data;
+    if (NULL == protocol->wsi) { return; }
 
-    struct wf_message * message = wf_message_create(request);
-    if (NULL != message)
+    if (NULL != result)
     {
-        wf_slist_append(&protocol->messages, &message->item);
-        lws_callback_on_writable(protocol->wsi);
+        wfp_impl_client_protocol_add_filesystem(protocol);
     }
+    else
+    {
+        protocol->is_shutdown_requested = true;
+        lws_callback_on_writable(protocol->wsi);
+    }    
+}
 
-    json_decref(request);
+static void wfp_impl_client_protocol_authenticate(
+    struct wfp_client_protocol * protocol)
+{
+    struct wfp_credentials credentials;
+    wfp_impl_credentials_init(&credentials);
+
+    protocol->provider.get_credentials(&credentials, protocol->user_data);
+
+    char const * cred_type = wfp_impl_credentials_get_type(&credentials);
+    json_t * creds = wfp_impl_credentials_get(&credentials);
+    json_incref(creds);
+
+    wf_jsonrpc_proxy_invoke(
+        protocol->proxy, 
+        &wfp_impl_client_protocol_on_authenticate_finished, 
+        protocol, 
+        "authenticate", 
+        "sj",
+        cred_type, creds);
+
+    wfp_impl_credentials_cleanup(&credentials);
+}
+
+static void wfp_impl_client_protocol_handshake(
+    struct wfp_client_protocol * protocol)
+{
+    if (wfp_impl_provider_is_authentication_enabled(&protocol->provider))
+    {
+        wfp_impl_client_protocol_authenticate(protocol);
+    }
+    else
+    {
+        wfp_impl_client_protocol_add_filesystem(protocol);
+    }
 }
 
 static int wfp_impl_client_protocol_callback(
@@ -86,16 +163,18 @@ static int wfp_impl_client_protocol_callback(
 	void * in,
 	size_t len)
 {
+    int result = 0;
     struct lws_protocols const * ws_protocol = lws_get_protocol(wsi);     
     struct wfp_client_protocol * protocol = (NULL != ws_protocol) ? ws_protocol->user: NULL;
 
     if (NULL != protocol)
     {
+        wf_timer_manager_check(protocol->timer_manager);
+
         switch (reason)
         {
         case LWS_CALLBACK_CLIENT_ESTABLISHED:
-            wfp_impl_client_protocol_add_filesystem(protocol);
-            // Defer is_connected until response received
+            wfp_impl_client_protocol_handshake(protocol);
             break;
         case LWS_CALLBACK_CLIENT_CONNECTION_ERROR:
             protocol->is_connected = false;
@@ -103,36 +182,60 @@ static int wfp_impl_client_protocol_callback(
             break;
         case LWS_CALLBACK_CLIENT_CLOSED:
             protocol->is_connected = false;
-            protocol->provider.disconnected(protocol->user_data);        
+            protocol->provider.disconnected(protocol->user_data);   
+            protocol->wsi = NULL;
             break;
         case LWS_CALLBACK_CLIENT_RECEIVE:
-            wfp_impl_client_protocol_process_request(protocol, in, len);
+            wfp_impl_client_protocol_process(protocol, in, len);
             break;
         case LWS_CALLBACK_SERVER_WRITEABLE:
             // fall-through
         case LWS_CALLBACK_CLIENT_WRITEABLE:
-			if ((wsi == protocol->wsi) && (!wf_slist_empty(&protocol->messages)))
+			if (wsi == protocol->wsi) 
             {
-                struct wf_slist_item * item = wf_slist_remove_first(&protocol->messages);
-				struct wf_message * message = wf_container_of(item, struct wf_message, item);
-				lws_write(wsi, (unsigned char*) message->data, message->length, LWS_WRITE_TEXT);
-				wf_message_dispose(message);
-
-                if (!wf_slist_empty(&protocol->messages))
+                if (protocol->is_shutdown_requested)
                 {
-                    lws_callback_on_writable(wsi);
-
+                    result = 1;
                 }
-			}
+                else if (!wf_slist_empty(&protocol->messages))
+                {
+                    struct wf_slist_item * item = wf_slist_remove_first(&protocol->messages);
+                    struct wf_message * message = wf_container_of(item, struct wf_message, item);
+                    lws_write(wsi, (unsigned char*) message->data, message->length, LWS_WRITE_TEXT);
+                    wf_message_dispose(message);
+
+                    if (!wf_slist_empty(&protocol->messages))
+                    {
+                        lws_callback_on_writable(wsi);
+                    }
+                }
+            }
             break;
         default:
             break;            
         }
     }
 
-    return 0;
+    return result;
 }
 
+static bool wfp_impl_client_protocol_send(
+    json_t * request,
+    void * user_data)
+{
+    bool result = false;
+    struct wfp_client_protocol * protocol = user_data;
+
+    struct wf_message * message = wf_message_create(request);
+    if (NULL != message)
+    {
+        wf_slist_append(&protocol->messages, &message->item);
+        lws_callback_on_writable(protocol->wsi);
+        result = true;
+    }
+
+    return result;
+}
 
 void wfp_impl_client_protocol_init(
     struct wfp_client_protocol * protocol,
@@ -140,12 +243,16 @@ void wfp_impl_client_protocol_init(
     void * user_data)
 {
     protocol->is_connected = false;
+    protocol->is_shutdown_requested = false;
     wf_slist_init(&protocol->messages);
 
     protocol->wsi = NULL;
 
     protocol->request.respond = &wfp_impl_client_protocol_respond;
     protocol->request.user_data = protocol;
+
+    protocol->timer_manager = wf_timer_manager_create();
+    protocol->proxy = wf_jsonrpc_proxy_create(protocol->timer_manager, WF_DEFAULT_TIMEOUT, &wfp_impl_client_protocol_send, protocol);
 
     protocol->user_data = user_data;
     wfp_impl_provider_init_from_prototype(&protocol->provider, provider);
@@ -154,6 +261,8 @@ void wfp_impl_client_protocol_init(
 void wfp_impl_client_protocol_cleanup(
     struct wfp_client_protocol * protocol)
 {
+    wf_jsonrpc_proxy_dispose(protocol->proxy);
+    wf_timer_manager_dispose(protocol->timer_manager);
     wf_message_queue_cleanup(&protocol->messages);
 }
 

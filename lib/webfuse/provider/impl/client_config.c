@@ -110,3 +110,10 @@ void wfp_impl_client_config_set_onread(
 {
     config->provider.read = handler;
 }
+
+void wfp_impl_client_config_enable_authentication(
+    struct wfp_client_config * config,
+    wfp_get_credentials_fn * get_credentials)
+{
+    config->provider.get_credentials = get_credentials;
+}

@@ -9,6 +9,7 @@ add_library(webfuse-provider-static STATIC
 	lib/webfuse/provider/impl/provider.c
 	lib/webfuse/provider/impl/request.c
 	lib/webfuse/provider/impl/dirbuffer.c
+	lib/webfuse/provider/impl/credentials.c
 	lib/webfuse/provider/impl/operation/lookup.c
 	lib/webfuse/provider/impl/operation/getattr.c
 	lib/webfuse/provider/impl/operation/readdir.c
@@ -19,7 +20,11 @@ add_library(webfuse-provider-static STATIC
 
 set_target_properties(webfuse-provider-static PROPERTIES OUTPUT_NAME webfuse-provider)
 set_target_properties(webfuse-provider-static PROPERTIES C_VISIBILITY_PRESET hidden)
-target_include_directories(webfuse-provider-static PUBLIC lib)
+target_include_directories(webfuse-provider-static PUBLIC 
+	lib
+	lib/wf/timer/include
+	lib/wf/jsonrpc/include
+)
 
 add_library(webfuse-provider SHARED 
 	lib/webfuse/provider/api.c
