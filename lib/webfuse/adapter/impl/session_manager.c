@@ -29,7 +29,7 @@ struct wf_impl_session * wf_impl_session_manager_add(
     struct wf_impl_authenticators * authenticators,
     struct wf_impl_mountpoint_factory * mountpoint_factory,
     struct wf_timer_manager * timer_manager,
-    struct jsonrpc_server * server)
+    struct wf_jsonrpc_server * server)
 {
     struct wf_impl_session * session = wf_impl_session_create(
         wsi, authenticators, timer_manager, server, mountpoint_factory); 

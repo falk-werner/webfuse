@@ -16,7 +16,7 @@ extern "C"
 
 struct lws;
 struct wf_timer_manager;
-struct jsonrpc_server;
+struct wf_jsonrpc_server;
 
 struct wf_impl_session_manager
 {
@@ -35,7 +35,7 @@ extern struct wf_impl_session * wf_impl_session_manager_add(
     struct wf_impl_authenticators * authenticators,
     struct wf_impl_mountpoint_factory * mountpoint_factory,
     struct wf_timer_manager * timer_manager,
-    struct jsonrpc_server * server);
+    struct wf_jsonrpc_server * server);
 
 extern struct wf_impl_session * wf_impl_session_manager_get(
     struct wf_impl_session_manager * manager,

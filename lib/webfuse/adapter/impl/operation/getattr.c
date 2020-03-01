@@ -7,7 +7,7 @@
 #include <sys/stat.h>
 #include <unistd.h> 
 
-#include "jsonrpc/proxy.h"
+#include "wf/jsonrpc/proxy.h"
 #include "webfuse/core/json_util.h"
 #include "webfuse/core/util.h"
 
@@ -83,7 +83,7 @@ void wf_impl_operation_getattr (
 {
     struct fuse_ctx const * context = fuse_req_ctx(request);
     struct wf_impl_operations_context * user_data = fuse_req_userdata(request);
-    struct jsonrpc_proxy * rpc = wf_impl_operations_context_get_proxy(user_data);
+    struct wf_jsonrpc_proxy * rpc = wf_impl_operations_context_get_proxy(user_data);
 
 	if (NULL != rpc)
 	{
@@ -94,7 +94,7 @@ void wf_impl_operation_getattr (
 		getattr_context->gid = context->gid;
 		getattr_context->timeout = user_data->timeout;
 
-		jsonrpc_proxy_invoke(rpc, &wf_impl_operation_getattr_finished, getattr_context, "getattr", "si", user_data->name, inode);
+		wf_jsonrpc_proxy_invoke(rpc, &wf_impl_operation_getattr_finished, getattr_context, "getattr", "si", user_data->name, inode);
 	}
 	else
 	{

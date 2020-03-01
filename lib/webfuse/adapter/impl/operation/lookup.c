@@ -10,7 +10,7 @@
 
 #include <stdlib.h>
 
-#include "jsonrpc/proxy.h"
+#include "wf/jsonrpc/proxy.h"
 #include "webfuse/core/json_util.h"
 #include "webfuse/core/util.h"
 
@@ -92,7 +92,7 @@ void wf_impl_operation_lookup (
 {
     struct fuse_ctx const * context = fuse_req_ctx(request);
     struct wf_impl_operations_context * user_data = fuse_req_userdata(request);
-    struct jsonrpc_proxy * rpc = wf_impl_operations_context_get_proxy(user_data);
+    struct wf_jsonrpc_proxy * rpc = wf_impl_operations_context_get_proxy(user_data);
 
 	if (NULL != rpc)
 	{
@@ -102,7 +102,7 @@ void wf_impl_operation_lookup (
 		lookup_context->gid = context->gid;
 		lookup_context->timeout = user_data->timeout;
 
-		jsonrpc_proxy_invoke(rpc, &wf_impl_operation_lookup_finished, lookup_context, "lookup", "sis", user_data->name, (int) (parent & INT_MAX), name);
+		wf_jsonrpc_proxy_invoke(rpc, &wf_impl_operation_lookup_finished, lookup_context, "lookup", "sis", user_data->name, (int) (parent & INT_MAX), name);
 	}
 	else
 	{

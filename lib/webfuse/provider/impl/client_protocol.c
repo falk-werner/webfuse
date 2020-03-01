@@ -18,9 +18,9 @@
 
 #include "wf/timer/manager.h"
 
-#include "jsonrpc/response.h"
-#include "jsonrpc/request.h"
-#include "jsonrpc/proxy.h"
+#include "wf/jsonrpc/response.h"
+#include "wf/jsonrpc/request.h"
+#include "wf/jsonrpc/proxy.h"
 
 #define WF_DEFAULT_TIMEOUT (10 * 1000)
 
@@ -46,12 +46,12 @@ static void wfp_impl_client_protocol_process(
     json_t * message = json_loadb(data, length, 0, NULL);
     if (NULL != message)
     {
-        if (jsonrpc_is_response(message))
+        if (wf_jsonrpc_is_response(message))
         {
-            jsonrpc_proxy_onresult(protocol->proxy, message);
+            wf_jsonrpc_proxy_onresult(protocol->proxy, message);
         }
 
-        if (jsonrpc_is_request(message))
+        if (wf_jsonrpc_is_request(message))
         {
             struct wfp_impl_invokation_context context =
             {
@@ -91,7 +91,7 @@ wfp_impl_client_protocol_on_add_filesystem_finished(
 static void wfp_impl_client_protocol_add_filesystem(
      struct wfp_client_protocol * protocol)
 {
-    jsonrpc_proxy_invoke(
+    wf_jsonrpc_proxy_invoke(
         protocol->proxy, 
         &wfp_impl_client_protocol_on_add_filesystem_finished,
         protocol,
@@ -132,7 +132,7 @@ static void wfp_impl_client_protocol_authenticate(
     json_t * creds = wfp_impl_credentials_get(&credentials);
     json_incref(creds);
 
-    jsonrpc_proxy_invoke(
+    wf_jsonrpc_proxy_invoke(
         protocol->proxy, 
         &wfp_impl_client_protocol_on_authenticate_finished, 
         protocol, 
@@ -252,7 +252,7 @@ void wfp_impl_client_protocol_init(
     protocol->request.user_data = protocol;
 
     protocol->timer_manager = wf_timer_manager_create();
-    protocol->proxy = jsonrpc_proxy_create(protocol->timer_manager, WF_DEFAULT_TIMEOUT, &wfp_impl_client_protocol_send, protocol);
+    protocol->proxy = wf_jsonrpc_proxy_create(protocol->timer_manager, WF_DEFAULT_TIMEOUT, &wfp_impl_client_protocol_send, protocol);
 
     protocol->user_data = user_data;
     wfp_impl_provider_init_from_prototype(&protocol->provider, provider);
@@ -261,7 +261,7 @@ void wfp_impl_client_protocol_init(
 void wfp_impl_client_protocol_cleanup(
     struct wfp_client_protocol * protocol)
 {
-    jsonrpc_proxy_dispose(protocol->proxy);
+    wf_jsonrpc_proxy_dispose(protocol->proxy);
     wf_timer_manager_dispose(protocol->timer_manager);
     wf_message_queue_cleanup(&protocol->messages);
 }

@@ -38,7 +38,7 @@ add_compile_options(
 )
 
 include(wf_timer)
-include(jsonrpc)
+include(wf_jsonrpc)
 include(webfuse_core)
 include(webfuse_adapter)
 include(webfuse_provider)

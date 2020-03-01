@@ -14,7 +14,7 @@ extern "C"
 struct wfp_client_config;
 struct lws_protocols;
 struct lws_context;
-struct jsonrpc_proxy;
+struct wf_jsonrpc_proxy;
 struct wf_timer_manager;
 
 struct wfp_client_protocol
@@ -26,7 +26,7 @@ struct wfp_client_protocol
     void * user_data;
     struct lws * wsi;
     struct wf_timer_manager * timer_manager;
-    struct jsonrpc_proxy * proxy;
+    struct wf_jsonrpc_proxy * proxy;
     struct wf_slist messages;
 };
 

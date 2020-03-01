@@ -7,14 +7,13 @@ include(GoogleTest)
 pkg_check_modules(GMOCK gmock)
 
 add_executable(alltests
-	lib/jsonrpc/test/jsonrpc/test_util.cc
-	lib/jsonrpc/test/jsonrpc/test_is_request.cc
-	lib/jsonrpc/test/jsonrpc/test_request.cc
-	lib/jsonrpc/test/jsonrpc/test_is_response.cc
-	lib/jsonrpc/test/jsonrpc/test_response.cc
-	lib/jsonrpc/test/jsonrpc/test_server.cc
-	lib/jsonrpc/test/jsonrpc/test_proxy.cc
-	lib/jsonrpc/test/jsonrpc/test_response_parser.cc
+	lib/wf/jsonrpc/test/wf/jsonrpc/test_is_request.cc
+	lib/wf/jsonrpc/test/wf/jsonrpc/test_request.cc
+	lib/wf/jsonrpc/test/wf/jsonrpc/test_is_response.cc
+	lib/wf/jsonrpc/test/wf/jsonrpc/test_response.cc
+	lib/wf/jsonrpc/test/wf/jsonrpc/test_server.cc
+	lib/wf/jsonrpc/test/wf/jsonrpc/test_proxy.cc
+	lib/wf/jsonrpc/test/wf/jsonrpc/test_response_parser.cc
 	lib/wf/timer/test/wf/timer/test_timepoint.cc
 	lib/wf/timer/test/wf/timer/test_timer.cc
 	test/webfuse/utils/tempdir.cc
@@ -28,6 +27,7 @@ add_executable(alltests
 	test/webfuse/mocks/mock_authenticator.cc
 	test/webfuse/mocks/mock_request.cc
 	test/webfuse/mocks/mock_provider_client.cc
+	test/webfuse//tests/core/test_util.cc
 	test/webfuse/tests/core/test_container_of.cc
 	test/webfuse/tests/core/test_string.cc
 	test/webfuse/tests/core/test_slist.cc
@@ -52,8 +52,8 @@ add_executable(alltests
 )
 
 target_include_directories(alltests PRIVATE
-	lib/jsonrpc/include
-	lib/jsonrpc/src
+	lib/wf/jsonrpc/include
+	lib/wf/jsonrpc/src
 	lib/wf/timer/include
 	lib/wf/timer/src
 	${FUSE3_INCLUDE_DIRS} 
@@ -69,7 +69,7 @@ target_link_libraries(alltests PUBLIC
 	webfuse-adapter-static
 	webfuse-provider-static
 	webfuse-core
-	jsonrpc
+	wf_jsonrpc
 	wf_timer
 	${FUSE3_LIBRARIES}
 	${LWS_LIBRARIES}

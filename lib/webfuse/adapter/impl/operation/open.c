@@ -4,7 +4,7 @@
 #include <errno.h>
 #include <jansson.h>
 
-#include "jsonrpc/proxy.h"
+#include "wf/jsonrpc/proxy.h"
 #include "webfuse/core/util.h"
 #include "webfuse/core/status.h"
 #include "webfuse/core/json_util.h"
@@ -49,11 +49,11 @@ void wf_impl_operation_open(
 	struct fuse_file_info * file_info)
 {
     struct wf_impl_operations_context * user_data = fuse_req_userdata(request);
-    struct jsonrpc_proxy * rpc = wf_impl_operations_context_get_proxy(user_data);
+    struct wf_jsonrpc_proxy * rpc = wf_impl_operations_context_get_proxy(user_data);
 
 	if (NULL != rpc)
 	{
-		jsonrpc_proxy_invoke(rpc, &wf_impl_operation_open_finished, request, "open", "sii", user_data->name, inode, file_info->flags);
+		wf_jsonrpc_proxy_invoke(rpc, &wf_impl_operation_open_finished, request, "open", "sii", user_data->name, inode, file_info->flags);
 	}
 	else
 	{

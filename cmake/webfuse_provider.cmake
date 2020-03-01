@@ -23,7 +23,7 @@ set_target_properties(webfuse-provider-static PROPERTIES C_VISIBILITY_PRESET hid
 target_include_directories(webfuse-provider-static PUBLIC 
 	lib
 	lib/wf/timer/include
-	lib/jsonrpc/include
+	lib/wf/jsonrpc/include
 )
 
 add_library(webfuse-provider SHARED 

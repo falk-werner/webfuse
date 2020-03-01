@@ -2,14 +2,15 @@
 #include "webfuse/adapter/impl/authenticators.h"
 #include "webfuse/core/message_queue.h"
 #include "webfuse/core/message.h"
-#include "jsonrpc/proxy.h"
-#include "jsonrpc/request.h"
-#include "jsonrpc/response.h"
 #include "webfuse/adapter/impl/mountpoint_factory.h"
 #include "webfuse/adapter/impl/mountpoint.h"
 
 #include "webfuse/core/container_of.h"
 #include "webfuse/core/util.h"
+
+#include "wf/jsonrpc/proxy.h"
+#include "wf/jsonrpc/request.h"
+#include "wf/jsonrpc/response.h"
 
 #include <libwebsockets.h>
 #include <stddef.h>
@@ -24,7 +25,7 @@ static bool wf_impl_session_send(
     struct wf_impl_session * session = user_data;
     struct wf_message * message = wf_message_create(request);
 
-    bool result = (session->is_authenticated || jsonrpc_is_response(request)) && (NULL != session->wsi);
+    bool result = (session->is_authenticated || wf_jsonrpc_is_response(request)) && (NULL != session->wsi);
 
     if (result)
     {
@@ -45,7 +46,7 @@ struct wf_impl_session * wf_impl_session_create(
     struct lws * wsi,
     struct wf_impl_authenticators * authenticators,
     struct wf_timer_manager * timer_manager,
-    struct jsonrpc_server * server,
+    struct wf_jsonrpc_server * server,
     struct wf_impl_mountpoint_factory * mountpoint_factory)
 {
 
@@ -59,7 +60,7 @@ struct wf_impl_session * wf_impl_session_create(
         session->authenticators = authenticators;
         session->server = server;
         session->mountpoint_factory = mountpoint_factory;
-        session->rpc = jsonrpc_proxy_create(timer_manager, WF_DEFAULT_TIMEOUT, &wf_impl_session_send, session);
+        session->rpc = wf_jsonrpc_proxy_create(timer_manager, WF_DEFAULT_TIMEOUT, &wf_impl_session_send, session);
         wf_slist_init(&session->messages);
     }
 
@@ -83,7 +84,7 @@ static void wf_impl_session_dispose_filesystems(
 void wf_impl_session_dispose(
     struct wf_impl_session * session)
 {
-    jsonrpc_proxy_dispose(session->rpc);
+    wf_jsonrpc_proxy_dispose(session->rpc);
     wf_message_queue_cleanup(&session->messages);
 
     wf_impl_session_dispose_filesystems(&session->filesystems);
@@ -154,13 +155,13 @@ void wf_impl_session_receive(
     json_t * message = json_loadb(data, length, 0, NULL);
     if (NULL != message)
     {
-        if (jsonrpc_is_response(message))
+        if (wf_jsonrpc_is_response(message))
         {
-            jsonrpc_proxy_onresult(session->rpc, message);
+            wf_jsonrpc_proxy_onresult(session->rpc, message);
         }
-        else if (jsonrpc_is_request(message))
+        else if (wf_jsonrpc_is_request(message))
         {
-            jsonrpc_server_process(session->server, message, &wf_impl_session_send, session);
+            wf_jsonrpc_server_process(session->server, message, &wf_impl_session_send, session);
         }
 
 	    json_decref(message);

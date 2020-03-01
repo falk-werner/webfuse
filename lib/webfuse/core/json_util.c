@@ -1,5 +1,5 @@
 #include "webfuse/core/json_util.h"
-#include "jsonrpc/status.h"
+#include "wf/jsonrpc/status.h"
 
 int wf_impl_json_get_int(json_t const * object, char const * key, int default_value)
 {
@@ -18,15 +18,15 @@ static wf_status wf_impl_jsonrc_code_to_status(int code)
 {
 	switch (code)
 	{
-		case JSONRPC_GOOD:
+		case WF_JSONRPC_GOOD:
 			return WF_GOOD;
-		case JSONRPC_BAD:
+		case WF_JSONRPC_BAD:
 			return WF_BAD;
-		case JSONRPC_BAD_BUSY:
+		case WF_JSONRPC_BAD_BUSY:
 			return WF_BAD_BUSY;
-		case JSONRPC_BAD_TIMEOUT:
+		case WF_JSONRPC_BAD_TIMEOUT:
 			return WF_BAD_TIMEOUT;
-		case JSONRPC_BAD_FORMAT:
+		case WF_JSONRPC_BAD_FORMAT:
 			return WF_BAD_FORMAT;
 		default:
 			return (wf_status) code;
