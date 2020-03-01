@@ -20,7 +20,12 @@ public:
     : is_shutdown_requested(false)
     {
         snprintf(base_dir, WF_PATH_MAX, "%s", "/tmp/webfuse_test_integration_XXXXXX");
-        mkdtemp(base_dir);
+        char const * result = mkdtemp(base_dir);
+        if (NULL == result)
+        {
+            throw std::runtime_error("unable to create temp dir");
+        }
+
 
         config = wf_server_config_create();
         wf_server_config_set_port(config, 8080);
