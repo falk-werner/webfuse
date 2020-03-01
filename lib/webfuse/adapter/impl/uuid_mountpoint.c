@@ -60,8 +60,8 @@ static bool wf_impl_uuid_mountpoint_link_first_subdir(
 		{
 			if ((DT_DIR == entry->d_type) && ('.' != entry->d_name[0]))
 			{
-				symlink(entry->d_name, link_path);
-				result = true;
+				int rc = symlink(entry->d_name, link_path);
+				result = (0 == rc);
 				break;
 			}
 
@@ -114,7 +114,8 @@ wf_impl_uuid_mountpoint_create(
 	mkdir(data->full_path, 0755);
 
 	data->default_path = wf_create_string("%s/%s/default", root_path, filesystem);
-	symlink(data->id, data->default_path);
+	int rc =  symlink(data->id, data->default_path);
+	(void) rc; // ignore missing symlink
 
 	struct wf_mountpoint * mountpoint = wf_impl_mountpoint_create(data->full_path);
 	wf_impl_mountpoint_set_userdata(mountpoint, data, &wf_impl_uuid_mountpoint_data_dispose);
