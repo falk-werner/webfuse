@@ -84,9 +84,13 @@ bool wfp_impl_client_is_connected(
 }
 
 void wfp_impl_client_service(
-    struct wfp_client * client,
-    int timeout_ms)
+    struct wfp_client * client)
 {
-    lws_service(client->context, timeout_ms);
+    lws_service(client->context, 0);
 }
 
+void wfp_impl_client_interrupt(
+    struct wfp_client * client)
+{
+    lws_cancel_service(client->context);
+}

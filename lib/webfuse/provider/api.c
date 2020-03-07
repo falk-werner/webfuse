@@ -13,6 +13,8 @@
 #include "webfuse/provider/impl/dirbuffer.h"
 #include "webfuse/provider/impl/credentials.h"
 
+#include "webfuse/core/util.h"
+
 // respond
 
 void wfp_respond_error(
@@ -223,10 +225,17 @@ void wfp_client_dispose(
 
 void wfp_client_service(
     struct wfp_client * client,
-    int timeout_ms)
+    int WF_UNUSED_PARAM(timeout_ms))
 {
-    wfp_impl_client_service(client, timeout_ms);
+    wfp_impl_client_service(client);
 }
+
+void wfp_client_interrupt(
+    struct wfp_client * client)
+{
+    wfp_impl_client_interrupt(client);
+}
+
 
 // dirbuffer
 
