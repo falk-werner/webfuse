@@ -6,6 +6,8 @@
 #include "webfuse/adapter/impl/credentials.h"
 #include "webfuse/adapter/impl/mountpoint.h"
 
+#include "webfuse/core/util.h"
+
 // server
 
 struct wf_server * wf_server_create(
@@ -22,10 +24,17 @@ void wf_server_dispose(
 
 void wf_server_service(
     struct wf_server * server,
-    int timeout_ms)
+    int WF_UNUSED_PARAM(imeout_ms))
 {
-    wf_impl_server_service(server, timeout_ms);
+    wf_impl_server_service(server);
 }
+
+void wf_server_interrupt(
+    struct wf_server * server)
+{
+    wf_impl_server_interrupt(server);
+}
+
 
 // server protocol
 

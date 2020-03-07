@@ -61,6 +61,7 @@ private:
     {
         std::lock_guard<std::mutex> lock(shutdown_lock);
         is_shutdown_requested = true;
+        wf_server_interrupt(server);
     }
 
     static void Run(Server::Private * context)

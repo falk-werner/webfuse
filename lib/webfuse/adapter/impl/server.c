@@ -111,8 +111,14 @@ bool wf_impl_server_is_operational(
 }
 
 void wf_impl_server_service(
-    struct wf_server * server,
-	int timeout_ms)
+    struct wf_server * server)
 {
-	lws_service(server->context, timeout_ms);
+	lws_service(server->context, 0);
 }
+
+void wf_impl_server_interrupt(
+    struct wf_server * server)
+{
+	lws_cancel_service(server->context);
+}
+

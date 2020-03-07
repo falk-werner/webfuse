@@ -55,6 +55,7 @@ private:
     {
         std::lock_guard<std::mutex> lock(shutdown_lock);
         is_shutdown_requested = true;
+        wfp_client_interrupt(client);
     }
 
     static void Run(Provider::Private * context)
