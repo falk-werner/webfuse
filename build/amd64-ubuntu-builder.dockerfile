@@ -49,7 +49,7 @@ RUN set -x \
   && make "$PARALLELMFLAGS" install \
   && rm -rf "$builddir"
 
-ARG FUSE_VERSION=3.9.0
+ARG FUSE_VERSION=3.9.1
 
 RUN set -x \
   && builddeps="udev gettext python3 python3-pip python3-setuptools python3-wheel" \

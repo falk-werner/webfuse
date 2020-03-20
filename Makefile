@@ -56,11 +56,11 @@ FETCH_TARGETS += $(FETCHDIR)/googletest-release-$(GTEST_VERSION).tar.gz
 $(FETCHDIR)/googletest-release-$(GTEST_VERSION).tar.gz: URL := https://github.com/google/googletest/archive/release-$(GTEST_VERSION).tar.gz
 $(SKIP_MD5SUM)$(FETCHDIR)/googletest-release-$(GTEST_VERSION).tar.gz: MD5 := ecd1fa65e7de707cd5c00bdac56022cd
 
-FUSE_VERSION ?= 3.9.0
+FUSE_VERSION ?= 3.9.1
 DOCKER_BUILDARGS += FUSE_VERSION=$(FUSE_VERSION)
 FETCH_TARGETS += $(FETCHDIR)/libfuse-fuse-$(FUSE_VERSION).tar.gz
 $(FETCHDIR)/libfuse-fuse-$(FUSE_VERSION).tar.gz: URL := https://github.com/libfuse/libfuse/archive/fuse-$(FUSE_VERSION).tar.gz
-$(SKIP_MD5SUM)$(FETCHDIR)/libfuse-fuse-$(FUSE_VERSION).tar.gz: MD5 := 31b19277c039ae225927edc29193d34f
+$(SKIP_MD5SUM)$(FETCHDIR)/libfuse-fuse-$(FUSE_VERSION).tar.gz: MD5 := 5f7c1062def710d8b60343524a18cc82
 
 WEBSOCKETS_VERSION ?= 3.2.0
 DOCKER_BUILDARGS += WEBSOCKETS_VERSION=$(WEBSOCKETS_VERSION)

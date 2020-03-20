@@ -47,9 +47,9 @@ After that, you will find the API documentation in the doc/api subdirectory.
 
 To install libfuse, meson is needed. Please refer to [meson quick guide](https://mesonbuild.com/Quick-guide.html) for setup instructions.
 
-    wget -O fuse-3.8.0.tar.gz https://github.com/libfuse/libfuse/archive/fuse-3.8.0.tar.gz
-    tar -xf fuse-3.8.0.tar.gz
-    cd libfuse-fuse-3.8.0
+    wget -O fuse-3.9.1.tar.gz https://github.com/libfuse/libfuse/archive/fuse-3.9.1.tar.gz
+    tar -xf fuse-3.9.1.tar.gz
+    cd libfuse-fuse-3.9.1
     mkdir .build
     cd .build
     meson ..
