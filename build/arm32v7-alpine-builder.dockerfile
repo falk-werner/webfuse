@@ -54,7 +54,7 @@ RUN set -x \
   && make "$PARALLELMFLAGS" install \
   && rm -rf "$builddir"
 
-ARG FUSE_VERSION=3.9.0
+ARG FUSE_VERSION=3.9.1
 
 RUN set -x \
   && builddeps="linux-headers eudev-dev python3 py3-pip py3-setuptools py3-cryptography" \
