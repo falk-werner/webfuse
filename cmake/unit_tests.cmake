@@ -86,16 +86,17 @@ enable_testing()
 gtest_discover_tests(alltests TEST_PREFIX alltests:)
 
 add_custom_target(coverage
-	./alltests
-	COMMAND mkdir -p coverage
-	COMMAND lcov --capture --directory . --output-file coverage/lcov.info
-	COMMAND lcov --remove coverage/lcov.info '/usr/*' --output-file coverage/lcov.info
-	COMMAND lcov --remove coverage/lcov.info '*/test/*' --output-file coverage/lcov.info
+	mkdir -p coverage
+	COMMAND lcov --initial --capture --directory . --output-file coverage/lcov_base.info --rc lcov_branch_coverage=1
+	COMMAND ./alltests
+	COMMAND lcov --capture --directory . --output-file coverage/lcov.info --rc lcov_branch_coverage=1
+	COMMAND lcov --remove coverage/lcov.info '/usr/*' --output-file coverage/lcov.info --rc lcov_branch_coverage=1
+	COMMAND lcov --remove coverage/lcov.info '*/test/*' --output-file coverage/lcov.info --rc lcov_branch_coverage=1
 )
 add_dependencies(coverage alltests)
 
 add_custom_target(coverage-report
-	COMMAND genhtml coverage/lcov.info --output-directory coverage/report
+	COMMAND genhtml --branch-coverage --highlight --legend --prefix "${CMAKE_SOURCE_DIR}" coverage/lcov.info --output-directory coverage/report
 )
 add_dependencies(coverage-report coverage)
 
