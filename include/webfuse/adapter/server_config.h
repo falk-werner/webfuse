@@ -43,23 +43,6 @@ extern WF_API void wf_server_config_dispose(
     struct wf_server_config * config);
 
 //------------------------------------------------------------------------------
-/// \brief Sets a mountpoint path.
-/// \deprecated This function will be removed soon. Use \ref 
-///             wf_server_config_set_mountpoint_factory instead.
-///
-/// Sets the root path of UUID-based file system.
-///
-/// \note A valid configuration needs either a mountpoint or a mounpoint
-///       factory.
-///
-/// \param config pointer of configuration object
-/// \param mount_point root path of UUID-based file system.
-//------------------------------------------------------------------------------
-extern WF_API void wf_server_config_set_mountpoint(
-    struct wf_server_config * config,
-	char const * mount_point);
-
-//------------------------------------------------------------------------------
 /// \brief Sets the mountpoint factory of the configuration.
 ///
 /// The mountpoint factory is called when a authenticated user adds a

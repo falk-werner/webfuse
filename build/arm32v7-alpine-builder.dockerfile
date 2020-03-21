@@ -19,9 +19,9 @@ RUN set -x \
        pkgconf \
        rsync \
        gdb \
-       valgrind \
-       util-linux \
-       util-linux-dev
+       valgrind 
+#       util-linux \
+#       util-linux-dev
 
 COPY src /usr/local/src
 

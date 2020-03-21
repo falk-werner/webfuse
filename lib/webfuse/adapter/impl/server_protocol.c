@@ -9,7 +9,6 @@
 #include "webfuse/core/protocol_names.h"
 
 #include "webfuse/adapter/impl/credentials.h"
-#include "webfuse/adapter/impl/uuid_mountpoint_factory.h"
 #include "webfuse/core/status_intern.h"
 
 #include "wf/jsonrpc/request.h"
@@ -82,21 +81,6 @@ static int wf_impl_server_protocol_callback(
 }
 
 struct wf_server_protocol * wf_impl_server_protocol_create(
-    char * mount_point)
-{
-    struct wf_server_protocol * protocol = malloc(sizeof(struct wf_server_protocol));
-    if (NULL != protocol)
-    {
-        struct wf_impl_mountpoint_factory mountpoint_factory;
-        wf_impl_uuid_mountpoint_factory_init(&mountpoint_factory, mount_point);
-
-        wf_impl_server_protocol_init(protocol, &mountpoint_factory);
-    }
-
-    return protocol;
-}
-
-struct wf_server_protocol * wf_impl_server_protocol_create2(
     wf_create_mountpoint_fn * create_mountpoint,
     void * create_mountpoint_context)
 {
@@ -105,7 +89,7 @@ struct wf_server_protocol * wf_impl_server_protocol_create2(
     {
         struct wf_impl_mountpoint_factory mountpoint_factory;
         wf_impl_mountpoint_factory_init(&mountpoint_factory,
-            create_mountpoint, create_mountpoint_context, NULL);
+            create_mountpoint, create_mountpoint_context);
 
         wf_impl_server_protocol_init(protocol, &mountpoint_factory);
     }

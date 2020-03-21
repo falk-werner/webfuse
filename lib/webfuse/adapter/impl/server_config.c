@@ -1,5 +1,4 @@
 #include "webfuse/adapter/impl/server_config.h"
-#include "webfuse/adapter/impl/uuid_mountpoint_factory.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -72,21 +71,13 @@ void wf_impl_server_config_dispose(
     free(config);
 }
 
-void wf_impl_server_config_set_mountpoint(
-    struct wf_server_config * config,
-	char const * mount_point)
-{
-    wf_impl_uuid_mountpoint_factory_init(&config->mountpoint_factory,
-        mount_point);
-}
-
 void wf_impl_server_config_set_mountpoint_factory(
     struct wf_server_config * config,
     wf_create_mountpoint_fn * create_mountpoint,
     void * create_mountpoint_context)
 {
     wf_impl_mountpoint_factory_init(&config->mountpoint_factory,
-        create_mountpoint, create_mountpoint_context, NULL);
+        create_mountpoint, create_mountpoint_context);
 }
 
 

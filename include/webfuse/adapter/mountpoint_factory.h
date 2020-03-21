@@ -23,7 +23,7 @@ struct wf_mountpoint;
 /// \return newly created mountpoint or NULL, on error
 ///
 /// \see wf_server_config_set_mountpoint_factory
-/// \see wf_server_protocol_create2
+/// \see wf_server_protocol_create
 //------------------------------------------------------------------------------
 typedef struct wf_mountpoint *
 wf_create_mountpoint_fn(

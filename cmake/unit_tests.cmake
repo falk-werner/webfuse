@@ -40,8 +40,6 @@ add_executable(alltests
 	test/webfuse/tests/adapter/test_authenticator.cc
 	test/webfuse/tests/adapter/test_authenticators.cc
 	test/webfuse/tests/adapter/test_mountpoint.cc
-	test/webfuse/tests/adapter/test_uuid_mountpoint.cc
-	test/webfuse/tests/adapter/test_uuid_mountpoint_factory.cc
 	test/webfuse/tests/adapter/test_fuse_req.cc
 	test/webfuse/tests/provider/test_url.cc
 	test/webfuse/tests/provider/test_client_protocol.cc
@@ -56,12 +54,10 @@ target_include_directories(alltests PRIVATE
 	lib/wf/timer/include
 	lib/wf/timer/src
 	${FUSE3_INCLUDE_DIRS} 
-	${UUID_INCLUDE_DIRS}
 )
 
 target_compile_options(alltests PUBLIC
 	${FUSE3_CFLAGS_OTHER}
-	${UUID_CFLAGS_OTHER}
 )
 
 target_link_libraries(alltests PUBLIC 
@@ -73,7 +69,6 @@ target_link_libraries(alltests PUBLIC
 	${FUSE3_LIBRARIES}
 	${LWS_LIBRARIES}
 	${JANSSON_LIBRARIES}
-	${UUID_LIBRARIES}
 	${CMAKE_THREAD_LIBS_INIT}
 	${GMOCK_LIBRARIES}
 	${GTEST_LIBRARIES}

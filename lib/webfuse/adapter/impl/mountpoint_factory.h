@@ -9,14 +9,9 @@ extern "C"
 {
 #endif
 
-typedef void 
-wf_impl_mountpoint_factory_dispose_fn(
-    void * user_data);
-
 struct wf_impl_mountpoint_factory
 {
     wf_create_mountpoint_fn * create_mountpoint;
-    wf_impl_mountpoint_factory_dispose_fn * dispose;
     void * user_data;
 };
 
@@ -28,8 +23,7 @@ extern void
 wf_impl_mountpoint_factory_init(
     struct wf_impl_mountpoint_factory * factory,
     wf_create_mountpoint_fn * create_mountpoint,
-    void * user_data,
-    wf_impl_mountpoint_factory_dispose_fn * dispose);
+    void * user_data);
 
 extern void
 wf_impl_mountpoint_factory_move(

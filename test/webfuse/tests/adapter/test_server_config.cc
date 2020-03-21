@@ -120,38 +120,18 @@ TEST(server_config, set_port)
     wf_server_config_dispose(config);
 }
 
-TEST(server_config, set_mountpoint)
-{
-    TempDir temp("server_config");
-
-    wf_server_config * config = wf_server_config_create();
-    ASSERT_NE(nullptr, config);
-    ASSERT_EQ(nullptr, config->mountpoint_factory.create_mountpoint);
-    ASSERT_EQ(nullptr, config->mountpoint_factory.user_data);
-    ASSERT_EQ(nullptr, config->mountpoint_factory.dispose);
-
-    wf_server_config_set_mountpoint(config, temp.path());
-    ASSERT_NE(nullptr, config->mountpoint_factory.create_mountpoint);
-    ASSERT_NE(nullptr, config->mountpoint_factory.user_data);
-    ASSERT_NE(nullptr, config->mountpoint_factory.dispose);
-
-    wf_server_config_dispose(config);
-}
-
 TEST(server_config, set_mounpoint_factory)
 {
     wf_server_config * config = wf_server_config_create();
     ASSERT_NE(nullptr, config);
     ASSERT_EQ(nullptr, config->mountpoint_factory.create_mountpoint);
     ASSERT_EQ(nullptr, config->mountpoint_factory.user_data);
-    ASSERT_EQ(nullptr, config->mountpoint_factory.dispose);
 
     int value = 42;
     void * user_data = reinterpret_cast<void*>(&value);
     wf_server_config_set_mountpoint_factory(config, &create_mountpoint, user_data);
     ASSERT_EQ(&create_mountpoint, config->mountpoint_factory.create_mountpoint);
     ASSERT_EQ(user_data, config->mountpoint_factory.user_data);
-    ASSERT_EQ(nullptr, config->mountpoint_factory.dispose);
 
     wf_server_config_dispose(config);
 }

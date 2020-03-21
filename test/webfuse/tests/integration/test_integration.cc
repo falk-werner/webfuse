@@ -68,7 +68,7 @@ TEST_F(IntegrationTest, HasMountpoint)
 
 TEST_F(IntegrationTest, ProvidesTextFile)
 {
-    std::string file_name = std::string(GetBaseDir()) + "/cprovider/default/hello.txt";
+    std::string file_name = std::string(GetBaseDir()) + "/cprovider/hello.txt";
 
     ASSERT_EXIT({
         struct stat buffer;
@@ -85,7 +85,7 @@ TEST_F(IntegrationTest, ProvidesTextFile)
 
 TEST_F(IntegrationTest, ReadTextFile)
 {
-    std::string file_name = std::string(GetBaseDir()) + "/cprovider/default/hello.txt";
+    std::string file_name = std::string(GetBaseDir()) + "/cprovider/hello.txt";
 
     ASSERT_EXIT({
         FILE * file = fopen(file_name.c_str(), "rb");
@@ -106,7 +106,7 @@ TEST_F(IntegrationTest, ReadTextFile)
 
 TEST_F(IntegrationTest, ReadDir)
 {    
-    std::string dir_name = std::string(GetBaseDir()) + "/cprovider/default";
+    std::string dir_name = std::string(GetBaseDir()) + "/cprovider";
 
     ASSERT_EXIT({
 
