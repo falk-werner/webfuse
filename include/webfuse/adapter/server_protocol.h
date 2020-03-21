@@ -33,17 +33,6 @@ struct wf_server_protocol;
 struct lws_protocols;
 
 //------------------------------------------------------------------------------
-/// \brief Creates a new protocol with a given mounpoint.
-/// \deprecated This function will be removed soon. Use \ref 
-///             wf_server_protocol_create2 instead.
-///
-/// \param mount_point root path of UUID-based file system.
-/// \return newly created protocol
-//------------------------------------------------------------------------------
-extern WF_API struct wf_server_protocol * wf_server_protocol_create(
-    char * mount_point);
-
-//------------------------------------------------------------------------------
 /// \brief Creates a new protocol by a mountpoint factory.
 ///
 /// \note This function might be renamed in future releases.
@@ -53,7 +42,7 @@ extern WF_API struct wf_server_protocol * wf_server_protocol_create(
 /// \param create_mountpoint factory function to create mountpoints
 /// \param create_mountpoint_context context of mountpoint factory
 //------------------------------------------------------------------------------
-extern WF_API struct wf_server_protocol * wf_server_protocol_create2(
+extern WF_API struct wf_server_protocol * wf_server_protocol_create(
     wf_create_mountpoint_fn * create_mountpoint,
     void * create_mountpoint_context);
 

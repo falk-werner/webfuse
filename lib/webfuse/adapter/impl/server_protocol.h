@@ -36,7 +36,7 @@ extern void wf_impl_server_protocol_init(
 extern void wf_impl_server_protocol_cleanup(
     struct wf_server_protocol * protocol);
 
-extern WF_API struct wf_server_protocol * wf_impl_server_protocol_create2(
+extern WF_API struct wf_server_protocol * wf_impl_server_protocol_create(
     wf_create_mountpoint_fn * create_mountpoint,
     void * create_mountpoint_context);
 

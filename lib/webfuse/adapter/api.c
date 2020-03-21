@@ -38,11 +38,11 @@ void wf_server_interrupt(
 
 // server protocol
 
-struct wf_server_protocol * wf_server_protocol_create2(
+struct wf_server_protocol * wf_server_protocol_create(
     wf_create_mountpoint_fn * create_mountpoint,
     void * create_mountpoint_context)
 {
-    return wf_impl_server_protocol_create2(create_mountpoint, create_mountpoint_context);
+    return wf_impl_server_protocol_create(create_mountpoint, create_mountpoint_context);
 }
 
 void wf_server_protocol_dispose(

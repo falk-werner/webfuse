@@ -80,7 +80,7 @@ static int wf_impl_server_protocol_callback(
     return 0;
 }
 
-struct wf_server_protocol * wf_impl_server_protocol_create2(
+struct wf_server_protocol * wf_impl_server_protocol_create(
     wf_create_mountpoint_fn * create_mountpoint,
     void * create_mountpoint_context)
 {
