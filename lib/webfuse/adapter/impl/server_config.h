@@ -34,10 +34,6 @@ extern void wf_impl_server_config_clone(
 	struct wf_server_config * config,
 	struct wf_server_config * clone);
 
-extern void wf_impl_server_config_set_mountpoint(
-    struct wf_server_config * config,
-	char const * mount_point);
-
 extern void wf_impl_server_config_set_mountpoint_factory(
     struct wf_server_config * config,
     wf_create_mountpoint_fn * create_mountpoint,

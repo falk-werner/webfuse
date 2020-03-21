@@ -6,7 +6,6 @@
 #include "webfuse/core/string.h"
 
 #include <libwebsockets.h>
-#include <uuid/uuid.h>
 
 #include <sys/stat.h>
 #include <sys/types.h>

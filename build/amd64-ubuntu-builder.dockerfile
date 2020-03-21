@@ -15,8 +15,7 @@ RUN set -x \
        gdb \
        gdbserver \
        valgrind \
-       lcov \
-       uuid-dev
+       lcov 
 
 COPY src /usr/local/src
 

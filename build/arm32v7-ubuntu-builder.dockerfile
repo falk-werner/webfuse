@@ -18,8 +18,7 @@ RUN set -x \
        rsync \
        gdb \
        gdbserver \
-       lcov \
-       uuid-dev
+       lcov 
 
 COPY src /usr/local/src
 

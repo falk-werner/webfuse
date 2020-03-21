@@ -1,7 +1,6 @@
 if(NOT WITHOUT_ADAPTER)
 
 pkg_check_modules(FUSE3 REQUIRED fuse3)
-pkg_check_modules(UUID REQUIRED uuid)
 
 add_library(webfuse-adapter-static STATIC 
 	lib/webfuse/adapter/api.c
@@ -17,8 +16,6 @@ add_library(webfuse-adapter-static STATIC
 	lib/webfuse/adapter/impl/operations.c
 	lib/webfuse/adapter/impl/mountpoint.c
 	lib/webfuse/adapter/impl/mountpoint_factory.c
-	lib/webfuse/adapter/impl/uuid_mountpoint_factory.c
-	lib/webfuse/adapter/impl/uuid_mountpoint.c
 	lib/webfuse/adapter/impl/operation/lookup.c
 	lib/webfuse/adapter/impl/operation/getattr.c
 	lib/webfuse/adapter/impl/operation/readdir.c
@@ -32,12 +29,10 @@ target_include_directories(webfuse-adapter-static PRIVATE
 	lib/wf/timer/include
 	lib/wf/jsonrpc/include
 	${FUSE3_INCLUDE_DIRS} 
-	${UUID_INCLUDE_DIRS}
 )
 
 target_compile_options(webfuse-adapter-static PUBLIC
 	${FUSE3_CFLAGS_OTHER}
-	${UUID_CFLAGS_OTHER}
 )
 
 set_target_properties(webfuse-adapter-static PROPERTIES OUTPUT_NAME webfuse-adapter)
@@ -49,12 +44,10 @@ add_library(webfuse-adapter SHARED
 
 target_include_directories(webfuse-adapter PRIVATE
 	${FUSE3_INCLUDE_DIRS} 
-	${UUID_INCLUDE_DIRS}
 )
 
 target_compile_options(webfuse-adapter PUBLIC
 	${FUSE3_CFLAGS_OTHER}
-	${UUID_CFLAGS_OTHER}
 )
 
 

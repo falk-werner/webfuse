@@ -38,12 +38,6 @@ void wf_server_interrupt(
 
 // server protocol
 
-struct wf_server_protocol * wf_server_protocol_create(
-    char * mount_point)
-{
-    return wf_impl_server_protocol_create(mount_point);
-}
-
 struct wf_server_protocol * wf_server_protocol_create2(
     wf_create_mountpoint_fn * create_mountpoint,
     void * create_mountpoint_context)
@@ -84,13 +78,6 @@ void wf_server_config_dispose(
     struct wf_server_config * config)
 {
     wf_impl_server_config_dispose(config);
-}
-
-void wf_server_config_set_mountpoint(
-    struct wf_server_config * config,
-	char const * mount_point)
-{
-    wf_impl_server_config_set_mountpoint(config, mount_point);
 }
 
 void wf_server_config_set_mountpoint_factory(
