@@ -45,23 +45,20 @@ wf_path_create(
     char const * value)
 {
     struct wf_path * path = malloc(sizeof(struct wf_path));
-    if (NULL != path)
+    path->elements = malloc(sizeof(char*) * WF_PATH_DEFAULT_CAPACITY);
+    path->capacity = WF_PATH_DEFAULT_CAPACITY;
+    path->count = 0;
+
+    char const * remainder = value;
+    char const * pos = strchr(remainder, '/');
+    while (NULL != pos)
     {
-        path->elements = malloc(sizeof(char*) * WF_PATH_DEFAULT_CAPACITY);
-        path->capacity = WF_PATH_DEFAULT_CAPACITY;
-        path->count = 0;
-
-        char const * remainder = value;
-        char const * pos = strchr(remainder, '/');
-        while (NULL != pos)
-        {
-            wf_path_add(path, remainder, (pos - remainder));
-            remainder = pos + 1;
-            pos = strchr(remainder, '/');
-        }
-
-        wf_path_add(path, remainder, strlen(remainder));
+        wf_path_add(path, remainder, (pos - remainder));
+        remainder = pos + 1;
+        pos = strchr(remainder, '/');
     }
+
+    wf_path_add(path, remainder, strlen(remainder));
 
     return path;
 }

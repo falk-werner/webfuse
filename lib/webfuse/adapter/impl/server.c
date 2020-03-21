@@ -83,13 +83,10 @@ struct wf_server * wf_impl_server_create(
 	if (wf_impl_mountpoint_factory_isvalid(&config->mountpoint_factory))
 	{
 		server = malloc(sizeof(struct wf_server));
-		if (NULL != server)
-		{
-			wf_impl_server_protocol_init(&server->protocol, &config->mountpoint_factory);
-			wf_impl_server_config_clone(config, &server->config);
-			wf_impl_authenticators_move(&server->config.authenticators, &server->protocol.authenticators);				
-			server->context = wf_impl_server_context_create(server);
-		}   
+		wf_impl_server_protocol_init(&server->protocol, &config->mountpoint_factory);
+		wf_impl_server_config_clone(config, &server->config);
+		wf_impl_authenticators_move(&server->config.authenticators, &server->protocol.authenticators);				
+		server->context = wf_impl_server_context_create(server);
 	}
 
     return server; 

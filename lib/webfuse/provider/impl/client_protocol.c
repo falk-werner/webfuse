@@ -270,10 +270,7 @@ struct wfp_client_protocol * wfp_impl_client_protocol_create(
     struct wfp_client_config const * config)
 {
     struct wfp_client_protocol * protocol = malloc(sizeof(struct wfp_client_protocol));
-    if (NULL != protocol)
-    {
-        wfp_impl_client_protocol_init(protocol, &config->provider, config->user_data);
-    }
+    wfp_impl_client_protocol_init(protocol, &config->provider, config->user_data);
 
     return protocol;
 }

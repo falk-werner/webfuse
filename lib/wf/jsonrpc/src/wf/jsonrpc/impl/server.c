@@ -24,10 +24,7 @@ struct wf_jsonrpc_server *
 wf_jsonrpc_impl_server_create(void)
 {
     struct wf_jsonrpc_server * server = malloc(sizeof(struct wf_jsonrpc_server));
-    if (NULL != server)
-    {
-        wf_jsonrpc_impl_server_init(server);
-    }
+    wf_jsonrpc_impl_server_init(server);
 
     return server;
 }

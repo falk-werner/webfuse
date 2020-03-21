@@ -6,13 +6,10 @@
 struct wfp_client_config * wfp_impl_client_config_create(void)
 {
     struct wfp_client_config * config = malloc(sizeof(struct wfp_client_config));
-    if (NULL != config)
-    {
-        wfp_impl_provider_init(&config->provider);
-        config->user_data = NULL;
-        config->key_path = NULL;
-        config->cert_path = NULL;
-    }
+    wfp_impl_provider_init(&config->provider);
+    config->user_data = NULL;
+    config->key_path = NULL;
+    config->cert_path = NULL;
 
     return config;
 }

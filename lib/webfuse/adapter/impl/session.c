@@ -51,18 +51,15 @@ struct wf_impl_session * wf_impl_session_create(
 {
 
     struct wf_impl_session * session = malloc(sizeof(struct wf_impl_session));
-    if (NULL != session)
-    {
-        wf_slist_init(&session->filesystems);
-        
-        session->wsi = wsi;
-        session->is_authenticated = false;
-        session->authenticators = authenticators;
-        session->server = server;
-        session->mountpoint_factory = mountpoint_factory;
-        session->rpc = wf_jsonrpc_proxy_create(timer_manager, WF_DEFAULT_TIMEOUT, &wf_impl_session_send, session);
-        wf_slist_init(&session->messages);
-    }
+    wf_slist_init(&session->filesystems);
+    
+    session->wsi = wsi;
+    session->is_authenticated = false;
+    session->authenticators = authenticators;
+    session->server = server;
+    session->mountpoint_factory = mountpoint_factory;
+    session->rpc = wf_jsonrpc_proxy_create(timer_manager, WF_DEFAULT_TIMEOUT, &wf_impl_session_send, session);
+    wf_slist_init(&session->messages);
 
     return session;
 }

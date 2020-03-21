@@ -8,12 +8,9 @@ struct wfp_request * wfp_impl_request_create(
     int id)
 {
     struct wfp_request * request = malloc(sizeof(struct wfp_request));
-    if (NULL != request)
-    {
-        request->respond = prototype->respond;
-        request->user_data = prototype->user_data;
-        request->id = id;
-    }
+    request->respond = prototype->respond;
+    request->user_data = prototype->user_data;
+    request->id = id;
 
     return request;
 }

@@ -16,18 +16,15 @@ char * wf_create_string(char const * format, ...)
     if (0 <= needed)
     {
         result = malloc(needed + 1);
-        if (NULL != result)
-        {
-            va_list args;
-            va_start(args, format);
-            int count = vsnprintf(result, needed + 1, format, args);
-            va_end(args);
+        va_list args;
+        va_start(args, format);
+        int count = vsnprintf(result, needed + 1, format, args);
+        va_end(args);
 
-            if ((count < 0) || (needed < count))
-            {
-                free(result);
-                result = NULL;
-            }
+        if ((count < 0) || (needed < count))
+        {
+            free(result);
+            result = NULL;
         }
     }
 

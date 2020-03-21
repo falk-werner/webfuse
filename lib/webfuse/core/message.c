@@ -12,13 +12,10 @@ extern struct wf_message * wf_message_create(json_t const * value)
     {
         char * data = malloc(sizeof(struct wf_message) + LWS_PRE + length);
         message = (struct wf_message *) data;
-        if (NULL != message)
-        {
-            message->data = &data[sizeof(struct wf_message) + LWS_PRE];
-            message->length = length;
+        message->data = &data[sizeof(struct wf_message) + LWS_PRE];
+        message->length = length;
 
-            json_dumpb(value, message->data, length, JSON_COMPACT);
-        }
+        json_dumpb(value, message->data, length, JSON_COMPACT);
     }
 
     return message;

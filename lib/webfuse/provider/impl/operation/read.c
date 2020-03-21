@@ -56,22 +56,15 @@ void wfp_impl_respond_read(
     {
         size_t const size = wf_base64_encoded_size(length) + 1;
         char * buffer = malloc(size);
-        if (NULL != buffer)
-        {
-            wf_base64_encode((uint8_t const *) data, length, buffer, size);
+        wf_base64_encode((uint8_t const *) data, length, buffer, size);
 
-            json_t * result = json_object();
-            json_object_set_new(result, "data", json_string(buffer));
-            json_object_set_new(result, "format", json_string("base64"));
-            json_object_set_new(result, "count", json_integer((int) length));
+        json_t * result = json_object();
+        json_object_set_new(result, "data", json_string(buffer));
+        json_object_set_new(result, "format", json_string("base64"));
+        json_object_set_new(result, "count", json_integer((int) length));
 
-            wfp_impl_respond(request, result);
-            free(buffer);
-        }
-        else
-        {
-            wfp_impl_respond_error(request, WF_BAD);
-        }
+        wfp_impl_respond(request, result);
+        free(buffer);
     }
     else
     {

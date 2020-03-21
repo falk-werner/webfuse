@@ -20,7 +20,7 @@ static char * wf_impl_fill_buffer(
 	*status = WF_GOOD;
 	char * buffer = malloc(count);
 
-	if ((NULL != buffer) && (0 < count))
+	if (0 < count)
 	{
 		if (0 == strcmp("identity", format))
 		{

@@ -30,26 +30,23 @@ struct wfp_client * wfp_impl_client_create(
 	wf_lwslog_disable();
    
     struct wfp_client * client = malloc(sizeof(struct wfp_client));
-    if (NULL != client)
+    wfp_impl_client_protocol_init(&client->protocol, &config->provider, config->user_data);
+
+    memset(client->protocols, 0, sizeof(struct lws_protocols) * WFP_CLIENT_PROTOCOL_COUNT);
+    wfp_impl_client_protocol_init_lws(&client->protocol, &client->protocols[0]);
+
+    memset(&client->info, 0, sizeof(struct lws_context_creation_info));
+    client->info.port = CONTEXT_PORT_NO_LISTEN;
+    client->info.protocols = client->protocols;
+    client->info.uid = -1;
+    client->info.gid = -1;
+
+    if ((NULL != config->cert_path) && (NULL != config->key_path))
     {
-        wfp_impl_client_protocol_init(&client->protocol, &config->provider, config->user_data);
-
-        memset(client->protocols, 0, sizeof(struct lws_protocols) * WFP_CLIENT_PROTOCOL_COUNT);
-        wfp_impl_client_protocol_init_lws(&client->protocol, &client->protocols[0]);
-
-        memset(&client->info, 0, sizeof(struct lws_context_creation_info));
-        client->info.port = CONTEXT_PORT_NO_LISTEN;
-        client->info.protocols = client->protocols;
-        client->info.uid = -1;
-        client->info.gid = -1;
-
-        if ((NULL != config->cert_path) && (NULL != config->key_path))
-        {
-            
-        }
-
-        client->context = lws_create_context(&client->info);
+        
     }
+
+    client->context = lws_create_context(&client->info);
 
     return client;
 }

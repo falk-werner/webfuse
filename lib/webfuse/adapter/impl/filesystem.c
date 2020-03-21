@@ -99,14 +99,11 @@ struct wf_impl_filesystem * wf_impl_filesystem_create(
 	struct wf_mountpoint * mountpoint)
 {
 	struct wf_impl_filesystem * filesystem = malloc(sizeof(struct wf_impl_filesystem));
-	if (NULL != filesystem)
+	bool success = wf_impl_filesystem_init(filesystem, session, name, mountpoint);
+	if (!success)
 	{
-		bool success = wf_impl_filesystem_init(filesystem, session, name, mountpoint);
-		if (!success)
-		{
-			free(filesystem);
-			filesystem = NULL;
-		}
+		free(filesystem);
+		filesystem = NULL;
 	}
 
 	return filesystem;

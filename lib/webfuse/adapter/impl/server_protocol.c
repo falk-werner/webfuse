@@ -85,14 +85,11 @@ struct wf_server_protocol * wf_impl_server_protocol_create(
     void * create_mountpoint_context)
 {
     struct wf_server_protocol * protocol = malloc(sizeof(struct wf_server_protocol));
-    if (NULL != protocol)
-    {
-        struct wf_impl_mountpoint_factory mountpoint_factory;
-        wf_impl_mountpoint_factory_init(&mountpoint_factory,
-            create_mountpoint, create_mountpoint_context);
+    struct wf_impl_mountpoint_factory mountpoint_factory;
+    wf_impl_mountpoint_factory_init(&mountpoint_factory,
+        create_mountpoint, create_mountpoint_context);
 
-        wf_impl_server_protocol_init(protocol, &mountpoint_factory);
-    }
+    wf_impl_server_protocol_init(protocol, &mountpoint_factory);
 
     return protocol;
 

@@ -332,21 +332,18 @@ wfp_static_filesystem_create(
     (void) config;
 
     struct wfp_static_filesystem * filesystem = malloc(sizeof(struct wfp_static_filesystem));
-    if (NULL != filesystem)
-    {
-        filesystem->entries = malloc(sizeof(struct wfp_static_filesystem_entry) * WFP_STATIC_FILESYSTEM_DEFAULT_CAPACITY);
-        filesystem->size = 0;
-        filesystem->capacity = WFP_STATIC_FILESYSTEM_DEFAULT_CAPACITY;
+    filesystem->entries = malloc(sizeof(struct wfp_static_filesystem_entry) * WFP_STATIC_FILESYSTEM_DEFAULT_CAPACITY);
+    filesystem->size = 0;
+    filesystem->capacity = WFP_STATIC_FILESYSTEM_DEFAULT_CAPACITY;
 
-        wfp_static_filesystem_add_dir(filesystem, 0, "<root>");
+    wfp_static_filesystem_add_dir(filesystem, 0, "<root>");
 
-        wfp_client_config_set_userdata(config, filesystem);
-        wfp_client_config_set_onlookup(config, &wfp_static_filesystem_lookup);
-        wfp_client_config_set_ongetattr(config, &wfp_static_filesystem_getattr);
-        wfp_client_config_set_onreaddir(config, &wfp_static_filesystem_readdir);
-        wfp_client_config_set_onopen(config, &wfp_static_filesystem_open);
-        wfp_client_config_set_onread(config, &wfp_static_filesystem_read);
-    }
+    wfp_client_config_set_userdata(config, filesystem);
+    wfp_client_config_set_onlookup(config, &wfp_static_filesystem_lookup);
+    wfp_client_config_set_ongetattr(config, &wfp_static_filesystem_getattr);
+    wfp_client_config_set_onreaddir(config, &wfp_static_filesystem_readdir);
+    wfp_client_config_set_onopen(config, &wfp_static_filesystem_open);
+    wfp_client_config_set_onread(config, &wfp_static_filesystem_read);
 
     return filesystem;
 }

@@ -29,12 +29,9 @@ wf_jsonrpc_impl_request_create(
     void * user_data)
 {
     struct wf_jsonrpc_request * request = malloc(sizeof(struct wf_jsonrpc_request));
-    if (NULL != request)
-    {
-        request->id = id;
-        request->send = send;
-        request->user_data = user_data;
-    }
+    request->id = id;
+    request->send = send;
+    request->user_data = user_data;
 
     return request;
 }

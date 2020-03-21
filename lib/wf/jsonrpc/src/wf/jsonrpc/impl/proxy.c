@@ -16,10 +16,7 @@ wf_jsonrpc_impl_proxy_create(
     void * user_data)
 {
     struct wf_jsonrpc_proxy * proxy = malloc(sizeof(struct wf_jsonrpc_proxy));
-    if (NULL != proxy)
-    {
-        wf_jsonrpc_impl_proxy_init(proxy, manager, timeout, send, user_data);
-    }
+    wf_jsonrpc_impl_proxy_init(proxy, manager, timeout, send, user_data);
 
     return proxy;
 }

@@ -14,10 +14,7 @@ struct wf_timer_manager *
 wf_timer_impl_manager_create(void)
 {
     struct wf_timer_manager * manager = malloc(sizeof(struct wf_timer_manager));
-    if (NULL != manager)
-    {
-        manager->timers = NULL;
-    }
+    manager->timers = NULL;
 
     return manager;
 }

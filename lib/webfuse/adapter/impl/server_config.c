@@ -56,10 +56,7 @@ void wf_impl_server_config_clone(
 struct wf_server_config * wf_impl_server_config_create(void)
 {
     struct wf_server_config * config = malloc(sizeof(struct wf_server_config));
-    if (NULL != config)
-    {
-        wf_impl_server_config_init(config);
-    }
+    wf_impl_server_config_init(config);
 
     return config;
 }
