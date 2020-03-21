@@ -1,5 +1,7 @@
 ignore:
     - test
+    - lib/wf/timer/test
+    - lib/wf/jsonrpc/test
 
 parsers:
     gcov:
