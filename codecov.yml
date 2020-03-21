@@ -6,5 +6,5 @@ parsers:
         branch_detection:
             conditional: yes
             loop: yes
-            method: no
-            macro: no
+            method: yes
+            macro: yes
