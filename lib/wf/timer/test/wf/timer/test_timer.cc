@@ -37,8 +37,7 @@ TEST(wf_timer, trigger)
     struct wf_timer_manager * manager = wf_timer_manager_create();
     struct wf_timer * timer = wf_timer_create(manager, &on_timeout, reinterpret_cast<void*>(&triggered));
 
-    wf_timer_start(timer, 250);
-    std::this_thread::sleep_for(500ms);
+    wf_timer_start(timer, -1);
     wf_timer_manager_check(manager);
 
     ASSERT_TRUE(triggered);
@@ -133,5 +132,17 @@ TEST(wf_timer, multiple_timers)
         wf_timer_dispose(timer[i]);
     }
 
+    wf_timer_manager_dispose(manager);
+}
+
+TEST(wf_timer, dont_trigger_null_callback)
+{
+    struct wf_timer_manager * manager = wf_timer_manager_create();
+    struct wf_timer * timer = wf_timer_create(manager, nullptr, nullptr);
+    
+    wf_timer_start(timer, -1);
+    wf_timer_manager_check(manager);
+
+    wf_timer_dispose(timer);
     wf_timer_manager_dispose(manager);
 }
