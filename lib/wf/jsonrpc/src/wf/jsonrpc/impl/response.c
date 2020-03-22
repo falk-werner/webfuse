@@ -25,7 +25,7 @@ wf_jsonrpc_impl_response_init(
 	result->error = NULL;
 
 	json_t * id_holder = json_object_get(response, "id");
-	if ((NULL == id_holder) || (!json_is_integer(id_holder)))
+	if (!json_is_integer(id_holder))
 	{
 		result->error = wf_jsonrpc_impl_error(WF_JSONRPC_BAD_FORMAT, "invalid format: missing id");
 		return;
