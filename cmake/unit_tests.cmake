@@ -7,6 +7,8 @@ include(GoogleTest)
 pkg_check_modules(GMOCK gmock)
 
 add_executable(alltests
+	lib/wf/jsonrpc/test/wf/jsonrpc/mock_timer_callback.cc
+	lib/wf/jsonrpc/test/wf/jsonrpc/mock_timer.cc
 	lib/wf/jsonrpc/test/wf/jsonrpc/test_is_request.cc
 	lib/wf/jsonrpc/test/wf/jsonrpc/test_request.cc
 	lib/wf/jsonrpc/test/wf/jsonrpc/test_is_response.cc
@@ -51,6 +53,7 @@ add_executable(alltests
 target_include_directories(alltests PRIVATE
 	lib/wf/jsonrpc/include
 	lib/wf/jsonrpc/src
+	lib/wf/jsonrpc/test
 	lib/wf/timer/include
 	lib/wf/timer/src
 	${FUSE3_INCLUDE_DIRS} 
@@ -60,7 +63,15 @@ target_compile_options(alltests PUBLIC
 	${FUSE3_CFLAGS_OTHER}
 )
 
-target_link_libraries(alltests PUBLIC 
+target_link_libraries(alltests PUBLIC
+	-Wl,--wrap=wf_timer_manager_create
+	-Wl,--wrap=wf_timer_manager_dispose
+	-Wl,--wrap=wf_timer_manager_check
+	-Wl,--wrap=wf_timer_create
+	-Wl,--wrap=wf_timer_dispose
+	-Wl,--wrap=wf_timer_start
+	-Wl,--wrap=wf_timer_cancel
+
 	webfuse-adapter-static
 	webfuse-provider-static
 	webfuse-core

@@ -3,11 +3,17 @@
 #include "wf/jsonrpc/status.h"
 #include "wf/timer/manager.h"
 
+#include "wf/jsonrpc/mock_timer.hpp"
+
 #include <thread>
 #include <chrono>
 
 using namespace std::chrono_literals;
-
+using wf_jsonrpc_test::MockTimer;
+using testing::Return;
+using testing::_;
+using testing::DoAll;
+using testing::SaveArg;
 
 #define WF_DEFAULT_TIMEOUT (10 * 1000)
 
@@ -380,3 +386,44 @@ TEST(wf_jsonrpc_proxy, notify_dont_send_invalid_request)
     wf_jsonrpc_proxy_dispose(proxy);
     wf_timer_manager_dispose(timer_manager);
 }
+
+TEST(wf_jsonrpc_proxy, swallow_timeout_if_no_request_pending)
+{
+    MockTimer timer_api;
+
+    wf_timer_on_timer_fn * on_timer = nullptr;
+    void * timer_context = nullptr;
+    EXPECT_CALL(timer_api, wf_timer_create(_, _, _))
+        .Times(1)
+        .WillOnce(DoAll(SaveArg<1>(&on_timer), SaveArg<2>(&timer_context), Return(nullptr)));
+
+    SendContext send_context;
+    void * send_data = reinterpret_cast<void*>(&send_context);
+    struct wf_jsonrpc_proxy * proxy = wf_jsonrpc_proxy_create(nullptr, 1, &jsonrpc_send, send_data);
+
+    on_timer(nullptr, timer_context);
+    ASSERT_FALSE(send_context.is_called);
+
+
+    wf_jsonrpc_proxy_dispose(proxy);
+}
+
+TEST(wf_jsonrpc_proxy, on_result_swallow_if_no_request_pending)
+{
+    struct wf_timer_manager * timer_manager = wf_timer_manager_create();
+
+    SendContext send_context;
+    void * send_data = reinterpret_cast<void*>(&send_context);
+    struct wf_jsonrpc_proxy * proxy = wf_jsonrpc_proxy_create(timer_manager, WF_DEFAULT_TIMEOUT, &jsonrpc_send, send_data);
+
+    json_t * response = json_object();
+    json_object_set_new(response, "result", json_string("okay"));
+    json_object_set_new(response, "id", json_integer(42));
+
+    wf_jsonrpc_proxy_onresult(proxy, response);
+    json_decref(response);
+
+    wf_jsonrpc_proxy_dispose(proxy);
+    wf_timer_manager_dispose(timer_manager);
+}
+
