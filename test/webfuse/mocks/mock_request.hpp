@@ -10,25 +10,13 @@
 namespace webfuse_test
 {
 
-class Request
+class MockRequest
 {
 public:
-    virtual ~Request() { }
-    virtual void respond(json_t * result, int id) = 0;
-    virtual void respond_error(json_t * error, int id) = 0;
-};
-
-class MockRequest: public Request
-{
-public:
+    struct wfp_request * create_request(int id);
     MOCK_METHOD2(respond, void(json_t * result, int id));
     MOCK_METHOD2(respond_error, void(json_t * error, int id));
 };
-
-extern struct wfp_request *
-request_create(
-    Request * req,
-    int id);
 
 MATCHER_P3(GetAttrMatcher, inode, mode, file_type, "") 
 {

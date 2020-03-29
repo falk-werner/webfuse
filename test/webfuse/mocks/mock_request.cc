@@ -1,15 +1,14 @@
 #include "webfuse/mocks/mock_request.hpp"
 #include <cstdlib>
 
-namespace
+extern "C" 
 {
 
-extern "C" void
-respond(
+static void webfuse_test_MockRequest_respond(
     json_t * response,
     void * user_data)
 {
-    webfuse_test::Request * request = reinterpret_cast<webfuse_test::Request*>(user_data);
+    auto * request = reinterpret_cast<webfuse_test::MockRequest*>(user_data);
 
     json_t * result = json_object_get(response, "result");
     json_t * error = json_object_get(response, "error");
@@ -31,21 +30,17 @@ respond(
     }
 }
 
-
 }
 
 namespace webfuse_test
 {
 
-struct wfp_request *
-request_create(
-    Request * req,
-    int id)
+struct wfp_request * MockRequest::create_request(int id)
 {
-    struct wfp_request * request = reinterpret_cast<struct wfp_request *>(malloc(sizeof(struct wfp_request)));
+    auto * request = reinterpret_cast<wfp_request*>(malloc(sizeof(wfp_request)));
+    request->respond   = &webfuse_test_MockRequest_respond;
+    request->user_data = reinterpret_cast<void*>(this);
     request->id = id;
-    request->user_data = reinterpret_cast<void*>(req);
-    request->respond = &respond;
 
     return request;
 }
