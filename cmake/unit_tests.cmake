@@ -7,17 +7,17 @@ include(GoogleTest)
 pkg_check_modules(GMOCK gmock)
 
 add_executable(alltests
-	lib/wf/jsonrpc/test/wf/jsonrpc/mock_timer_callback.cc
-	lib/wf/jsonrpc/test/wf/jsonrpc/mock_timer.cc
-	lib/wf/jsonrpc/test/wf/jsonrpc/test_is_request.cc
-	lib/wf/jsonrpc/test/wf/jsonrpc/test_request.cc
-	lib/wf/jsonrpc/test/wf/jsonrpc/test_is_response.cc
-	lib/wf/jsonrpc/test/wf/jsonrpc/test_response.cc
-	lib/wf/jsonrpc/test/wf/jsonrpc/test_server.cc
-	lib/wf/jsonrpc/test/wf/jsonrpc/test_proxy.cc
-	lib/wf/jsonrpc/test/wf/jsonrpc/test_response_parser.cc
-	lib/wf/timer/test/wf/timer/test_timepoint.cc
-	lib/wf/timer/test/wf/timer/test_timer.cc
+	test/webfuse/tests/core/jsonrpc/mock_timer_callback.cc
+	test/webfuse/tests/core/jsonrpc/mock_timer.cc
+	test/webfuse/tests/core/jsonrpc/test_is_request.cc
+	test/webfuse/tests/core/jsonrpc/test_request.cc
+	test/webfuse/tests/core/jsonrpc/test_is_response.cc
+	test/webfuse/tests/core/jsonrpc/test_response.cc
+	test/webfuse/tests/core/jsonrpc/test_server.cc
+	test/webfuse/tests/core/jsonrpc/test_proxy.cc
+	test/webfuse/tests/core/jsonrpc/test_response_parser.cc
+	test/webfuse/tests/core/timer/test_timepoint.cc
+	test/webfuse/tests/core/timer/test_timer.cc
 	test/webfuse/utils/tempdir.cc
 	test/webfuse/utils/file_utils.cc
 	test/webfuse/utils/die_if.cc
@@ -50,19 +50,6 @@ add_executable(alltests
 	test/webfuse/tests/integration/provider.cc
 )
 
-target_include_directories(alltests PRIVATE
-	lib/wf/jsonrpc/include
-	lib/wf/jsonrpc/src
-	lib/wf/jsonrpc/test
-	lib/wf/timer/include
-	lib/wf/timer/src
-	${FUSE3_INCLUDE_DIRS} 
-)
-
-target_compile_options(alltests PUBLIC
-	${FUSE3_CFLAGS_OTHER}
-)
-
 target_link_libraries(alltests PUBLIC
 	-Wl,--wrap=wf_timer_manager_create
 	-Wl,--wrap=wf_timer_manager_dispose
@@ -75,8 +62,6 @@ target_link_libraries(alltests PUBLIC
 	webfuse-adapter-static
 	webfuse-provider-static
 	webfuse-core
-	wf_jsonrpc
-	wf_timer
 	${FUSE3_LIBRARIES}
 	${LWS_LIBRARIES}
 	${JANSSON_LIBRARIES}
@@ -85,8 +70,8 @@ target_link_libraries(alltests PUBLIC
 	${GTEST_LIBRARIES}
 )
 
-target_include_directories(alltests PUBLIC test lib ${GMOCK_INCLUDE_DIRS} ${GTEST_INCLUDE_DIRS})
-target_compile_options(alltests PUBLIC ${GMOCK_CFLAGS} ${GTEST_CFLAGS})
+target_include_directories(alltests PUBLIC test lib ${FUSE3_INCLUDE_DIRS} ${GMOCK_INCLUDE_DIRS} ${GTEST_INCLUDE_DIRS})
+target_compile_options(alltests PUBLIC ${FUSE3_CFLAGS_OTHER} ${GMOCK_CFLAGS} ${GTEST_CFLAGS})
 
 enable_testing()
 gtest_discover_tests(alltests TEST_PREFIX alltests:)
@@ -102,7 +87,7 @@ add_custom_target(coverage
 add_dependencies(coverage alltests)
 
 add_custom_target(coverage-report
-	COMMAND genhtml --branch-coverage --highlight --legend --prefix "${CMAKE_SOURCE_DIR}" coverage/lcov.info --output-directory coverage/report
+	COMMAND genhtml --branch-coverage --highlight --legend coverage/lcov.info --output-directory coverage/report
 )
 add_dependencies(coverage-report coverage)
 

@@ -13,8 +13,8 @@ using std::size_t;
 #include "webfuse/adapter/impl/filesystem.h"
 #include "webfuse/core/slist.h"
 
-#include "wf/jsonrpc/proxy.h"
-#include "wf/jsonrpc/server.h"
+#include "webfuse/core/jsonrpc/proxy.h"
+#include "webfuse/core/jsonrpc/server.h"
 
 #ifdef __cplusplus
 extern "C"

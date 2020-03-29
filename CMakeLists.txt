@@ -37,8 +37,6 @@ add_compile_options(
 	"-pthread"
 )
 
-include(wf_timer)
-include(wf_jsonrpc)
 include(webfuse_core)
 include(webfuse_adapter)
 include(webfuse_provider)

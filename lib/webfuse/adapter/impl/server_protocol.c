@@ -11,9 +11,9 @@
 #include "webfuse/adapter/impl/credentials.h"
 #include "webfuse/core/status_intern.h"
 
-#include "wf/jsonrpc/request.h"
-#include "wf/timer/manager.h"
-#include "wf/timer/timer.h"
+#include "webfuse/core/jsonrpc/request.h"
+#include "webfuse/core/timer/manager.h"
+#include "webfuse/core/timer/timer.h"
 
 static int wf_impl_server_protocol_callback(
 	struct lws * wsi,

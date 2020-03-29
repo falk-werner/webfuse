@@ -8,9 +8,9 @@
 #include "webfuse/core/container_of.h"
 #include "webfuse/core/util.h"
 
-#include "wf/jsonrpc/proxy.h"
-#include "wf/jsonrpc/request.h"
-#include "wf/jsonrpc/response.h"
+#include "webfuse/core/jsonrpc/proxy.h"
+#include "webfuse/core/jsonrpc/request.h"
+#include "webfuse/core/jsonrpc/response.h"
 
 #include <libwebsockets.h>
 #include <stddef.h>

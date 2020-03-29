@@ -8,7 +8,7 @@
 #include <sys/stat.h>
 #include <unistd.h> 
 
-#include "wf/jsonrpc/proxy.h"
+#include "webfuse/core/jsonrpc/proxy.h"
 #include "webfuse/core/util.h"
 #include "webfuse/core/json_util.h"
 

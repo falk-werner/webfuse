@@ -4,7 +4,7 @@
 #include <errno.h>
 #include <jansson.h>
 
-#include "wf/jsonrpc/proxy.h"
+#include "webfuse/core/jsonrpc/proxy.h"
 #include "webfuse/core/util.h"
 #include "webfuse/core/status.h"
 #include "webfuse/core/json_util.h"

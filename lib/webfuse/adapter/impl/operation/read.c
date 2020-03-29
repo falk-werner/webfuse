@@ -5,7 +5,7 @@
 #include <limits.h>
 #include <jansson.h>
 
-#include "wf/jsonrpc/proxy.h"
+#include "webfuse/core/jsonrpc/proxy.h"
 #include "webfuse/core/base64.h"
 #include "webfuse/core/json_util.h"
 

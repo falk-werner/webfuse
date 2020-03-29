@@ -9,6 +9,16 @@ add_library(webfuse-core STATIC
 	lib/webfuse/core/base64.c
 	lib/webfuse/core/lws_log.c
 	lib/webfuse/core/json_util.c
+    lib/webfuse/core/timer/manager.c
+    lib/webfuse/core/timer/timepoint.c
+    lib/webfuse/core/timer/timer.c
+	lib/webfuse/core/jsonrpc/proxy.c
+	lib/webfuse/core/jsonrpc/server.c
+	lib/webfuse/core/jsonrpc/method.c
+	lib/webfuse/core/jsonrpc/request.c
+	lib/webfuse/core/jsonrpc/response.c
+	lib/webfuse/core/jsonrpc/error.c
+
 )
 
 set_target_properties(webfuse-core PROPERTIES OUTPUT_NAME webfuse-core)

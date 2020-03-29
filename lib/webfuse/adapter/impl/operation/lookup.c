@@ -10,7 +10,7 @@
 
 #include <stdlib.h>
 
-#include "wf/jsonrpc/proxy.h"
+#include "webfuse/core/jsonrpc/proxy.h"
 #include "webfuse/core/json_util.h"
 #include "webfuse/core/util.h"
 
