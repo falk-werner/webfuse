@@ -28,6 +28,7 @@ add_executable(alltests
 	test/webfuse/mocks/mock_authenticator.cc
 	test/webfuse/mocks/mock_request.cc
 	test/webfuse/mocks/mock_provider_client.cc
+	test/webfuse/mocks/mock_provider.cc
 	test/webfuse//tests/core/test_util.cc
 	test/webfuse/tests/core/test_container_of.cc
 	test/webfuse/tests/core/test_string.cc
@@ -45,6 +46,7 @@ add_executable(alltests
 	test/webfuse/tests/adapter/test_fuse_req.cc
 	test/webfuse/tests/provider/test_url.cc
 	test/webfuse/tests/provider/test_client_protocol.cc
+	test/webfuse/tests/provider/operation/test_close.cc
 	test/webfuse/tests/integration/test_integration.cc
 	test/webfuse/tests/integration/server.cc
 	test/webfuse/tests/integration/provider.cc
