@@ -70,7 +70,7 @@ void wfp_impl_respond_read(
     {
             json_t * result = json_object();
             json_object_set_new(result, "data", json_string(""));
-            json_object_set_new(result, "format", json_string("identitiy"));
+            json_object_set_new(result, "format", json_string("identity"));
             json_object_set_new(result, "count", json_integer(0));
 
             wfp_impl_respond(request, result);        
