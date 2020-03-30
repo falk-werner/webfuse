@@ -51,6 +51,7 @@ add_executable(alltests
 	test/webfuse/tests/provider/operation/test_getattr.cc
 	test/webfuse/tests/provider/operation/test_lookup.cc
 	test/webfuse/tests/provider/operation/test_open.cc
+	test/webfuse/tests/provider/operation/test_read.cc
 	test/webfuse/tests/integration/test_integration.cc
 	test/webfuse/tests/integration/server.cc
 	test/webfuse/tests/integration/provider.cc

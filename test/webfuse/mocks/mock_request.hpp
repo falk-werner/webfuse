@@ -56,6 +56,32 @@ MATCHER_P(OpenMatcher, handle, "")
     return true;
 }
 
+MATCHER_P3(ReadResultMatcher, data, format, count, "") 
+{
+    json_t * format_holder = json_object_get(arg, "format");
+    if ((!json_is_string(format_holder)) || (0 != strcmp(format, json_string_value(format_holder))))
+    {
+        *result_listener << "invalid or missing format: " << json_string_value(format_holder);
+        return false;
+    }
+
+    json_t * count_holder = json_object_get(arg, "count");
+    if ((!json_is_integer(count_holder)) || (count != json_integer_value(count_holder)))
+    {
+        *result_listener << "invalid or missing count: " << json_integer_value(count_holder);
+        return false;
+    }
+
+    json_t * data_holder = json_object_get(arg, "data");
+    if ((!json_is_string(data_holder)) || (0 != strcmp(data, json_string_value(data_holder))))
+    {
+        *result_listener << "invalid or missing data: " << json_string_value(data_holder);
+        return false;
+    }
+
+    return true;
+}
+
 MATCHER_P(ReaddirMatcher, contained_elements , "") 
 {
     if (!json_is_array(arg))
