@@ -25,6 +25,7 @@ add_executable(alltests
 	test/webfuse/utils/path.c
 	test/webfuse/utils/static_filesystem.c
 	test/webfuse/utils/ws_server.cc
+	test/webfuse/mocks/fake_invokation_context.cc
 	test/webfuse/mocks/mock_authenticator.cc
 	test/webfuse/mocks/mock_request.cc
 	test/webfuse/mocks/mock_provider_client.cc

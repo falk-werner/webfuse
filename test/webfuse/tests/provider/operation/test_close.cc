@@ -1,24 +1,12 @@
 #include "webfuse/provider/impl/operation/close.h"
 #include "webfuse/mocks/mock_provider.hpp"
+#include "webfuse/mocks/fake_invokation_context.hpp"
 
 #include <gtest/gtest.h>
 
 using ::webfuse_test::MockProvider;
+using ::webfuse_test::create_context;
 using ::testing::_;
-
-namespace
-{
-    wfp_impl_invokation_context create_context(MockProvider& provider)
-    {
-        wfp_impl_invokation_context context =
-        {
-            provider.get_provider(),
-            provider.get_userdata(),
-            nullptr
-        };
-        return context;
-    }
-}
 
 TEST(wfp_close, close)
 {
