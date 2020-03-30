@@ -86,7 +86,7 @@ TEST(wfp_impl_lookup, fail_invalid_name_type)
 
     json_t * params = json_array();
     json_array_append_new(params, json_string("test.filesystem"));
-    json_array_append_new(params, json_string("23"));
+    json_array_append_new(params, json_integer(23));
     json_array_append_new(params, json_integer(1));
 
     wfp_impl_lookup(&context, params, 42);
