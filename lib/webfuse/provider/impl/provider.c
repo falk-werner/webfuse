@@ -94,8 +94,7 @@ void wfp_impl_provider_invoke(
     json_t * params = json_object_get(request, "params");
     json_t * id_holder = json_object_get(request, "id");
 
-    if ((NULL != method_holder) && (json_is_string(method_holder)) &&
-        (NULL != params) && (json_is_array(params)))
+    if ((json_is_string(method_holder)) && (json_is_array(params)))
     {
         char const * method = json_string_value(method_holder);
         int id = json_is_integer(id_holder) ? json_integer_value(id_holder) : 0;
