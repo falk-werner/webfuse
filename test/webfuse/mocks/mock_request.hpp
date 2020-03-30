@@ -18,7 +18,7 @@ public:
     MOCK_METHOD2(respond_error, void(json_t * error, int id));
 };
 
-MATCHER_P3(GetAttrMatcher, inode, mode, file_type, "") 
+MATCHER_P3(StatMatcher, inode, mode, file_type, "") 
 {
     json_t * inode_holder = json_object_get(arg, "inode");
     if ((!json_is_integer(inode_holder)) || (inode != json_integer_value(inode_holder)))
@@ -43,7 +43,6 @@ MATCHER_P3(GetAttrMatcher, inode, mode, file_type, "")
 
     return true;
 }
-
 
 MATCHER_P(ReaddirMatcher, contained_elements , "") 
 {

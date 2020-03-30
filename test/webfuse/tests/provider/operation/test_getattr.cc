@@ -8,7 +8,7 @@
 
 using ::webfuse_test::MockProvider;
 using ::webfuse_test::MockRequest;
-using ::webfuse_test::GetAttrMatcher;
+using ::webfuse_test::StatMatcher;
 using ::webfuse_test::create_context;
 using ::testing::_;
 using ::testing::Invoke;
@@ -36,7 +36,7 @@ TEST(wfp_impl_getattr, respond_file)
 {
     MockRequest request;
     auto * req = request.create_request(42);
-    EXPECT_CALL(request, respond(GetAttrMatcher(23, 0754, "file"), 42)).Times(1);
+    EXPECT_CALL(request, respond(StatMatcher(23, 0754, "file"), 42)).Times(1);
 
     struct stat buffer;
     memset(&buffer, 0, sizeof(buffer));
@@ -49,7 +49,7 @@ TEST(wfp_impl_getattr, respond_dir)
 {
     MockRequest request;
     auto * req = request.create_request(42);
-    EXPECT_CALL(request, respond(GetAttrMatcher(23, 0754, "dir"), 42)).Times(1);
+    EXPECT_CALL(request, respond(StatMatcher(23, 0754, "dir"), 42)).Times(1);
 
     struct stat buffer;
     memset(&buffer, 0, sizeof(buffer));
