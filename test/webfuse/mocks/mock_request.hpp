@@ -44,6 +44,18 @@ MATCHER_P3(StatMatcher, inode, mode, file_type, "")
     return true;
 }
 
+MATCHER_P(OpenMatcher, handle, "") 
+{
+    json_t * handle_holder = json_object_get(arg, "handle");
+    if ((!json_is_integer(handle_holder)) || (handle != json_integer_value(handle_holder)))
+    {
+        *result_listener << "missing handle";
+        return false;
+    }
+
+    return true;
+}
+
 MATCHER_P(ReaddirMatcher, contained_elements , "") 
 {
     if (!json_is_array(arg))
