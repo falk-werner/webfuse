@@ -63,6 +63,8 @@ public:
         wf_server_config_set_mountpoint_factory(config, 
             &webfuse_test_server_create_mountpoint,
             reinterpret_cast<void*>(base_dir));
+        wf_server_config_set_keypath(config, "server-key.pem");
+        wf_server_config_set_certpath(config, "server-cert.pem");
 
         server = wf_server_create(config);
 

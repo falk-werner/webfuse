@@ -10,6 +10,7 @@ struct wfp_client_config * wfp_impl_client_config_create(void)
     config->user_data = NULL;
     config->key_path = NULL;
     config->cert_path = NULL;
+    config->ca_filepath = NULL;
 
     return config;
 }
@@ -19,6 +20,7 @@ void wfp_impl_client_config_dispose(
 {
     free(config->key_path);
     free(config->cert_path);
+    free(config->ca_filepath);
     free(config);
 }
 
@@ -43,6 +45,14 @@ void wfp_impl_client_config_set_certpath(
 {
     free(config->cert_path);
     config->cert_path = strdup(cert_path);
+}
+
+void wfp_impl_client_config_set_ca_filepath(
+    struct wfp_client_config * config,
+    char const * ca_filepath)
+{
+    free(config->ca_filepath);
+    config->ca_filepath = strdup(ca_filepath); 
 }
 
 void wfp_impl_client_config_set_onconnected(

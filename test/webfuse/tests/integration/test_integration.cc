@@ -38,7 +38,7 @@ namespace
             void SetUp()
             {
                 server = new Server();
-                provider = new Provider("ws://localhost:8080/");
+                provider = new Provider("wss://localhost:8080/");
             }
 
             void TearDown()

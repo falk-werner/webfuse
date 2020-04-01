@@ -81,6 +81,14 @@ target_link_libraries(alltests PUBLIC
 target_include_directories(alltests PUBLIC test lib ${FUSE3_INCLUDE_DIRS} ${GMOCK_INCLUDE_DIRS} ${GTEST_INCLUDE_DIRS})
 target_compile_options(alltests PUBLIC ${FUSE3_CFLAGS_OTHER} ${GMOCK_CFLAGS} ${GTEST_CFLAGS})
 
+add_custom_command(OUTPUT server-key.pem
+	COMMAND openssl req -x509 -newkey rsa:4096 -keyout server-key.pem -out server-cert.pem -days 365 -nodes -batch -subj '/CN=localhost'
+	COMMAND openssl req -x509 -newkey rsa:4096 -keyout client-key.pem -out client-cert.pem -days 365 -nodes -batch -subj '/CN=localhost'
+)
+
+add_custom_target(gen-tls DEPENDS server-key.pem)
+add_dependencies(alltests gen-tls)
+
 enable_testing()
 gtest_discover_tests(alltests TEST_PREFIX alltests:)
 

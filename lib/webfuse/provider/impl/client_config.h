@@ -15,6 +15,7 @@ struct wfp_client_config
     void * user_data;
     char * key_path;
     char * cert_path;
+    char * ca_filepath;
 };
 
 extern struct wfp_client_config * wfp_impl_client_config_create(void);
@@ -33,6 +34,10 @@ extern void wfp_impl_client_config_set_keypath(
 extern void wfp_impl_client_config_set_certpath(
     struct wfp_client_config * config,
     char const * cert_path);
+
+extern void wfp_impl_client_config_set_ca_filepath(
+    struct wfp_client_config * config,
+    char const * ca_filepath);
 
 extern void wfp_impl_client_config_set_onconnected(
     struct wfp_client_config * config,

@@ -43,7 +43,10 @@ struct wfp_client * wfp_impl_client_create(
 
     if ((NULL != config->cert_path) && (NULL != config->key_path))
     {
-        
+		client->info.options |= LWS_SERVER_OPTION_DO_SSL_GLOBAL_INIT;
+        client->info.client_ssl_cert_filepath = config->cert_path;
+        client->info.client_ssl_private_key_filepath = config->key_path;
+        client->info.client_ssl_ca_filepath = config->ca_filepath;
     }
 
     client->context = lws_create_context(&client->info);

@@ -19,6 +19,9 @@ public:
     : is_shutdown_requested(false)
     {
         config = wfp_client_config_create();
+        wfp_client_config_set_certpath(config, "client-cert.pem");
+        wfp_client_config_set_keypath(config, "client-key.pem");
+        wfp_client_config_set_ca_filepath(config, "server-cert.pem");
 
         fs = wfp_static_filesystem_create(config);
         wfp_static_filesystem_add_text(fs, "hello.txt", 0444, "Hello, World");
