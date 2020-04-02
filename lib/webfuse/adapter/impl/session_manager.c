@@ -33,10 +33,7 @@ struct wf_impl_session * wf_impl_session_manager_add(
 {
     struct wf_impl_session * session = wf_impl_session_create(
         wsi, authenticators, timer_manager, server, mountpoint_factory); 
-    if (NULL != session)
-    {
-        wf_slist_append(&manager->sessions, &session->item);
-    }
+    wf_slist_append(&manager->sessions, &session->item);
 
     return session;
 }
