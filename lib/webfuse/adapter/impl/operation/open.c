@@ -22,7 +22,7 @@ static void wf_impl_operation_open_finished(
 	if (NULL != result)
 	{
         json_t * handle_holder = json_object_get(result, "handle");
-        if ((NULL != handle_holder) && (json_is_integer(handle_holder))) 
+        if (json_is_integer(handle_holder))
         {
             file_info.fh = json_integer_value(handle_holder);
         }

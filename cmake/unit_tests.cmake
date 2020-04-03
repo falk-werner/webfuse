@@ -30,6 +30,7 @@ add_executable(alltests
 	test/webfuse/mocks/mock_request.cc
 	test/webfuse/mocks/mock_provider_client.cc
 	test/webfuse/mocks/mock_provider.cc
+	test/webfuse/mocks/mock_fuse.cc
 	test/webfuse//tests/core/test_util.cc
 	test/webfuse/tests/core/test_container_of.cc
 	test/webfuse/tests/core/test_string.cc
@@ -45,6 +46,7 @@ add_executable(alltests
 	test/webfuse/tests/adapter/test_authenticators.cc
 	test/webfuse/tests/adapter/test_mountpoint.cc
 	test/webfuse/tests/adapter/test_fuse_req.cc
+	test/webfuse/tests/adapter/operation/test_open.cc
 	test/webfuse/tests/provider/test_url.cc
 	test/webfuse/tests/provider/test_client_protocol.cc
 	test/webfuse/tests/provider/operation/test_close.cc
@@ -67,6 +69,9 @@ target_link_libraries(alltests PUBLIC
 	-Wl,--wrap=wf_timer_dispose
 	-Wl,--wrap=wf_timer_start
 	-Wl,--wrap=wf_timer_cancel
+	-Wl,--wrap=fuse_req_userdata
+	-Wl,--wrap=fuse_reply_open
+	-Wl,--wrap=fuse_reply_err
 
 	webfuse-adapter-static
 	webfuse-provider-static
