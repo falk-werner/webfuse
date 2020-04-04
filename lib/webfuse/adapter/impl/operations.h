@@ -22,18 +22,6 @@ extern void wf_impl_operation_lookup (
 	fuse_ino_t parent, 
 	char const * name);
 
-extern void wf_impl_operation_getattr (
-		fuse_req_t request,
-		fuse_ino_t inode,
-		struct fuse_file_info *file_info);
-
-extern void wf_impl_operation_readdir (
-	fuse_req_t request,
-	fuse_ino_t inode,
-	size_t size,
-	off_t offset,
-	struct fuse_file_info *file_info);
-
 extern struct wf_jsonrpc_proxy * wf_impl_operations_context_get_proxy(
 	struct wf_impl_operations_context * context);
 

@@ -52,6 +52,7 @@ add_executable(alltests
 	test/webfuse/tests/adapter/operation/test_close.cc
 	test/webfuse/tests/adapter/operation/test_read.cc
 	test/webfuse/tests/adapter/operation/test_readdir.cc
+	test/webfuse/tests/adapter/operation/test_getattr.cc
 	test/webfuse/tests/provider/test_url.cc
 	test/webfuse/tests/provider/test_client_protocol.cc
 	test/webfuse/tests/provider/operation/test_close.cc
@@ -81,6 +82,8 @@ target_link_libraries(alltests PUBLIC
 	-Wl,--wrap=fuse_reply_open
 	-Wl,--wrap=fuse_reply_err
 	-Wl,--wrap=fuse_reply_buf
+	-Wl,--wrap=fuse_reply_attr
+	-Wl,--wrap=fuse_req_ctx
 
 	webfuse-adapter-static
 	webfuse-provider-static

@@ -4,6 +4,7 @@
 #include "webfuse/adapter/impl/operation/close.h"
 #include "webfuse/adapter/impl/operation/read.h"
 #include "webfuse/adapter/impl/operation/readdir.h"
+#include "webfuse/adapter/impl/operation/getattr.h"
 #include "webfuse/adapter/impl/session.h"
 #include "webfuse/adapter/impl/mountpoint.h"
 

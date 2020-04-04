@@ -1,3 +1,4 @@
+#include "webfuse/adapter/impl/operation/getattr.h"
 #include "webfuse/adapter/impl/operations.h"
 
 #include <errno.h>
@@ -11,16 +12,7 @@
 #include "webfuse/core/json_util.h"
 #include "webfuse/core/util.h"
 
-struct wf_impl_operation_getattr_context
-{
-	fuse_req_t request;
-	fuse_ino_t inode;
-	double timeout;
-	uid_t uid;
-	gid_t gid;
-};
-
-static void wf_impl_operation_getattr_finished(
+void wf_impl_operation_getattr_finished(
 	void * user_data,
 	json_t const * result,
 	json_t const * error)
@@ -33,8 +25,7 @@ static void wf_impl_operation_getattr_finished(
 	{
 		json_t * mode_holder = json_object_get(result, "mode");
 		json_t * type_holder = json_object_get(result, "type");
-		if ((NULL != mode_holder) && (json_is_integer(mode_holder)) && 
-		    (NULL != type_holder) && (json_is_string(type_holder)))
+		if ((json_is_integer(mode_holder)) && (json_is_string(type_holder)))
 		{
             memset(&buffer, 0, sizeof(struct stat));
 
