@@ -16,6 +16,7 @@ public:
     MOCK_METHOD1(fuse_req_userdata, void *(fuse_req_t req));
     MOCK_METHOD2(fuse_reply_open, int (fuse_req_t req, const struct fuse_file_info *fi));
     MOCK_METHOD2(fuse_reply_err, int (fuse_req_t req, int err));
+    MOCK_METHOD3(fuse_reply_buf, int (fuse_req_t req, const char *buf, size_t size));
 };
 
 }

@@ -1,3 +1,4 @@
+#include "webfuse/adapter/impl/operation/read.h"
 #include "webfuse/adapter/impl/operations.h"
 
 #include <errno.h>
@@ -11,8 +12,9 @@
 
 #define WF_MAX_READ_LENGTH 4096
 
-static char * wf_impl_fill_buffer(
+char * wf_impl_fill_buffer(
 	char const * data,
+	size_t data_size,
 	char const * format,
 	size_t count,
 	wf_status * status)
@@ -24,11 +26,22 @@ static char * wf_impl_fill_buffer(
 	{
 		if (0 == strcmp("identity", format))
 		{
-			memcpy(buffer, data, count);
+			if (count == data_size)
+			{
+				memcpy(buffer, data, count);
+			}
+			else
+			{
+				*status = WF_BAD;
+			}			
 		}
 		else if (0 == strcmp("base64", format))
 		{
-			wf_base64_decode(data, strlen(data), (uint8_t *) buffer, count);
+			size_t result = wf_base64_decode(data, data_size, (uint8_t *) buffer, count);
+			if (result != count)
+			{
+				*status = WF_BAD;
+			}
 		}
 		else
 		{
@@ -36,10 +49,16 @@ static char * wf_impl_fill_buffer(
 		}
 	}
 
+	if (WF_GOOD != *status)
+	{
+		free(buffer);
+		buffer = NULL;
+	}
+
 	return buffer;
 }
 
-static void wf_impl_operation_read_finished(
+void wf_impl_operation_read_finished(
 	void * user_data, 
 	json_t const * result,
 	json_t const * error)
@@ -60,10 +79,11 @@ static void wf_impl_operation_read_finished(
             json_is_integer(count_holder))
 		{
 			char const * const data = json_string_value(data_holder);
+			size_t const data_size = json_string_length(data_holder);
 			char const * const format = json_string_value(format_holder);
 			length = (size_t) json_integer_value(count_holder);
 
-			buffer = wf_impl_fill_buffer(data, format, length, &status);
+			buffer = wf_impl_fill_buffer(data, data_size, format, length, &status);
 		}
 		else
 		{
