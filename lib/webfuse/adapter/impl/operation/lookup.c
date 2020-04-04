@@ -1,4 +1,5 @@
-#include "webfuse/adapter/impl/operations.h"
+#include "webfuse/adapter/impl/operation/lookup.h"
+#include "webfuse/adapter/impl/operation/context.h"
 
 #include <limits.h>
 #include <errno.h>
@@ -14,15 +15,7 @@
 #include "webfuse/core/json_util.h"
 #include "webfuse/core/util.h"
 
-struct wf_impl_operation_lookup_context
-{
-	fuse_req_t request;
-	double timeout;
-	uid_t uid;
-	gid_t gid;
-};
-
-static void wf_impl_operation_lookup_finished(
+void wf_impl_operation_lookup_finished(
 	void * user_data,
 	json_t const * result,
 	json_t const * error
@@ -37,9 +30,9 @@ static void wf_impl_operation_lookup_finished(
 		json_t * inode_holder = json_object_get(result, "inode"); 
 		json_t * mode_holder = json_object_get(result, "mode");
 		json_t * type_holder = json_object_get(result, "type");
-		if ((NULL != inode_holder) && (json_is_integer(inode_holder)) &&
-			(NULL != mode_holder) && (json_is_integer(mode_holder)) && 
-		    (NULL != type_holder) && (json_is_string(type_holder)))
+		if ((json_is_integer(inode_holder)) &&
+			(json_is_integer(mode_holder)) && 
+		    (json_is_string(type_holder)))
 		{
             memset(&buffer, 0, sizeof(struct stat));
 

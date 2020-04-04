@@ -1,4 +1,5 @@
-#include "webfuse/adapter/impl/operations.h"
+#include "webfuse/adapter/impl/operation/close.h"
+#include "webfuse/adapter/impl/operation/context.h"
 
 #include <limits.h>
 #include <errno.h>

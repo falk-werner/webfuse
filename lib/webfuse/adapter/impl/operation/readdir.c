@@ -1,5 +1,5 @@
 #include "webfuse/adapter/impl/operation/readdir.h"
-#include "webfuse/adapter/impl/operations.h"
+#include "webfuse/adapter/impl/operation/context.h"
 
 #include <stdlib.h>
 #include <string.h>

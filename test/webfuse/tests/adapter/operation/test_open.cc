@@ -1,5 +1,4 @@
 #include "webfuse/adapter/impl/operation/open.h"
-#include "webfuse/adapter/impl/operations.h"
 
 #include "webfuse/core/status.h"
 

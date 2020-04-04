@@ -1,5 +1,4 @@
 #include "webfuse/adapter/impl/operation/getattr.h"
-#include "webfuse/adapter/impl/operations.h"
 
 #include "webfuse/core/status.h"
 

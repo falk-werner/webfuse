@@ -1,5 +1,4 @@
 #include "webfuse/adapter/impl/operation/read.h"
-#include "webfuse/adapter/impl/operations.h"
 
 #include "webfuse/mocks/mock_fuse.hpp"
 #include "webfuse/mocks/mock_operations_context.hpp"

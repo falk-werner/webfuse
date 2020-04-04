@@ -1,7 +1,7 @@
 #ifndef MOCK_OPERATIONS_CONTEXT_HPP
 #define MOCK_OPERATIONS_CONTEXT_HPP
 
-#include "webfuse/adapter/impl/operations.h"
+#include "webfuse/adapter/impl/operation/context.h"
 #include <gmock/gmock.h>
 
 namespace webfuse_test

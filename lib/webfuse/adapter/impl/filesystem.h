@@ -6,7 +6,7 @@
 #endif
 
 #include "webfuse/adapter/impl/fuse_wrapper.h"
-#include "webfuse/adapter/impl/operations.h"
+#include "webfuse/adapter/impl/operation/context.h"
 #include "webfuse/core/slist.h"
 
 #ifdef __cplusplus

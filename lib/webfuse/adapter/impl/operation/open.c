@@ -1,5 +1,5 @@
 #include "webfuse/adapter/impl/operation/open.h"
-#include "webfuse/adapter/impl/operations.h"
+#include "webfuse/adapter/impl/operation/context.h"
 
 #include "webfuse/core/jsonrpc/proxy.h"
 #include "webfuse/core/util.h"

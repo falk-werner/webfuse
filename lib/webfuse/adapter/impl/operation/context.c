@@ -1,4 +1,4 @@
-#include "webfuse/adapter/impl/operations.h"
+#include "webfuse/adapter/impl/operation/context.h"
 #include "webfuse/adapter/impl/session_manager.h"
 #include "webfuse/adapter/impl/session.h"
 #include <stddef.h>
