@@ -34,11 +34,6 @@ extern void wf_impl_operation_readdir (
 	off_t offset,
 	struct fuse_file_info *file_info);
 
-extern void wf_impl_operation_close(
-	fuse_req_t request,
-	fuse_ino_t inode,
-	struct fuse_file_info * file_info);
-
 extern void wf_impl_operation_read(
 	fuse_req_t request,
 	fuse_ino_t ino, size_t size, off_t off,

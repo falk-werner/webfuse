@@ -49,6 +49,7 @@ add_executable(alltests
 	test/webfuse/tests/adapter/test_mountpoint.cc
 	test/webfuse/tests/adapter/test_fuse_req.cc
 	test/webfuse/tests/adapter/operation/test_open.cc
+	test/webfuse/tests/adapter/operation/test_close.cc
 	test/webfuse/tests/provider/test_url.cc
 	test/webfuse/tests/provider/test_client_protocol.cc
 	test/webfuse/tests/provider/operation/test_close.cc
@@ -73,6 +74,7 @@ target_link_libraries(alltests PUBLIC
 	-Wl,--wrap=wf_timer_cancel
 	-Wl,--wrap=wf_impl_operations_context_get_proxy
 	-Wl,--wrap=wf_jsonrpc_proxy_vinvoke
+	-Wl,--wrap=wf_jsonrpc_proxy_vnotify
 	-Wl,--wrap=fuse_req_userdata
 	-Wl,--wrap=fuse_reply_open
 	-Wl,--wrap=fuse_reply_err

@@ -1,6 +1,7 @@
 #include "webfuse/adapter/impl/filesystem.h"
 #include "webfuse/adapter/impl/operations.h"
 #include "webfuse/adapter/impl/operation/open.h"
+#include "webfuse/adapter/impl/operation/close.h"
 #include "webfuse/adapter/impl/session.h"
 #include "webfuse/adapter/impl/mountpoint.h"
 

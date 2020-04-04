@@ -19,6 +19,11 @@ public:
         char const * method_name,
         char const * param_info,
         va_list args));
+    MOCK_METHOD4(wf_jsonrpc_proxy_vnotify, void (
+        struct wf_jsonrpc_proxy * proxy,
+        char const * method_name,
+        char const * param_info,
+        va_list args));
 
 };
 

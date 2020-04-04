@@ -13,7 +13,7 @@ add_library(webfuse-core STATIC
     lib/webfuse/core/timer/timepoint.c
     lib/webfuse/core/timer/timer.c
 	lib/webfuse/core/jsonrpc/proxy.c
-	lib/webfuse/core/jsonrpc/proxy_invoke.c
+	lib/webfuse/core/jsonrpc/proxy_variadic.c
 	lib/webfuse/core/jsonrpc/server.c
 	lib/webfuse/core/jsonrpc/method.c
 	lib/webfuse/core/jsonrpc/request.c

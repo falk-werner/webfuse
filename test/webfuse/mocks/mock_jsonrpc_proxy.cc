@@ -12,6 +12,12 @@ WF_WRAP_FUNC6(webfuse_test_MockJsonRpcProxy, void, wf_jsonrpc_proxy_vinvoke,
 	char const *,
 	char const *,
 	va_list);
+
+WF_WRAP_FUNC4(webfuse_test_MockJsonRpcProxy, void, wf_jsonrpc_proxy_vnotify,
+	struct wf_jsonrpc_proxy *,
+	char const *,
+	char const *,
+	va_list);
 }
 
 namespace webfuse_test

@@ -174,17 +174,13 @@ void wf_jsonrpc_proxy_vinvoke(
     }
 }
 
-extern void wf_jsonrpc_proxy_notify(
+extern void wf_jsonrpc_proxy_vnotify(
 	struct wf_jsonrpc_proxy * proxy,
 	char const * method_name,
 	char const * param_info,
-	...
-)
+	va_list args)
 {
-    va_list args;
-    va_start(args, param_info);      
     json_t * request = wf_jsonrpc_request_create(method_name, 0, param_info, args);
-    va_end(args);
 
     if (NULL != request)
     {

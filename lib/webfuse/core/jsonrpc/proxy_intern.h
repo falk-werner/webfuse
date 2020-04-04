@@ -49,6 +49,12 @@ extern void wf_jsonrpc_proxy_vinvoke(
 	char const * param_info,
 	va_list args);
 
+extern void wf_jsonrpc_proxy_vnotify(
+	struct wf_jsonrpc_proxy * proxy,
+	char const * method_name,
+	char const * param_info,
+	va_list args);
+
 #ifdef __cplusplus
 }
 #endif
