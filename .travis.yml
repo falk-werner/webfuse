@@ -21,6 +21,7 @@ env:
     - BUILDTYPE=Release    MARCH=amd64   CHECK_TARGET=memcheck
     - BUILDTYPE=Debug      MARCH=arm32v7 CHECK_TARGET=check
     - BUILDTYPE=MinSizeRel MARCH=arm32v7 CHECK_TARGET=check
+    - BUILDTYPE=Debug      MARCH=amd54   CHECK_TARGET=check     DISTRO=alpine
 before_script:
 - make BUILDTYPE=$BUILDTYPE MARCH=$MARCH
 script:
