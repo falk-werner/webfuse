@@ -41,6 +41,7 @@ TEST(wfp_impl_open, invoke_provider)
     json_array_append_new(params, json_integer(flags));
 
     wfp_impl_open(&context, params, 42);
+    json_decref(params);
 }
 
 TEST(wfp_impl_open, fail_invalid_param_count)
@@ -56,6 +57,7 @@ TEST(wfp_impl_open, fail_invalid_param_count)
     json_array_append_new(params, json_integer(23));
 
     wfp_impl_open(&context, params, 42);
+    json_decref(params);
 }
 
 TEST(wfp_impl_open, fail_invalid_inode_type)
@@ -72,6 +74,7 @@ TEST(wfp_impl_open, fail_invalid_inode_type)
     json_array_append_new(params, json_integer(0));
 
     wfp_impl_open(&context, params, 42);
+    json_decref(params);
 }
 
 TEST(wfp_impl_open, fail_invalid_flags_type)
@@ -88,6 +91,7 @@ TEST(wfp_impl_open, fail_invalid_flags_type)
     json_array_append_new(params, json_string(""));
 
     wfp_impl_open(&context, params, 42);
+    json_decref(params);
 }
 
 TEST(wfp_impl_open, default_responds_error)
