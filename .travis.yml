@@ -25,6 +25,6 @@ env:
 before_script:
 - make BUILDTYPE=$BUILDTYPE MARCH=$MARCH
 script:
-- make BUILDTYPE=$BUILDTYPE MARCH=$MARCH $CHECK_TARGET
+- make DISTRO=$DISTRO BUILDTYPE=$BUILDTYPE MARCH=$MARCH $CHECK_TARGET
 after_success:
 - bash <(curl -s https://codecov.io/bash)
