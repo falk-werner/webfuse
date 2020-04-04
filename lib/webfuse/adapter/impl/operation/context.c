@@ -3,8 +3,8 @@
 #include "webfuse/adapter/impl/session.h"
 #include <stddef.h>
 
-struct wf_jsonrpc_proxy * wf_impl_operations_context_get_proxy(
-	struct wf_impl_operations_context * context)
+struct wf_jsonrpc_proxy * wf_impl_operation_context_get_proxy(
+	struct wf_impl_operation_context * context)
 {
     struct wf_jsonrpc_proxy * proxy = NULL;
 

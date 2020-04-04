@@ -13,8 +13,8 @@ void wf_impl_operation_close(
 	fuse_ino_t inode,
 	struct fuse_file_info * file_info)
 {
-    struct wf_impl_operations_context * user_data = fuse_req_userdata(request);
-    struct wf_jsonrpc_proxy * rpc = wf_impl_operations_context_get_proxy(user_data);
+    struct wf_impl_operation_context * user_data = fuse_req_userdata(request);
+    struct wf_jsonrpc_proxy * rpc = wf_impl_operation_context_get_proxy(user_data);
 
 	if (NULL != rpc)
 	{

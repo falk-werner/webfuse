@@ -10,15 +10,15 @@ extern "C" {
 struct wf_impl_session;
 struct wf_jsonrpc_proxy;
 
-struct wf_impl_operations_context
+struct wf_impl_operation_context
 {
 	struct wf_impl_session * session;
 	double timeout;
 	char * name;
 };
 
-extern struct wf_jsonrpc_proxy * wf_impl_operations_context_get_proxy(
-	struct wf_impl_operations_context * context);
+extern struct wf_jsonrpc_proxy * wf_impl_operation_context_get_proxy(
+	struct wf_impl_operation_context * context);
 
 #ifdef __cplusplus
 }

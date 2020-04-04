@@ -31,7 +31,7 @@ add_executable(alltests
 	test/webfuse/mocks/mock_provider_client.cc
 	test/webfuse/mocks/mock_provider.cc
 	test/webfuse/mocks/mock_fuse.cc
-	test/webfuse/mocks/mock_operations_context.cc
+	test/webfuse/mocks/mock_operation_context.cc
 	test/webfuse/mocks/mock_jsonrpc_proxy.cc
 	test/webfuse//tests/core/test_util.cc
 	test/webfuse/tests/core/test_container_of.cc
@@ -77,7 +77,7 @@ target_link_libraries(alltests PUBLIC
 	-Wl,--wrap=wf_timer_dispose
 	-Wl,--wrap=wf_timer_start
 	-Wl,--wrap=wf_timer_cancel
-	-Wl,--wrap=wf_impl_operations_context_get_proxy
+	-Wl,--wrap=wf_impl_operation_context_get_proxy
 	-Wl,--wrap=wf_jsonrpc_proxy_vinvoke
 	-Wl,--wrap=wf_jsonrpc_proxy_vnotify
 	-Wl,--wrap=fuse_req_userdata

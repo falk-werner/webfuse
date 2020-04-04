@@ -84,8 +84,8 @@ void wf_impl_operation_lookup (
 	char const * name)
 {
     struct fuse_ctx const * context = fuse_req_ctx(request);
-    struct wf_impl_operations_context * user_data = fuse_req_userdata(request);
-    struct wf_jsonrpc_proxy * rpc = wf_impl_operations_context_get_proxy(user_data);
+    struct wf_impl_operation_context * user_data = fuse_req_userdata(request);
+    struct wf_jsonrpc_proxy * rpc = wf_impl_operation_context_get_proxy(user_data);
 
 	if (NULL != rpc)
 	{
