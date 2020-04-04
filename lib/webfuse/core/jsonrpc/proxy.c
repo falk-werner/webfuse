@@ -133,14 +133,13 @@ void wf_jsonrpc_proxy_cleanup(
     wf_timer_dispose(proxy->request.timer);
 }
 
-void wf_jsonrpc_proxy_invoke(
+void wf_jsonrpc_proxy_vinvoke(
 	struct wf_jsonrpc_proxy * proxy,
 	wf_jsonrpc_proxy_finished_fn * finished,
 	void * user_data,
 	char const * method_name,
 	char const * param_info,
-	...
-)
+	va_list args)
 {
     if (!proxy->request.is_pending)
     {
@@ -150,10 +149,7 @@ void wf_jsonrpc_proxy_invoke(
         proxy->request.id = 42;
         wf_timer_start(proxy->request.timer, proxy->timeout);
         
-        va_list args;
-        va_start(args, param_info);
         json_t * request = wf_jsonrpc_request_create(method_name, proxy->request.id, param_info, args);
-        va_end(args);
 
         bool const is_send = ((NULL != request) && (proxy->send(request, proxy->user_data)));
         if (!is_send)

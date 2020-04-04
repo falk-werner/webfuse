@@ -71,4 +71,32 @@
         } \
     }
 
+#define WF_WRAP_FUNC5( GLOBAL_VAR, RETURN_TYPE, FUNC_NAME, ARG1_TYPE, ARG2_TYPE, ARG3_TYPE, ARG4_TYPE, ARG5_TYPE ) \
+    extern RETURN_TYPE __real_ ## FUNC_NAME (ARG1_TYPE, ARG2_TYPE, ARG3_TYPE, ARG4_TYPE, ARG5_TYPE); \
+    RETURN_TYPE __wrap_ ## FUNC_NAME (ARG1_TYPE arg1, ARG2_TYPE arg2, ARG3_TYPE arg3, ARG4_TYPE arg4, ARG5_TYPE arg5) \
+    { \
+        if (nullptr == GLOBAL_VAR ) \
+        { \
+            return __real_ ## FUNC_NAME (arg1, arg2, arg3, arg4, arg5); \
+        } \
+        else \
+        { \
+            return GLOBAL_VAR -> FUNC_NAME(arg1, arg2, arg3, arg4, arg5); \
+        } \
+    }
+
+#define WF_WRAP_FUNC6( GLOBAL_VAR, RETURN_TYPE, FUNC_NAME, ARG1_TYPE, ARG2_TYPE, ARG3_TYPE, ARG4_TYPE, ARG5_TYPE, ARG6_TYPE ) \
+    extern RETURN_TYPE __real_ ## FUNC_NAME (ARG1_TYPE, ARG2_TYPE, ARG3_TYPE, ARG4_TYPE, ARG5_TYPE, ARG6_TYPE); \
+    RETURN_TYPE __wrap_ ## FUNC_NAME (ARG1_TYPE arg1, ARG2_TYPE arg2, ARG3_TYPE arg3, ARG4_TYPE arg4, ARG5_TYPE arg5, ARG6_TYPE arg6) \
+    { \
+        if (nullptr == GLOBAL_VAR ) \
+        { \
+            return __real_ ## FUNC_NAME (arg1, arg2, arg3, arg4, arg5, arg6); \
+        } \
+        else \
+        { \
+            return GLOBAL_VAR -> FUNC_NAME(arg1, arg2, arg3, arg4, arg5, arg6); \
+        } \
+    }
+
 #endif

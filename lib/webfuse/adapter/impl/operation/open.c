@@ -1,15 +1,15 @@
+#include "webfuse/adapter/impl/operation/open.h"
 #include "webfuse/adapter/impl/operations.h"
-
-#include <string.h>
-#include <errno.h>
-#include <jansson.h>
 
 #include "webfuse/core/jsonrpc/proxy.h"
 #include "webfuse/core/util.h"
 #include "webfuse/core/status.h"
 #include "webfuse/core/json_util.h"
 
-static void wf_impl_operation_open_finished(
+#include <string.h>
+#include <errno.h>
+
+void wf_impl_operation_open_finished(
 	void * user_data,
 	json_t const * result,
 	json_t const * error)

@@ -41,6 +41,14 @@ extern void
 wf_jsonrpc_proxy_cleanup(
     struct wf_jsonrpc_proxy * proxy);
 
+extern void wf_jsonrpc_proxy_vinvoke(
+	struct wf_jsonrpc_proxy * proxy,
+	wf_jsonrpc_proxy_finished_fn * finished,
+	void * user_data,
+	char const * method_name,
+	char const * param_info,
+	va_list args);
+
 #ifdef __cplusplus
 }
 #endif
