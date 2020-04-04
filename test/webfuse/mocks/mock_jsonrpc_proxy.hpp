@@ -12,18 +12,16 @@ class MockJsonRpcProxy
 public:
     MockJsonRpcProxy();
     virtual ~MockJsonRpcProxy();
-    MOCK_METHOD6(wf_jsonrpc_proxy_vinvoke, void (
+    MOCK_METHOD5(wf_jsonrpc_proxy_vinvoke, void (
         struct wf_jsonrpc_proxy * proxy,
         wf_jsonrpc_proxy_finished_fn * finished,
         void * user_data,
         char const * method_name,
-        char const * param_info,
-        va_list args));
-    MOCK_METHOD4(wf_jsonrpc_proxy_vnotify, void (
+        char const * param_info));
+    MOCK_METHOD3(wf_jsonrpc_proxy_vnotify, void (
         struct wf_jsonrpc_proxy * proxy,
         char const * method_name,
-        char const * param_info,
-        va_list args));
+        char const * param_info));
 
 };
 

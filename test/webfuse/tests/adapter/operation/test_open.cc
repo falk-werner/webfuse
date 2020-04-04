@@ -19,7 +19,7 @@ using testing::StrEq;
 TEST(wf_impl_operation_open, invoke_proxy)
 {
     MockJsonRpcProxy proxy;
-    EXPECT_CALL(proxy, wf_jsonrpc_proxy_vinvoke(_,_,_,StrEq("open"),StrEq("sii"),_)).Times(1);
+    EXPECT_CALL(proxy, wf_jsonrpc_proxy_vinvoke(_,_,_,StrEq("open"),StrEq("sii"))).Times(1);
 
     MockOperationsContext context;
     EXPECT_CALL(context, wf_impl_operations_context_get_proxy(_)).Times(1)
