@@ -1,5 +1,6 @@
 if(NOT WITHOUT_TESTS AND NOT WITHOUT_ADAPTER AND NOT WITHOUT_PROVIDER)
 
+set(MEMORYCHECK_COMMAND_OPTIONS "--leak-check=full --error-exitcode=1")
 include (CTest)
 
 pkg_check_modules(GTEST gtest_main)
