@@ -3,6 +3,10 @@ if(NOT WITHOUT_TESTS AND NOT WITHOUT_ADAPTER AND NOT WITHOUT_PROVIDER)
 set(MEMORYCHECK_COMMAND_OPTIONS "--leak-check=full --error-exitcode=1")
 include (CTest)
 
+add_executable(fs_check
+	test/webfuse/tests/integration/fs_check.c
+)
+
 pkg_check_modules(GTEST gtest_main)
 include(GoogleTest)
 pkg_check_modules(GMOCK gmock)
@@ -21,7 +25,6 @@ add_executable(alltests
 	test/webfuse/tests/core/timer/test_timer.cc
 	test/webfuse/utils/tempdir.cc
 	test/webfuse/utils/file_utils.cc
-	test/webfuse/utils/die_if.cc
 	test/webfuse/utils/timeout_watcher.cc
 	test/webfuse/utils/path.c
 	test/webfuse/utils/static_filesystem.c
@@ -66,6 +69,7 @@ add_executable(alltests
 	test/webfuse/tests/provider/operation/test_readdir.cc
 	test/webfuse/tests/integration/test_lowlevel.cc
 	test/webfuse/tests/integration/test_integration.cc
+	test/webfuse/tests/integration/file.cc
 	test/webfuse/tests/integration/server.cc
 	test/webfuse/tests/integration/provider.cc
 )
