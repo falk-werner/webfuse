@@ -43,13 +43,20 @@ struct wfp_client * wfp_impl_client_create(
 
     if ((NULL != config->cert_path) && (NULL != config->key_path))
     {
+		client->info.options |= LWS_SERVER_OPTION_EXPLICIT_VHOSTS;
+    }
+
+    client->context = lws_create_context(&client->info);
+
+    if ((NULL != config->cert_path) && (NULL != config->key_path))
+    {
+        struct lws_vhost * vhost = lws_create_vhost(client->context, &client->info);
 		client->info.options |= LWS_SERVER_OPTION_DO_SSL_GLOBAL_INIT;
         client->info.client_ssl_cert_filepath = config->cert_path;
         client->info.client_ssl_private_key_filepath = config->key_path;
         client->info.client_ssl_ca_filepath = config->ca_filepath;
+        lws_init_vhost_client_ssl(&client->info, vhost);
     }
-
-    client->context = lws_create_context(&client->info);
 
     return client;
 }
