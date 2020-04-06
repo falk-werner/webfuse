@@ -78,16 +78,12 @@ extern WFP_API void wfp_client_dispose(
 /// This function must be invoked in a loop while the client is running. It
 /// makes the server wait for the next event and processes it.
 ///
-/// \note timeout is ignored
-///
 /// \param client pointer to client
-/// \param timeout_ms unused; set to 0; for backward compatibilty
 ///
 /// \see wfp_client_interrupt
 //------------------------------------------------------------------------------
 extern WFP_API void wfp_client_service(
-    struct wfp_client * client,
-    int timeout_ms);
+    struct wfp_client * client);
 
 //------------------------------------------------------------------------------
 /// \brief interrupt wfp_client_service

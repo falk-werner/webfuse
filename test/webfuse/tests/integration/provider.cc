@@ -30,7 +30,7 @@ public:
         wfp_client_connect(client, url);
         while (!wfp_impl_client_is_connected(client))
         {
-            wfp_client_service(client, 100);
+            wfp_client_service(client);
         }
        
         thread = std::thread(Run, this);
@@ -65,7 +65,7 @@ private:
     {
         while (!context->IsShutdownRequested())
         {
-            wfp_client_service(context->client, 100);
+            wfp_client_service(context->client);
         }
     }
 

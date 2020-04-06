@@ -23,8 +23,7 @@ void wf_server_dispose(
 }
 
 void wf_server_service(
-    struct wf_server * server,
-    int WF_UNUSED_PARAM(imeout_ms))
+    struct wf_server * server)
 {
     wf_impl_server_service(server);
 }

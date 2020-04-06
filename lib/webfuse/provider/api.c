@@ -231,8 +231,7 @@ void wfp_client_dispose(
 }
 
 void wfp_client_service(
-    struct wfp_client * client,
-    int WF_UNUSED_PARAM(timeout_ms))
+    struct wfp_client * client)
 {
     wfp_impl_client_service(client);
 }
