@@ -46,16 +46,12 @@ extern WF_API void wf_server_dispose(
 /// This function must be invoked in a loop while the server is running. It
 /// makes the server wait for the next event and processes it.
 ///
-/// \note timeout_ms is no longer used
-///
 /// \param server pointer to server
-/// \param timeout_ms unused; set to 0; used for backward compatibility
 ///
 /// \see wf_server_interrupt
 //------------------------------------------------------------------------------
 extern WF_API void wf_server_service(
-    struct wf_server * server,
-    int timeout_ms);
+    struct wf_server * server);
 
 //------------------------------------------------------------------------------
 /// \brief Interrupts wf_server_service

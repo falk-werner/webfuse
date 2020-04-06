@@ -70,7 +70,7 @@ public:
 
         while (!wf_impl_server_is_operational(server))
         {
-            wf_server_service(server, 100);
+            wf_server_service(server);
         }
 
         thread = std::thread(Run, this);
@@ -104,7 +104,7 @@ private:
     {
         while (!context->IsShutdownRequested())
         {
-            wf_server_service(context->server, 100);
+            wf_server_service(context->server);
         }
     }
 
