@@ -16,11 +16,11 @@
 #include "webfuse/provider/impl/url.h"
 #include "webfuse/core/protocol_names.h"
 
-#include "wf/timer/manager.h"
+#include "webfuse/core/timer/manager.h"
 
-#include "wf/jsonrpc/response.h"
-#include "wf/jsonrpc/request.h"
-#include "wf/jsonrpc/proxy.h"
+#include "webfuse/core/jsonrpc/response.h"
+#include "webfuse/core/jsonrpc/request.h"
+#include "webfuse/core/jsonrpc/proxy.h"
 
 #define WF_DEFAULT_TIMEOUT (10 * 1000)
 
@@ -270,10 +270,7 @@ struct wfp_client_protocol * wfp_impl_client_protocol_create(
     struct wfp_client_config const * config)
 {
     struct wfp_client_protocol * protocol = malloc(sizeof(struct wfp_client_protocol));
-    if (NULL != protocol)
-    {
-        wfp_impl_client_protocol_init(protocol, &config->provider, config->user_data);
-    }
+    wfp_impl_client_protocol_init(protocol, &config->provider, config->user_data);
 
     return protocol;
 }

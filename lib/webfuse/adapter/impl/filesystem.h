@@ -6,7 +6,7 @@
 #endif
 
 #include "webfuse/adapter/impl/fuse_wrapper.h"
-#include "webfuse/adapter/impl/operations.h"
+#include "webfuse/adapter/impl/operation/context.h"
 #include "webfuse/core/slist.h"
 
 #ifdef __cplusplus
@@ -24,7 +24,7 @@ struct wf_impl_filesystem
 	struct fuse_args args;
 	struct fuse_session * session;
 	struct fuse_buf buffer;
-	struct wf_impl_operations_context user_data;
+	struct wf_impl_operation_context user_data;
     struct lws * wsi;
     struct wf_mountpoint * mountpoint;
 };

@@ -1,4 +1,5 @@
-#include "webfuse/adapter/impl/operations.h"
+#include "webfuse/adapter/impl/operation/readdir.h"
+#include "webfuse/adapter/impl/operation/context.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -8,19 +9,12 @@
 #include <sys/stat.h>
 #include <unistd.h> 
 
-#include "wf/jsonrpc/proxy.h"
+#include "webfuse/core/jsonrpc/proxy.h"
 #include "webfuse/core/util.h"
 #include "webfuse/core/json_util.h"
 
 
 #define WF_DIRBUFFER_INITIAL_SIZE 1024
-
-struct wf_impl_operation_readdir_context
-{
-	fuse_req_t request;
-	size_t size;
-	off_t offset;
-};
 
 struct wf_impl_dirbuffer
 {
@@ -72,7 +66,7 @@ static size_t wf_impl_min(size_t a, size_t b)
 	return (a < b) ? a : b;
 }
 
-static void wf_impl_operation_readdir_finished(
+void wf_impl_operation_readdir_finished(
 	void * user_data,
 	json_t const * result,
 	json_t const * error)
@@ -83,30 +77,39 @@ static void wf_impl_operation_readdir_finished(
 	struct wf_impl_dirbuffer buffer;
 	wf_impl_dirbuffer_init(&buffer);
 
-	if (NULL != result)
+	if (json_is_array(result)) 
 	{
-		if (json_is_array(result)) 
+		size_t const count = json_array_size(result);
+		for(size_t i = 0; i < count; i++)
 		{
-			bool buffer_full = false;
-			size_t const count = json_array_size(result);
-			for(size_t i = 0; (!buffer_full) && (i < count); i++)
+			json_t * entry =json_array_get(result, i);
+			if (json_is_object(entry))
 			{
-				json_t * entry =json_array_get(result, i);
-				if (json_is_object(entry))
-				{
-					json_t * name_holder = json_object_get(entry, "name");
-					json_t * inode_holder = json_object_get(entry, "inode");
+				json_t * name_holder = json_object_get(entry, "name");
+				json_t * inode_holder = json_object_get(entry, "inode");
 
-					if ((NULL != name_holder) && (json_is_string(name_holder)) &&
-						(NULL != inode_holder) && (json_is_integer(inode_holder)))
-					{
-						char const * name = json_string_value(name_holder);
-						fuse_ino_t entry_inode = (fuse_ino_t) json_integer_value(inode_holder);
-						wf_impl_dirbuffer_add(context->request, &buffer, name, entry_inode);	
-					}
+				if ((json_is_string(name_holder)) && (json_is_integer(inode_holder)))
+				{
+					char const * name = json_string_value(name_holder);
+					fuse_ino_t entry_inode = (fuse_ino_t) json_integer_value(inode_holder);
+					wf_impl_dirbuffer_add(context->request, &buffer, name, entry_inode);	
+				}
+				else
+				{
+					status = WF_BAD_FORMAT;
+					break;
 				}
 			}
+			else
+			{
+				status = WF_BAD_FORMAT;
+				break;
+			}
 		}
+	}
+	else if (WF_GOOD == status)
+	{
+		status = WF_BAD_FORMAT;
 	}
 
 	if (WF_GOOD == status)
@@ -138,8 +141,8 @@ void wf_impl_operation_readdir (
 	off_t offset,
 	struct fuse_file_info * WF_UNUSED_PARAM(file_info))
 {
-    struct wf_impl_operations_context * user_data = fuse_req_userdata(request);
-    struct wf_jsonrpc_proxy * rpc = wf_impl_operations_context_get_proxy(user_data);
+    struct wf_impl_operation_context * user_data = fuse_req_userdata(request);
+    struct wf_jsonrpc_proxy * rpc = wf_impl_operation_context_get_proxy(user_data);
 
 	if (NULL != rpc)
 	{

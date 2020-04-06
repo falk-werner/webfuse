@@ -1,5 +1,11 @@
 #include "webfuse/adapter/impl/filesystem.h"
-#include "webfuse/adapter/impl/operations.h"
+#include "webfuse/adapter/impl/operation/context.h"
+#include "webfuse/adapter/impl/operation/open.h"
+#include "webfuse/adapter/impl/operation/close.h"
+#include "webfuse/adapter/impl/operation/read.h"
+#include "webfuse/adapter/impl/operation/readdir.h"
+#include "webfuse/adapter/impl/operation/getattr.h"
+#include "webfuse/adapter/impl/operation/lookup.h"
 #include "webfuse/adapter/impl/session.h"
 #include "webfuse/adapter/impl/mountpoint.h"
 
@@ -99,14 +105,11 @@ struct wf_impl_filesystem * wf_impl_filesystem_create(
 	struct wf_mountpoint * mountpoint)
 {
 	struct wf_impl_filesystem * filesystem = malloc(sizeof(struct wf_impl_filesystem));
-	if (NULL != filesystem)
+	bool success = wf_impl_filesystem_init(filesystem, session, name, mountpoint);
+	if (!success)
 	{
-		bool success = wf_impl_filesystem_init(filesystem, session, name, mountpoint);
-		if (!success)
-		{
-			free(filesystem);
-			filesystem = NULL;
-		}
+		free(filesystem);
+		filesystem = NULL;
 	}
 
 	return filesystem;

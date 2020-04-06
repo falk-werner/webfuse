@@ -4,10 +4,7 @@
 struct wfp_dirbuffer * wfp_impl_dirbuffer_create(void)
 {
     struct wfp_dirbuffer * buffer = malloc(sizeof(struct wfp_dirbuffer));
-    if (NULL != buffer)
-    {
-        buffer->entries = json_array();
-    }
+    buffer->entries = json_array();
 
     return buffer;
 }

@@ -109,6 +109,19 @@ extern WFP_API void wfp_client_config_set_certpath(
     char const * cert_path);
 
 //------------------------------------------------------------------------------
+/// \brief Sets the path of ca file to verify servers.
+///
+/// \note To enable TLS both, private key and certificate, must be specified.
+///       Otherwise, TLS is not used.
+///
+/// \param config pointer to client configuration
+/// \param ca_filepath path of the ca file (pem file)
+//------------------------------------------------------------------------------
+extern WFP_API void wfp_client_config_set_ca_filepath(
+    struct wfp_client_config * config,
+    char const * ca_filepath);
+
+//------------------------------------------------------------------------------
 /// \brief Sets the onconnected handler.
 ///
 /// The handler is invoked, when the client's conntection is established.

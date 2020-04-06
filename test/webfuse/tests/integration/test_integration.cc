@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 #include "webfuse/tests/integration/server.hpp"
 #include "webfuse/tests/integration/provider.hpp"
+#include "webfuse/tests/integration/file.hpp"
 
 #include <cstdio>
 #include <csignal>
@@ -15,11 +16,10 @@
 
 #include <jansson.h>
 #include "webfuse/core/lws_log.h"
-#include "webfuse/utils/die_if.hpp"
 
 using webfuse_test::Server;
 using webfuse_test::Provider;
-using webfuse_test::die_if;
+using webfuse_test::File;
 
 namespace
 {
@@ -38,7 +38,7 @@ namespace
             void SetUp()
             {
                 server = new Server();
-                provider = new Provider("ws://localhost:8080/");
+                provider = new Provider("wss://localhost:8080/");
             }
 
             void TearDown()
@@ -70,87 +70,28 @@ TEST_F(IntegrationTest, ProvidesTextFile)
 {
     std::string file_name = std::string(GetBaseDir()) + "/cprovider/hello.txt";
 
-    ASSERT_EXIT({
-        struct stat buffer;
-        int rc = stat(file_name.c_str(), &buffer);
-
-        die_if(0 != rc);
-        die_if(!S_ISREG(buffer.st_mode));
-        die_if(0444 != (buffer.st_mode & 0777));
-        die_if(12 != buffer.st_size);
-
-        exit(0);
-    }, ::testing::ExitedWithCode(0), ".*");      
+    File file(file_name);
+    ASSERT_TRUE(file.isFile());
+    ASSERT_TRUE(file.hasAccessRights(0444));
+    ASSERT_TRUE(file.hasSize(12));
 }
 
 TEST_F(IntegrationTest, ReadTextFile)
 {
     std::string file_name = std::string(GetBaseDir()) + "/cprovider/hello.txt";
 
-    ASSERT_EXIT({
-        FILE * file = fopen(file_name.c_str(), "rb");
-        die_if(nullptr == file);
-
-        char buffer[13];
-        ssize_t count = fread(buffer, 1, 12, file);
-        int rc = fclose(file);
-
-        die_if(12 != count);
-        die_if(0 != strncmp("Hello, World", buffer, 12));
-        die_if(0 != rc);
-
-        exit(0);
-    }, ::testing::ExitedWithCode(0), ".*");      
-
+    File file(file_name);
+    ASSERT_TRUE(file.hasContents("Hello, World"));
 }
 
 TEST_F(IntegrationTest, ReadDir)
 {    
     std::string dir_name = std::string(GetBaseDir()) + "/cprovider";
 
-    ASSERT_EXIT({
-
-        DIR * dir = opendir(dir_name.c_str());
-        die_if(nullptr == dir);
-
-        bool found_self = false;
-        bool found_parent = false;
-        bool found_hello_txt = false;
-        bool found_other = false;
-
-        dirent * entry = readdir(dir);
-        while (NULL != entry)
-        {
-            if (0 == strcmp(".", entry->d_name))
-            {
-                found_self = true;
-            }
-            else if (0 == strcmp("..", entry->d_name))
-            {
-                found_parent = true;
-            }
-            else if (0 == strcmp("hello.txt", entry->d_name))
-            {
-                found_hello_txt = true;
-            }
-            else
-            {
-                found_other = true;
-            }
-            
-
-            entry = readdir(dir);
-        }
-
-        closedir(dir);
-
-        die_if(!found_self);
-        die_if(!found_parent);
-        die_if(!found_hello_txt);
-
-        die_if(found_other);
-
-        exit(0);
-    }, ::testing::ExitedWithCode(0), ".*");      
-
+    File dir(dir_name);
+    ASSERT_TRUE(dir.isDirectory());
+    ASSERT_TRUE(dir.hasSubdirectory("."));
+    ASSERT_TRUE(dir.hasSubdirectory(".."));
+    ASSERT_TRUE(dir.hasSubdirectory("hello.txt"));
+    ASSERT_FALSE(dir.hasSubdirectory("other"));
 }

@@ -14,7 +14,7 @@ void wfp_impl_readdir(
     {
         json_t * inode_holder = json_array_get(params, 1);
 
-        if ((NULL != inode_holder) && (json_is_integer(inode_holder)))
+        if (json_is_integer(inode_holder))
         {
             ino_t inode = (ino_t) json_integer_value(inode_holder);
             struct wfp_request * request = wfp_impl_request_create(context->request, id);

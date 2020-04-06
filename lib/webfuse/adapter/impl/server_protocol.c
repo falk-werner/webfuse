@@ -11,9 +11,9 @@
 #include "webfuse/adapter/impl/credentials.h"
 #include "webfuse/core/status_intern.h"
 
-#include "wf/jsonrpc/request.h"
-#include "wf/timer/manager.h"
-#include "wf/timer/timer.h"
+#include "webfuse/core/jsonrpc/request.h"
+#include "webfuse/core/timer/manager.h"
+#include "webfuse/core/timer/timer.h"
 
 static int wf_impl_server_protocol_callback(
 	struct lws * wsi,
@@ -23,13 +23,10 @@ static int wf_impl_server_protocol_callback(
 	size_t len)
 {
     struct lws_protocols const * ws_protocol = lws_get_protocol(wsi);
-    if (NULL == ws_protocol)
-    {
-        return 0;
-    }
+    if (NULL == ws_protocol) { return 0; }
+    if (ws_protocol->callback != &wf_impl_server_protocol_callback) { return 0; }
 
     struct wf_server_protocol * protocol = ws_protocol->user;
-
     wf_timer_manager_check(protocol->timer_manager);
     struct wf_impl_session * session = wf_impl_session_manager_get(&protocol->session_manager, wsi);
 
@@ -85,14 +82,11 @@ struct wf_server_protocol * wf_impl_server_protocol_create(
     void * create_mountpoint_context)
 {
     struct wf_server_protocol * protocol = malloc(sizeof(struct wf_server_protocol));
-    if (NULL != protocol)
-    {
-        struct wf_impl_mountpoint_factory mountpoint_factory;
-        wf_impl_mountpoint_factory_init(&mountpoint_factory,
-            create_mountpoint, create_mountpoint_context);
+    struct wf_impl_mountpoint_factory mountpoint_factory;
+    wf_impl_mountpoint_factory_init(&mountpoint_factory,
+        create_mountpoint, create_mountpoint_context);
 
-        wf_impl_server_protocol_init(protocol, &mountpoint_factory);
-    }
+    wf_impl_server_protocol_init(protocol, &mountpoint_factory);
 
     return protocol;
 

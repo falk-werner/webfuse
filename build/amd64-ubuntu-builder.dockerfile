@@ -58,6 +58,7 @@ RUN set -x \
   && mkdir -p "$builddir" \
   && cd "$builddir" \
   && meson "/usr/local/src/libfuse-fuse-$FUSE_VERSION" \
+  && meson configure -Dexamples=false \
   && ninja \
   && ninja install \
   && pip3 uninstall -y meson \

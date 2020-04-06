@@ -95,6 +95,13 @@ void wfp_client_config_set_certpath(
     wfp_impl_client_config_set_certpath(config, cert_path);
 }
 
+void wfp_client_config_set_ca_filepath(
+    struct wfp_client_config * config,
+    char const * ca_filepath)
+{
+    wfp_impl_client_config_set_ca_filepath(config, ca_filepath);
+}
+
 void wfp_client_config_set_onconnected(
     struct wfp_client_config * config,
     wfp_connected_fn * handler)

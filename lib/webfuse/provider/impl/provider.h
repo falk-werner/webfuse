@@ -30,7 +30,7 @@ struct wfp_provider
 
 struct wfp_impl_invokation_context
 {
-    struct wfp_provider * provider;
+    struct wfp_provider const * provider;
     void * user_data;
     struct wfp_request * request;
 };
