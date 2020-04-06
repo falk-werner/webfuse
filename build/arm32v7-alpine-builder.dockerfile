@@ -71,9 +71,11 @@ RUN set -x \
   && rm -rf "$builddir" \
   && apk del .build-deps
 
-ARG WEBSOCKETS_VERSION=3.2.0
+ARG WEBSOCKETS_VERSION=4.0.1
 
 RUN set -x \
+  && builddeps="linux-headers" \
+  && apk add --no-cache --virtual .build-deps $builddeps \
   && apk add --no-cache \
        ca-certificates \
        openssl \
@@ -83,7 +85,8 @@ RUN set -x \
   && cd "$builddir" \
   && cmake "/usr/local/src/libwebsockets-$WEBSOCKETS_VERSION" \
   && make "$PARALLELMFLAGS" install \
-  && rm -rf "$builddir"
+  && rm -rf "$builddir" \
+  && apk del .build-deps
 
 ARG JANSSON_VERSION=2.12
 

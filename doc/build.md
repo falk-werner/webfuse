@@ -58,9 +58,9 @@ To install libfuse, meson is needed. Please refer to [meson quick guide](https:/
 
 #### libwebsockets
 
-    wget -O libwebsockets-3.2.0.tar.gz https://github.com/warmcat/libwebsockets/archive/v3.2.0.tar.gz
-    tar -xf libwebsockets-3.2.0.tar.gz
-    cd libwebsockets-3.2.0
+    wget -O libwebsockets-4.0.1.tar.gz https://github.com/warmcat/libwebsockets/archive/v4.0.1.tar.gz
+    tar -xf libwebsockets-4.0.1.tar.gz
+    cd libwebsockets-4.0.1
     mkdir .build
     cd .build
     cmake ..
