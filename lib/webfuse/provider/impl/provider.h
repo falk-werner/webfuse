@@ -18,7 +18,6 @@ struct wfp_provider
 {
     wfp_connected_fn * connected;
     wfp_disconnected_fn * disconnected;
-    wfp_ontimer_fn * ontimer;
     wfp_lookup_fn * lookup;
     wfp_getattr_fn * getattr;
     wfp_readdir_fn * readdir;
@@ -54,9 +53,6 @@ extern void wfp_impl_connected_default(
     void * user_data);
 
 extern void wfp_impl_disconnected_default(
-    void * user_data);
-
-extern void wfp_impl_ontimer_default(
     void * user_data);
 
 #ifdef __cplusplus    

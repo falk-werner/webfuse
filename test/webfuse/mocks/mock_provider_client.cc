@@ -21,13 +21,6 @@ static void webfuse_test_iproviderclient_ondisconnected(
     self->OnDisconnected();
 }
 
-static void webfuse_test_iproviderclient_ontimer(
-    void * user_data)
-{
-    auto * self = reinterpret_cast<IProviderClient*>(user_data);
-    self->OnTimer();
-}
-
 static void webfuse_test_iproviderclient_onlookup(
     struct wfp_request * request,
     ino_t parent,
@@ -207,7 +200,6 @@ void IProviderClient::AttachTo(wfp_client_config * config, bool enableAuthentica
     wfp_client_config_set_userdata(config, self);
     wfp_client_config_set_onconnected(config, &webfuse_test_iproviderclient_onconnected);
     wfp_client_config_set_ondisconnected(config, &webfuse_test_iproviderclient_ondisconnected);
-    wfp_client_config_set_ontimer(config, &webfuse_test_iproviderclient_ontimer);
 
     wfp_client_config_set_onlookup(config, &webfuse_test_iproviderclient_onlookup);
     wfp_client_config_set_ongetattr(config, &webfuse_test_iproviderclient_ongetattr);

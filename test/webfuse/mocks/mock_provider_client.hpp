@@ -23,7 +23,6 @@ namespace webfuse_test
             virtual ~IProviderClient() = default;
             virtual void OnConnected() = 0;
             virtual void OnDisconnected() = 0;
-            virtual void OnTimer() = 0;
             virtual void Lookup(ino_t parent, char const * name, struct stat * result) = 0;
             virtual void GetAttr(ino_t inode, struct stat * buffer) = 0;
             virtual void ReadDir(ino_t directory, wfp_dirbuffer * buffer) = 0;
@@ -41,7 +40,6 @@ namespace webfuse_test
             ~MockProviderClient() override = default;
             MOCK_METHOD0( OnConnected, void());
             MOCK_METHOD0( OnDisconnected, void());
-            MOCK_METHOD0( OnTimer, void());
             MOCK_METHOD3( Lookup, void(ino_t parent, char const * name, struct stat * result));
             MOCK_METHOD2( GetAttr, void(ino_t inode, struct stat * buffer));
             MOCK_METHOD2( ReadDir, void(ino_t directory, wfp_dirbuffer * buffer));

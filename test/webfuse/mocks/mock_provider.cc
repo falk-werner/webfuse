@@ -18,13 +18,6 @@ static void webfuse_test_MockProvider_disconnected(
     provider->disconnected();
 }
 
-static void webfuse_test_MockProvider_on_timer(
-    void * user_data)
-{
-    auto * provider = reinterpret_cast<MockProvider*>(user_data);
-    provider->on_timer();
-}
-
 static void webfuse_test_MockProvider_lookup(
     wfp_request * request,
     ino_t parent,
@@ -100,7 +93,6 @@ static wfp_provider const webfuse_test_MockProvider =
 {
     &webfuse_test_MockProvider_connected,
     &webfuse_test_MockProvider_disconnected,
-    &webfuse_test_MockProvider_on_timer,
     &webfuse_test_MockProvider_lookup,
     &webfuse_test_MockProvider_getattr,
     &webfuse_test_MockProvider_readdir,

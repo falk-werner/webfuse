@@ -116,13 +116,6 @@ void wfp_client_config_set_ondisconnected(
     wfp_impl_client_config_set_ondisconnected(config, handler);
 }
 
-void wfp_client_config_set_ontimer(
-    struct wfp_client_config * config,
-    wfp_ontimer_fn * handler)
-{
-    wfp_impl_client_config_set_ontimer(config, handler);
-}
-
 void wfp_client_config_set_onlookup(
     struct wfp_client_config * config,
     wfp_lookup_fn * handler)

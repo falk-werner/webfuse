@@ -46,14 +46,6 @@ typedef void wfp_disconnected_fn(
     void * user_data);
 
 //------------------------------------------------------------------------------
-/// \brief Callback to signal when a timer event occued.
-///
-/// \param user_data user defined context
-//------------------------------------------------------------------------------
-typedef void wfp_ontimer_fn(
-    void * user_data);
-
-//------------------------------------------------------------------------------
 /// \brief Creates a new client configuration.
 ///
 /// \return newly created client configuration
@@ -144,18 +136,6 @@ extern WFP_API void wfp_client_config_set_onconnected(
 extern WFP_API void wfp_client_config_set_ondisconnected(
     struct wfp_client_config * config,
     wfp_disconnected_fn * handler);
-
-//------------------------------------------------------------------------------
-/// \brief Sets ontimer handler.
-///
-/// The handler is invoked, when a timer event occured.
-///
-/// \param config pointer to client configuration
-/// \param handler pointer to handler
-//------------------------------------------------------------------------------
-extern WFP_API void wfp_client_config_set_ontimer(
-    struct wfp_client_config * config,
-    wfp_ontimer_fn * handler);
 
 //------------------------------------------------------------------------------
 /// \brief Sets onlookup handler.
