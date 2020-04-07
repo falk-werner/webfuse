@@ -48,9 +48,7 @@ void wf_impl_server_config_clone(
 	clone->port = config->port;
 
     wf_impl_authenticators_clone(&config->authenticators, &clone->authenticators);
-
-    // ToDo: remove this: move is not clone :-/
-    wf_impl_mountpoint_factory_move(&config->mountpoint_factory, &clone->mountpoint_factory);
+    wf_impl_mountpoint_factory_clone(&config->mountpoint_factory, &clone->mountpoint_factory);
 }
 
 struct wf_server_config * wf_impl_server_config_create(void)

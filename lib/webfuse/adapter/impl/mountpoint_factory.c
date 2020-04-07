@@ -20,15 +20,12 @@ wf_impl_mountpoint_factory_init(
 }
 
 void
-wf_impl_mountpoint_factory_move(
+wf_impl_mountpoint_factory_clone(
     struct wf_impl_mountpoint_factory * factory,
     struct wf_impl_mountpoint_factory * other)
 {
     other->create_mountpoint = factory->create_mountpoint;
     other->user_data = factory->user_data;
-
-    factory->create_mountpoint = NULL;
-    factory->user_data = NULL;
 }
 
 bool
