@@ -67,6 +67,12 @@ private:
         {
             wfp_client_service(context->client);
         }
+
+        wfp_client_disconnect(context->client);
+        while (wfp_impl_client_is_connected(context->client)) 
+        {
+            wfp_client_service(context->client);
+        }
     }
 
     std::mutex shutdown_lock;

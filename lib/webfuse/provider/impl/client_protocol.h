@@ -53,6 +53,9 @@ extern void wfp_impl_client_protocol_connect(
     struct lws_context * context,
     char const * url);
 
+extern void wfp_impl_client_protocol_disconnect(
+    struct wfp_client_protocol * protocol);
+
 #ifdef __cplusplus
 } 
 #endif

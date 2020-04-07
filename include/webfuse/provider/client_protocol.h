@@ -89,11 +89,24 @@ extern WFP_API void wfp_client_protocol_init_lws(
 /// \see wfp_connected_fn
 /// \see wfp_client_config_set_onconnected
 //------------------------------------------------------------------------------
-//------------------------------------------------------------------------------
 extern WFP_API void wfp_client_protocol_connect(
     struct wfp_client_protocol * protocol,
     struct lws_context * context,
     char const * url);
+
+//------------------------------------------------------------------------------
+/// \brief Disconnects the protocol from a remote webfuse adapter server.
+///
+/// \note This call starts to disconnect. A callback is invoked,
+///       when the connection is estanlished.
+///
+/// \param protocol pointer to protocol
+///
+/// \see wfp_connected_fn
+/// \see wfp_client_config_set_ondisconnected
+//------------------------------------------------------------------------------
+extern WFP_API void wfp_client_protocol_disconnect(
+    struct wfp_client_protocol * protocol);
 
 #ifdef __cplusplus
 }

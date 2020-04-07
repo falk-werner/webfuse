@@ -202,6 +202,12 @@ void wfp_client_protocol_connect(
     wfp_impl_client_protocol_connect(protocol, context, url);
 }
 
+void wfp_client_protocol_disconnect(
+    struct wfp_client_protocol * protocol)
+{
+    wfp_impl_client_protocol_disconnect(protocol);
+}
+
 
 // client
 
