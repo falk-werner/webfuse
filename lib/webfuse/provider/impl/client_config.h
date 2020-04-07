@@ -47,10 +47,6 @@ extern void wfp_impl_client_config_set_ondisconnected(
     struct wfp_client_config * config,
     wfp_disconnected_fn * handler);
 
-extern void wfp_impl_client_config_set_ontimer(
-    struct wfp_client_config * config,
-    wfp_ontimer_fn * handler);
-
 extern void wfp_impl_client_config_set_onlookup(
     struct wfp_client_config * config,
     wfp_lookup_fn * handler);

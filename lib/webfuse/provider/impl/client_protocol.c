@@ -324,3 +324,17 @@ void wfp_impl_client_protocol_connect(
     }
     
 }
+
+void wfp_impl_client_protocol_disconnect(
+    struct wfp_client_protocol * protocol)
+{
+    if (protocol->is_connected)
+    {
+        protocol->is_shutdown_requested = true;
+        lws_callback_on_writable(protocol->wsi);
+    }
+    else
+    {
+        protocol->provider.disconnected(protocol->user_data);
+    }
+}

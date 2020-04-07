@@ -66,7 +66,6 @@ void wfp_impl_provider_init(
     provider->read = &wfp_impl_read_default;
     provider->connected = &wfp_impl_connected_default;
     provider->disconnected = &wfp_impl_disconnected_default;
-    provider->ontimer = &wfp_impl_ontimer_default;
     provider->get_credentials = NULL;
 }
 
@@ -82,7 +81,6 @@ void wfp_impl_provider_init_from_prototype(
     provider->read = prototype->read;
     provider->connected =  prototype->connected;
     provider->disconnected = prototype->disconnected;
-    provider->ontimer = prototype->ontimer;
     provider->get_credentials = prototype->get_credentials;
 }
 
@@ -112,14 +110,6 @@ void wfp_impl_connected_default(
 }
 
 void wfp_impl_disconnected_default(
-    void * user_data)
-{
-    (void) user_data;
-
-    // empty
-}
-
-void wfp_impl_ontimer_default(
     void * user_data)
 {
     (void) user_data;

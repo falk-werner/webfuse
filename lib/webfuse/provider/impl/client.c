@@ -79,9 +79,7 @@ void wfp_impl_client_connect(
 void wfp_impl_client_disconnect(
     struct wfp_client * client)
 {
-    (void) client;
-
-    // ToDo: implement me
+    wfp_impl_client_protocol_disconnect(&client->protocol);
 }
 
 bool wfp_impl_client_is_connected(

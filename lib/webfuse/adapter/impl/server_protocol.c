@@ -216,7 +216,7 @@ void wf_impl_server_protocol_init(
 {
     protocol->is_operational = false;
 
-    wf_impl_mountpoint_factory_move(mountpoint_factory, &protocol->mountpoint_factory);
+    wf_impl_mountpoint_factory_clone(mountpoint_factory, &protocol->mountpoint_factory);
 
     protocol->timer_manager = wf_timer_manager_create();
     wf_impl_session_manager_init(&protocol->session_manager);

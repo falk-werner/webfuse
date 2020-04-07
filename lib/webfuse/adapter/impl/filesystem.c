@@ -130,9 +130,4 @@ void wf_impl_filesystem_process_request(
 	{
 		fuse_session_process_buf(filesystem->session, &filesystem->buffer);
 	}
-	else if (-EINTR != result)
-	{
-        // ToDo
-	}
-
 }

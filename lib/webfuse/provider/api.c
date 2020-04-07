@@ -116,13 +116,6 @@ void wfp_client_config_set_ondisconnected(
     wfp_impl_client_config_set_ondisconnected(config, handler);
 }
 
-void wfp_client_config_set_ontimer(
-    struct wfp_client_config * config,
-    wfp_ontimer_fn * handler)
-{
-    wfp_impl_client_config_set_ontimer(config, handler);
-}
-
 void wfp_client_config_set_onlookup(
     struct wfp_client_config * config,
     wfp_lookup_fn * handler)
@@ -200,6 +193,12 @@ void wfp_client_protocol_connect(
     char const * url)
 {
     wfp_impl_client_protocol_connect(protocol, context, url);
+}
+
+void wfp_client_protocol_disconnect(
+    struct wfp_client_protocol * protocol)
+{
+    wfp_impl_client_protocol_disconnect(protocol);
 }
 
 

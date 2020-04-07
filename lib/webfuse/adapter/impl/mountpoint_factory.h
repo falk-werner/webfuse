@@ -26,7 +26,7 @@ wf_impl_mountpoint_factory_init(
     void * user_data);
 
 extern void
-wf_impl_mountpoint_factory_move(
+wf_impl_mountpoint_factory_clone(
     struct wf_impl_mountpoint_factory * factory,
     struct wf_impl_mountpoint_factory * other);
     

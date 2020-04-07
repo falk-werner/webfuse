@@ -52,6 +52,11 @@ public:
         server->waitForConnection();
     }
 
+    void Disconnect()
+    {
+        wfp_client_protocol_disconnect(protocol);
+    }
+
     void SendToClient(json_t * request)
     {
         server->sendMessage(request);
@@ -166,6 +171,16 @@ TEST(client_protocol, connect)
     if (HasFatalFailure()) { return; }
 }
 
+TEST(client_protocol, disconnect_without_connect)
+{
+    MockProviderClient provider;
+    ClientProtocolFixture fixture(provider);
+
+    EXPECT_CALL(provider, OnDisconnected()).Times(1);
+
+    fixture.Disconnect();
+}
+
 TEST(client_protocol, connect_with_username_authentication)
 {
     MockProviderClient provider;
@@ -184,7 +199,6 @@ TEST(client_protocol, connect_with_username_authentication)
     std::string filesystem;
     fixture.AwaitAddFilesystem(filesystem);
     if (HasFatalFailure()) { return; }
-
 }
 
 TEST(client_protocol, getattr)
@@ -216,4 +230,6 @@ TEST(client_protocol, getattr)
     ASSERT_TRUE(json_is_object(response));
 
     json_decref(response);
+
+    fixture.Disconnect();
 }

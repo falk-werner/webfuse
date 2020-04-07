@@ -396,6 +396,7 @@ TEST(wf_jsonrpc_proxy, swallow_timeout_if_no_request_pending)
     EXPECT_CALL(timer_api, wf_timer_create(_, _, _))
         .Times(1)
         .WillOnce(DoAll(SaveArg<1>(&on_timer), SaveArg<2>(&timer_context), Return(nullptr)));
+    EXPECT_CALL(timer_api, wf_timer_dispose(_)).Times(1);
 
     SendContext send_context;
     void * send_data = reinterpret_cast<void*>(&send_context);
