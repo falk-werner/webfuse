@@ -1,5 +1,7 @@
 project('webfuse', 'c', 'cpp', version: '0.3.0', license: 'LGPL-3.0+')
 
+without_install = get_option('without_install')
+
 libwebsockets_dep = dependency('libwebsockets', version: '>=4.0.1') 
 jansson_dep = dependency('jansson', version: '>=2.11', fallback: ['jansson', 'jansson_dep'])
 libfuse_dep = dependency('fuse3', version: '>=3.8.0', fallback: ['fuse3', 'libfuse_dep'])
@@ -41,7 +43,9 @@ webfuse_core_dep = declare_dependency(
     link_with: webfuse_core,
 	dependencies: [jansson_dep, libwebsockets_dep])
 
+if not without_install
 install_subdir('include/webfuse/core', install_dir: 'include/webfuse')
+endif
 
 # Webfuse provider
 
@@ -75,12 +79,14 @@ webfuse_provider = shared_library('webfuse_provider',
     c_args: ['-fvisibility=hidden', '-DWFP_API=WFP_EXPORT'],
     include_directories: private_inc_dir,
     dependencies: [webfuse_provider_static_dep],
-	install: true)
+	install: not without_install)
 
 webfuse_provider_dep = declare_dependency(
 	include_directories: inc_dir,
 	link_with: [webfuse_provider],
 	dependencies: [libwebsockets_dep, jansson_dep])
+
+if not without_install
 
 install_headers('include/webfuse_provider.h', subdir: 'webfuse')
 install_subdir('include/webfuse/provider', install_dir: 'include/webfuse')
@@ -92,6 +98,8 @@ pkg_config.generate(
     name: 'libwebfuse_provider',
     filebase: 'webfuse_provider',
     description: 'Provider library for websockets filesystem')
+
+endif
 
 #  Webfuse adapter
 
@@ -130,12 +138,14 @@ webfuse_adapter = shared_library('webfuse_adapter',
     c_args: ['-fvisibility=hidden', '-DWF_API=WF_EXPORT'],
     include_directories: private_inc_dir,
     dependencies: [webfuse_adapter_static_dep, libfuse_dep],
-	install: true)
+	install: not without_install)
 
 webfuse_adapter_dep = declare_dependency(
 	include_directories: inc_dir,
 	link_with: [webfuse_adapter],
 	dependencies: [libfuse_dep, libwebsockets_dep, jansson_dep])
+
+if not without_install
 
 install_headers('include/webfuse_adapter.h', subdir: 'webfuse')
 install_subdir('include/webfuse/adapter', install_dir: 'include/webfuse')
@@ -147,6 +157,8 @@ pkg_config.generate(
     name: 'libwebfuse_adapter',
     filebase: 'webfuse_adapter',
     description: 'Websockets filesystem server library')
+
+endif
 
 # Unit Tests
 

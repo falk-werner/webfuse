@@ -1,0 +1,1 @@
+option('without_install', type: 'boolean', value: false, description: 'skip installation shared libraries, headers and pkg-config files')
