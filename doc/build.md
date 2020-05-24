@@ -25,6 +25,16 @@ in order to reduce build dependencies.
 -   **WIHTOU_PROVIDER**: omit provider library
     `cmake -DWITHOUT_PROVIDER=ON`
 
+## Build using Meson (experimental)
+
+_Note: Meson build support is experimental. Do not rely on it._
+
+  meson .build
+  cd .build
+  ninja build
+
+_Note: Build options are not supported yet._
+
 ## Create API documentation
 
 To create API documentation, you must install doxygen and dot first.
