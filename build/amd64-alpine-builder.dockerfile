@@ -67,7 +67,7 @@ RUN set -x \
   && rm -rf "$builddir" \
   && apk del .build-deps
 
-ARG WEBSOCKETS_VERSION=4.0.1
+ARG WEBSOCKETS_VERSION=4.0.10
 
 RUN set -x \
   && builddeps="linux-headers" \
