@@ -1,0 +1,290 @@
+#!/bin/sh
+#
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+#
+# This file is part of dobuild.
+# Copyright (c) 2019 Contributors as noted in the AUTHORS file.
+#
+# SPDX-License-Identifier: MPL-2.0
+
+set -e
+
+# FIXME: don't depend on cmake internals
+discover_cmake_includes() {
+  if [ $# -gt 0 ]; then
+    sed -n -e 's/.*_INCLUDE_DIRS:INTERNAL=\(.*\)$/\1/p' "$@";
+  fi
+}
+
+discover_system_includes() {
+  case "$BUILDSYSTEM" in
+    cmake-?*)
+      discover_cmake_includes "$@"
+      ;;
+    *)
+      ;;
+  esac
+}
+
+# FIXME: handle different compilers and language standards
+discover_cc_includes() {
+  {
+    echo | "$CXX" -xc++ -E -Wp,-v - 2>&1
+    echo | "$CC" -xc -E -Wp,-v - 2>&1
+  } \
+  | sed -n -e 's/\s\+\(\/.*$\).*/\1/p'
+}
+
+discover_includes() {
+  {
+    discover_cc_includes;
+    discover_system_includes "$@"
+  } \
+  | sed 's/;/\n/g' |  sed '/^$/d' | sort -u 2>/dev/null \
+  | while IFS= read -r file; do
+    if [ -e "$file" ]; then
+      canonicalize "$file"
+    fi
+  done
+}
+
+detect_toolchain() {
+  case "$BUILDSYSTEM" in
+    cmake-?*)
+      cmake -LA -N "$(dirname "$1")" > "$CACHED_VALUES_TMPFILE"
+      CXX="$(sed -n -e 's/CMAKE_CXX_COMPILER:FILEPATH=\(.*\)$/\1/p' -e 's/CMAKE_CXX_COMPILER:STRING=\(.*\)$/\1/p' "$CACHED_VALUES_TMPFILE")"
+      CC="$(sed -n -e 's/CMAKE_C_COMPILER:FILEPATH=\(.*\)$/\1/p' -e 's/CMAKE_C_COMPILER:STRING=\(.*\)$/\1/p' "$CACHED_VALUES_TMPFILE")"
+      ;;
+    *)
+      ;;
+  esac
+}
+
+parse_make_targets() {
+  parse_make_targets.sh -C "$WORKINGDIR"
+}
+
+parse_ninja_targets() {
+  "$NINJA" -C "$WORKINGDIR" -t targets all | sed -n -e 's/\([^:]*\):.*/\1/p' | sort 2>/dev/null
+}
+
+discover_targets() {
+  case "$BUILDSYSTEM" in
+    cmake-make|make)
+      parse_make_targets
+      ;;
+    cmake-ninja|ninja)
+      parse_ninja_targets
+      ;;
+    *)
+      ;;
+  esac
+}
+
+prefix_dir() {
+  while IFS= read -r dir; do
+    printf '%s%s\n' "$1" "$dir"
+  done
+}
+
+sed_keyword() {
+  printf '%s\n' "$@" | sed -e 's/[]\/$*.^[]/\\&/g'
+}
+
+sed_replacement() {
+  printf '%s\n' "$@" | sed -e 's/[\/&]/\\&/g'
+}
+
+format_json() {
+  i=0
+  printf '[\n'
+  while IFS= read -r line; do
+    if [ "$i" -gt 0 ]; then
+      printf ',\n'
+    fi
+    printf '"%s"' "$line"
+    i="$((i+1))"
+  done
+  printf '\n]\n'
+}
+
+physical_pwd() {
+  pwd -P 2>/dev/null || pwd
+}
+
+try_canonicalize() {
+  readlink -f "$@" 2>/dev/null || realpath "$@"
+}
+
+canonicalize() {
+  if ! try_canonicalize "$1" 2>/dev/null; then
+    echo "$(cd "$(dirname "$1")" && physical_pwd)/$(basename "$1")"
+  fi
+}
+
+scriptdir() {
+  dirname "$(canonicalize "${BASH_SOURCE:-$1}")"
+}
+
+cleanup() {
+  EXITCODE="${EXITCODE:-$?}"
+  rm -f "$INCLUDE_DIRS_TMPFILE" "$CACHED_VALUES_TMPFILE"
+  return "$EXITCODE" 
+}
+
+trap cleanup TERM INT EXIT
+
+export LANG=C
+export LC_ALL=C
+
+DOBUILDDIR="${DOBUILDDIR:-"$(dirname "$(scriptdir "$0")")"}"
+NINJA="${NINJA:-ninja}"
+PATH="$DOBUILDDIR/bin:$PATH"
+
+set -- "$@" --
+
+CXX=
+CC=
+BUILDSYSTEM=
+WORKINGDIR="$PWD"
+PROJECTDIR=
+INCLUDE_PREFIX="$WORKINGDIR"
+COMPILE_COMMANDS_JSON_FILE=
+
+while :; do
+  case $1 in
+    -C|--directory)
+      if [ "$2" != '--' ]; then
+        WORKINGDIR="$2"
+        shift
+      else
+        printf 'error: "%s" requires a non-empty option argument.\n' "$1" >&2
+        exit 3
+      fi
+      ;;
+    --directory=)
+      printf 'error: "%s" requires a non-empty option argument.\n' "$1" >&2
+      exit 3
+      ;;
+    --directory=?*)
+      WORKINGDIR="${1#*=}"
+      ;;
+    --project-root)
+      if [ "$2" != '--' ]; then
+        PROJECTDIR="$2"
+        shift
+      else
+        PROJECTDIR=
+      fi
+      ;;
+    --project-root=)
+      PROJECTDIR=
+      ;;
+    --project-root=?*)
+      PROJECTDIR="${1#*=}"
+      ;;
+    --build-system)
+      if [ "$2" != '--' ]; then
+        BUILDSYSTEM="$2"
+        shift
+      else
+        BUILDSYSTEM=
+      fi
+      ;;
+    --build-system=)
+      BUILDSYSTEM=
+      ;;
+    --build-system=?*)
+      BUILDSYSTEM="${1#*=}"
+      ;;
+    -p|--include-prefix)
+      if [ "$2" != '--' ]; then
+        INCLUDE_PREFIX="$2"
+        shift
+      else
+        INCLUDE_PREFIX=
+      fi
+      ;;
+    --include-prefix=)
+      INCLUDE_PREFIX=
+      ;;
+    --include-prefix=?*)
+      INCLUDE_PREFIX="${1#*=}"
+      ;;
+    compile_commands.json|?*/compile_commands.json)
+      COMPILE_COMMANDS_JSON_FILE="$1"
+      ;;
+    --help)
+      {
+        printf 'Usage: %s [option...] [file...]\n' "$(basename "$0")"
+        printf 'Options:\n'
+        printf '\t-C|--directory\t\tWorking directory\n'
+        printf '\t--build-system\t\tBuildsystem kind e.g. cmake-make,cmake-ninja\n'
+        printf '\t--project-root\t\tProject root directory\n'
+        printf '\t-p|--include-prefix\tInclude prefix appended to all discovered include dirs\n'
+        printf 'Files:\n'
+        printf '\tBuildsystem specific configurations files e.g. CMakeCache.txt\n'
+      } >&2
+      exit 0
+      ;;
+    --)
+      shift
+      break
+      ;;
+    *)
+      set -- "$@" "$1"
+      ;;
+  esac
+
+  shift
+done
+
+OUTDIR="$WORKINGDIR/DoBuildFiles"
+mkdir -p "$OUTDIR"
+
+INCLUDE_PREFIX_REPLACEMENT="%OUTDIR%/$INCLUDE_PREFIX"
+
+CACHED_VALUES_TMPFILE="$(mktemp -p "$OUTDIR" cached_values_XXXXXXXXXX.txt)"
+INCLUDE_DIRS_TMPFILE="$(mktemp -p "$OUTDIR" include_dirs_XXXXXXXXXX.txt)"
+INCLUDE_DIRS_TMPL_FILE="$OUTDIR/include_dirs.json.template"
+TARGETS_JSON_FILE="$OUTDIR/targets.json"
+TARGETS_TXT_FILE="$OUTDIR/targets.txt"
+COMPILE_COMMANDS_TMPL_FILE="$OUTDIR/compile_commands.json.template"
+C_BUILTIN_FILE="$OUTDIR/builtins.h"
+CXX_BUILTIN_FILE="$OUTDIR/builtins.hpp"
+
+detect_toolchain "$@"
+
+discover_targets "$@" | tee "$TARGETS_TXT_FILE" | format_json > "$TARGETS_JSON_FILE"
+discover_includes "$@" | tee "$INCLUDE_DIRS_TMPFILE" | prefix_dir "$INCLUDE_PREFIX_REPLACEMENT" | format_json > "$INCLUDE_DIRS_TMPL_FILE"
+
+# FIXME: handle different compilers and language standards
+"$CC" -xc -dM -E - < /dev/null > "$C_BUILTIN_FILE"
+"$CXX" -xc++ -dM -E - < /dev/null > "$CXX_BUILTIN_FILE"
+
+if [ -n "$COMPILE_COMMANDS_JSON_FILE" ]; then
+  set -- 
+  while IFS= read -r line; do
+    set -- "$@" -e "s/$(sed_keyword "${line}")/$(sed_replacement "${INCLUDE_PREFIX_REPLACEMENT}${line}")/g"
+  done < "$INCLUDE_DIRS_TMPFILE"
+  set -- "$@" -e "s/$(sed_keyword "$WORKINGDIR")/$(sed_replacement "%OUTDIR%")/g"
+  if [ -n "$PROJECTDIR" ]; then
+    set -- "$@" -e "s/$(sed_keyword "$PROJECTDIR")/$(sed_replacement "%PROJECTDIR%")/g"
+  fi
+  set -- "$@" "$COMPILE_COMMANDS_JSON_FILE"
+  sed "$@" > "$COMPILE_COMMANDS_TMPL_FILE"
+fi
+
+set --
+
+if [ -n "$INCLUDE_PREFIX" ]; then
+  while IFS= read -r file; do
+    set -- "$@" "$file"
+  done < "$INCLUDE_DIRS_TMPFILE"
+fi
+
+cleanup
+
+exec tar cf - -C / "$@"

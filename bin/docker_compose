@@ -1,0 +1,85 @@
+#!/bin/sh
+#
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+#
+# This file is part of dobuild.
+# Copyright (c) 2019 Contributors as noted in the AUTHORS file.
+#
+# SPDX-License-Identifier: MPL-2.0
+
+set -e
+
+physical_pwd() {
+  pwd -P 2>/dev/null || pwd
+}
+
+try_canonicalize() {
+  readlink -f "$@" 2>/dev/null || realpath "$@"
+}
+
+canonicalize() {
+  if ! try_canonicalize "$1" 2>/dev/null; then
+    echo "$(cd "$(dirname "$1")" && physical_pwd)/$(basename "$1")"
+  fi
+}
+
+scriptdir() {
+  dirname "$(canonicalize "${BASH_SOURCE:-$1}")"
+}
+
+DOBUILDDIR="${DOBUILDDIR:-"$(dirname "$(scriptdir "$0")")"}"
+PATH="$DOBUILDDIR/bin:$PATH"
+
+DOBUILD_COMPOSEVERSION="${DOBUILD_COMPOSEVERSION:-1.24.0}"
+DOBUILD_COMPOSEIMAGE="${REGISTRY_PREFIX}docker/compose:${DOBUILD_COMPOSEVERSION}"
+DOBUILD_COMPOSEENTRYPOINT="${DOBUILD_COMPOSEENTRYPOINT:-docker-compose}"
+
+export DOBUILDDIR
+export DOBUILD_PROJECTDIR="${DOBUILD_COMPOSEPROJECTDIR:-"$PWD"}"
+export DOBUILD_HOSTENVFILTER="${DOBUILD_COMPOSEHOSTENVFILTER:-^COMPOSE}"
+
+set -- "$@" --
+
+WORKINGDIR=
+
+while :; do
+  case $1 in
+    --project-directory)
+      if [ "$2" != '--' ]; then
+        WORKINGDIR="$2"
+        shift
+      else
+        printf 'error: "%s" requires a non-empty option argument.\n' "$1" >&2
+        exit 3
+      fi
+      ;;
+    --project-directory=)
+      printf 'error: "%s" requires a non-empty option argument.\n' "$1" >&2
+      exit 3
+      ;;
+    --project-directory=?*)
+      WORKINGDIR="${1#*=}"
+      ;;
+    --)
+      shift
+      break
+      ;;
+    *)
+      set -- "$@" "$1"
+      ;;
+  esac
+
+  shift
+done
+
+WORKINGDIR="${WORKINGDIR:-"$DOBUILD_PROJECTDIR"}"
+
+if [ -z "${DOCKER_HOST+x}" ]; then
+  export DOCKER_HOST='unix:///var/run/docker.sock'
+fi
+
+set -- container_run --workdir "$(canonicalize "$WORKINGDIR")" --entrypoint "$DOBUILD_COMPOSEENTRYPOINT" "$DOBUILD_COMPOSEIMAGE" "$@"
+
+exec "$@"

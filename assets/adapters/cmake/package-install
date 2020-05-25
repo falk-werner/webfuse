@@ -1,0 +1,5 @@
+#!/bin/sh
+
+export DESTDIR="$1"
+
+exec cmake_adapter install "$@"
