@@ -97,6 +97,7 @@ DOCKER_RUNFLAGS += --cap-add SYS_PTRACE
 DOCKER_RUNFLAGS += --security-opt seccomp=unconfined
 
 OUTDIRS += $(OUTDIR)/src
+OUTDIRS += $(OUTDIR)/docker
 
 EXTRACT_TARGETS += $(OUTDIR)/docker/qemu-arm-static-$(QEMU_VERSION)
 EXTRACT_TARGETS += $(patsubst $(FETCHDIR)/%.tar.gz,$(OUTDIR)/src/%,$(FETCH_TARGETS))
