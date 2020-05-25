@@ -12,7 +12,7 @@ addons:
     - qemu-user-static
 env:
   global:
-    - PARALLELMFLAGS="-j4"
+    - PARALLELMFLAGS="-j2"
     - DOCKER_BUILDKIT=0
   matrix:
     - DISTRIB_ID=ubuntu VARIANT=debug        MARCH=x86_64   CHECK_TARGET=memcheck
