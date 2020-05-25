@@ -66,7 +66,7 @@ void wfp_impl_provider_init(
     provider->read = &wfp_impl_read_default;
     provider->connected = &wfp_impl_connected_default;
     provider->disconnected = &wfp_impl_disconnected_default;
-    provider->ontimer = &wfp_impl_ontimer_default;
+    provider->get_credentials = NULL;
 }
 
 void wfp_impl_provider_init_from_prototype(
@@ -81,7 +81,7 @@ void wfp_impl_provider_init_from_prototype(
     provider->read = prototype->read;
     provider->connected =  prototype->connected;
     provider->disconnected = prototype->disconnected;
-    provider->ontimer = prototype->ontimer;
+    provider->get_credentials = prototype->get_credentials;
 }
 
 void wfp_impl_provider_invoke(
@@ -92,8 +92,7 @@ void wfp_impl_provider_invoke(
     json_t * params = json_object_get(request, "params");
     json_t * id_holder = json_object_get(request, "id");
 
-    if ((NULL != method_holder) && (json_is_string(method_holder)) &&
-        (NULL != params) && (json_is_array(params)))
+    if ((json_is_string(method_holder)) && (json_is_array(params)))
     {
         char const * method = json_string_value(method_holder);
         int id = json_is_integer(id_holder) ? json_integer_value(id_holder) : 0;
@@ -118,10 +117,9 @@ void wfp_impl_disconnected_default(
     // empty
 }
 
-void wfp_impl_ontimer_default(
-    void * user_data)
+ bool wfp_impl_provider_is_authentication_enabled(
+    struct wfp_provider * provider)
 {
-    (void) user_data;
-
-    // empty
+    return (NULL != provider->get_credentials);
 }
+

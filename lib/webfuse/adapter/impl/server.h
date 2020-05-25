@@ -23,8 +23,10 @@ extern bool wf_impl_server_is_operational(
     struct wf_server * server);
 
 extern void wf_impl_server_service(
-    struct wf_server * server,
-    int timeout_ms);
+    struct wf_server * server);
+
+extern void wf_impl_server_interrupt(
+    struct wf_server * server);
 
 #ifdef __cplusplus
 }

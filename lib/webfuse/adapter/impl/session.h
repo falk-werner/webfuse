@@ -10,10 +10,11 @@ using std::size_t;
 #endif
 
 #include "webfuse/core/message_queue.h"
-#include "webfuse/adapter/impl/jsonrpc/proxy.h"
-#include "webfuse/adapter/impl/jsonrpc/server.h"
 #include "webfuse/adapter/impl/filesystem.h"
 #include "webfuse/core/slist.h"
+
+#include "webfuse/core/jsonrpc/proxy.h"
+#include "webfuse/core/jsonrpc/server.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -24,27 +25,27 @@ struct lws;
 struct wf_message;
 struct wf_credentials;
 struct wf_impl_authenticators;
-struct wf_impl_timeout_manager;
+struct wf_impl_mountpoint_factory;
 
 struct wf_impl_session
 {
     struct wf_slist_item item;
-    char * mount_point;
     struct lws * wsi;
     bool is_authenticated;
     struct wf_slist messages;
     struct wf_impl_authenticators * authenticators;
-    struct wf_impl_jsonrpc_server * server;
-    struct wf_impl_jsonrpc_proxy rpc;
+    struct wf_impl_mountpoint_factory * mountpoint_factory;
+    struct wf_jsonrpc_server * server;
+    struct wf_jsonrpc_proxy * rpc;
     struct wf_slist filesystems;
 };
 
 extern struct wf_impl_session * wf_impl_session_create(
     struct lws * wsi,
     struct wf_impl_authenticators * authenticators,
-    struct wf_impl_timeout_manager * timeout_manager,
-    struct wf_impl_jsonrpc_server * server,
-    char const * mount_point);
+    struct wf_timer_manager * timer_manager,
+    struct wf_jsonrpc_server * server,
+    struct wf_impl_mountpoint_factory * mountpoint_factory);
 
 extern void wf_impl_session_dispose(
     struct wf_impl_session * session);

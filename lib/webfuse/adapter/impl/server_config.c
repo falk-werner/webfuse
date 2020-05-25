@@ -20,14 +20,15 @@ void wf_impl_server_config_init(
     memset(config, 0, sizeof(struct wf_server_config));
 
     wf_impl_authenticators_init(&config->authenticators);
+    wf_impl_mountpoint_factory_init_default(&config->mountpoint_factory);
 }
 
 void wf_impl_server_config_cleanup(
     struct wf_server_config * config)
 {
     wf_impl_authenticators_cleanup(&config->authenticators);
+    wf_impl_mountpoint_factory_cleanup(&config->mountpoint_factory);
 
-    free(config->mount_point);
 	free(config->document_root);
 	free(config->key_path);
 	free(config->cert_path);
@@ -40,7 +41,6 @@ void wf_impl_server_config_clone(
 	struct wf_server_config * config,
 	struct wf_server_config * clone)
 {
-    clone->mount_point = wf_impl_server_config_strdup(config->mount_point);
 	clone->document_root = wf_impl_server_config_strdup(config->document_root);
 	clone->key_path = wf_impl_server_config_strdup(config->key_path);
 	clone->cert_path = wf_impl_server_config_strdup(config->cert_path);
@@ -48,15 +48,13 @@ void wf_impl_server_config_clone(
 	clone->port = config->port;
 
     wf_impl_authenticators_clone(&config->authenticators, &clone->authenticators);
+    wf_impl_mountpoint_factory_clone(&config->mountpoint_factory, &clone->mountpoint_factory);
 }
 
 struct wf_server_config * wf_impl_server_config_create(void)
 {
     struct wf_server_config * config = malloc(sizeof(struct wf_server_config));
-    if (NULL != config)
-    {
-        wf_impl_server_config_init(config);
-    }
+    wf_impl_server_config_init(config);
 
     return config;
 }
@@ -68,13 +66,15 @@ void wf_impl_server_config_dispose(
     free(config);
 }
 
-void wf_impl_server_config_set_mountpoint(
+void wf_impl_server_config_set_mountpoint_factory(
     struct wf_server_config * config,
-	char const * mount_point)
+    wf_create_mountpoint_fn * create_mountpoint,
+    void * create_mountpoint_context)
 {
-    free(config->mount_point);
-    config->mount_point = strdup(mount_point);
+    wf_impl_mountpoint_factory_init(&config->mountpoint_factory,
+        create_mountpoint, create_mountpoint_context);
 }
+
 
 void wf_impl_server_config_set_documentroot(
     struct wf_server_config * config,

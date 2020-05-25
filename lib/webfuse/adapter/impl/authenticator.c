@@ -11,13 +11,10 @@ struct wf_impl_authenticator * wf_impl_authenticator_create(
     void * user_data)
 {
     struct wf_impl_authenticator * authenticator = malloc(sizeof(struct wf_impl_authenticator));
-    if (NULL != authenticator)
-    {
-        authenticator->type = strdup(type);
-        authenticator->authenticate = authenticate;
-        authenticator->user_data = user_data;
-        authenticator->next = NULL;
-    }
+    authenticator->type = strdup(type);
+    authenticator->authenticate = authenticate;
+    authenticator->user_data = user_data;
+    authenticator->next = NULL;
 
     return authenticator;
 }

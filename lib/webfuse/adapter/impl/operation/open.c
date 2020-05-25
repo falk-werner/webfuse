@@ -1,18 +1,20 @@
-#include "webfuse/adapter/impl/operations.h"
+#include "webfuse/adapter/impl/operation/open.h"
+#include "webfuse/adapter/impl/operation/context.h"
+
+#include "webfuse/core/jsonrpc/proxy.h"
+#include "webfuse/core/util.h"
+#include "webfuse/core/status.h"
+#include "webfuse/core/json_util.h"
 
 #include <string.h>
 #include <errno.h>
-#include <jansson.h>
 
-#include "webfuse/adapter/impl/jsonrpc/proxy.h"
-#include "webfuse/core/util.h"
-#include "webfuse/core/status.h"
-
-static void wf_impl_operation_open_finished(
+void wf_impl_operation_open_finished(
 	void * user_data,
-	wf_status status,
-	json_t const * result)
+	json_t const * result,
+	json_t const * error)
 {
+	wf_status status = wf_impl_jsonrpc_get_status(error);
 	fuse_req_t request = user_data;
 	struct fuse_file_info file_info;
 	memset(&file_info, 0, sizeof(struct fuse_file_info));
@@ -20,7 +22,7 @@ static void wf_impl_operation_open_finished(
 	if (NULL != result)
 	{
         json_t * handle_holder = json_object_get(result, "handle");
-        if ((NULL != handle_holder) && (json_is_integer(handle_holder))) 
+        if (json_is_integer(handle_holder))
         {
             file_info.fh = json_integer_value(handle_holder);
         }
@@ -46,12 +48,12 @@ void wf_impl_operation_open(
 	fuse_ino_t inode,
 	struct fuse_file_info * file_info)
 {
-    struct wf_impl_operations_context * user_data = fuse_req_userdata(request);
-    struct wf_impl_jsonrpc_proxy * rpc = wf_impl_operations_context_get_proxy(user_data);
+    struct wf_impl_operation_context * user_data = fuse_req_userdata(request);
+    struct wf_jsonrpc_proxy * rpc = wf_impl_operation_context_get_proxy(user_data);
 
 	if (NULL != rpc)
 	{
-		wf_impl_jsonrpc_proxy_invoke(rpc, &wf_impl_operation_open_finished, request, "open", "sii", user_data->name, inode, file_info->flags);
+		wf_jsonrpc_proxy_invoke(rpc, &wf_impl_operation_open_finished, request, "open", "sii", user_data->name, inode, file_info->flags);
 	}
 	else
 	{

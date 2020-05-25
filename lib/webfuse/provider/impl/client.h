@@ -38,8 +38,10 @@ extern bool wfp_impl_client_is_connected(
     struct wfp_client * client);
 
 extern void wfp_impl_client_service(
-    struct wfp_client * client,
-    int timeout_ms);
+    struct wfp_client * client);
+
+extern void wfp_impl_client_interrupt(
+    struct wfp_client * client);
 
 #ifdef __cplusplus
 }

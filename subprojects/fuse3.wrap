@@ -1,0 +1,7 @@
+[wrap-file]
+directory = libfuse-fuse-3.8.0
+
+source_url = https://github.com/libfuse/libfuse/archive/fuse-3.8.0.tar.gz
+source_filename = fuse-3.8.0.tar.gz
+source_hash = 1781225ba4d11d76eb105e02e54976939974547eb40bab4b4e91167854224024
+

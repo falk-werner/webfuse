@@ -11,7 +11,9 @@
 #include "webfuse/provider/impl/client_config.h"
 #include "webfuse/provider/impl/client.h"
 #include "webfuse/provider/impl/dirbuffer.h"
-#include "webfuse/provider/impl/static_filesystem.h"
+#include "webfuse/provider/impl/credentials.h"
+
+#include "webfuse/core/util.h"
 
 // respond
 
@@ -93,6 +95,13 @@ void wfp_client_config_set_certpath(
     wfp_impl_client_config_set_certpath(config, cert_path);
 }
 
+void wfp_client_config_set_ca_filepath(
+    struct wfp_client_config * config,
+    char const * ca_filepath)
+{
+    wfp_impl_client_config_set_ca_filepath(config, ca_filepath);
+}
+
 void wfp_client_config_set_onconnected(
     struct wfp_client_config * config,
     wfp_connected_fn * handler)
@@ -105,13 +114,6 @@ void wfp_client_config_set_ondisconnected(
     wfp_disconnected_fn * handler)
 {
     wfp_impl_client_config_set_ondisconnected(config, handler);
-}
-
-void wfp_client_config_set_ontimer(
-    struct wfp_client_config * config,
-    wfp_ontimer_fn * handler)
-{
-    wfp_impl_client_config_set_ontimer(config, handler);
 }
 
 void wfp_client_config_set_onlookup(
@@ -156,14 +158,20 @@ void wfp_client_config_set_onread(
     wfp_impl_client_config_set_onread(config, handler);
 }
 
+void wfp_client_config_enable_authentication(
+    struct wfp_client_config * config,
+    wfp_get_credentials_fn * get_credentials)
+{
+    wfp_impl_client_config_enable_authentication(config, get_credentials);
+}
+
 // protocol
 
 
 struct wfp_client_protocol * wfp_client_protocol_create(
-    struct wfp_provider const * provider,
-    void * user_data)
+    struct wfp_client_config const * config)
 {
-    return wfp_impl_client_protocol_create(provider, user_data);
+    return wfp_impl_client_protocol_create(config);
 }
 
 void wfp_client_protocol_dispose(
@@ -178,6 +186,21 @@ void wfp_client_protocol_init_lws(
 {
     wfp_impl_client_protocol_init_lws(protocol, lws_protocol);
 }
+
+void wfp_client_protocol_connect(
+    struct wfp_client_protocol * protocol,
+    struct lws_context * context,
+    char const * url)
+{
+    wfp_impl_client_protocol_connect(protocol, context, url);
+}
+
+void wfp_client_protocol_disconnect(
+    struct wfp_client_protocol * protocol)
+{
+    wfp_impl_client_protocol_disconnect(protocol);
+}
+
 
 // client
 
@@ -207,11 +230,17 @@ void wfp_client_dispose(
 }
 
 void wfp_client_service(
-    struct wfp_client * client,
-    int timeout_ms)
+    struct wfp_client * client)
 {
-    wfp_impl_client_service(client, timeout_ms);
+    wfp_impl_client_service(client);
 }
+
+void wfp_client_interrupt(
+    struct wfp_client * client)
+{
+    wfp_impl_client_interrupt(client);
+}
+
 
 // dirbuffer
 
@@ -234,59 +263,19 @@ void wfp_dirbuffer_add(
     wfp_impl_dirbuffer_add(buffer, name, inode);
 }
 
-// static_filesystem
+// credentials
 
-struct wfp_static_filesystem *
-wfp_static_filesystem_create(
-    struct wfp_client_config * config)
+void wfp_credentials_set_type(
+    struct wfp_credentials * credentials,
+    char const * type)
 {
-    return wfp_impl_static_filesystem_create(config);
+    wfp_impl_credentials_set_type(credentials, type);
 }
 
-void
-wfp_static_filesystem_dispose(
-    struct wfp_static_filesystem * filesystem)
+void wfp_credentials_add(
+    struct wfp_credentials * credentials,
+    char const * key,
+    char const * value)
 {
-    wfp_impl_static_filesystem_dispose(filesystem);
-}
-
-void
-wfp_static_filesystem_add(
-    struct wfp_static_filesystem * filesystem,
-    char const * path,
-    int mode,
-    char const * content,
-    size_t length)
-{
-    wfp_impl_static_filesystem_add(filesystem, path, mode, content, length);
-}
-
-void
-wfp_static_filesystem_add_text(
-    struct wfp_static_filesystem * filesystem,
-    char const * path,
-    int mode,
-    char const * content)
-{
-    wfp_impl_static_filesystem_add_text(filesystem, path, mode, content);
-}
-
-void
-wfp_static_filesystem_add_file(
-    struct wfp_static_filesystem * filesystem,
-    char const * path,
-    char const * filename)
-{
-    wfp_impl_static_filesystem_add_file(filesystem, path, filename);
-}
-
-void
-wfp_static_filesystem_add_generic(
-    struct wfp_static_filesystem * filesystem,
-    char const * path,
-    wfp_static_filesystem_read_fn * read,
-    wfp_static_filesystem_get_info_fn * get_info,
-    void * user_data)
-{
-    wfp_impl_static_filesystem_add_generic(filesystem, path, read, get_info, user_data);
+    wfp_impl_credentials_add(credentials, key, value);
 }

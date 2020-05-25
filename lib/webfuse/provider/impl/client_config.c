@@ -6,13 +6,11 @@
 struct wfp_client_config * wfp_impl_client_config_create(void)
 {
     struct wfp_client_config * config = malloc(sizeof(struct wfp_client_config));
-    if (NULL != config)
-    {
-        wfp_impl_provider_init(&config->provider);
-        config->user_data = NULL;
-        config->key_path = NULL;
-        config->cert_path = NULL;
-    }
+    wfp_impl_provider_init(&config->provider);
+    config->user_data = NULL;
+    config->key_path = NULL;
+    config->cert_path = NULL;
+    config->ca_filepath = NULL;
 
     return config;
 }
@@ -22,6 +20,7 @@ void wfp_impl_client_config_dispose(
 {
     free(config->key_path);
     free(config->cert_path);
+    free(config->ca_filepath);
     free(config);
 }
 
@@ -48,6 +47,14 @@ void wfp_impl_client_config_set_certpath(
     config->cert_path = strdup(cert_path);
 }
 
+void wfp_impl_client_config_set_ca_filepath(
+    struct wfp_client_config * config,
+    char const * ca_filepath)
+{
+    free(config->ca_filepath);
+    config->ca_filepath = strdup(ca_filepath); 
+}
+
 void wfp_impl_client_config_set_onconnected(
     struct wfp_client_config * config,
     wfp_connected_fn * handler)
@@ -60,13 +67,6 @@ void wfp_impl_client_config_set_ondisconnected(
     wfp_disconnected_fn * handler)
 {
     config->provider.disconnected = handler;
-}
-
-void wfp_impl_client_config_set_ontimer(
-    struct wfp_client_config * config,
-    wfp_ontimer_fn * handler)
-{
-    config->provider.ontimer = handler;
 }
 
 void wfp_impl_client_config_set_onlookup(
@@ -109,4 +109,11 @@ void wfp_impl_client_config_set_onread(
     wfp_read_fn * handler)
 {
     config->provider.read = handler;
+}
+
+void wfp_impl_client_config_enable_authentication(
+    struct wfp_client_config * config,
+    wfp_get_credentials_fn * get_credentials)
+{
+    config->provider.get_credentials = get_credentials;
 }

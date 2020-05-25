@@ -4,6 +4,9 @@
 #include "webfuse/adapter/impl/server_protocol.h"
 #include "webfuse/adapter/impl/server_config.h"
 #include "webfuse/adapter/impl/credentials.h"
+#include "webfuse/adapter/impl/mountpoint.h"
+
+#include "webfuse/core/util.h"
 
 // server
 
@@ -20,18 +23,25 @@ void wf_server_dispose(
 }
 
 void wf_server_service(
-    struct wf_server * server,
-    int timeout_ms)
+    struct wf_server * server)
 {
-    wf_impl_server_service(server, timeout_ms);
+    wf_impl_server_service(server);
 }
+
+void wf_server_interrupt(
+    struct wf_server * server)
+{
+    wf_impl_server_interrupt(server);
+}
+
 
 // server protocol
 
 struct wf_server_protocol * wf_server_protocol_create(
-    char * mount_point)
+    wf_create_mountpoint_fn * create_mountpoint,
+    void * create_mountpoint_context)
 {
-    return wf_impl_server_protocol_create(mount_point);
+    return wf_impl_server_protocol_create(create_mountpoint, create_mountpoint_context);
 }
 
 void wf_server_protocol_dispose(
@@ -69,11 +79,13 @@ void wf_server_config_dispose(
     wf_impl_server_config_dispose(config);
 }
 
-void wf_server_config_set_mountpoint(
+void wf_server_config_set_mountpoint_factory(
     struct wf_server_config * config,
-	char const * mount_point)
+    wf_create_mountpoint_fn * create_mountpoint,
+    void * user_data)
 {
-    wf_impl_server_config_set_mountpoint(config, mount_point);
+    wf_impl_server_config_set_mountpoint_factory(
+        config, create_mountpoint, user_data);
 }
 
 void wf_server_config_set_documentroot(
@@ -133,4 +145,36 @@ char const * wf_credentials_get(
     char const * key)
 {
     return wf_impl_credentials_get(credentials, key);
+}
+
+// mountpoint
+
+struct wf_mountpoint *
+wf_mountpoint_create(
+    char const * path)
+{
+    return wf_impl_mountpoint_create(path);
+}
+
+void 
+wf_mountpoint_dispose(
+    struct wf_mountpoint * mountpoint)
+{
+    wf_impl_mountpoint_dispose(mountpoint);
+}
+
+char const * 
+wf_mountpoint_get_path(
+    struct wf_mountpoint const * mountpoint)
+{
+    return wf_impl_mountpoint_get_path(mountpoint);
+}
+
+void
+wf_mountpoint_set_userdata(
+    struct wf_mountpoint * mountpoint,
+    void * user_data,
+    wf_mountpoint_userdata_dispose_fn * dispose)
+{
+    wf_impl_mountpoint_set_userdata(mountpoint, user_data, dispose);
 }

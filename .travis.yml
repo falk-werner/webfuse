@@ -12,17 +12,18 @@ addons:
     - qemu-user-static
 env:
   global:
-    - DISTRO=ubuntu
     - PARALLELMFLAGS="-j4"
     - PORTABLE_WORSPACE=1
   matrix:
-    - BUILDTYPE=Debug      MARCH=amd64   CHECK_TARGET=memcheck
-    - BUILDTYPE=Release    MARCH=amd64   CHECK_TARGET=memcheck
-    - BUILDTYPE=Debug      MARCH=arm32v7 CHECK_TARGET=check
-    - BUILDTYPE=MinSizeRel MARCH=arm32v7 CHECK_TARGET=check
+    - DISTRO=ubuntu BUILDTYPE=Debug      MARCH=amd64   CHECK_TARGET=memcheck
+    - DISTRO=ubuntu BUILDTYPE=Coverage   MARCH=amd64   CHECK_TARGET=check
+    - DISTRO=ubuntu BUILDTYPE=Release    MARCH=amd64   CHECK_TARGET=memcheck
+    - DISTRO=ubuntu BUILDTYPE=Debug      MARCH=arm32v7 CHECK_TARGET=check
+    - DISTRO=ubuntu BUILDTYPE=MinSizeRel MARCH=arm32v7 CHECK_TARGET=check
+    - DISTRO=alpine BUILDTYPE=Debug      MARCH=amd64   CHECK_TARGET=check
 before_script:
 - make BUILDTYPE=$BUILDTYPE MARCH=$MARCH
 script:
-- make BUILDTYPE=$BUILDTYPE MARCH=$MARCH $CHECK_TARGET
+- make DISTRO=$DISTRO BUILDTYPE=$BUILDTYPE MARCH=$MARCH $CHECK_TARGET
 after_success:
 - bash <(curl -s https://codecov.io/bash)

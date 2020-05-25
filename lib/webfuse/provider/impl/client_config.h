@@ -15,6 +15,7 @@ struct wfp_client_config
     void * user_data;
     char * key_path;
     char * cert_path;
+    char * ca_filepath;
 };
 
 extern struct wfp_client_config * wfp_impl_client_config_create(void);
@@ -34,6 +35,10 @@ extern void wfp_impl_client_config_set_certpath(
     struct wfp_client_config * config,
     char const * cert_path);
 
+extern void wfp_impl_client_config_set_ca_filepath(
+    struct wfp_client_config * config,
+    char const * ca_filepath);
+
 extern void wfp_impl_client_config_set_onconnected(
     struct wfp_client_config * config,
     wfp_connected_fn * handler);
@@ -41,10 +46,6 @@ extern void wfp_impl_client_config_set_onconnected(
 extern void wfp_impl_client_config_set_ondisconnected(
     struct wfp_client_config * config,
     wfp_disconnected_fn * handler);
-
-extern void wfp_impl_client_config_set_ontimer(
-    struct wfp_client_config * config,
-    wfp_ontimer_fn * handler);
 
 extern void wfp_impl_client_config_set_onlookup(
     struct wfp_client_config * config,
@@ -69,6 +70,10 @@ extern void wfp_impl_client_config_set_onclose(
 extern void wfp_impl_client_config_set_onread(
     struct wfp_client_config * config,
     wfp_read_fn * handler);
+
+extern void wfp_impl_client_config_enable_authentication(
+    struct wfp_client_config * config,
+    wfp_get_credentials_fn * get_credentials);
 
 #ifdef __cplusplus
 }
