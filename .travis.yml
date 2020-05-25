@@ -13,6 +13,7 @@ addons:
 env:
   global:
     - PARALLELMFLAGS="-j4"
+    - DOCKER_BUILDKIT=0
   matrix:
     - DISTRIB_ID=ubuntu VARIANT=debug        MARCH=x86_64   CHECK_TARGET=memcheck
     - DISTRIB_ID=ubuntu VARIANT=coverage     MARCH=x86_64   CHECK_TARGET=check
