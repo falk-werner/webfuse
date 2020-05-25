@@ -22,18 +22,35 @@ in order to reduce build dependencies.
 -   **WITHOUT_ADAPTER**: omit adapter library  
     `cmake -DWITHOUT_ADAPTER=ON`
 
--   **WIHTOU_PROVIDER**: omit provider library
+-   **WIHTOUT_PROVIDER**: omit provider library
     `cmake -DWITHOUT_PROVIDER=ON`
 
 ## Build using Meson (experimental)
 
 _Note: Meson build support is experimental. Do not rely on it._
 
-  meson .build
-  cd .build
-  ninja build
+    meson .build
+    cd .build
+    ninja build
 
-_Note: Build options are not supported yet._
+### Meson Build options
+
+Build options can be specified during meson setup or later via meson configure.
+
+    meson -D<option>=<value> .build
+
+The following options are available:
+
+-   **without_tests**: _(boolean)_ diable tests  
+    `meson -Dwithout_tests=true .build`
+
+-   **without_adapter**: _(boolean)_ omit adapter library  
+    `meson -Dwithout_adapter=true .build`
+
+-   **without_provider**: _(boolean)_ omit provider library
+    `meson -Dwithout_provider=true .build`
+
+_Note that unit tests are only available, when both libraries are built._
 
 ## Create API documentation
 
