@@ -1,7 +1,7 @@
 ARG REGISTRY_PREFIX=''
-ARG CODENAME=3.9
+ARG DISTRIB_VERSION=3.9
 
-FROM ${REGISTRY_PREFIX}arm32v7/alpine:${CODENAME} as builder
+FROM ${REGISTRY_PREFIX}arm32v7/alpine:${DISTRIB_VERSION} as builder
 
 ARG QEMU_VERSION_=v4.1.0-1
 
@@ -103,16 +103,8 @@ ENV PKG_CONFIG_PATH=/usr/local/lib32/pkgconfig
 
 ARG USERID=1000
 
-ARG PROJECTDIR=/workspace/src
-ARG OUTDIR=/workspace/out
-ARG SCRIPTDIR=/workspace/bin
-
 RUN set -x \
-  && adduser -u "$USERID" -s /bin/bash -D user \
-  && mkdir -p "$PROJECTDIR" "$OUTDIR" "$SCRIPTDIR" \
-  && chown user:user "$PROJECTDIR" "$OUTDIR" "$SCRIPTDIR"
-
-WORKDIR "$OUTDIR"
+  && adduser -u "$USERID" -s /bin/bash -D user
 
 ENTRYPOINT ["dumb-init", "--"]
-
+CMD [ "/bin/bash" ]

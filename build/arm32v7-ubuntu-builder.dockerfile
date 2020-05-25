@@ -1,7 +1,7 @@
 ARG REGISTRY_PREFIX=''
-ARG CODENAME=bionic
+ARG DISTRIB_VERSION=bionic
 
-FROM ${REGISTRY_PREFIX}arm32v7/ubuntu:${CODENAME} as builder
+FROM ${REGISTRY_PREFIX}arm32v7/ubuntu:${DISTRIB_VERSION} as builder
 
 ARG QEMU_VERSION_=v4.1.0-1
 
@@ -96,16 +96,9 @@ ENV LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/usr/local/lib"
 
 ARG USERID=1000
 
-ARG PROJECTDIR=/workspace/src
-ARG OUTDIR=/workspace/out
-ARG SCRIPTDIR=/workspace/bin
-
 RUN set -x \
-  && useradd -u "$USERID" -ms /bin/bash user \
-  && mkdir -p "$PROJECTDIR" "$OUTDIR" "$SCRIPTDIR" \
-  && chown user:user "$PROJECTDIR" "$OUTDIR" "$SCRIPTDIR"
-
-WORKDIR "$OUTDIR"
+  && useradd -u "$USERID" -ms /bin/bash user
 
 ENTRYPOINT ["dumb-init", "--"]
+CMD [ "/bin/bash" ]
 
