@@ -1,0 +1,29 @@
+handle snapshot version for continue integration
+add target for validation of reproducible build
+extract bootstrap build environment
+finalize dobuild wrapper
+add tests for dobuild wrapper
+fix/ add debugging support
+fix test fixture to enable reuse of builder templates (docker import!?)
+add compose configuration for jenkins-slave - minimal env, cron cleanup service, dind
+check for common security vulnerabilities
+add support for a validatable configuration (groovy-makefile-generator?)
+generalize default makefile builders to allow zero configuration for common use cases
+add package and download caching services to support offline builds (Apt-Cacher-ng?)
+add support for docker based packing (runtime dockerfile)
+add support for docker caching (cache-from)
+add setup support for eclipse cdt
+add setup support for visual studio code
+add example for coverage with cmake
+add example for clang-tidy with cmake
+add example for clang-format with cmake
+add support for podman
+document implemented features
+add support for upload of artifacts
+add support for gradle based build projects
+add support for npm based build projects
+add support for make based build projects
+add support for debian based packaging
+add support for dependency download manager
+tests in kubernetes context
+publish version 1.0.0

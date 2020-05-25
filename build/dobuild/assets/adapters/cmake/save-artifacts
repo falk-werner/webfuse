@@ -1,0 +1,13 @@
+#!/bin/sh
+
+. DoBuildFiles/generic.properties
+. DoBuildFiles/cmake.properties
+
+[ -z "$VERBOSE" ] || set -x
+
+exec "$DOBUILDDIR/bin/tar_cc_settings" \
+  --project-root "$PROJECTDIR" \
+  --build-system "cmake-${CMAKE_GENERATOR_NAME}" \
+  --include-prefix "$TARGET/DoBuildFiles" \
+  compile_commands.json \
+  CMakeCache.txt

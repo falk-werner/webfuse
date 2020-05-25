@@ -1,0 +1,73 @@
+#
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+#
+# This file is part of dobuild.
+# Copyright (c) 2019 Contributors as noted in the AUTHORS file.
+#
+# SPDX-License-Identifier: MPL-2.0
+
+version: "2.4"
+
+services:
+  check:
+    build:
+      context: .
+      args:
+        - DOCKER_VERSION=$COMPOSEENV_DOCKER_VERSION
+        - REGISTRY_PREFIX=$COMPOSEENV_REGISTRY_PREFIX
+        - DOCKER_DOWNLOAD=$COMPOSEENV_DOCKER_DOWNLOAD
+        - BATS_DOWNLOAD=$COMPOSEENV_BATS_DOWNLOAD
+        - DUMB_INIT_DOWNLOAD=$COMPOSEENV_DUMB_INIT_DOWNLOAD
+        - LIBFAKETIME_DOWNLOAD=$COMPOSEENV_LIBFAKETIME_DOWNLOAD
+        - CAPATH=$COMPOSEENV_CAPATH
+      dockerfile: tests/runners/bats.dockerfile
+    image: dobuild_bats:${COMPOSEENV_PROJECT_VERSION}
+    depends_on:
+      - dind
+    environment:
+      DOCKER_HOST: tcp://dind:2375
+      DOCKER_VERSION: $COMPOSEENV_DOCKER_VERSION
+      REGISTRY_PREFIX: $COMPOSEENV_REGISTRY_PREFIX
+      TMPDIR: /var/tmp
+    volumes:
+      - tmp:/var/tmp
+    volumes_from:
+      - dind:ro
+    networks:
+      - service
+    stdin_open: true
+    tty: true
+    working_dir: ${COMPOSEENV_PROJECTPATH}
+    command: ["bash"]
+  
+  dind:
+    build:
+      context: .
+      args:
+        - DOCKER_VERSION=$COMPOSEENV_DOCKER_VERSION
+        - REGISTRY_PREFIX=$COMPOSEENV_REGISTRY_PREFIX
+        - CAPATH=$COMPOSEENV_CAPATH
+      dockerfile: tests/runners/dind.dockerfile
+    image: dobuild_dind:${COMPOSEENV_PROJECT_VERSION}
+    environment:
+      DOCKER_HOST: tcp://localhost:2375
+    volumes:
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+      - docker:/var/lib/docker
+      - tmp:/var/tmp
+    networks:
+      - service
+    privileged: true
+    command: ["dockerd", "--host=tcp://0.0.0.0:2375", "--storage-driver", "overlay2"]
+
+volumes:
+  tmp:
+  docker:
+
+networks:
+  service:
+    driver: bridge
+
