@@ -1,0 +1,12 @@
+#!/bin/sh
+
+. DoBuildFiles/generic.properties
+. DoBuildFiles/cmake.properties
+. cmake_helper.sh
+
+export CTEST_OUTPUT_ON_FAILURE=1
+
+{ [ -z "$BUILDVERBOSE" ] && [ -z "$TESTVERBOSE" ]; } || set -- "$(cmake_generator_verbose_opt "$CMAKE_GENERATOR_NAME")" "$@"
+[ -z "$VERBOSE" ] || set -x
+
+exec "$CMAKE_GENERATOR_CMD" -j"$NPROC" "$@"

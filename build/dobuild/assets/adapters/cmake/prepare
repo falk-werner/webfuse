@@ -1,0 +1,19 @@
+#!/bin/sh
+
+. DoBuildFiles/generic.properties
+. DoBuildFiles/cmake.properties
+
+camelcase() {
+  echo "$@" | sed -r 's/(^|_)([a-z])/\U\2/g'
+}
+
+if [ -f "${CMAKE_TOOLCHAIN_FILE}" ]; then
+  set -- "$@" "-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE}"
+fi
+if [ -n "$BUILD_TESTING" ]; then
+  set -- "$@" "-DBUILD_TESTING=ON"
+fi
+set -- "$@" -DCMAKE_EXPORT_COMPILE_COMMANDS=ON "-DCMAKE_BUILD_TYPE=$(camelcase "$VARIANT")" "-G${CMAKE_GENERATOR}" "-B${PWD}" "$PROJECTDIR"
+[ -z "$VERBOSE" ] || set -x
+
+exec cmake "$@"

@@ -1,0 +1,15 @@
+#!/bin/sh -e
+
+supports_check_target() {
+  [ -f "$1" ] && grep -q '^check$' "$1"
+}
+
+if supports_check_target 'DoBuildFiles/targets.txt'; then
+  set -- check "$@"
+else
+  assemble
+  set -- test "$@"
+fi
+
+exec cmake_adapter "$@"
+

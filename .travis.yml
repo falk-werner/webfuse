@@ -1,29 +1,28 @@
 language: minimal
 services:
-- docker
+  - docker
 addons:
   apt:
     update: true
     packages:
-    - curl
-    - openssl
-    - ca-certificates
-    - make
-    - qemu-user-static
+      - curl
+      - openssl
+      - ca-certificates
+      - make
+      - qemu-user-static
 env:
   global:
-    - PARALLELMFLAGS="-j4"
-    - PORTABLE_WORSPACE=1
+    - DOCKER_BUILDKIT=0
   matrix:
-    - DISTRO=ubuntu BUILDTYPE=Debug      MARCH=amd64   CHECK_TARGET=memcheck
-    - DISTRO=ubuntu BUILDTYPE=Coverage   MARCH=amd64   CHECK_TARGET=check
-    - DISTRO=ubuntu BUILDTYPE=Release    MARCH=amd64   CHECK_TARGET=memcheck
-    - DISTRO=ubuntu BUILDTYPE=Debug      MARCH=arm32v7 CHECK_TARGET=check
-    - DISTRO=ubuntu BUILDTYPE=MinSizeRel MARCH=arm32v7 CHECK_TARGET=check
-    - DISTRO=alpine BUILDTYPE=Debug      MARCH=amd64   CHECK_TARGET=check
+    - DISTRIB_ID=ubuntu VARIANT=debug        MARCH=x86_64   CHECK_TARGET=memcheck
+    - DISTRIB_ID=ubuntu VARIANT=coverage     MARCH=x86_64   CHECK_TARGET=check
+    - DISTRIB_ID=ubuntu VARIANT=release      MARCH=x86_64   CHECK_TARGET=memcheck
+    - DISTRIB_ID=ubuntu VARIANT=debug        MARCH=arm32v7  CHECK_TARGET=check
+    - DISTRIB_ID=ubuntu VARIANT=min_size_rel MARCH=arm32v7  CHECK_TARGET=check
+    - DISTRIB_ID=alpine VARIANT=debug        MARCH=x86_64   CHECK_TARGET=check
 before_script:
-- make BUILDTYPE=$BUILDTYPE MARCH=$MARCH
+- make -j4 DISTRIB_ID=$DISTRIB_ID VARIANT=$VARIANT MARCH=$MARCH
 script:
-- make DISTRO=$DISTRO BUILDTYPE=$BUILDTYPE MARCH=$MARCH $CHECK_TARGET
+- make -j1 DISTRIB_ID=$DISTRIB_ID VARIANT=$VARIANT MARCH=$MARCH $CHECK_TARGET
 after_success:
 - bash <(curl -s https://codecov.io/bash)

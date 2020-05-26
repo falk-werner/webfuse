@@ -1,0 +1,15 @@
+#!/bin/sh -e
+
+supports_memcheck_target() {
+  [ -f "$1" ] && grep -q '^memcheck$' "$1"
+}
+
+if supports_memcheck_target 'DoBuildFiles/targets.txt'; then
+  set -- cmake_adapter memcheck "$@"
+else
+  assemble
+  set -- ctest_adapter -T memcheck "$@"
+fi
+
+exec "$@"
+

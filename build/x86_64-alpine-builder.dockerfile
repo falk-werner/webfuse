@@ -1,11 +1,7 @@
 ARG REGISTRY_PREFIX=''
 ARG DISTRIB_VERSION=3.9
 
-FROM ${REGISTRY_PREFIX}arm32v7/alpine:${DISTRIB_VERSION} as builder
-
-ARG QEMU_VERSION_=v4.1.0-1
-
-COPY docker/qemu-arm-static-$QEMU_VERSION_ /usr/bin/qemu-arm-static
+FROM ${REGISTRY_PREFIX}alpine:${DISTRIB_VERSION} as builder
 
 RUN set -x \
   && apk add --no-cache \
@@ -99,7 +95,7 @@ RUN set -x \
   && rm -rf "$builddir"
 
 ENV LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/usr/local/lib"
-ENV PKG_CONFIG_PATH=/usr/local/lib32/pkgconfig
+ENV PKG_CONFIG_PATH=/usr/local/lib64/pkgconfig
 
 ARG USERID=1000
 

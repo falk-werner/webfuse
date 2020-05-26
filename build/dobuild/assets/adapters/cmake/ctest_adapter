@@ -1,0 +1,10 @@
+#!/bin/sh
+
+. DoBuildFiles/generic.properties
+. DoBuildFiles/cmake.properties
+. cmake_helper.sh
+
+{ [ -z "$BUILDVERBOSE" ] && [ -z "$TESTVERBOSE" ]; } || set -- "$(cmake_generator_verbose_opt "$CMAKE_GENERATOR_NAME")" "$@"
+[ -z "$VERBOSE" ] || set -x
+
+exec ctest --output-on-failure -j"$NPROC" "$@"

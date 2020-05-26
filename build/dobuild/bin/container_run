@@ -1,0 +1,95 @@
+#!/bin/sh
+#
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+#
+# This file is part of dobuild.
+# Copyright (c) 2019 Contributors as noted in the AUTHORS file.
+#
+# SPDX-License-Identifier: MPL-2.0
+
+set -e
+
+enabled() {
+  { [ "$1" -ne 0 ] || [ "$1" = 'true' ]; } 2>/dev/null
+}
+
+physical_pwd() {
+  pwd -P 2>/dev/null || pwd
+}
+
+try_canonicalize() {
+  readlink -f "$@" 2>/dev/null || realpath "$@"
+}
+
+canonicalize() {
+  if ! try_canonicalize "$1" 2>/dev/null; then
+    echo "$(cd "$(dirname "$1")" && physical_pwd)/$(basename "$1")"
+  fi
+}
+
+scriptdir() {
+  dirname "$(canonicalize "${BASH_SOURCE:-$1}")"
+}
+
+DOBUILDDIR="${DOBUILDDIR:-"$(dirname "$(scriptdir "$0")")"}"
+PATH="$DOBUILDDIR/bin:$PATH"
+
+DOCKER="${DOCKER:-docker}"
+USERID="${DOBUILD_USERID:-$(id -u)}"
+HOSTENVFILTER="^DOCKER_\|_proxy=\|^SOURCE_DATE_EPOCH=${DOBUILD_HOSTENVFILTER:+\|$DOBUILD_HOSTENVFILTER}"
+
+ENVFLAGS="$(printenv | grep -e "$HOSTENVFILTER" | sed -n -e 's/\([^=]*\)=.*/-e \1/p')" || true
+#shellcheck disable=SC2086
+set -- $ENVFLAGS "$@"
+
+set -- --user "$USERID:$USERID" "$@"
+
+if [ -n "$DOBUILD_CGROUPPARENT" ]; then
+  set -- --cgroup-parent "$DOBUILD_CGROUPPARENT" "$@"
+fi
+
+HOST_TZ="${DOBUILD_HOSTTZ:-1}"
+if enabled "$HOST_TZ"; then
+  set -- -v "/etc/timezone:/etc/timezone:ro" "$@"
+  set -- -v "/etc/localtime:/etc/localtime:ro" "$@"
+fi
+
+HOST_CONTAINER="${DOBUILD_HOSTCONTAINER:-"$(get_container_id.sh)"}" || true
+if [ -n "$HOST_CONTAINER" ]; then
+  set -- --volumes-from "$HOST_CONTAINER" "$@"
+elif [ -n "$DOBUILD_PROJECTDIR" ]; then
+  PROJECTDIR="$(canonicalize "$DOBUILD_PROJECTDIR")"
+  set -- --volume "$PROJECTDIR:$PROJECTDIR:cached" "$@"
+fi
+
+# setup options for connection to docker host
+DOCKERSOCK="$(echo "$DOCKER_HOST" | sed -ne 's/^unix:\/\/\(.*\)/\1/p')"
+if [ -S "$DOCKERSOCK" ]; then
+  DOCKERSOCK_GROUP="$(stat -c '%g' "$DOCKERSOCK")"
+  set -- -e DOCKERSOCK_GROUP="$DOCKERSOCK_GROUP" --group-add "$DOCKERSOCK_GROUP" --volume "$DOCKERSOCK:$DOCKERSOCK" "$@"
+elif [ -n "$DOCKER_HOST" ]; then
+  # select the network to reach the daemon
+  if [ -n "$HOST_CONTAINER" ] && [ -z "${DOBUILD_NETWORK+x}" ]; then
+    set -- --network "$("$DOCKER" inspect --format='{{.HostConfig.NetworkMode}}' "$HOST_CONTAINER")" "$@"
+  else
+    DOBUILD_NETWORK="${DOBUILD_NETWORK:-host}"
+    set -- --network "$DOBUILD_NETWORK" "$@"
+  fi
+fi
+
+if [ -t 0 ] && ! is_running_in_bg.sh $$; then
+  set -- --interactive "$@"
+fi
+
+# if STDIN piped or redirected
+if [ -p /dev/stdin ] || { [ ! -t 0 ] && [ ! -p /dev/stdin ]; }; then
+  set -- --interactive "$@"
+elif [ -t 1 ]; then
+  set -- --tty "$@"
+fi
+
+set -- "$DOCKER" run --rm "$@"
+
+exec "$@"

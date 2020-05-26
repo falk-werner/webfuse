@@ -1,0 +1,17 @@
+#!/bin/sh
+
+. DoBuildFiles/generic.properties
+
+{ [ -z "$BUILDVERBOSE" ] && [ -z "$TESTVERBOSE" ]; } || set -- --info "$@"
+[ -z "$VERBOSE" ] || set -x 
+
+exec gradle \
+  --no-daemon \
+  --parallel \
+  --console plain \
+  --max-workers "$NPROC" \
+  --gradle-user-home "$PWD/gradle" \
+  --project-cache-dir "$PWD/gradle-cache" \
+  --project-dir "$PROJECTDIR" \
+  "-Dorg.gradle.project.buildDir=$PWD/build" \
+  "$@"
