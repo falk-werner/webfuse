@@ -18,7 +18,7 @@ addons:
     - qemu-user-static
 env:
   global:
-    - PARALLELMFLAGS="-j2"
+    - PARALLELMFLAGS="-j4"
   matrix:
     - DISTRIB_ID=ubuntu VARIANT=debug        MARCH=x86_64   CHECK_TARGET=memcheck
     - DISTRIB_ID=ubuntu VARIANT=coverage     MARCH=x86_64   CHECK_TARGET=check
@@ -27,7 +27,7 @@ env:
     - DISTRIB_ID=ubuntu VARIANT=min_size_rel MARCH=arm32v7  CHECK_TARGET=check
     - DISTRIB_ID=alpine VARIANT=debug        MARCH=x86_64   CHECK_TARGET=check
 before_script:
-- make $PARALLELMFLAGS VARIANT=$VARIANT MARCH=$MARCH
+- make $PARALLELMFLAGS DISTRIB_ID=$DISTRIB_ID VARIANT=$VARIANT MARCH=$MARCH
 script:
 - make $PARALLELMFLAGS DISTRIB_ID=$DISTRIB_ID VARIANT=$VARIANT MARCH=$MARCH $CHECK_TARGET
 after_success:
