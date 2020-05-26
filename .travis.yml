@@ -12,7 +12,6 @@ addons:
       - qemu-user-static
 env:
   global:
-    - PARALLELMFLAGS="-j4"
     - DOCKER_BUILDKIT=0
   matrix:
     - DISTRIB_ID=ubuntu VARIANT=debug        MARCH=x86_64   CHECK_TARGET=memcheck
@@ -22,8 +21,8 @@ env:
     - DISTRIB_ID=ubuntu VARIANT=min_size_rel MARCH=arm32v7  CHECK_TARGET=check
     - DISTRIB_ID=alpine VARIANT=debug        MARCH=x86_64   CHECK_TARGET=check
 before_script:
-- make $PARALLELMFLAGS DISTRIB_ID=$DISTRIB_ID VARIANT=$VARIANT MARCH=$MARCH
+- make -j4 DISTRIB_ID=$DISTRIB_ID VARIANT=$VARIANT MARCH=$MARCH
 script:
-- make DISTRIB_ID=$DISTRIB_ID VARIANT=$VARIANT MARCH=$MARCH $CHECK_TARGET
+- make -j1 DISTRIB_ID=$DISTRIB_ID VARIANT=$VARIANT MARCH=$MARCH $CHECK_TARGET
 after_success:
 - bash <(curl -s https://codecov.io/bash)
