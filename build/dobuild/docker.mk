@@ -344,11 +344,10 @@ ifeq ($(docker_portable_workspace),)
   container_destdir = $(abspath $(DESTDIR))
 endif
 
-container_cpus = $(INTERNPARALLEL)
+container_cpus = $(call min,$(INTERNPARALLEL) $(JOBSLOTS_DEFAULT))
 container_cpuperiod = 100000
 container_quota = $(call bc,($(container_cpus)*$(container_cpuperiod)))
-# allow twice as much parallel executions, while container are already limited by cgroup
-container_nproc = $(call bc,(2*$(container_cpus)))
+container_nproc = $(INTERNPARALLEL)
 
 docker_runflags += $(DOCKER_RUNFLAGS)
 docker_runflags += $(addprefix --cpus ,$(container_cpus))
