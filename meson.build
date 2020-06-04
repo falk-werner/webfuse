@@ -4,8 +4,13 @@ without_adapter = get_option('without_adapter')
 without_provider = get_option('without_provider')
 without_tests = get_option('without_tests') or without_adapter or without_provider
 
+libwebsockets_dep = dependency('libwebsockets', version: '>=4.0.13', required: false)
+if not libwebsockets_dep.found()
+	cmake = import('cmake')
+	libwebsockets = cmake.subproject('libwebsockets')
+	libwebsockets_dep = libwebsockets.dependency('websockets_shared')
+endif
 
-libwebsockets_dep = dependency('libwebsockets', version: '>=4.0.1') 
 jansson_dep = dependency('jansson', version: '>=2.11', fallback: ['jansson', 'jansson_dep'])
 
 pkg_config = import('pkgconfig')
