@@ -1,0 +1,3 @@
+option('without_tests', type: 'boolean', value: false, description: 'disable unit tests')
+option('without_adapter', type: 'boolean', value: false, description: 'disable adapter library')
+option('without_provider', type: 'boolean', value: false, description: 'disable provider library')

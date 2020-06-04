@@ -1,10 +1,17 @@
 project('webfuse', 'c', 'cpp', version: '0.3.0', license: 'LGPL-3.0+')
 
-libwebsockets_dep = dependency('libwebsockets', version: '>=4.0.1') 
+without_adapter = get_option('without_adapter')
+without_provider = get_option('without_provider')
+without_tests = get_option('without_tests') or without_adapter or without_provider
+
+libwebsockets_dep = dependency('libwebsockets', version: '>=4.0.13', required: false)
+if not libwebsockets_dep.found()
+	cmake = import('cmake')
+	libwebsockets = cmake.subproject('libwebsockets')
+	libwebsockets_dep = libwebsockets.dependency('websockets_shared')
+endif
+
 jansson_dep = dependency('jansson', version: '>=2.11', fallback: ['jansson', 'jansson_dep'])
-libfuse_dep = dependency('fuse3', version: '>=3.8.0', fallback: ['fuse3', 'libfuse_dep'])
-gtest_dep = dependency('gtest', version: '>=1.10.0', fallback: ['gtest', 'gtest_dep']) 
-gmock_main_dep = dependency('gmock_main', version: '>=1.10.0', fallback: ['gtest', 'gmock_main_main_dep'])
 
 pkg_config = import('pkgconfig')
 
@@ -44,6 +51,8 @@ webfuse_core_dep = declare_dependency(
 install_subdir('include/webfuse/core', install_dir: 'include/webfuse')
 
 # Webfuse provider
+
+if not without_provider
 
 webfuse_provider_static = static_library('webfuse_provider',
 	'lib/webfuse/provider/api.c',
@@ -93,7 +102,13 @@ pkg_config.generate(
     filebase: 'webfuse_provider',
     description: 'Provider library for websockets filesystem')
 
+endif
+
 #  Webfuse adapter
+
+if not without_adapter
+
+libfuse_dep = dependency('fuse3', version: '>=3.8.0', fallback: ['fuse3', 'libfuse_dep'])
 
 webfuse_adapter_static = static_library('webfuse_adapter',
 	'lib/webfuse/adapter/api.c',
@@ -148,7 +163,14 @@ pkg_config.generate(
     filebase: 'webfuse_adapter',
     description: 'Websockets filesystem server library')
 
+endif
+
 # Unit Tests
+
+if not without_tests
+
+gtest_dep = dependency('gtest', version: '>=1.10.0', fallback: ['gtest', 'gtest_dep']) 
+gmock_main_dep = dependency('gmock_main', version: '>=1.10.0', fallback: ['gtest', 'gmock_main_main_dep'])
 
 fscheck = executable('fs_check',
 	'test/webfuse/tests/integration/fs_check.c')
@@ -258,3 +280,5 @@ alltests = executable('alltests',
 	])
 
 test('alltests', alltests)
+
+endif
