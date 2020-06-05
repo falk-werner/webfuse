@@ -2,6 +2,10 @@
 
 ## 0.4.0 _(unknown)_
 
+### Fixes
+
+*   Fix meson build failure when gtest or jansson are not installed
+
 ## 0.3.0 _(Fri Jun 05 2020)_
 
 ### Breaking Changes
