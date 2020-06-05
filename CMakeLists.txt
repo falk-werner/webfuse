@@ -1,5 +1,5 @@
 cmake_minimum_required (VERSION 3.10)
-project(webfuse VERSION 0.3.0 DESCRIPTION "Websocket filesystem based on libfuse")
+project(webfuse VERSION 0.4.0 DESCRIPTION "Websocket filesystem based on libfuse")
 
 option(WITHOUT_TESTS    "disable unit tests"   OFF)
 option(WITHOUT_ADAPTER  "disable adapter library" OFF)
