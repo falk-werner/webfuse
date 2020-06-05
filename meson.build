@@ -1,4 +1,4 @@
-project('webfuse', 'c', 'cpp', version: '0.3.0', license: 'LGPL-3.0+')
+project('webfuse', 'c', 'cpp', version: '0.4.0', license: 'LGPL-3.0+')
 
 without_adapter = get_option('without_adapter')
 without_provider = get_option('without_provider')
