@@ -96,7 +96,8 @@ install_headers('include/webfuse_provider.h', subdir: 'webfuse')
 install_subdir('include/webfuse/provider', install_dir: 'include/webfuse')
 
 pkg_config.generate(
-    libraries: [webfuse_provider, jansson_dep, libwebsockets_dep],
+    libraries: [webfuse_provider],
+	requires: ['libwebsockets', 'jansson'],
     subdirs: '.',
     version: meson.project_version(),
     name: 'libwebfuse_provider',
@@ -157,7 +158,8 @@ install_headers('include/webfuse_adapter.h', subdir: 'webfuse')
 install_subdir('include/webfuse/adapter', install_dir: 'include/webfuse')
 
 pkg_config.generate(
-    libraries: [webfuse_adapter, jansson_dep, libwebsockets_dep, libfuse_dep],
+    libraries: [webfuse_adapter],
+	requires: ['fuse3', 'libwebsockets', 'jansson'],
     subdirs: '.',
     version: meson.project_version(),
     name: 'libwebfuse_adapter',
