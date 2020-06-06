@@ -38,6 +38,7 @@ struct wfp_static_filesystem
     struct wfp_static_filesystem_entry * entries;
     size_t size;
     size_t capacity;
+    void * user_data;
 };
 
 static struct wfp_static_filesystem_entry *
@@ -335,6 +336,7 @@ wfp_static_filesystem_create(
     filesystem->entries = malloc(sizeof(struct wfp_static_filesystem_entry) * WFP_STATIC_FILESYSTEM_DEFAULT_CAPACITY);
     filesystem->size = 0;
     filesystem->capacity = WFP_STATIC_FILESYSTEM_DEFAULT_CAPACITY;
+    filesystem->user_data = NULL;
 
     wfp_static_filesystem_add_dir(filesystem, 0, "<root>");
 
@@ -401,4 +403,19 @@ wfp_static_filesystem_add_text(
 {
     size_t length = strlen(content);
     wfp_static_filesystem_add(filesystem, path, mode, content, length);
+}
+
+void
+wfp_static_filesystem_set_user_data(
+    struct wfp_static_filesystem * filesystem,
+    void * user_data)
+{
+    filesystem->user_data = user_data;
+}
+
+void *
+wfp_static_filesystem_get_user_data(
+    struct wfp_static_filesystem * filesystem)
+{
+    return filesystem->user_data;
 }

@@ -56,6 +56,15 @@ wfp_static_filesystem_add_text(
     int mode,
     char const * content);
 
+extern void
+wfp_static_filesystem_set_user_data(
+    struct wfp_static_filesystem * filesystem,
+    void * user_data);
+
+extern void *
+wfp_static_filesystem_get_user_data(
+    struct wfp_static_filesystem * filesystem);
+
 #ifdef __cplusplus
 }
 #endif
