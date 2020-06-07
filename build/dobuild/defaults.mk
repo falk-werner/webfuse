@@ -552,7 +552,7 @@ HOST_CONTAINER = $(call memorize,HOST_CONTAINER,$(DOBUILD_HOSTCONTAINER))
 SOURCE_DATE_EPOCH ?= $(call memorize,SOURCE_DATE_EPOCH,$(shell $(DOBUILDDIR)/bin/get_source_date_epoch $(TOPDIR)))
 BUILDTIME = $(call memorize,BUILDTIME,$(shell date -u -d '@$(SOURCE_DATE_EPOCH)' --rfc-3339 ns 2>/dev/null))
 
-JOBSLOTS_DEFAULT = $(if $(findstring --jobserver-,$(make_cmdline)),2,$(shell nproc 2>/dev/null || echo '2'))
+JOBSLOTS_DEFAULT = $(if $(findstring --jobserver-,$(make_cmdline)),2,$(nproc))
 JOBSLOTS = $(call memorize,JOBSLOTS,$(or $(DOBUILD_JOBSLOTS),$(JOBSLOTS_DEFAULT)))
 
 SKIP_MD5SUM = $(call memorize,SKIP_MD5SUM,$(DOBUILD_SKIPMD5SUM))
@@ -590,6 +590,7 @@ $(VERBOSE)SILENT := @
 make_pid = $(call memorize,make_pid,$(shell echo "$$PPID"))
 make_cmdline = $(call memorize,make_cmdline,$(shell set -- $$(ps T 2>/dev/null | sed -n -e 's!^\s*$(make_pid)\s\+.*\($(call escape,$(MAKE),!)\s\+.*\)!\1!p') && echo "$$@"))
 
+nproc = $(call memorize,nproc,$(shell nproc || echo '1'))
 machine = $(call memorize,machine,$(shell uname -m 2>/dev/null))
 
 make_version = $(MAKE_VERSION)
