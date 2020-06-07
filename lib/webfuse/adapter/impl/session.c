@@ -109,8 +109,11 @@ bool wf_impl_session_add_filesystem(
     if (result)
     {
         struct wf_impl_filesystem * filesystem = wf_impl_filesystem_create(session, name, mountpoint);
-        wf_slist_append(&session->filesystems, &filesystem->item);
         result = (NULL != filesystem);
+        if (result)
+        {
+            wf_slist_append(&session->filesystems, &filesystem->item);
+        }
     }
     
     // cleanup on error

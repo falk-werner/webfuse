@@ -1,10 +1,17 @@
-project('webfuse', 'c', 'cpp', version: '0.3.0', license: 'LGPL-3.0+')
+project('webfuse', 'c', 'cpp', version: '0.4.0', license: 'LGPL-3.0+')
 
-libwebsockets_dep = dependency('libwebsockets', version: '>=4.0.1') 
+without_adapter = get_option('without_adapter')
+without_provider = get_option('without_provider')
+without_tests = get_option('without_tests') or without_adapter or without_provider
+
+libwebsockets_dep = dependency('libwebsockets', version: '>=4.0.13', required: false)
+if not libwebsockets_dep.found()
+	cmake = import('cmake')
+	libwebsockets = cmake.subproject('libwebsockets')
+	libwebsockets_dep = libwebsockets.dependency('websockets_shared')
+endif
+
 jansson_dep = dependency('jansson', version: '>=2.11', fallback: ['jansson', 'jansson_dep'])
-libfuse_dep = dependency('fuse3', version: '>=3.8.0', fallback: ['fuse3', 'libfuse_dep'])
-gtest_dep = dependency('gtest', version: '>=1.10.0', fallback: ['gtest', 'gtest_dep']) 
-gmock_main_dep = dependency('gmock_main', version: '>=1.10.0', fallback: ['gtest', 'gmock_main_main_dep'])
 
 pkg_config = import('pkgconfig')
 
@@ -45,6 +52,8 @@ install_subdir('include/webfuse/core', install_dir: 'include/webfuse')
 
 # Webfuse provider
 
+if not without_provider
+
 webfuse_provider_static = static_library('webfuse_provider',
 	'lib/webfuse/provider/api.c',
 	'lib/webfuse/provider/impl/url.c',
@@ -67,7 +76,8 @@ webfuse_provider_static = static_library('webfuse_provider',
 
 webfuse_provider_static_dep = declare_dependency(
     include_directories: inc_dir,
-    link_with: webfuse_provider_static)
+    link_with: webfuse_provider_static,
+	dependencies: [webfuse_core_dep])
 
 webfuse_provider = shared_library('webfuse_provider',
     'lib/webfuse/provider/api.c',
@@ -86,14 +96,21 @@ install_headers('include/webfuse_provider.h', subdir: 'webfuse')
 install_subdir('include/webfuse/provider', install_dir: 'include/webfuse')
 
 pkg_config.generate(
-    libraries: [webfuse_provider, jansson_dep, libwebsockets_dep],
+    libraries: [webfuse_provider],
+	requires: ['libwebsockets', 'jansson'],
     subdirs: '.',
     version: meson.project_version(),
     name: 'libwebfuse_provider',
     filebase: 'webfuse_provider',
     description: 'Provider library for websockets filesystem')
 
+endif
+
 #  Webfuse adapter
+
+if not without_adapter
+
+libfuse_dep = dependency('fuse3', version: '>=3.8.0', fallback: ['fuse3', 'libfuse_dep'])
 
 webfuse_adapter_static = static_library('webfuse_adapter',
 	'lib/webfuse/adapter/api.c',
@@ -122,7 +139,7 @@ webfuse_adapter_static = static_library('webfuse_adapter',
 webfuse_adapter_static_dep = declare_dependency(
 	include_directories: inc_dir,
 	link_with: [webfuse_adapter_static],
-	dependencies: [libfuse_dep])
+	dependencies: [webfuse_core_dep, libfuse_dep])
 
 webfuse_adapter = shared_library('webfuse_adapter',
     'lib/webfuse/adapter/api.c',
@@ -141,14 +158,22 @@ install_headers('include/webfuse_adapter.h', subdir: 'webfuse')
 install_subdir('include/webfuse/adapter', install_dir: 'include/webfuse')
 
 pkg_config.generate(
-    libraries: [webfuse_adapter, jansson_dep, libwebsockets_dep, libfuse_dep],
+    libraries: [webfuse_adapter],
+	requires: ['fuse3', 'libwebsockets', 'jansson'],
     subdirs: '.',
     version: meson.project_version(),
     name: 'libwebfuse_adapter',
     filebase: 'webfuse_adapter',
     description: 'Websockets filesystem server library')
 
+endif
+
 # Unit Tests
+
+if not without_tests
+
+gtest_dep = dependency('gtest', version: '>=1.10.0', fallback: ['gtest', 'gtest_dep']) 
+gmock_main_dep = dependency('gmock_main', version: '>=1.10.0', fallback: ['gtest', 'gmock_main_dep'])
 
 fscheck = executable('fs_check',
 	'test/webfuse/tests/integration/fs_check.c')
@@ -258,3 +283,5 @@ alltests = executable('alltests',
 	])
 
 test('alltests', alltests)
+
+endif
