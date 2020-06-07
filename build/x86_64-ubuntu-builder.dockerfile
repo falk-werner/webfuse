@@ -8,14 +8,22 @@ RUN set -x \
   && apt upgrade -y \
   && apt install --yes --no-install-recommends \
        build-essential \
+       python3 \
+       python3-pip \
+       python3-setuptools \
+       python3-wheel \
        cmake \
        ninja-build \
        pkg-config \
-       rsync \
        gdb \
        gdbserver \
        valgrind \
-       lcov 
+       lcov \
+       git \
+       ca-certificates \
+       openssl \
+       libssl-dev \
+   && pip3 install --system meson
 
 COPY src /usr/local/src
 
@@ -38,56 +46,17 @@ RUN set -x \
   && rm -rf "$builddir" \
   && apt purge -y $builddeps
 
-ARG GTEST_VERSION=1.10.0
-
-RUN set -x \
-  && builddir="/tmp/out" \
-  && mkdir -p "$builddir" \
-  && cd "$builddir" \
-  && cmake "/usr/local/src/googletest-release-$GTEST_VERSION" \
-  && make "$PARALLELMFLAGS" install \
-  && rm -rf "$builddir"
-
 ARG FUSE_VERSION=3.9.1
 
 RUN set -x \
-  && builddeps="udev gettext python3 python3-pip python3-setuptools python3-wheel" \
+  && builddeps="udev gettext" \
   && apt install --yes --no-install-recommends $builddeps \
-  && pip3 install --system meson \
   && builddir="/tmp/out" \
   && mkdir -p "$builddir" \
-  && cd "$builddir" \
-  && meson "/usr/local/src/libfuse-fuse-$FUSE_VERSION" \
-  && meson configure -Dexamples=false \
-  && ninja \
-  && ninja install \
-  && pip3 uninstall -y meson \
+  && meson -Dexamples=false "$builddir" "/usr/local/src/libfuse-fuse-$FUSE_VERSION" \
+  && ninja "$PARALLELMFLAGS" -C "$builddir" install \
   && rm -rf "$builddir" \
   && apt purge -y $builddeps
-
-ARG WEBSOCKETS_VERSION=4.0.10
-
-RUN set -x \
-  && apt install --yes --no-install-recommends \
-       ca-certificates \
-       openssl \
-       libssl-dev \
-  && builddir="/tmp/out" \
-  && mkdir -p "$builddir" \
-  && cd "$builddir" \
-  && cmake "/usr/local/src/libwebsockets-$WEBSOCKETS_VERSION" \
-  && make "$PARALLELMFLAGS" install \
-  && rm -rf "$builddir"
-
-ARG JANSSON_VERSION=2.12
-
-RUN set -x \
-  && builddir="/tmp/out" \
-  && mkdir -p "$builddir" \
-  && cd "$builddir" \
-  && cmake -DJANSSON_BUILD_DOCS=OFF "/usr/local/src/jansson-$JANSSON_VERSION" \
-  && make "$PARALLELMFLAGS" install \
-  && rm -rf "$builddir"
 
 ENV LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/usr/local/lib"
 

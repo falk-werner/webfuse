@@ -11,7 +11,9 @@ default: all
 # Overridable project defaults
 
 DOBUILD_DOCKERFILE ?= $(PROJECTDIR)/build/%MARCH%-%DISTRIB_ID%-%ID%.dockerfile
+DOBUILD_EXTDIR ?= $(PROJECTDIR)/build/dobuild-extensions
 DOBUILD_PROJECTDIR ?= $(patsubst %/,%,$(dir $(MAKEFILE)))
+DOBUILD_GENERIC_ADAPTER ?= meson
 
 DOBUILDDIR ?= $(PROJECTDIR)/build/dobuild
 PROJECTDIR = $(DOBUILD_PROJECTDIR)
@@ -39,29 +41,11 @@ FETCH_TARGETS += $(FETCHDIR)/dumb-init-$(DUMB_INIT_VERSION).tar.gz
 $(FETCHDIR)/dumb-init-$(DUMB_INIT_VERSION).tar.gz: URL := https://github.com/Yelp/dumb-init/archive/v${DUMB_INIT_VERSION}.tar.gz
 $(SKIP_MD5SUM)$(FETCHDIR)/dumb-init-$(DUMB_INIT_VERSION).tar.gz: MD5 := 6166084b05772cdcf615a762c6f3b32e
 
-GTEST_VERSION ?= 1.10.0
-IMAGE_BUILDARGS += GTEST_VERSION=$(GTEST_VERSION)
-FETCH_TARGETS += $(FETCHDIR)/googletest-release-$(GTEST_VERSION).tar.gz
-$(FETCHDIR)/googletest-release-$(GTEST_VERSION).tar.gz: URL := https://github.com/google/googletest/archive/release-$(GTEST_VERSION).tar.gz
-$(SKIP_MD5SUM)$(FETCHDIR)/googletest-release-$(GTEST_VERSION).tar.gz: MD5 := ecd1fa65e7de707cd5c00bdac56022cd
-
 FUSE_VERSION ?= 3.9.1
 IMAGE_BUILDARGS += FUSE_VERSION=$(FUSE_VERSION)
 FETCH_TARGETS += $(FETCHDIR)/libfuse-fuse-$(FUSE_VERSION).tar.gz
 $(FETCHDIR)/libfuse-fuse-$(FUSE_VERSION).tar.gz: URL := https://github.com/libfuse/libfuse/archive/fuse-$(FUSE_VERSION).tar.gz
 $(SKIP_MD5SUM)$(FETCHDIR)/libfuse-fuse-$(FUSE_VERSION).tar.gz: MD5 := 5f7c1062def710d8b60343524a18cc82
-
-WEBSOCKETS_VERSION ?= 4.0.10
-IMAGE_BUILDARGS += WEBSOCKETS_VERSION=$(WEBSOCKETS_VERSION)
-FETCH_TARGETS += $(FETCHDIR)/libwebsockets-$(WEBSOCKETS_VERSION).tar.gz
-$(FETCHDIR)/libwebsockets-$(WEBSOCKETS_VERSION).tar.gz: URL := https://github.com/warmcat/libwebsockets/archive/v$(WEBSOCKETS_VERSION).tar.gz
-$(SKIP_MD5SUM)$(FETCHDIR)/libwebsockets-$(WEBSOCKETS_VERSION).tar.gz: MD5 := a1ce5a279fd06b2ce132c02c292df7aa
-
-JANSSON_VERSION ?= 2.12
-IMAGE_BUILDARGS += JANSSON_VERSION=$(JANSSON_VERSION)
-FETCH_TARGETS += $(FETCHDIR)/jansson-$(JANSSON_VERSION).tar.gz
-$(FETCHDIR)/jansson-$(JANSSON_VERSION).tar.gz: URL := https://github.com/akheron/jansson/archive/v$(JANSSON_VERSION).tar.gz
-$(SKIP_MD5SUM)$(FETCHDIR)/jansson-$(JANSSON_VERSION).tar.gz: MD5 := c4b106528d5ffb521178565de1ba950d
 
 QEMU_VERSION ?= v4.1.0-1
 IMAGE_BUILDARGS += QEMU_VERSION_=$(QEMU_VERSION)
@@ -72,7 +56,7 @@ $(SKIP_MD5SUM)$(FETCHDIR)/qemu-arm-static-$(QEMU_VERSION): MD5 := e508e6e4dd7f3a
 #######################################################################################################################
 # Architecture-specific rule target configuration
 
-CMAKE_TARGETS += $(call target_properties_combine,\
+GENERIC_TARGETS += $(call target_properties_combine,\
     ,\
     x86_64 arm32v7,\
     ubuntu@bionic alpine@3.9,\
@@ -80,9 +64,9 @@ CMAKE_TARGETS += $(call target_properties_combine,\
     ,\
     builder,\
     ,\
-    debug release coverage min_size_rel \
+    debug release coverage minsize \
   )
-DOCKER_TARGETS += $(CMAKE_TARGETS)
+DOCKER_TARGETS += $(GENERIC_TARGETS)
 
 #######################################################################################################################
 # Common rule target configuration
@@ -114,7 +98,6 @@ MAKEFILE_DEPS += cp
 #######################################################################################################################
 # Rules
 
-include $(DOBUILDDIR)/cmake.mk
 include $(DOBUILDDIR)/docker.mk
 include $(DOBUILDDIR)/standardrules.mk
 

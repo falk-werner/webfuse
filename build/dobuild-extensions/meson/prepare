@@ -1,0 +1,18 @@
+#!/bin/sh
+
+. DoBuildFiles/generic.properties
+
+rm -rf meson
+
+BUILDTYPE="$VARIANT"
+COVERAGE=false
+
+if [ "$VARIANT" = "coverage" ]; then
+  BUILDTYPE="debug"
+  COVERAGE=true
+fi
+
+[ -z "$VERBOSE" ] || set -x
+
+exec meson setup --buildtype "$BUILDTYPE" "-Db_coverage=$COVERAGE" "${PWD}/meson" "$PROJECTDIR" "$@"
+

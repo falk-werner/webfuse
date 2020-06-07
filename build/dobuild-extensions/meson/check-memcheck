@@ -1,0 +1,9 @@
+#!/bin/sh
+
+. DoBuildFiles/generic.properties
+
+{ [ -z "$BUILDVERBOSE" ] && [ -z "$TESTVERBOSE" ]; } || set -- -v "$@"
+[ -z "$VERBOSE" ] || set -x
+
+exec meson test -C "${PWD}/meson" --num-processes "$NPROC" --print-errorlogs --wrap 'valgrind --error-exitcode=1' "$@"
+

@@ -344,7 +344,7 @@ ifeq ($(docker_portable_workspace),)
   container_destdir = $(abspath $(DESTDIR))
 endif
 
-container_cpus = $(call min,$(INTERNPARALLEL) $(JOBSLOTS_DEFAULT))
+container_cpus = $(call min,$(INTERNPARALLEL) $(nproc))
 container_cpuperiod = 100000
 container_quota = $(call bc,($(container_cpus)*$(container_cpuperiod)))
 container_nproc = $(INTERNPARALLEL)

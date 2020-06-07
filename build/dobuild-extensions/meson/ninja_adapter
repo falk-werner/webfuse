@@ -1,0 +1,10 @@
+#!/bin/sh
+
+. DoBuildFiles/generic.properties
+
+set -- "$@" -C "${PWD}/meson"
+{ [ -z "$BUILDVERBOSE" ] && [ -z "$TESTVERBOSE" ]; } || set -- -v "$@"
+[ -z "$VERBOSE" ] || set -x
+
+exec ninja -j"$NPROC" "$@"
+

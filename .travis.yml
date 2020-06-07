@@ -18,7 +18,7 @@ env:
     - DISTRIB_ID=ubuntu VARIANT=coverage     MARCH=x86_64   CHECK_TARGET=check
     - DISTRIB_ID=ubuntu VARIANT=release      MARCH=x86_64   CHECK_TARGET=memcheck
     - DISTRIB_ID=ubuntu VARIANT=debug        MARCH=arm32v7  CHECK_TARGET=check
-    - DISTRIB_ID=ubuntu VARIANT=min_size_rel MARCH=arm32v7  CHECK_TARGET=check
+    - DISTRIB_ID=ubuntu VARIANT=minsize      MARCH=arm32v7  CHECK_TARGET=check
     - DISTRIB_ID=alpine VARIANT=debug        MARCH=x86_64   CHECK_TARGET=check
 before_script:
 - make -j4 DISTRIB_ID=$DISTRIB_ID VARIANT=$VARIANT MARCH=$MARCH

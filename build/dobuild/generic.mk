@@ -105,7 +105,7 @@ generic_default_prerequisites = \
 
 # retrieves the target generic default extension directory
 # $(call generic_default_extdir,target-name)
-generic_default_extdir = $(addprefix $(PROJECTDIR)/dobuild-extensions/,$(cache.$1.adapter))
+generic_default_extdir = $(addprefix $(addsuffix /,$(EXTDIR)),$(cache.$1.adapter))
 
 # creates a generic run rule command
 # $(call generic_run_cmd,target-name,command[,args],alternative-command[,output-command])
