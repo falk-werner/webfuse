@@ -1,0 +1,4 @@
+#!/bin/sh -e
+
+exec ninja_adapter test "$@"
+

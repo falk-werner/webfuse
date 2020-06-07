@@ -1,0 +1,10 @@
+#!/bin/sh
+
+. DoBuildFiles/generic.properties
+
+rm -rf meson
+
+[ -z "$VERBOSE" ] || set -x
+
+exec meson setup --buildtype "$VARIANT" "${PWD}/meson" "$PROJECTDIR" "$@"
+
