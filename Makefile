@@ -64,7 +64,7 @@ GENERIC_TARGETS += $(call target_properties_combine,\
     ,\
     builder,\
     ,\
-    debug release coverage min_size_rel \
+    debug release coverage minsize \
   )
 DOCKER_TARGETS += $(GENERIC_TARGETS)
 
