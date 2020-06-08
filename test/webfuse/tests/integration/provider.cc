@@ -50,9 +50,8 @@ class Provider::Private
 public:
     explicit Private(char const * url)
     : is_shutdown_requested(false)
+    , connection_state(ConnectionState::connecting)
     {
-        ConnectionState connection_state = ConnectionState::connecting;
-
         config = wfp_client_config_create();
         wfp_client_config_set_certpath(config, "client-cert.pem");
         wfp_client_config_set_keypath(config, "client-key.pem");
@@ -92,6 +91,12 @@ public:
         RequestShutdown();
         thread.join();
 
+        wfp_client_disconnect(client);
+        while (ConnectionState::disconnected != connection_state)
+        {
+            wfp_client_service(client);
+        }
+
         wfp_client_dispose(client);
 
         wfp_static_filesystem_dispose(fs);
@@ -117,17 +122,12 @@ private:
         {
             wfp_client_service(context->client);
         }
-
-        wfp_client_disconnect(context->client);
-        while (wfp_impl_client_is_connected(context->client)) 
-        {
-            wfp_client_service(context->client);
-        }
     }
 
     std::mutex shutdown_lock;
     std::thread thread;
     bool is_shutdown_requested;
+    ConnectionState connection_state;
 
     wfp_client_config * config;
     wfp_static_filesystem * fs;
