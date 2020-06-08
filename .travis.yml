@@ -15,9 +15,7 @@ env:
     - DOCKER_BUILDKIT=0
   matrix:
     - DISTRIB_ID=ubuntu VARIANT=minsize   MARCH=arm32v7  CHECK_TARGET=check
-    - DISTRIB_ID=ubuntu VARIANT=minsize   MARCH=arm32v7  CHECK_TARGET=check
     - DISTRIB_ID=ubuntu VARIANT=debug     MARCH=arm32v7  CHECK_TARGET=check
-    - DISTRIB_ID=ubuntu VARIANT=release   MARCH=arm32v7  CHECK_TARGET=check
     - DISTRIB_ID=ubuntu VARIANT=release   MARCH=arm32v7  CHECK_TARGET=check
 before_script:
 - make -j4 DISTRIB_ID=$DISTRIB_ID VARIANT=$VARIANT MARCH=$MARCH
