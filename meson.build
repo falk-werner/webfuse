@@ -250,6 +250,7 @@ alltests = executable('alltests',
 	'test/webfuse/tests/integration/file.cc',
 	'test/webfuse/tests/integration/server.cc',
 	'test/webfuse/tests/integration/provider.cc',
+	'test/webfuse/tests/adapter/test_client.cc',
 	link_args: [
 		'-Wl,--wrap=wf_timer_manager_create',
 		'-Wl,--wrap=wf_timer_manager_dispose',

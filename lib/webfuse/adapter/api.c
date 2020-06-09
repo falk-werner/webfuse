@@ -178,3 +178,101 @@ wf_mountpoint_set_userdata(
 {
     wf_impl_mountpoint_set_userdata(mountpoint, user_data, dispose);
 }
+
+// client
+
+struct wf_client *
+wf_client_create(
+    wf_client_callback_fn * callback,
+    void * user_data)
+{
+    (void) callback;
+    (void) user_data;
+
+    return NULL;
+}
+
+void
+wf_client_dispose(
+    struct wf_client * client)
+{
+    (void) client;
+}
+
+void *
+wf_client_get_userdata(
+    struct wf_client * client)
+{
+    (void) client;
+    return NULL;
+}
+
+void
+wf_client_service(
+    struct wf_client * client)
+{
+    (void) client;
+}
+
+void
+wf_client_interrupt(
+    struct wf_client * client)
+{
+    (void) client;
+}
+
+void
+wf_client_connect(
+    struct wf_client * client,
+    char const * url)
+{
+    (void) client;
+    (void) url;
+}
+
+void
+wf_client_disconnect(
+    struct wf_client * client)
+{
+    (void) client;
+}
+
+void
+wf_client_authenticate(
+    struct wf_client * client)
+{
+    (void) client;
+}
+
+void
+wf_client_add_filesystem(
+    struct wf_client * client,
+    char const * local_path,
+    char const * name)
+{
+    (void) client;
+    (void) local_path;
+    (void) name;
+}
+
+// client credentials
+
+void
+wf_client_credentials_set_type(
+    struct wf_client_credentials * credentials,
+    char const * type)
+{
+    (void) credentials;
+    (void) type;
+}
+
+void
+wf_client_credentials_add(
+    struct wf_client_credentials * credentials,
+    char const * key,
+    char const * value)
+{
+    (void) credentials;
+    (void) key;
+    (void) value;
+}
