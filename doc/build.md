@@ -1,39 +1,13 @@
 # Build Instructions
 
-To install dependencies, see below.
-
-    cd webfuse
-    mkdir .build
-    cd .build
-    cmake ..
-    make
-
-## Build options
-
-By default, unit tests are enabled. You can disable them using the following cmake options:
-
--   **WITHOUT_TESTS**: disable tests  
-    `cmake -DWITHOUT_TESTS=ON ..`
-
-Since webfuse consists of two libraries, it is possible to disable one of them
-in order to reduce build dependencies.  
-*Note that unit tests are only available, when both libraries are built.*
-
--   **WITHOUT_ADAPTER**: omit adapter library  
-    `cmake -DWITHOUT_ADAPTER=ON`
-
--   **WIHTOUT_PROVIDER**: omit provider library
-    `cmake -DWITHOUT_PROVIDER=ON`
-
-## Build using Meson (experimental)
-
-_Note: Meson build support is experimental. Do not rely on it._
+To build webfuse from source, meson is needed.
+Please refer to [meson quick guide](https://mesonbuild.com/Quick-guide.html) for setup instructions.
 
     meson .build
     cd .build
     ninja build
 
-### Meson Build options
+## Build options
 
 Build options can be specified during meson setup or later via meson configure.
 
@@ -71,8 +45,6 @@ After that, you will find the API documentation in the doc/api subdirectory.
 ### Installation from source
 
 #### libfuse
-
-To install libfuse, meson is needed. Please refer to [meson quick guide](https://mesonbuild.com/Quick-guide.html) for setup instructions.
 
     wget -O fuse-3.9.1.tar.gz https://github.com/libfuse/libfuse/archive/fuse-3.9.1.tar.gz
     tar -xf fuse-3.9.1.tar.gz

@@ -2,6 +2,10 @@
 
 ## 0.4.0 _(unknown)_
 
+### Breaking Changes
+
+*   Remove CMake support (change build system to meson)
+
 ### Fixes
 
 *   Fix meson build failure when gtest or jansson are not installed
