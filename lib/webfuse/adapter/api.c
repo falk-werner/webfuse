@@ -147,6 +147,21 @@ char const * wf_credentials_get(
     return wf_impl_credentials_get(credentials, key);
 }
 
+void wf_credentials_set_type(
+    struct wf_credentials * credentials,
+    char const * type)
+{
+    wf_impl_credentials_set_type(credentials, type);
+}
+
+void wf_credentials_add(
+    struct wf_credentials * credentials,
+    char const * key,
+    char const * value)
+{
+    wf_impl_credentials_add(credentials, key, value);
+}
+
 // mountpoint
 
 struct wf_mountpoint *
@@ -255,24 +270,3 @@ wf_client_add_filesystem(
     (void) name;
 }
 
-// client credentials
-
-void
-wf_client_credentials_set_type(
-    struct wf_client_credentials * credentials,
-    char const * type)
-{
-    (void) credentials;
-    (void) type;
-}
-
-void
-wf_client_credentials_add(
-    struct wf_client_credentials * credentials,
-    char const * key,
-    char const * value)
-{
-    (void) credentials;
-    (void) key;
-    (void) value;
-}

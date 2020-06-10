@@ -65,6 +65,28 @@ extern WF_API char const * wf_credentials_get(
     struct wf_credentials const * credentials,
     char const * key);
 
+//------------------------------------------------------------------------------
+/// \brief Sets the type of the credentials.
+///
+/// \param credentials Pointer to credentials object.
+/// \param type Type of credentials.
+//------------------------------------------------------------------------------
+extern WF_API void wf_credentials_set_type(
+    struct wf_credentials * credentials,
+    char const * type);
+
+//------------------------------------------------------------------------------
+/// \brief Adds an item to credentials
+///
+/// \param credentials Pointer to credentials object.
+/// \param key String to identify the item.
+/// \param key Value of the item.
+//------------------------------------------------------------------------------
+extern WF_API void wf_credentials_add(
+    struct wf_credentials * credentials,
+    char const * key,
+    char const * value);
+
 #ifdef __cplusplus
 }
 #endif

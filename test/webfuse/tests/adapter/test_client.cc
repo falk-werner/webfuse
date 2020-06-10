@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 
 #include "webfuse/adapter/client.h"
-#include "webfuse/adapter/client_credentials.h"
+#include "webfuse/adapter/credentials.h"
 
 namespace
 {
@@ -43,10 +43,10 @@ void callback(
             break;
         case WF_CLIENT_AUTHENTICATE_GET_CREDENTIALS:
             {
-                auto * credentials = reinterpret_cast<wf_client_credentials*>(args);
-                wf_client_credentials_set_type(credentials, "username");
-                wf_client_credentials_add(credentials, "user", "bob");
-                wf_client_credentials_add(credentials, "password", "secret");
+                auto * credentials = reinterpret_cast<wf_credentials*>(args);
+                wf_credentials_set_type(credentials, "username");
+                wf_credentials_add(credentials, "user", "bob");
+                wf_credentials_add(credentials, "password", "secret");
             }
             break;
         case WF_CLIENT_FILESYSTEM_ADDED:
