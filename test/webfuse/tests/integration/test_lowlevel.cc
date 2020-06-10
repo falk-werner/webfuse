@@ -37,7 +37,7 @@ wf_test_integration_lowlevel_on_disconnected(
 
 bool
 wf_test_integration_lowlevel_authenticate(
-    struct wf_credentials * credentials,
+    struct wf_credentials const * credentials,
     void * )
 {
     char const * username = wf_credentials_get(credentials, "username");

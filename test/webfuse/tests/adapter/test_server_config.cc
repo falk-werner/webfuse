@@ -20,7 +20,7 @@ wf_mountpoint * create_mountpoint(
 }
 
 bool authenticate(
-    wf_credentials * credentials,
+    wf_credentials const * credentials,
     void * user_data)
 {
     (void) credentials;

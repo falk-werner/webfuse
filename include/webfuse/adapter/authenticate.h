@@ -31,7 +31,7 @@ struct wf_credentials;
 /// \see wf_server_protocol_add_authenticator
 //------------------------------------------------------------------------------
 typedef bool wf_authenticate_fn(
-    struct wf_credentials * credentials,
+    struct wf_credentials const * credentials,
     void * user_data);
 
 #ifdef __cplusplus
