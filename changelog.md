@@ -5,6 +5,7 @@
 ### Breaking Changes
 
 *   Remove CMake support (change build system to meson)
+*   Make argument credentials const in wf_authenticate_fn
 
 ### Fixes
 
