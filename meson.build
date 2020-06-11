@@ -132,6 +132,7 @@ webfuse_adapter_static = static_library('webfuse_adapter',
 	'lib/webfuse/adapter/impl/operation/open.c',
 	'lib/webfuse/adapter/impl/operation/close.c',
 	'lib/webfuse/adapter/impl/operation/read.c',
+	'lib/webfuse/adapter/impl/client.c',
     c_args: ['-fvisibility=hidden'],
     include_directories: private_inc_dir,
     dependencies: [webfuse_core_dep, libfuse_dep])

@@ -18,6 +18,7 @@
 #include <webfuse/adapter/mountpoint.h>
 
 #include <webfuse/adapter/client.h>
+#include <webfuse/adapter/client_callback.h>
 
 
 #endif

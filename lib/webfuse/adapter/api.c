@@ -8,6 +8,8 @@
 
 #include "webfuse/core/util.h"
 
+#include "webfuse/adapter/impl/client.h"
+
 // server
 
 struct wf_server * wf_server_create(
@@ -201,39 +203,35 @@ wf_client_create(
     wf_client_callback_fn * callback,
     void * user_data)
 {
-    (void) callback;
-    (void) user_data;
-
-    return NULL;
+    return wf_impl_client_create(callback, user_data);
 }
 
 void
 wf_client_dispose(
     struct wf_client * client)
 {
-    (void) client;
+    wf_impl_client_dispose(client);
 }
 
 void *
 wf_client_get_userdata(
     struct wf_client * client)
 {
-    (void) client;
-    return NULL;
+    return wf_impl_client_get_userdata(client);
 }
 
 void
 wf_client_service(
     struct wf_client * client)
 {
-    (void) client;
+    wf_impl_client_service(client);
 }
 
 void
 wf_client_interrupt(
     struct wf_client * client)
 {
-    (void) client;
+    wf_impl_client_interrupt(client);
 }
 
 void
@@ -241,22 +239,21 @@ wf_client_connect(
     struct wf_client * client,
     char const * url)
 {
-    (void) client;
-    (void) url;
+    wf_impl_client_connect(client, url);
 }
 
 void
 wf_client_disconnect(
     struct wf_client * client)
 {
-    (void) client;
+    wf_impl_client_disconnect(client);
 }
 
 void
 wf_client_authenticate(
     struct wf_client * client)
 {
-    (void) client;
+    wf_impl_client_authenticate(client);
 }
 
 void
@@ -265,8 +262,6 @@ wf_client_add_filesystem(
     char const * local_path,
     char const * name)
 {
-    (void) client;
-    (void) local_path;
-    (void) name;
+    wf_impl_client_add_filesystem(client, local_path, name);
 }
 
