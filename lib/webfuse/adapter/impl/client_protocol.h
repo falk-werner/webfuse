@@ -3,12 +3,17 @@
 
 #include "webfuse/adapter/client_callback.h"
 
+#ifndef __cplusplus
+#include <stdbool.h>
+#endif
+
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
 struct lws_protocols;
+struct lws_context;
 
 typedef void
 wf_client_protocol_callback_fn(
@@ -18,6 +23,9 @@ wf_client_protocol_callback_fn(
 
 struct wf_client_protocol
 {
+    bool is_connected;
+    bool is_shutdown_requested;
+    struct lws * wsi;
     wf_client_callback_fn * callback;
     void * user_data;
 };
@@ -46,6 +54,7 @@ wf_impl_client_protocol_init_lws(
 extern void
 wf_impl_client_protocol_connect(
     struct wf_client_protocol * protocol,
+    struct lws_context * conext,
     char const * url);
 
 extern void

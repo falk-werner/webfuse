@@ -1,5 +1,4 @@
 #include "webfuse/adapter/impl/client_tlsconfig.h"
-#include "webfuse/core/url.h"
 
 #include <stdlib.h>
 #include <string.h>

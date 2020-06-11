@@ -100,15 +100,14 @@ wf_impl_client_connect(
     struct wf_client * client,
     char const * url)
 {
-    (void) url;
-    wf_impl_client_protocol_callback(&client->protocol, WF_CLIENT_DISCONNECTED, NULL);
+    wf_impl_client_protocol_connect(&client->protocol, client->context, url);
 }
 
 void
 wf_impl_client_disconnect(
     struct wf_client * client)
 {
-    (void) client;
+    wf_impl_client_protocol_disconnect(&client->protocol);
 }
 
 void
