@@ -7,8 +7,9 @@ extern "C"
 #endif
 
 
-#define WF_CLIENT_CREATED                      0x0001
-#define WF_CLIENT_DISPOSING                    0x0002
+#define WF_CLIENT_INIT                         0x0001
+#define WF_CLIENT_CLEANUP                      0x0002
+#define WF_CLIENT_CREATED                      0x0003
 
 #define WF_CLIENT_CONNECTED                    0x0011
 #define WF_CLIENT_DISCONNECTED                 0x0012
@@ -19,6 +20,8 @@ extern "C"
 
 #define WF_CLIENT_FILESYSTEM_ADDED             0x0031
 #define WF_CLIENT_FILESYSTEM_ADD_FAILED        0x0032
+
+#define WF_CLIENT_GET_TLS_CONFIG               0x0041
 
 struct wf_client;
 

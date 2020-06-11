@@ -9,6 +9,7 @@
 #include "webfuse/core/util.h"
 
 #include "webfuse/adapter/impl/client.h"
+#include "webfuse/adapter/impl/client_tlsconfig.h"
 
 // server
 
@@ -265,3 +266,28 @@ wf_client_add_filesystem(
     wf_impl_client_add_filesystem(client, local_path, name);
 }
 
+// client_tlsconfig
+
+void
+wf_client_tlsconfig_set_keypath(
+    struct wf_client_tlsconfig * config,
+    char const * key_path)
+{
+    wf_impl_client_tlsconfig_set_keypath(config, key_path);
+}
+
+void
+wf_client_tlsconfig_set_certpath(
+    struct wf_client_tlsconfig * config,
+    char const * cert_path)
+{
+    wf_impl_client_tlsconfig_set_certpath(config, cert_path);
+}
+
+void
+wf_client_tlsconfig_set_cafilepath(
+    struct wf_client_tlsconfig * config,
+    char const * cafile_path)
+{
+    wf_impl_client_tlsconfig_set_cafilepath(config, cafile_path);
+}

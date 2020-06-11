@@ -19,6 +19,7 @@
 
 #include <webfuse/adapter/client.h>
 #include <webfuse/adapter/client_callback.h>
+#include <webfuse/adapter/client_tlsconfig.h>
 
 
 #endif
