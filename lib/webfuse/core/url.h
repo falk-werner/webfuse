@@ -1,5 +1,5 @@
-#ifndef WF_PROVIDER_IMPL_URL_H
-#define WF_PROVIDER_IMPL_URL_H
+#ifndef WF_URL_H
+#define WF_URL_H
 
 #ifndef __cplusplus
 #include <stdbool.h>
@@ -9,7 +9,7 @@
 extern "C"
 {
 #endif
-struct wfp_impl_url
+struct wf_url
 {
     char * host;
     int port;
@@ -17,12 +17,12 @@ struct wfp_impl_url
     bool use_tls;
 };
 
-extern bool wfp_impl_url_init(
-    struct wfp_impl_url * url,
+extern bool wf_url_init(
+    struct wf_url * url,
     char const * value);
 
-extern void wfp_impl_url_cleanup(
-    struct wfp_impl_url * url);
+extern void wf_url_cleanup(
+    struct wf_url * url);
 
 
 #ifdef __cplusplus

@@ -53,3 +53,18 @@ wf_impl_client_protocol_init_lws(
     lws_protocol->per_session_data_size = 0;
     lws_protocol->user = protocol;
 }
+
+void
+wf_impl_client_protocol_connect(
+    struct wf_client_protocol * protocol,
+    char const * url)
+{
+
+}
+
+void
+wf_impl_client_protocol_disconnect(
+    struct wf_client_protocol * protocol)
+{
+
+}

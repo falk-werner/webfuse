@@ -43,6 +43,15 @@ wf_impl_client_protocol_init_lws(
     struct wf_client_protocol * protocol,
     struct lws_protocols * lws_protocol);
 
+extern void
+wf_impl_client_protocol_connect(
+    struct wf_client_protocol * protocol,
+    char const * url);
+
+extern void
+wf_impl_client_protocol_disconnect(
+    struct wf_client_protocol * protocol);
+
 #ifdef __cplusplus
 }
 #endif

@@ -85,14 +85,14 @@ void
 wf_impl_client_service(
     struct wf_client * client)
 {
-    (void) client;
+    lws_service(client->context, 0);
 }
 
 void
 wf_impl_client_interrupt(
     struct wf_client * client)
 {
-    (void) client;
+    lws_cancel_service(client->context);
 }
 
 void
