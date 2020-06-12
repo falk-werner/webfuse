@@ -7,6 +7,7 @@
 #include <mutex>
 #include <condition_variable>
 #include <chrono>
+#include <sstream>
 
 
 #define TIMEOUT (std::chrono::milliseconds(10 * 1000))
@@ -35,6 +36,7 @@ public:
     explicit Private(int port);
     ~Private();
     void WaitForConnection();
+    std::string GetUrl() const;
     void OnConnected(lws * wsi) override;
     void OnConnectionClosed(lws * wsi) override;
 
@@ -108,6 +110,12 @@ void ThreadedWsServer::WaitForConnection()
     d->WaitForConnection();
 }
 
+std::string ThreadedWsServer::GetUrl() const
+{
+    return d->GetUrl();
+}
+
+
 ThreadedWsServer::Private::Private(int port)
 : port_(port)
 , is_connected(false)
@@ -130,8 +138,12 @@ ThreadedWsServer::Private::Private(int port)
     info.vhost_name = "localhost";
     info.ws_ping_pong_interval = 10;
     info.options = LWS_SERVER_OPTION_HTTP_HEADERS_SECURITY_BEST_PRACTICES_ENFORCE;
+    info.options |= LWS_SERVER_OPTION_EXPLICIT_VHOSTS;
 
     ws_context = lws_create_context(&info);
+
+    struct lws_vhost * vhost = lws_create_vhost(ws_context, &info);
+    port_ = lws_get_vhost_port(vhost);
 
     context = std::thread(&run, this);
 }
@@ -191,6 +203,13 @@ void ThreadedWsServer::Private::OnConnectionClosed(lws * wsi)
         wsi_ = wsi;
         convar.notify_all();
     }
+}
+
+std::string ThreadedWsServer::Private::GetUrl() const
+{
+    std::ostringstream stream;
+    stream << "ws://localhost:" << port_ << "/";
+    return stream.str();
 }
 
 

@@ -112,7 +112,7 @@ TEST(client, general_usage)
 
 TEST(client, connect)
 {
-    ThreadedWsServer server(54321);
+    ThreadedWsServer server;
 
     context ctx;
     ctx.state = connection_state::connecting;
@@ -120,7 +120,7 @@ TEST(client, connect)
     wf_client * client = wf_client_create(
         &callback2, reinterpret_cast<void*>(&ctx));
 
-    wf_client_connect(client, "ws://localhost:54321/");
+    wf_client_connect(client, server.GetUrl().c_str());
     while (ctx.state != connection_state::connected)
     {
         wf_client_service(client);
