@@ -6,10 +6,14 @@
 #include "webfuse/core/protocol_names.h"
 #include "webfuse/utils/ws_server.h"
 #include "webfuse/mocks/mock_adapter_client_callback.hpp"
+#include "webfuse/utils/timeout_watcher.hpp"
 
 using webfuse_test::WsServer;
 using webfuse_test::MockAdapterClientCallback;
+using webfuse_test::TimeoutWatcher;
 using testing::_;
+
+#define TIMEOUT (std::chrono::milliseconds(10 * 1000))
 
 namespace
 {
@@ -106,6 +110,8 @@ TEST(AdapterClient, CreateAndDispose)
 
 TEST(AdapterClient, Connect)
 {
+    TimeoutWatcher watcher(TIMEOUT);
+
     WsServer server(WF_PROTOCOL_NAME_PROVIDER_SERVER);
     MockAdapterClientCallback callback;
 
@@ -124,12 +130,14 @@ TEST(AdapterClient, Connect)
     wf_client_connect(client, server.GetUrl().c_str());
     while (!server.IsConnected())
     {
+        watcher.check();
         wf_client_service(client);
     }
 
     wf_client_disconnect(client);
     while (server.IsConnected())
     {
+        watcher.check();
         wf_client_service(client);
     }
 
