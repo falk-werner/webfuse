@@ -3,7 +3,7 @@
 
 #include <webfuse/provider/client_protocol.h>
 #include <webfuse/provider/client_config.h>
-#include "webfuse/utils/threaded_ws_server.h"
+#include "webfuse/utils/ws_server.h"
 #include "webfuse/mocks/mock_provider_client.hpp"
 #include "webfuse/core/protocol_names.h"
 #include "webfuse/utils/timeout_watcher.hpp"
@@ -12,7 +12,7 @@
 #include <thread>
 #include <atomic>
 
-using webfuse_test::ThreadedWsServer;
+using webfuse_test::WsServer;
 using webfuse_test::MockProviderClient;
 using webfuse_test::IProviderClient;
 using webfuse_test::TimeoutWatcher;
@@ -32,7 +32,7 @@ class ClientProtocolFixture
 public:
     explicit ClientProtocolFixture(IProviderClient& client, bool enableAuthentication = false)
     {
-        server = new ThreadedWsServer(WF_PROTOCOL_NAME_ADAPTER_SERVER);
+        server = new WsServer(WF_PROTOCOL_NAME_ADAPTER_SERVER);
 
         config = wfp_client_config_create();
         client.AttachTo(config, enableAuthentication);
@@ -168,7 +168,7 @@ public:
     }
 
 private:
-    ThreadedWsServer * server;
+    WsServer * server;
     wfp_client_config * config;
     wfp_client_protocol * protocol;
     struct lws_context_creation_info info;

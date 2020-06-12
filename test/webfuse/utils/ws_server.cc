@@ -1,4 +1,4 @@
-#include "webfuse/utils/threaded_ws_server.h"
+#include "webfuse/utils/ws_server.h"
 #include "webfuse/core/lws_log.h"
 
 #include <libwebsockets.h>
@@ -29,7 +29,7 @@ public:
 namespace webfuse_test
 {
 
-class ThreadedWsServer::Private : IServer
+class WsServer::Private : IServer
 {
     Private(Private const &) = delete;
     Private & operator=(Private const &) = delete;
@@ -66,7 +66,7 @@ private:
 extern "C"
 {
 
-static int wf_test_utils_threaded_ws_server_callback(
+static int wf_test_utils_ws_server_callback(
     struct lws * wsi,
     enum lws_callback_reasons reason,
     void * user,
@@ -110,39 +110,39 @@ static int wf_test_utils_threaded_ws_server_callback(
 namespace webfuse_test
 {
 
-ThreadedWsServer::ThreadedWsServer(std::string const & protocol, int port)
+WsServer::WsServer(std::string const & protocol, int port)
 : d(new Private(protocol, port))
 {
 
 }
 
-ThreadedWsServer::~ThreadedWsServer()
+WsServer::~WsServer()
 {
     delete d;
 }
 
-bool ThreadedWsServer::IsConnected()
+bool WsServer::IsConnected()
 {
     return d->IsConnected();
 }
 
-void ThreadedWsServer::SendMessage(json_t * message)
+void WsServer::SendMessage(json_t * message)
 {
     d->SendMessage(message);
 }
 
-json_t * ThreadedWsServer::ReceiveMessage()
+json_t * WsServer::ReceiveMessage()
 {
     return d->ReceiveMessage();
 }
 
-std::string ThreadedWsServer::GetUrl() const
+std::string WsServer::GetUrl() const
 {
     return d->GetUrl();
 }
 
 
-ThreadedWsServer::Private::Private(std::string const & protocol, int port)
+WsServer::Private::Private(std::string const & protocol, int port)
 : protocol_(protocol)
 , port_(port)
 , is_connected(false)
@@ -154,7 +154,7 @@ ThreadedWsServer::Private::Private(std::string const & protocol, int port)
     memset(ws_protocols, 0, sizeof(struct lws_protocols) * 2 );
 
     ws_protocols[0].name = protocol_.c_str();
-    ws_protocols[0].callback = &wf_test_utils_threaded_ws_server_callback;
+    ws_protocols[0].callback = &wf_test_utils_ws_server_callback;
     ws_protocols[0].per_session_data_size = 0;
     ws_protocols[0].user = reinterpret_cast<void*>(server);
 
@@ -175,7 +175,7 @@ ThreadedWsServer::Private::Private(std::string const & protocol, int port)
     context = std::thread(&run, this);
 }
 
-ThreadedWsServer::Private::~Private()
+WsServer::Private::~Private()
 {
     {
         std::unique_lock<std::mutex> lock(mutex);
@@ -187,7 +187,7 @@ ThreadedWsServer::Private::~Private()
     lws_context_destroy(ws_context);
 }
 
-void ThreadedWsServer::Private::run(Private * self)
+void WsServer::Private::run(Private * self)
 {
     bool is_running = true;
     while (is_running)
@@ -200,20 +200,20 @@ void ThreadedWsServer::Private::run(Private * self)
     }
 }
 
-bool ThreadedWsServer::Private::IsConnected()
+bool WsServer::Private::IsConnected()
 {
     std::unique_lock<std::mutex> lock(mutex);
     return is_connected;
 }
 
-void ThreadedWsServer::Private::OnConnected(lws * wsi)
+void WsServer::Private::OnConnected(lws * wsi)
 {
     std::unique_lock<std::mutex> lock(mutex);
     is_connected = true;
     wsi_ = wsi;
 }
 
-void ThreadedWsServer::Private::OnConnectionClosed(lws * wsi)
+void WsServer::Private::OnConnectionClosed(lws * wsi)
 {
     std::unique_lock<std::mutex> lock(mutex);
     if (wsi == wsi_)
@@ -223,7 +223,7 @@ void ThreadedWsServer::Private::OnConnectionClosed(lws * wsi)
     }
 }
 
-void ThreadedWsServer::Private::OnWritable(struct lws * wsi)
+void WsServer::Private::OnWritable(struct lws * wsi)
 {
     bool notify = false;
 
@@ -251,7 +251,7 @@ void ThreadedWsServer::Private::OnWritable(struct lws * wsi)
 }
 
 
-void ThreadedWsServer::Private::SendMessage(json_t * message)
+void WsServer::Private::SendMessage(json_t * message)
 {
     lws * wsi = nullptr;
 
@@ -274,7 +274,7 @@ void ThreadedWsServer::Private::SendMessage(json_t * message)
     }
 }
 
-void ThreadedWsServer::Private::OnMessageReceived(struct lws * wsi, char const * data, size_t length)
+void WsServer::Private::OnMessageReceived(struct lws * wsi, char const * data, size_t length)
 {
     std::unique_lock<std::mutex> lock(mutex);
     if (wsi == wsi_)
@@ -283,7 +283,7 @@ void ThreadedWsServer::Private::OnMessageReceived(struct lws * wsi, char const *
     }
 }
 
-json_t * ThreadedWsServer::Private::ReceiveMessage()
+json_t * WsServer::Private::ReceiveMessage()
 {
     std::unique_lock<std::mutex> lock(mutex);
  
@@ -298,7 +298,7 @@ json_t * ThreadedWsServer::Private::ReceiveMessage()
     return result;
 }
 
-std::string ThreadedWsServer::Private::GetUrl() const
+std::string WsServer::Private::GetUrl() const
 {
     std::ostringstream stream;
     stream << "ws://localhost:" << port_ << "/";

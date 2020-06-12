@@ -3,9 +3,9 @@
 #include "webfuse/adapter/client.h"
 #include "webfuse/adapter/credentials.h"
 #include "webfuse/core/protocol_names.h"
-#include "webfuse/utils/threaded_ws_server.h"
+#include "webfuse/utils/ws_server.h"
 
-using webfuse_test::ThreadedWsServer;
+using webfuse_test::WsServer;
 
 namespace
 {
@@ -111,7 +111,7 @@ TEST(client, general_usage)
 
 TEST(client, connect)
 {
-    ThreadedWsServer server(WF_PROTOCOL_NAME_PROVIDER_SERVER);
+    WsServer server(WF_PROTOCOL_NAME_PROVIDER_SERVER);
 
     context ctx;
     ctx.state = connection_state::connecting;
