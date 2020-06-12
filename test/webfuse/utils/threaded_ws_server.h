@@ -13,10 +13,12 @@ class ThreadedWsServer
     ThreadedWsServer(ThreadedWsServer const &) = delete;
     ThreadedWsServer & operator=(ThreadedWsServer const &) = delete;
 public:
-    explicit ThreadedWsServer(int port = 0);
+    ThreadedWsServer(std::string const & protocol, int port = 0);
     ~ThreadedWsServer();
-    void WaitForConnection();
+    bool IsConnected();
     std::string GetUrl() const;
+    void SendMessage(json_t * message);
+    json_t * ReceiveMessage();
 private:
     class Private;
     Private * d;
