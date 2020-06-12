@@ -1,6 +1,7 @@
 #include "webfuse/tests/integration/server.hpp"
 #include <thread>
 #include <mutex>
+#include <sstream>
 #include <cstdlib>
 #include <cstring>
 #include <unistd.h>
@@ -59,7 +60,7 @@ public:
 
 
         config = wf_server_config_create();
-        wf_server_config_set_port(config, 8080);
+        wf_server_config_set_port(config, 0);
         wf_server_config_set_mountpoint_factory(config, 
             &webfuse_test_server_create_mountpoint,
             reinterpret_cast<void*>(base_dir));
@@ -90,6 +91,14 @@ public:
     {
         std::lock_guard<std::mutex> lock(shutdown_lock);
         return is_shutdown_requested;
+    }
+
+    std::string GetUrl(void) const
+    {
+        int const port = wf_server_get_port(server);
+        std::ostringstream stream;
+        stream << "wss://localhost:" << port << "/";
+        return stream.str();
     }
 
 private:
@@ -134,6 +143,11 @@ Server::~Server()
 char const * Server::GetBaseDir(void) const
 {
     return d->base_dir;
+}
+
+std::string Server::GetUrl(void) const
+{
+    return d->GetUrl();
 }
 
 

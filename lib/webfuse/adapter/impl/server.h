@@ -28,6 +28,9 @@ extern void wf_impl_server_service(
 extern void wf_impl_server_interrupt(
     struct wf_server * server);
 
+extern int wf_impl_server_get_port(
+    struct wf_server const * server);
+
 #ifdef __cplusplus
 }
 #endif

@@ -5,7 +5,11 @@
 ### Breaking Changes
 
 *   Remove CMake support (change build system to meson)
-*   Make argument credentials const in wf_authenticate_fn
+*   Make argument credentials const in `wf_authenticate_fn`
+
+### New Features
+
+*   Allow system to choose port of webfuse server (by setting port in `wf_server_config` to 0)
 
 ### Fixes
 

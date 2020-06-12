@@ -22,6 +22,7 @@ struct wf_server
     struct lws_context * context;
 	struct lws_http_mount mount;
 	struct lws_context_creation_info info;
+	int port;
 };
 
 static bool wf_impl_server_tls_enabled(
@@ -55,6 +56,7 @@ static struct lws_context * wf_impl_server_context_create(
 	server->info.vhost_name = server->config.vhost_name;
 	server->info.ws_ping_pong_interval = 10;
 	server->info.options = LWS_SERVER_OPTION_HTTP_HEADERS_SECURITY_BEST_PRACTICES_ENFORCE;
+	server->info.options |= LWS_SERVER_OPTION_EXPLICIT_VHOSTS;
 
 	if (NULL == server->config.document_root)
 	{
@@ -71,8 +73,11 @@ static struct lws_context * wf_impl_server_context_create(
 	}
 
 	struct lws_context * const context = lws_create_context(&server->info);
-    return context;
 
+    struct lws_vhost * const vhost = lws_create_vhost(context, &server->info);
+	server->port = lws_get_vhost_port(vhost);
+
+    return context;
 }
 
 struct wf_server * wf_impl_server_create(
@@ -119,3 +124,8 @@ void wf_impl_server_interrupt(
 	lws_cancel_service(server->context);
 }
 
+extern int wf_impl_server_get_port(
+    struct wf_server const * server)
+{
+	return server->port;
+}

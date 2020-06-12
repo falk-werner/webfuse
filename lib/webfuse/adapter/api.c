@@ -37,6 +37,11 @@ void wf_server_interrupt(
     wf_impl_server_interrupt(server);
 }
 
+int wf_server_get_port(
+    struct wf_server const * server)
+{
+    return wf_impl_server_get_port(server);
+}
 
 // server protocol
 
