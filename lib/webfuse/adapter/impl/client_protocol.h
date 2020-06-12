@@ -2,6 +2,7 @@
 #define WF_ADAPTER_IMPL_CLIENT_PROTOCOL_H
 
 #include "webfuse/adapter/client_callback.h"
+#include "webfuse/core/slist.h"
 
 #ifndef __cplusplus
 #include <stdbool.h>
@@ -14,6 +15,9 @@ extern "C"
 
 struct lws_protocols;
 struct lws_context;
+
+struct wf_jsonrpc_proxy;
+struct wf_timer_manager;
 
 typedef void
 wf_client_protocol_callback_fn(
@@ -28,6 +32,9 @@ struct wf_client_protocol
     struct lws * wsi;
     wf_client_callback_fn * callback;
     void * user_data;
+    struct wf_timer_manager * timer_manager;
+    struct wf_jsonrpc_proxy * proxy;
+    struct wf_slist messages;
 };
 
 extern void
@@ -59,6 +66,10 @@ wf_impl_client_protocol_connect(
 
 extern void
 wf_impl_client_protocol_disconnect(
+    struct wf_client_protocol * protocol);
+
+extern void
+wf_impl_client_protocol_authenticate(
     struct wf_client_protocol * protocol);
 
 #ifdef __cplusplus

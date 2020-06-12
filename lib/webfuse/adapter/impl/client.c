@@ -114,7 +114,7 @@ void
 wf_impl_client_authenticate(
     struct wf_client * client)
 {
-    wf_impl_client_protocol_callback(&client->protocol, WF_CLIENT_AUTHENTICATION_FAILED, NULL);
+    wf_impl_client_protocol_authenticate(&client->protocol);
 }
 
 void
