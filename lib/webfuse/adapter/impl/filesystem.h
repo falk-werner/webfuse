@@ -15,7 +15,7 @@ extern "C"
 #endif
 
 struct wf_mountpoint;
-struct wf_impl_session;
+struct wf_jsonrpc_proxy;
 struct lws;
 
 struct wf_impl_filesystem
@@ -30,7 +30,8 @@ struct wf_impl_filesystem
 };
 
 extern struct wf_impl_filesystem * wf_impl_filesystem_create(
-    struct wf_impl_session * session,
+    struct lws * session_wsi,
+    struct wf_jsonrpc_proxy * proxy,
     char const * name,
     struct wf_mountpoint * mountpoint);
 

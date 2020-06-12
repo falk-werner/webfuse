@@ -108,7 +108,7 @@ bool wf_impl_session_add_filesystem(
  
     if (result)
     {
-        struct wf_impl_filesystem * filesystem = wf_impl_filesystem_create(session, name, mountpoint);
+        struct wf_impl_filesystem * filesystem = wf_impl_filesystem_create(session->wsi, session->rpc, name, mountpoint);
         result = (NULL != filesystem);
         if (result)
         {

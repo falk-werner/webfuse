@@ -7,12 +7,11 @@
 extern "C" {
 #endif
 
-struct wf_impl_session;
 struct wf_jsonrpc_proxy;
 
 struct wf_impl_operation_context
 {
-	struct wf_impl_session * session;
+	struct wf_jsonrpc_proxy * proxy;
 	double timeout;
 	char * name;
 };

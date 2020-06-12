@@ -52,7 +52,8 @@ static void wf_impl_filesystem_cleanup(
 
 static bool wf_impl_filesystem_init(
     struct wf_impl_filesystem * filesystem,
-    struct wf_impl_session * session,
+    struct lws * session_wsi,
+    struct wf_jsonrpc_proxy * proxy,
 	char const * name,
 	struct wf_mountpoint * mountpoint)
 {
@@ -63,7 +64,7 @@ static bool wf_impl_filesystem_init(
 	filesystem->args.argv = argv;
 	filesystem->args.allocated = 0;
 
-	filesystem->user_data.session = session;
+	filesystem->user_data.proxy = proxy;
 	filesystem->user_data.timeout = 1.0;
 	filesystem->user_data.name = strdup(name);
 	memset(&filesystem->buffer, 0, sizeof(struct fuse_buf));
@@ -85,8 +86,8 @@ static bool wf_impl_filesystem_init(
 	{
         lws_sock_file_fd_type fd;
         fd.filefd = fuse_session_fd(filesystem->session);
-		struct lws_protocols const * protocol = lws_get_protocol(session->wsi);
-        filesystem->wsi = lws_adopt_descriptor_vhost(lws_get_vhost(session->wsi), LWS_ADOPT_RAW_FILE_DESC, fd, protocol->name, session->wsi);
+		struct lws_protocols const * protocol = lws_get_protocol(session_wsi);
+        filesystem->wsi = lws_adopt_descriptor_vhost(lws_get_vhost(session_wsi), LWS_ADOPT_RAW_FILE_DESC, fd, protocol->name, session_wsi);
 
 		if (NULL == filesystem->wsi)
 		{
@@ -100,12 +101,13 @@ static bool wf_impl_filesystem_init(
 }
 
 struct wf_impl_filesystem * wf_impl_filesystem_create(
-    struct wf_impl_session * session,
+    struct lws * session_wsi,
+    struct wf_jsonrpc_proxy * proxy,
 	char const * name,
 	struct wf_mountpoint * mountpoint)
 {
 	struct wf_impl_filesystem * filesystem = malloc(sizeof(struct wf_impl_filesystem));
-	bool success = wf_impl_filesystem_init(filesystem, session, name, mountpoint);
+	bool success = wf_impl_filesystem_init(filesystem, session_wsi, proxy, name, mountpoint);
 	if (!success)
 	{
 		free(filesystem);
