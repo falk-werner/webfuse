@@ -1,11 +1,15 @@
 #include <gtest/gtest.h>
+#include <gmock/gmock.h>
 
 #include "webfuse/adapter/client.h"
 #include "webfuse/adapter/credentials.h"
 #include "webfuse/core/protocol_names.h"
 #include "webfuse/utils/ws_server.h"
+#include "webfuse/mocks/mock_adapter_client_callback.hpp"
 
 using webfuse_test::WsServer;
+using webfuse_test::MockAdapterClientCallback;
+using testing::_;
 
 namespace
 {
@@ -67,33 +71,9 @@ void callback(
     }
 }
 
-void callback2(
-    wf_client * client,
-    int reason,
-    void * args)
-{
-    auto * ctx = reinterpret_cast<context*>(wf_client_get_userdata(client));
-
-    switch (reason)
-    {
-        case WF_CLIENT_CREATED:
-            ctx->state = connection_state::connecting;
-            break;
-        case WF_CLIENT_CONNECTED:
-            ctx->state = connection_state::connected;
-            break;
-        case WF_CLIENT_DISCONNECTED:
-            ctx->state = connection_state::disconnected;
-            break;
-        default:
-            break;
-    }
 }
 
-
-}
-
-TEST(client, general_usage)
+TEST(AdapterClient, GeneralUsage)
 {
     context ctx;
     ctx.state = connection_state::connecting;
@@ -109,24 +89,46 @@ TEST(client, general_usage)
     wf_client_dispose(client);
 }
 
-TEST(client, connect)
+TEST(AdapterClient, CreateAndDispose)
 {
-    WsServer server(WF_PROTOCOL_NAME_PROVIDER_SERVER);
+    MockAdapterClientCallback callback;
 
-    context ctx;
-    ctx.state = connection_state::connecting;
+    EXPECT_CALL(callback, Invoke(_, WF_CLIENT_INIT, nullptr)).Times(1);
+    EXPECT_CALL(callback, Invoke(_, WF_CLIENT_CREATED, nullptr)).Times(1);
+    EXPECT_CALL(callback, Invoke(_, WF_CLIENT_GET_TLS_CONFIG, _)).Times(1);
+    EXPECT_CALL(callback, Invoke(_, WF_CLIENT_CLEANUP, nullptr)).Times(1);
 
     wf_client * client = wf_client_create(
-        &callback2, reinterpret_cast<void*>(&ctx));
+        callback.GetCallbackFn(), callback.GetUserData());
+
+    wf_client_dispose(client);
+}
+
+TEST(AdapterClient, Connect)
+{
+    WsServer server(WF_PROTOCOL_NAME_PROVIDER_SERVER);
+    MockAdapterClientCallback callback;
+
+    EXPECT_CALL(callback, Invoke(_, WF_CLIENT_INIT, nullptr)).Times(1);
+    EXPECT_CALL(callback, Invoke(_, WF_CLIENT_CREATED, nullptr)).Times(1);
+    EXPECT_CALL(callback, Invoke(_, WF_CLIENT_GET_TLS_CONFIG, _)).Times(1);
+    EXPECT_CALL(callback, Invoke(_, WF_CLIENT_CLEANUP, nullptr)).Times(1);
+
+    EXPECT_CALL(callback, Invoke(_, WF_CLIENT_CONNECTED, nullptr)).Times(1);
+    EXPECT_CALL(callback, Invoke(_, WF_CLIENT_DISCONNECTED, nullptr)).Times(1);
+
+
+    wf_client * client = wf_client_create(
+        callback.GetCallbackFn(), callback.GetUserData());
 
     wf_client_connect(client, server.GetUrl().c_str());
-    while (ctx.state != connection_state::connected)
+    while (!server.IsConnected())
     {
         wf_client_service(client);
     }
 
     wf_client_disconnect(client);
-    while (ctx.state != connection_state::disconnected)
+    while (server.IsConnected())
     {
         wf_client_service(client);
     }
