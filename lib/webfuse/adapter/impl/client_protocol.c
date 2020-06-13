@@ -52,12 +52,15 @@ wf_impl_client_protocol_send(
     bool result = false;
     struct wf_client_protocol * protocol = user_data;
 
-    struct wf_message * message = wf_message_create(request);
-    if (NULL != message)
+    if (NULL != protocol->wsi)
     {
-        wf_slist_append(&protocol->messages, &message->item);
-        lws_callback_on_writable(protocol->wsi);
-        result = true;
+        struct wf_message * message = wf_message_create(request);
+        if (NULL != message)
+        {
+            wf_slist_append(&protocol->messages, &message->item);
+            lws_callback_on_writable(protocol->wsi);
+            result = true;
+        }
     }
 
     return result;

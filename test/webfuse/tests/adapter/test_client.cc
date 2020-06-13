@@ -208,6 +208,33 @@ TEST(AdapterClient, Authenticate)
     wf_client_dispose(client);
 }
 
+TEST(AdapterClient, AuthenticateFailedWithoutConnect)
+{
+    TimeoutWatcher watcher(TIMEOUT);
+
+    MockAdapterClientCallback callback;
+    EXPECT_CALL(callback, Invoke(_, _, _)).Times(AnyNumber());
+    EXPECT_CALL(callback, Invoke(_, WF_CLIENT_AUTHENTICATE_GET_CREDENTIALS, _)).Times(1)
+        .WillOnce(Invoke(GetCredentials));
+    bool called = false;
+    EXPECT_CALL(callback, Invoke(_, WF_CLIENT_AUTHENTICATION_FAILED, nullptr)).Times(1)
+        .WillOnce(Invoke([&called] (wf_client *, int, void *) mutable {
+            called = true;
+        }));
+
+    wf_client * client = wf_client_create(
+        callback.GetCallbackFn(), callback.GetUserData());
+
+
+    wf_client_authenticate(client);
+    while (!called) {
+        watcher.check();
+        wf_client_service(client);
+    }
+
+    wf_client_dispose(client);
+}
+
 TEST(AdapterClient, AuthenticationFailed)
 {
     TimeoutWatcher watcher(TIMEOUT);
