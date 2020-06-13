@@ -136,12 +136,13 @@ static int wf_impl_client_protocol_lws_callback(
                 break;
             case LWS_CALLBACK_CLIENT_CONNECTION_ERROR:
                 protocol->is_connected = false;
+                protocol->wsi = NULL;
                 protocol->callback(protocol->user_data, WF_CLIENT_DISCONNECTED, NULL);
                 break;
             case LWS_CALLBACK_CLIENT_CLOSED:
                 protocol->is_connected = false;
-                protocol->callback(protocol->user_data, WF_CLIENT_DISCONNECTED, NULL);
                 protocol->wsi = NULL;
+                protocol->callback(protocol->user_data, WF_CLIENT_DISCONNECTED, NULL);
                 break;
             case LWS_CALLBACK_CLIENT_RECEIVE:
                 wf_impl_client_protocol_process(protocol, in, len);
@@ -154,19 +155,20 @@ static int wf_impl_client_protocol_lws_callback(
                     {
                         result = 1;
                     }
-                else if (!wf_slist_empty(&protocol->messages))
-                {
-                    struct wf_slist_item * item = wf_slist_remove_first(&protocol->messages);
-                    struct wf_message * message = wf_container_of(item, struct wf_message, item);
-                    lws_write(wsi, (unsigned char*) message->data, message->length, LWS_WRITE_TEXT);
-                    wf_message_dispose(message);
-
-                    if (!wf_slist_empty(&protocol->messages))
+                    else if (!wf_slist_empty(&protocol->messages))
                     {
-                        lws_callback_on_writable(wsi);
+                        struct wf_slist_item * item = wf_slist_remove_first(&protocol->messages);
+                        struct wf_message * message = wf_container_of(item, struct wf_message, item);
+                        lws_write(wsi, (unsigned char*) message->data, message->length, LWS_WRITE_TEXT);
+                        wf_message_dispose(message);
+
+                        if (!wf_slist_empty(&protocol->messages))
+                        {
+                            lws_callback_on_writable(wsi);
+                        }
                     }
                 }
-                }
+                break;
             default:
                 break;
         }
