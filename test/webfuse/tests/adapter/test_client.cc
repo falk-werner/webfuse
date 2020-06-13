@@ -14,6 +14,7 @@ using webfuse_test::MockAdapterClientCallback;
 using webfuse_test::TimeoutWatcher;
 using testing::_;
 using testing::Invoke;
+using testing::AnyNumber;
 
 #define TIMEOUT (std::chrono::milliseconds(10 * 1000))
 
@@ -161,21 +162,13 @@ TEST(AdapterClient, Authenticate)
     WsServer server(WF_PROTOCOL_NAME_PROVIDER_SERVER);
     MockAdapterClientCallback callback;
 
-    EXPECT_CALL(callback, Invoke(_, WF_CLIENT_INIT, nullptr)).Times(1);
-    EXPECT_CALL(callback, Invoke(_, WF_CLIENT_CREATED, nullptr)).Times(1);
-    EXPECT_CALL(callback, Invoke(_, WF_CLIENT_GET_TLS_CONFIG, _)).Times(1);
-    EXPECT_CALL(callback, Invoke(_, WF_CLIENT_CLEANUP, nullptr)).Times(1);
-
-    EXPECT_CALL(callback, Invoke(_, WF_CLIENT_CONNECTED, nullptr)).Times(1);
-    EXPECT_CALL(callback, Invoke(_, WF_CLIENT_DISCONNECTED, nullptr)).Times(1);
-
+    EXPECT_CALL(callback, Invoke(_, _, _)).Times(AnyNumber());
     EXPECT_CALL(callback, Invoke(_, WF_CLIENT_AUTHENTICATE_GET_CREDENTIALS, _)).Times(1)
         .WillOnce(Invoke(GetCredentials));
     bool called = false;
-    bool * p_called = &called;
     EXPECT_CALL(callback, Invoke(_, WF_CLIENT_AUTHENTICATED, nullptr)).Times(1)
-        .WillOnce(Invoke([p_called] (wf_client *, int, void *) {
-            *p_called = true;
+        .WillOnce(Invoke([&called] (wf_client *, int, void *) mutable {
+            called = true;
         }));
 
     wf_client * client = wf_client_create(
