@@ -31,7 +31,7 @@ wf_impl_client_create(
     wf_impl_client_tlsconfig_init(&client->tls);
     client->user_data = user_data;
     wf_impl_client_protocol_init(&client->protocol, 
-        (wf_client_callback_fn*) callback, (void*) client);
+        (wf_client_protocol_callback_fn*) callback, (void*) client);
 
     memset(client->protocols, 0, sizeof(struct lws_protocols) * WF_CLIENT_PROTOCOL_COUNT);
     wf_impl_client_protocol_init_lws(&client->protocol, &client->protocols[0]);
@@ -123,8 +123,5 @@ wf_impl_client_add_filesystem(
     char const * local_path,
     char const * name)
 {
-    (void) local_path;
-    (void) name;
-
-    wf_impl_client_protocol_callback(&client->protocol, WF_CLIENT_FILESYSTEM_ADD_FAILED, NULL);
+    wf_impl_client_protocol_add_filesystem(&client->protocol, local_path, name);
 }

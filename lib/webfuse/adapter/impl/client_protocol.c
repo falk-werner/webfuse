@@ -1,6 +1,8 @@
 #include "webfuse/adapter/impl/client_protocol.h"
 #include "webfuse/adapter/client_callback.h"
 #include "webfuse/adapter/impl/credentials.h"
+#include "webfuse/adapter/impl/filesystem.h"
+#include "webfuse/adapter/impl/mountpoint.h"
 #include "webfuse/core/protocol_names.h"
 #include "webfuse/core/url.h"
 #include "webfuse/core/util.h"
@@ -17,6 +19,12 @@
 #include <libwebsockets.h>
 
 #define WF_DEFAULT_TIMEOUT (10 * 1000)
+
+struct wf_impl_client_protocol_add_filesystem_context
+{
+    struct wf_client_protocol * protocol;
+    char * local_path;
+};
 
 static void
 wf_impl_client_protocol_process(
@@ -65,6 +73,40 @@ wf_impl_client_protocol_on_authenticate_finished(
     struct wf_client_protocol * protocol = user_data;
     int const reason = (NULL != result) ? WF_CLIENT_AUTHENTICATED : WF_CLIENT_AUTHENTICATION_FAILED;
 
+    protocol->callback(protocol->user_data, reason, NULL);
+}
+
+static void
+wf_impl_client_protocol_on_add_filesystem_finished(
+	void * user_data,
+	json_t const * result,
+	json_t const * WF_UNUSED_PARAM(error))
+{
+    struct wf_impl_client_protocol_add_filesystem_context * context = user_data;
+    struct wf_client_protocol * protocol = context->protocol;
+
+    int reason = WF_CLIENT_FILESYSTEM_ADD_FAILED;
+    if (NULL == protocol->filesystem)
+    {
+        json_t * id = json_object_get(result, "id");
+        if (json_is_string(id))
+        {
+            char const * name = json_string_value(id);        
+            struct wf_mountpoint * mountpoint = wf_mountpoint_create(context->local_path);
+            protocol->filesystem = wf_impl_filesystem_create(protocol->wsi,protocol->proxy, name, mountpoint);
+            if (NULL != protocol->filesystem)
+            {
+                reason = WF_CLIENT_FILESYSTEM_ADDED;
+            }
+            else
+            {
+                wf_mountpoint_dispose(mountpoint);
+            }
+        }
+    }
+
+    free(context->local_path);
+    free(context);
     protocol->callback(protocol->user_data, reason, NULL);
 }
 
@@ -133,7 +175,7 @@ static int wf_impl_client_protocol_lws_callback(
 void
 wf_impl_client_protocol_init(
     struct wf_client_protocol * protocol,
-    wf_client_callback_fn * callback,
+    wf_client_protocol_callback_fn * callback,
     void * user_data)
 {
     protocol->is_connected = false,
@@ -141,18 +183,24 @@ wf_impl_client_protocol_init(
     protocol->wsi = NULL;
     protocol->callback = callback;
     protocol->user_data = user_data;
-    protocol->callback(protocol->user_data, WF_CLIENT_INIT, NULL);
+    protocol->filesystem = NULL;
 
     wf_slist_init(&protocol->messages);
     protocol->timer_manager = wf_timer_manager_create();
     protocol->proxy = wf_jsonrpc_proxy_create(protocol->timer_manager, WF_DEFAULT_TIMEOUT, &wf_impl_client_protocol_send, protocol);
 
+    protocol->callback(protocol->user_data, WF_CLIENT_INIT, NULL);
 }
 
 void
 wf_impl_client_protocol_cleanup(
     struct wf_client_protocol * protocol)
 {
+    if (NULL != protocol->filesystem)
+    {
+        wf_impl_filesystem_dispose(protocol->filesystem);
+    }
+
     protocol->callback(protocol->user_data, WF_CLIENT_CLEANUP, NULL);
     wf_jsonrpc_proxy_dispose(protocol->proxy);
     wf_timer_manager_dispose(protocol->timer_manager);
@@ -246,3 +294,30 @@ wf_impl_client_protocol_authenticate(
 
     wf_impl_credentials_cleanup(&creds);
 }
+
+void
+wf_impl_client_protocol_add_filesystem(
+    struct wf_client_protocol * protocol,
+    char const * local_path,
+    char const * name)
+{
+    if (NULL == protocol->filesystem)
+    {
+        struct wf_impl_client_protocol_add_filesystem_context * context = malloc(sizeof(struct wf_impl_client_protocol_add_filesystem_context));
+        context->protocol = protocol;
+        context->local_path = strdup(local_path);
+
+        wf_jsonrpc_proxy_invoke(
+            protocol->proxy,
+            &wf_impl_client_protocol_on_add_filesystem_finished,
+            context,
+            "add_filesystem",
+            "s",
+            name);
+    }
+    else
+    {
+        protocol->callback(protocol->user_data, WF_CLIENT_FILESYSTEM_ADD_FAILED, NULL);
+    }
+}
+

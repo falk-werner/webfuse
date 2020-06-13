@@ -16,6 +16,7 @@ extern "C"
 struct lws_protocols;
 struct lws_context;
 
+struct wf_impl_filesystem;
 struct wf_jsonrpc_proxy;
 struct wf_timer_manager;
 
@@ -30,7 +31,8 @@ struct wf_client_protocol
     bool is_connected;
     bool is_shutdown_requested;
     struct lws * wsi;
-    wf_client_callback_fn * callback;
+    wf_client_protocol_callback_fn * callback;
+    struct wf_impl_filesystem * filesystem;
     void * user_data;
     struct wf_timer_manager * timer_manager;
     struct wf_jsonrpc_proxy * proxy;
@@ -40,7 +42,7 @@ struct wf_client_protocol
 extern void
 wf_impl_client_protocol_init(
     struct wf_client_protocol * protocol,
-    wf_client_callback_fn * callback,
+    wf_client_protocol_callback_fn * callback,
     void * user_data);
 
 extern void
@@ -71,6 +73,12 @@ wf_impl_client_protocol_disconnect(
 extern void
 wf_impl_client_protocol_authenticate(
     struct wf_client_protocol * protocol);
+
+extern void
+wf_impl_client_protocol_add_filesystem(
+    struct wf_client_protocol * protocol,
+    char const * local_path,
+    char const * name);
 
 #ifdef __cplusplus
 }
