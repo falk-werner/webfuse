@@ -1,7 +1,6 @@
 #ifndef WF_TEST_UTILS_WS_SERVER_HPP
 #define WF_TEST_UTILS_WS_SERVER_HPP
 
-#include <libwebsockets.h>
 #include <jansson.h>
 #include <string>
 

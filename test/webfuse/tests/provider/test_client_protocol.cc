@@ -8,6 +8,8 @@
 #include "webfuse/core/protocol_names.h"
 #include "webfuse/utils/timeout_watcher.hpp"
 
+#include <libwebsockets.h>
+
 #include <cstring>
 #include <thread>
 #include <atomic>

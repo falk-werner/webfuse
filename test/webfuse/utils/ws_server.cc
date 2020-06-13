@@ -8,9 +8,6 @@
 #include <sstream>
 #include <queue>
 
-
-#define TIMEOUT (std::chrono::milliseconds(10 * 1000))
-
 namespace
 {
 
