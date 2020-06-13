@@ -5,18 +5,23 @@
 #include "webfuse/adapter/credentials.h"
 #include "webfuse/adapter/credentials.h"
 #include "webfuse/core/protocol_names.h"
-#include "webfuse/utils/ws_server.h"
+#include "webfuse/utils/ws_server2.hpp"
 #include "webfuse/mocks/mock_adapter_client_callback.hpp"
+#include "webfuse/mocks/mock_invokation_handler.hpp"
 #include "webfuse/utils/timeout_watcher.hpp"
 
-using webfuse_test::WsServer;
+using webfuse_test::WsServer2;
+using webfuse_test::MockInvokationHander;
 using webfuse_test::MockAdapterClientCallback;
 using webfuse_test::TimeoutWatcher;
 using testing::_;
 using testing::Invoke;
 using testing::AnyNumber;
+using testing::Return;
+using testing::Throw;
+using testing::StrEq;
 
-#define TIMEOUT (std::chrono::milliseconds(10 * 1000))
+#define TIMEOUT (std::chrono::milliseconds(30 * 1000))
 
 namespace
 {
@@ -123,9 +128,11 @@ TEST(AdapterClient, Connect)
 {
     TimeoutWatcher watcher(TIMEOUT);
 
-    WsServer server(WF_PROTOCOL_NAME_PROVIDER_SERVER);
-    MockAdapterClientCallback callback;
+    MockInvokationHander handler;
+    WsServer2 server(handler, WF_PROTOCOL_NAME_PROVIDER_SERVER);
+    EXPECT_CALL(handler, Invoke(_,_)).Times(0);
 
+    MockAdapterClientCallback callback;
     EXPECT_CALL(callback, Invoke(_, WF_CLIENT_INIT, nullptr)).Times(1);
     EXPECT_CALL(callback, Invoke(_, WF_CLIENT_CREATED, nullptr)).Times(1);
     EXPECT_CALL(callback, Invoke(_, WF_CLIENT_GET_TLS_CONFIG, _)).Times(1);
@@ -159,9 +166,12 @@ TEST(AdapterClient, Authenticate)
 {
     TimeoutWatcher watcher(TIMEOUT);
 
-    WsServer server(WF_PROTOCOL_NAME_PROVIDER_SERVER);
-    MockAdapterClientCallback callback;
+    MockInvokationHander handler;
+    WsServer2 server(handler, WF_PROTOCOL_NAME_PROVIDER_SERVER);
+    EXPECT_CALL(handler, Invoke(StrEq("authenticate"),_)).Times(1)
+        .WillOnce(Return("{}"));
 
+    MockAdapterClientCallback callback;
     EXPECT_CALL(callback, Invoke(_, _, _)).Times(AnyNumber());
     EXPECT_CALL(callback, Invoke(_, WF_CLIENT_AUTHENTICATE_GET_CREDENTIALS, _)).Times(1)
         .WillOnce(Invoke(GetCredentials));
@@ -174,6 +184,7 @@ TEST(AdapterClient, Authenticate)
     wf_client * client = wf_client_create(
         callback.GetCallbackFn(), callback.GetUserData());
 
+
     wf_client_connect(client, server.GetUrl().c_str());
     while (!server.IsConnected())
     {
@@ -182,37 +193,52 @@ TEST(AdapterClient, Authenticate)
     }
 
     wf_client_authenticate(client);
-    json_t * request = server.ReceiveMessage();
-    while (nullptr == request)
+    while (!called) {
+        watcher.check();
+        wf_client_service(client);
+    }
+
+    wf_client_disconnect(client);
+    while (server.IsConnected())
     {
         watcher.check();
         wf_client_service(client);
-        request = server.ReceiveMessage();
     }
-    json_t * id = json_object_get(request, "id");
-    ASSERT_TRUE(json_is_integer(id));
-    json_t * method = json_object_get(request, "method");
-    ASSERT_TRUE(json_is_string(method));
-    ASSERT_STREQ("authenticate", json_string_value(method));
-    json_t * params = json_object_get(request, "params");
-    ASSERT_TRUE(json_is_array(params));
-    ASSERT_EQ(2, json_array_size(params));
-    json_t * type = json_array_get(params, 0);
-    ASSERT_TRUE(json_is_string(type));
-    json_t * creds = json_array_get(params, 1);
-    ASSERT_TRUE(json_is_object(creds));
-    json_t * username = json_object_get(creds, "username");
-    ASSERT_TRUE(json_is_string(username));
-    ASSERT_STREQ("Bob", json_string_value(username));
-    json_t * password = json_object_get(creds, "password");
-    ASSERT_TRUE(json_is_string(password));
-    ASSERT_STREQ("secret", json_string_value(password));
 
-    json_t * response = json_object();
-    json_object_set(response, "id", id);
-    json_object_set_new(response, "result", json_object());
-    server.SendMessage(response);
-    json_decref(request);
+    wf_client_dispose(client);
+}
+
+TEST(AdapterClient, AuthenticationFailed)
+{
+    TimeoutWatcher watcher(TIMEOUT);
+
+    MockInvokationHander handler;
+    WsServer2 server(handler, WF_PROTOCOL_NAME_PROVIDER_SERVER);
+    EXPECT_CALL(handler, Invoke(StrEq("authenticate"),_)).Times(1)
+        .WillOnce(Throw(std::runtime_error("authentication failed")));
+
+    MockAdapterClientCallback callback;
+    EXPECT_CALL(callback, Invoke(_, _, _)).Times(AnyNumber());
+    EXPECT_CALL(callback, Invoke(_, WF_CLIENT_AUTHENTICATE_GET_CREDENTIALS, _)).Times(1)
+        .WillOnce(Invoke(GetCredentials));
+    bool called = false;
+    EXPECT_CALL(callback, Invoke(_, WF_CLIENT_AUTHENTICATION_FAILED, nullptr)).Times(1)
+        .WillOnce(Invoke([&called] (wf_client *, int, void *) mutable {
+            called = true;
+        }));
+
+    wf_client * client = wf_client_create(
+        callback.GetCallbackFn(), callback.GetUserData());
+
+
+    wf_client_connect(client, server.GetUrl().c_str());
+    while (!server.IsConnected())
+    {
+        watcher.check();
+        wf_client_service(client);
+    }
+
+    wf_client_authenticate(client);
     while (!called) {
         watcher.check();
         wf_client_service(client);
