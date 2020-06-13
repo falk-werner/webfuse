@@ -2,6 +2,7 @@
 #define WF_TEST_TIMEOUT_WATCHER_HPP
 
 #include <chrono>
+#include <functional>
 
 namespace webfuse_test
 {
@@ -15,6 +16,7 @@ public:
     ~TimeoutWatcher();
     bool isTimeout();
     void check();
+    bool waitUntil(std::function<bool()> predicate);
 private:
     std::chrono::milliseconds startedAt;
     std::chrono::milliseconds timeout_;

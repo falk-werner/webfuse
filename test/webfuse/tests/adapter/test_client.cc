@@ -66,22 +66,21 @@ TEST(AdapterClient, Connect)
     EXPECT_CALL(callback, Invoke(_, WF_CLIENT_GET_TLS_CONFIG, _)).Times(1);
     EXPECT_CALL(callback, Invoke(_, WF_CLIENT_CLEANUP, nullptr)).Times(1);
 
-    EXPECT_CALL(callback, Invoke(_, WF_CLIENT_CONNECTED, nullptr)).Times(1);
-    EXPECT_CALL(callback, Invoke(_, WF_CLIENT_DISCONNECTED, nullptr)).Times(1);
+    bool connected = false;
+    EXPECT_CALL(callback, Invoke(_, WF_CLIENT_CONNECTED, nullptr)).Times(1)
+        .WillOnce(Invoke([&] (wf_client *, int, void *) mutable { connected = true; }));
+
+    bool disconnected = false;
+    EXPECT_CALL(callback, Invoke(_, WF_CLIENT_DISCONNECTED, nullptr)).Times(1)
+        .WillOnce(Invoke([&] (wf_client *, int, void *) mutable { disconnected = true; }));
 
     AdapterClient client(callback.GetCallbackFn(), callback.GetUserData(), server.GetUrl());
 
     client.Connect();
-    while (!server.IsConnected())
-    {
-        watcher.check();
-    }
+    ASSERT_TRUE(watcher.waitUntil([&]() mutable { return connected; }));
 
     client.Disconnect();
-    while (server.IsConnected())
-    {
-        watcher.check();
-    }
+    ASSERT_TRUE(watcher.waitUntil([&]() mutable { return disconnected; }));
 }
 
 TEST(AdapterClient, Authenticate)
@@ -95,32 +94,32 @@ TEST(AdapterClient, Authenticate)
 
     MockAdapterClientCallback callback;
     EXPECT_CALL(callback, Invoke(_, _, _)).Times(AnyNumber());
+
+    bool connected = false;
+    EXPECT_CALL(callback, Invoke(_, WF_CLIENT_CONNECTED, nullptr)).Times(1)
+        .WillOnce(Invoke([&] (wf_client *, int, void *) mutable { connected = true; }));
+
+    bool disconnected = false;
+    EXPECT_CALL(callback, Invoke(_, WF_CLIENT_DISCONNECTED, nullptr)).Times(1)
+        .WillOnce(Invoke([&] (wf_client *, int, void *) mutable { disconnected = true; }));
+
     EXPECT_CALL(callback, Invoke(_, WF_CLIENT_AUTHENTICATE_GET_CREDENTIALS, _)).Times(1)
         .WillOnce(Invoke(GetCredentials));
-    bool called = false;
+
+    bool authenticated = false;
     EXPECT_CALL(callback, Invoke(_, WF_CLIENT_AUTHENTICATED, nullptr)).Times(1)
-        .WillOnce(Invoke([&called] (wf_client *, int, void *) mutable {
-            called = true;
-        }));
+        .WillOnce(Invoke([&] (wf_client *, int, void *) mutable { authenticated = true; }));
 
     AdapterClient client(callback.GetCallbackFn(), callback.GetUserData(), server.GetUrl());
 
     client.Connect();
-    while (!server.IsConnected())
-    {
-        watcher.check();
-    }
+    ASSERT_TRUE(watcher.waitUntil([&]() mutable { return connected; }));
 
     client.Authenticate();
-    while (!called) {
-        watcher.check();
-    }
+    ASSERT_TRUE(watcher.waitUntil([&]() mutable { return authenticated; }));
 
     client.Disconnect();
-    while (server.IsConnected())
-    {
-        watcher.check();
-    }
+    ASSERT_TRUE(watcher.waitUntil([&]() mutable { return disconnected; }));
 }
 
 TEST(AdapterClient, AuthenticateFailedWithoutConnect)
@@ -140,9 +139,7 @@ TEST(AdapterClient, AuthenticateFailedWithoutConnect)
     AdapterClient client(callback.GetCallbackFn(), callback.GetUserData(), "");
 
     client.Authenticate();
-    while (!called) {
-        watcher.check();
-    }
+    ASSERT_TRUE(watcher.waitUntil([&]() mutable { return called; }));
 }
 
 TEST(AdapterClient, AuthenticationFailed)
@@ -156,8 +153,18 @@ TEST(AdapterClient, AuthenticationFailed)
 
     MockAdapterClientCallback callback;
     EXPECT_CALL(callback, Invoke(_, _, _)).Times(AnyNumber());
+
+    bool connected = false;
+    EXPECT_CALL(callback, Invoke(_, WF_CLIENT_CONNECTED, nullptr)).Times(1)
+        .WillOnce(Invoke([&] (wf_client *, int, void *) mutable { connected = true; }));
+
+    bool disconnected = false;
+    EXPECT_CALL(callback, Invoke(_, WF_CLIENT_DISCONNECTED, nullptr)).Times(1)
+        .WillOnce(Invoke([&] (wf_client *, int, void *) mutable { disconnected = true; }));
+
     EXPECT_CALL(callback, Invoke(_, WF_CLIENT_AUTHENTICATE_GET_CREDENTIALS, _)).Times(1)
         .WillOnce(Invoke(GetCredentials));
+
     bool called = false;
     EXPECT_CALL(callback, Invoke(_, WF_CLIENT_AUTHENTICATION_FAILED, nullptr)).Times(1)
         .WillOnce(Invoke([&called] (wf_client *, int, void *) mutable {
@@ -167,19 +174,11 @@ TEST(AdapterClient, AuthenticationFailed)
     AdapterClient client(callback.GetCallbackFn(), callback.GetUserData(), server.GetUrl());
 
     client.Connect();
-    while (!server.IsConnected())
-    {
-        watcher.check();
-    }
+    ASSERT_TRUE(watcher.waitUntil([&]() mutable { return connected; }));
 
     client.Authenticate();
-    while (!called) {
-        watcher.check();
-    }
+    ASSERT_TRUE(watcher.waitUntil([&]() mutable { return called; }));
 
     client.Disconnect();
-    while (server.IsConnected())
-    {
-        watcher.check();
-    }
+    ASSERT_TRUE(watcher.waitUntil([&]() mutable { return disconnected; }));
 }

@@ -1,5 +1,6 @@
 #include "webfuse/utils/timeout_watcher.hpp"
 #include <stdexcept>
+#include <thread>
 
 using std::chrono::milliseconds;
 using std::chrono::duration_cast;
@@ -40,5 +41,18 @@ void TimeoutWatcher::check()
         throw std::runtime_error("timeout");
     }
 }
+
+bool TimeoutWatcher::waitUntil(std::function<bool()> predicate)
+{
+    bool result = predicate();
+    while ((!result) && (!isTimeout()))
+    {
+        std::this_thread::yield();
+        result = predicate();
+    }
+
+    return result;
+}
+
 
 }
