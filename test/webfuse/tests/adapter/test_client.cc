@@ -124,6 +124,27 @@ TEST(AdapterClient, ConnectWithTls)
     ASSERT_TRUE(watcher.waitUntil([&]() mutable { return disconnected; }));
 }
 
+TEST(AdapterClient, FailedToConnectInvalidPort)
+{
+    TimeoutWatcher watcher(TIMEOUT);
+
+
+    MockAdapterClientCallback callback;
+    EXPECT_CALL(callback, Invoke(_, WF_CLIENT_INIT, nullptr)).Times(1);
+    EXPECT_CALL(callback, Invoke(_, WF_CLIENT_CREATED, nullptr)).Times(1);
+    EXPECT_CALL(callback, Invoke(_, WF_CLIENT_GET_TLS_CONFIG, _)).Times(1);
+    EXPECT_CALL(callback, Invoke(_, WF_CLIENT_CLEANUP, nullptr)).Times(1);
+
+    bool disconnected = false;
+    EXPECT_CALL(callback, Invoke(_, WF_CLIENT_DISCONNECTED, nullptr)).Times(1)
+        .WillOnce(Invoke([&] (wf_client *, int, void *) mutable { disconnected = true; }));
+
+    AdapterClient client(callback.GetCallbackFn(), callback.GetUserData(), "ws://localhost:4/");
+
+    client.Connect();
+    ASSERT_TRUE(watcher.waitUntil([&]() mutable { return disconnected; }));
+}
+
 
 TEST(AdapterClient, Authenticate)
 {
