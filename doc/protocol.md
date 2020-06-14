@@ -221,14 +221,20 @@ Read from an open file.
 | "identiy"  | Use data as is; note that JSON strings are UTF-8 encoded |
 | "base64"   | data is base64 encoded                                   |
 
-## Requests (Provider -> Adapter)
+## Requests (Client -> Server)
+
+_Note:_ The following requests are initiated by the client and
+responded by the server. Depending on the use case, a provider
+can be a client (e.g. a webbrowser which want's to inject a
+filesystem to an IoT device) or a server (e.g. a cloud based
+service, an adapter connects to and requests a filesystem).
 
 ### add_filesystem
 
 Adds a filesystem.
 
-    fs provider: {"method": "add_filesystem", "params": [<name>], "id": <id>}
-    webfuse daemon: {"result": {"id": <name>}, "id": <id>}
+    client: {"method": "add_filesystem", "params": [<name>], "id": <id>}
+    server: {"result": {"id": <name>}, "id": <id>}
 
 | Item        | Data type | Description                     |
 | ----------- | ----------| ------------------------------- |
@@ -237,10 +243,10 @@ Adds a filesystem.
 ### authtenticate
 
 Authenticate the provider.  
-If authentication is enabled, a provider must be authenticated by the adapter before filesystems can be added.
+If authentication is enabled, a client must be authenticated by the server before filesystems can be added.
 
-    fs provider: {"method": "authenticate", "params": [<type>, <credentials>], "id": <id>}
-    webfuse daemon: {"result": {}, "id": <id>}
+    client: {"method": "authenticate", "params": [<type>, <credentials>], "id": <id>}
+    server: {"result": {}, "id": <id>}
 
 | Item        | Data type | Description                     |
 | ----------- | ----------| ------------------------------- |
