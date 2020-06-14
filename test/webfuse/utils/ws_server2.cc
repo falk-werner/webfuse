@@ -75,7 +75,7 @@ class WsServer2::Private : IServer
     Private(Private const &) = delete;
     Private & operator=(Private const &) = delete;
 public:
-    Private(IIvokationHandler & handler, std::string const & protocol, int port);
+    Private(IIvokationHandler & handler, std::string const & protocol, int port, bool enable_tls);
     ~Private();
     bool IsConnected();
     std::string const & GetUrl() const;
@@ -105,8 +105,9 @@ private:
 WsServer2::WsServer2(
     IIvokationHandler& handler,
     std::string const & protocol,
-    int port)
-: d(new WsServer2::Private(handler, protocol, port))
+    int port,
+    bool enable_tls)
+: d(new WsServer2::Private(handler, protocol, port, enable_tls))
 {
 
 }
@@ -129,7 +130,8 @@ std::string const & WsServer2::GetUrl() const
 WsServer2::Private::Private(
     IIvokationHandler & handler,
     std::string const & protocol,
-    int port)
+    int port,
+    bool enable_tls)
 : handler_(handler)
 , protocol_(protocol)
 , is_connected(false)
@@ -154,11 +156,19 @@ WsServer2::Private::Private(
     info.options = LWS_SERVER_OPTION_HTTP_HEADERS_SECURITY_BEST_PRACTICES_ENFORCE;
     info.options |= LWS_SERVER_OPTION_EXPLICIT_VHOSTS;
 
+    if (enable_tls)
+    {
+		info.options |= LWS_SERVER_OPTION_DO_SSL_GLOBAL_INIT;
+		info.ssl_cert_filepath = "server-cert.pem";
+		info.ssl_private_key_filepath = "server-key.pem";
+    }
+
     ws_context = lws_create_context(&info);
 
     std::ostringstream stream;
     struct lws_vhost * vhost = lws_create_vhost(ws_context, &info);
-    stream << "ws://localhost:" << lws_get_vhost_port(vhost) << "/";
+    stream <<  (enable_tls ? "wss://" : "ws://")
+        << "localhost:" << lws_get_vhost_port(vhost) << "/";
     url = stream.str();
 
     context = std::thread(&Run, this);

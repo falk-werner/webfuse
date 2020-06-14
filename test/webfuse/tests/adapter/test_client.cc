@@ -2,7 +2,7 @@
 #include <gmock/gmock.h>
 
 #include "webfuse/utils/adapter_client.hpp"
-
+#include "webfuse/adapter/client_tlsconfig.h"
 #include "webfuse/adapter/credentials.h"
 #include "webfuse/core/protocol_names.h"
 #include "webfuse/utils/ws_server2.hpp"
@@ -86,6 +86,44 @@ TEST(AdapterClient, Connect)
     client.Disconnect();
     ASSERT_TRUE(watcher.waitUntil([&]() mutable { return disconnected; }));
 }
+
+TEST(AdapterClient, ConnectWithTls)
+{
+    TimeoutWatcher watcher(TIMEOUT);
+
+    MockInvokationHander handler;
+    WsServer2 server(handler, WF_PROTOCOL_NAME_PROVIDER_SERVER, 0, true);
+    EXPECT_CALL(handler, Invoke(_,_)).Times(0);
+
+    MockAdapterClientCallback callback;
+    EXPECT_CALL(callback, Invoke(_, WF_CLIENT_INIT, nullptr)).Times(1);
+    EXPECT_CALL(callback, Invoke(_, WF_CLIENT_CREATED, nullptr)).Times(1);
+    EXPECT_CALL(callback, Invoke(_, WF_CLIENT_GET_TLS_CONFIG, _)).Times(1)
+        .WillOnce(Invoke([](wf_client *, int, void * arg) {
+            auto * tls = reinterpret_cast<wf_client_tlsconfig*>(arg);
+            wf_client_tlsconfig_set_keypath (tls, "client-key.pem");
+            wf_client_tlsconfig_set_certpath(tls, "client-cert.pem");
+            wf_client_tlsconfig_set_cafilepath(tls, "server-cert.pem");
+        }));
+    EXPECT_CALL(callback, Invoke(_, WF_CLIENT_CLEANUP, nullptr)).Times(1);
+
+    bool connected = false;
+    EXPECT_CALL(callback, Invoke(_, WF_CLIENT_CONNECTED, nullptr)).Times(1)
+        .WillOnce(Invoke([&] (wf_client *, int, void *) mutable { connected = true; }));
+
+    bool disconnected = false;
+    EXPECT_CALL(callback, Invoke(_, WF_CLIENT_DISCONNECTED, nullptr)).Times(1)
+        .WillOnce(Invoke([&] (wf_client *, int, void *) mutable { disconnected = true; }));
+
+    AdapterClient client(callback.GetCallbackFn(), callback.GetUserData(), server.GetUrl());
+
+    client.Connect();
+    ASSERT_TRUE(watcher.waitUntil([&]() mutable { return connected; }));
+
+    client.Disconnect();
+    ASSERT_TRUE(watcher.waitUntil([&]() mutable { return disconnected; }));
+}
+
 
 TEST(AdapterClient, Authenticate)
 {

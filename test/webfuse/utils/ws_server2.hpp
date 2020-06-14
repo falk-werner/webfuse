@@ -22,7 +22,8 @@ public:
     WsServer2(
         IIvokationHandler& handler,
         std::string const & protocol,
-        int port = 0);
+        int port = 0,
+        bool enable_tls = false);
     virtual ~WsServer2();
     bool IsConnected();
     std::string const & GetUrl() const;
