@@ -21,6 +21,7 @@ public:
     void Disconnect();
     void Authenticate();
     void AddFileSystem();
+    std::string GetDir() const;
 private:
     class Private;
     Private * d;

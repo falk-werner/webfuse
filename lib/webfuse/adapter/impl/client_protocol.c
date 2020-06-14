@@ -146,6 +146,7 @@ static int wf_impl_client_protocol_lws_callback(
                 break;
             case LWS_CALLBACK_CLIENT_RECEIVE:
                 wf_impl_client_protocol_process(protocol, in, len);
+                break;
             case LWS_CALLBACK_SERVER_WRITEABLE:
                 // fall-through
             case LWS_CALLBACK_CLIENT_WRITEABLE:
@@ -169,6 +170,11 @@ static int wf_impl_client_protocol_lws_callback(
                     }
                 }
                 break;
+            case LWS_CALLBACK_RAW_RX_FILE:
+                if ((NULL != protocol->filesystem) && (wsi == protocol->filesystem->wsi))
+                {
+                    wf_impl_filesystem_process_request(protocol->filesystem);
+                }
             default:
                 break;
         }
@@ -201,15 +207,17 @@ void
 wf_impl_client_protocol_cleanup(
     struct wf_client_protocol * protocol)
 {
-    if (NULL != protocol->filesystem)
-    {
-        wf_impl_filesystem_dispose(protocol->filesystem);
-    }
-
     protocol->callback(protocol->user_data, WF_CLIENT_CLEANUP, NULL);
+
     wf_jsonrpc_proxy_dispose(protocol->proxy);
     wf_timer_manager_dispose(protocol->timer_manager);
     wf_message_queue_cleanup(&protocol->messages);
+
+    if (NULL != protocol->filesystem)
+    {
+        wf_impl_filesystem_dispose(protocol->filesystem);
+        protocol->filesystem = NULL;
+    }
 }
 
 void

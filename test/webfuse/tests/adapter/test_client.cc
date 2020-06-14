@@ -9,12 +9,16 @@
 #include "webfuse/mocks/mock_adapter_client_callback.hpp"
 #include "webfuse/mocks/mock_invokation_handler.hpp"
 #include "webfuse/utils/timeout_watcher.hpp"
+#include "webfuse/tests/integration/file.hpp"
+#include "webfuse/mocks/lookup_matcher.hpp"
 
 using webfuse_test::AdapterClient;
 using webfuse_test::WsServer2;
 using webfuse_test::MockInvokationHander;
 using webfuse_test::MockAdapterClientCallback;
 using webfuse_test::TimeoutWatcher;
+using webfuse_test::File;
+using webfuse_test::Lookup;
 using testing::_;
 using testing::Invoke;
 using testing::AnyNumber;
@@ -178,6 +182,140 @@ TEST(AdapterClient, AuthenticationFailed)
 
     client.Authenticate();
     ASSERT_TRUE(watcher.waitUntil([&]() mutable { return called; }));
+
+    client.Disconnect();
+    ASSERT_TRUE(watcher.waitUntil([&]() mutable { return disconnected; }));
+}
+
+TEST(AdapterClient, AddFileSystem)
+{
+    TimeoutWatcher watcher(TIMEOUT);
+
+    MockInvokationHander handler;
+    WsServer2 server(handler, WF_PROTOCOL_NAME_PROVIDER_SERVER);
+    EXPECT_CALL(handler, Invoke(StrEq("add_filesystem"),_)).Times(1)
+        .WillOnce(Return("{\"id\": \"test\"}"));
+    EXPECT_CALL(handler, Invoke(StrEq("lookup"), _)).Times(AnyNumber())
+        .WillRepeatedly(Throw(std::runtime_error("unknown")));
+
+    MockAdapterClientCallback callback;
+    EXPECT_CALL(callback, Invoke(_, _, _)).Times(AnyNumber());
+
+    bool connected = false;
+    EXPECT_CALL(callback, Invoke(_, WF_CLIENT_CONNECTED, nullptr)).Times(1)
+        .WillOnce(Invoke([&] (wf_client *, int, void *) mutable { connected = true; }));
+
+    bool disconnected = false;
+    EXPECT_CALL(callback, Invoke(_, WF_CLIENT_DISCONNECTED, nullptr)).Times(1)
+        .WillOnce(Invoke([&] (wf_client *, int, void *) mutable { disconnected = true; }));
+
+    bool called = false;
+    EXPECT_CALL(callback, Invoke(_, WF_CLIENT_FILESYSTEM_ADDED, nullptr)).Times(1)
+        .WillOnce(Invoke([&called] (wf_client *, int, void *) mutable {
+            called = true;
+        }));
+
+    AdapterClient client(callback.GetCallbackFn(), callback.GetUserData(), server.GetUrl());
+
+    client.Connect();
+    ASSERT_TRUE(watcher.waitUntil([&]() mutable { return connected; }));
+
+    client.AddFileSystem();
+    ASSERT_TRUE(watcher.waitUntil([&]() mutable { return called; }));
+
+    client.Disconnect();
+    ASSERT_TRUE(watcher.waitUntil([&]() mutable { return disconnected; }));
+}
+
+TEST(AdapterClient, AddFileSystemFailed)
+{
+    TimeoutWatcher watcher(TIMEOUT);
+
+    MockInvokationHander handler;
+    WsServer2 server(handler, WF_PROTOCOL_NAME_PROVIDER_SERVER);
+    EXPECT_CALL(handler, Invoke(StrEq("add_filesystem"),_)).Times(1)
+        .WillOnce(Throw(std::runtime_error("failed")));
+
+    MockAdapterClientCallback callback;
+    EXPECT_CALL(callback, Invoke(_, _, _)).Times(AnyNumber());
+
+    bool connected = false;
+    EXPECT_CALL(callback, Invoke(_, WF_CLIENT_CONNECTED, nullptr)).Times(1)
+        .WillOnce(Invoke([&] (wf_client *, int, void *) mutable { connected = true; }));
+
+    bool disconnected = false;
+    EXPECT_CALL(callback, Invoke(_, WF_CLIENT_DISCONNECTED, nullptr)).Times(1)
+        .WillOnce(Invoke([&] (wf_client *, int, void *) mutable { disconnected = true; }));
+
+    bool called = false;
+    EXPECT_CALL(callback, Invoke(_, WF_CLIENT_FILESYSTEM_ADD_FAILED, nullptr)).Times(1)
+        .WillOnce(Invoke([&called] (wf_client *, int, void *) mutable {
+            called = true;
+        }));
+
+    AdapterClient client(callback.GetCallbackFn(), callback.GetUserData(), server.GetUrl());
+
+    client.Connect();
+    ASSERT_TRUE(watcher.waitUntil([&]() mutable { return connected; }));
+
+    client.AddFileSystem();
+    ASSERT_TRUE(watcher.waitUntil([&]() mutable { return called; }));
+
+    client.Disconnect();
+    ASSERT_TRUE(watcher.waitUntil([&]() mutable { return disconnected; }));
+}
+
+TEST(AdapterClient, LookupFile)
+{
+    TimeoutWatcher watcher(TIMEOUT);
+
+    MockInvokationHander handler;
+    WsServer2 server(handler, WF_PROTOCOL_NAME_PROVIDER_SERVER);
+    EXPECT_CALL(handler, Invoke(StrEq("add_filesystem"),_)).Times(1)
+        .WillOnce(Return("{\"id\": \"test\"}"));
+    EXPECT_CALL(handler, Invoke(StrEq("lookup"), _)).Times(AnyNumber())
+        .WillRepeatedly(Throw(std::runtime_error("unknown")));
+    EXPECT_CALL(handler, Invoke(StrEq("lookup"), Lookup(1, "Hello.txt"))).Times(AnyNumber())
+        .WillRepeatedly(Return(
+            "{"
+            "\"inode\": 2,"
+            "\"mode\": 420,"    //0644
+            "\"type\": \"file\","
+            "\"size\": 42,"
+            "\"atime\": 0,"
+            "\"mtime\": 0,"
+            "\"ctime\": 0"
+            "}"
+        ));
+
+    MockAdapterClientCallback callback;
+    EXPECT_CALL(callback, Invoke(_, _, _)).Times(AnyNumber());
+
+    bool connected = false;
+    EXPECT_CALL(callback, Invoke(_, WF_CLIENT_CONNECTED, nullptr)).Times(1)
+        .WillOnce(Invoke([&] (wf_client *, int, void *) mutable { connected = true; }));
+
+    bool disconnected = false;
+    EXPECT_CALL(callback, Invoke(_, WF_CLIENT_DISCONNECTED, nullptr)).Times(1)
+        .WillOnce(Invoke([&] (wf_client *, int, void *) mutable { disconnected = true; }));
+
+    bool called = false;
+    EXPECT_CALL(callback, Invoke(_, WF_CLIENT_FILESYSTEM_ADDED, nullptr)).Times(1)
+        .WillOnce(Invoke([&called] (wf_client *, int, void *) mutable {
+            called = true;
+        }));
+
+    AdapterClient client(callback.GetCallbackFn(), callback.GetUserData(), server.GetUrl());
+
+    client.Connect();
+    ASSERT_TRUE(watcher.waitUntil([&]() mutable { return connected; }));
+
+    client.AddFileSystem();
+    ASSERT_TRUE(watcher.waitUntil([&]() mutable { return called; }));
+
+    std::string file_name = client.GetDir() + "/Hello.txt";
+    File file(file_name);
+    ASSERT_TRUE(file.isFile());
 
     client.Disconnect();
     ASSERT_TRUE(watcher.waitUntil([&]() mutable { return disconnected; }));

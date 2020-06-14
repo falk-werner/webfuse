@@ -1,7 +1,7 @@
 #include "webfuse/utils/adapter_client.hpp"
+#include "webfuse/utils/tempdir.hpp"
 #include <thread>
 #include <mutex>
-#include <queue>
 
 namespace
 {
@@ -31,6 +31,7 @@ public:
     : client(wf_client_create(callback, user_data))
     , url_(url)
     , command(Command::run)
+    , tempdir("webfuse_adpter_client")
     {
         thread = std::thread(&Run, this);
     }
@@ -50,6 +51,11 @@ public:
         }
 
         wf_client_interrupt(client);
+    }
+
+    std::string GetDir()
+    {
+        return tempdir.path();
     }
 
 private:
@@ -80,7 +86,7 @@ private:
                     wf_client_authenticate(self->client);
                     break;
                 case Command::add_filesystem:
-                    wf_client_add_filesystem(self->client, "/tmp", "test");
+                    wf_client_add_filesystem(self->client, self->tempdir.path(), "test");
                     break;
                 case Command::shutdown:
                     // fall-through
@@ -95,6 +101,7 @@ private:
     wf_client * client;
     std::string url_;
     Command command;
+    TempDir tempdir;
     std::thread thread;
     std::mutex mutex;
 };
@@ -132,5 +139,11 @@ void AdapterClient::AddFileSystem()
 {
     d->ApplyCommand(Command::add_filesystem);
 }
+
+std::string AdapterClient::GetDir() const
+{
+    return d->GetDir();
+}
+
 
 }
