@@ -1,7 +1,7 @@
-#include "webfuse/core/string.h"
 #include "webfuse/utils/tempdir.hpp"
 
 #include <unistd.h>
+#include <cstdio>
 #include <cstdlib>
 #include <stdexcept>
 
@@ -9,8 +9,8 @@ namespace webfuse_test
 {
 
 TempDir::TempDir(char const * prefix)
-: path_(wf_create_string("/tmp/%s_XXXXXX", prefix))
 {
+    asprintf(&path_, "/tmp/%s_XXXXXX", prefix);
     char * result = mkdtemp(path_);
     if (NULL == result)
     {

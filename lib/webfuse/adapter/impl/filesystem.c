@@ -9,8 +9,6 @@
 #include "webfuse/adapter/impl/session.h"
 #include "webfuse/adapter/impl/mountpoint.h"
 
-#include "webfuse/core/string.h"
-
 #include <libwebsockets.h>
 
 #include <sys/stat.h>
