@@ -9,6 +9,7 @@
 
 ### New Features
 
+*   Add adapter client implementation
 *   Allow system to choose port of webfuse server (by setting port in `wf_server_config` to 0)
 
 ### Fixes
