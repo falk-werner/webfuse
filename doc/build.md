@@ -46,9 +46,9 @@ After that, you will find the API documentation in the doc/api subdirectory.
 
 #### libfuse
 
-    wget -O fuse-3.9.1.tar.gz https://github.com/libfuse/libfuse/archive/fuse-3.9.1.tar.gz
-    tar -xf fuse-3.9.1.tar.gz
-    cd libfuse-fuse-3.9.1
+    wget -O fuse-3.9.2.tar.gz https://github.com/libfuse/libfuse/archive/fuse-3.9.2.tar.gz
+    tar -xf fuse-3.9.2.tar.gz
+    cd libfuse-fuse-3.9.2
     mkdir .build
     cd .build
     meson ..
