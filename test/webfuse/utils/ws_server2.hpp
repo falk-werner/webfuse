@@ -27,6 +27,8 @@ public:
     virtual ~WsServer2();
     bool IsConnected();
     std::string const & GetUrl() const;
+    void SendMessage(char const * message);
+    void SendMessage(json_t * message);
 private:
     class Private;
     Private * d;

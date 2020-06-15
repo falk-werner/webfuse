@@ -70,7 +70,7 @@ static int wf_test_utils_ws_server_callback(
 namespace webfuse_test
 {
 
-class WsServer2::Private : IServer
+class WsServer2::Private : public IServer
 {
     Private(Private const &) = delete;
     Private & operator=(Private const &) = delete;
@@ -84,8 +84,9 @@ public:
     void OnMessageReceived(struct lws * wsi, char const * data, size_t length) override;
     void OnWritable(struct lws * wsi) override;
 
-private:
+    void SendMessage(char const * message);
     void SendMessage(json_t * message);
+private:
     static void Run(Private * self);
 
     IIvokationHandler & handler_;
@@ -126,6 +127,17 @@ std::string const & WsServer2::GetUrl() const
 {
     return d->GetUrl();
 }
+
+void WsServer2::SendMessage(char const * message)
+{
+    d->SendMessage(message);
+}
+
+void WsServer2::SendMessage(json_t * message)
+{
+    d->SendMessage(message);
+}
+
 
 WsServer2::Private::Private(
     IIvokationHandler & handler,
@@ -249,8 +261,7 @@ void WsServer2::Private::OnWritable(struct lws * wsi)
     }
 }
 
-
-void WsServer2::Private::SendMessage(json_t * message)
+void WsServer2::Private::SendMessage(char const * message)
 {
     lws * wsi = nullptr;
 
@@ -259,10 +270,7 @@ void WsServer2::Private::SendMessage(json_t * message)
 
         if (nullptr != wsi_)
         {
-            char* message_text = json_dumps(message, JSON_COMPACT);
-            writeQueue.push(message_text);
-            json_decref(message);
-            free(message_text);
+            writeQueue.push(message);
             wsi = wsi_;
         }
     }
@@ -271,6 +279,14 @@ void WsServer2::Private::SendMessage(json_t * message)
     {
         lws_callback_on_writable(wsi_);
     }
+}
+
+void WsServer2::Private::SendMessage(json_t * message)
+{
+    char* message_text = json_dumps(message, JSON_COMPACT);
+    SendMessage(message_text);
+    json_decref(message);
+    free(message_text);
 }
 
 void WsServer2::Private::OnMessageReceived(struct lws * wsi, char const * data, size_t length)
