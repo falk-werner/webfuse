@@ -46,7 +46,7 @@ RUN set -x \
   && rm -rf "$builddir" \
   && apt purge -y $builddeps
 
-ARG FUSE_VERSION=3.9.1
+ARG FUSE_VERSION=3.9.2
 
 RUN set -x \
   && builddeps="udev gettext" \

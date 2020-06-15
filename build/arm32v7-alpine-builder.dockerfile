@@ -51,7 +51,7 @@ RUN set -x \
   && rm -rf "$builddir" \
   && apk del .build-deps
 
-ARG FUSE_VERSION=3.9.1
+ARG FUSE_VERSION=3.9.2
 
 RUN set -x \
   && builddeps="eudev-dev" \
