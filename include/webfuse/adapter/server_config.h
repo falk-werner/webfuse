@@ -116,6 +116,8 @@ extern WF_API void wf_server_config_set_vhostname(
 //------------------------------------------------------------------------------
 /// \brief Sets the port number of the websockets server.
 ///
+/// Note: Set port number to 0 to let system choose a free port.
+///
 /// \param config pointer of configuration object
 /// \param port   port number of the websockets server
 //------------------------------------------------------------------------------

@@ -1,6 +1,13 @@
 #include "webfuse/adapter/impl/credentials.h"
 #include <string.h>
 
+void wf_impl_credentials_init_default(
+    struct wf_credentials * credentials)
+{
+    credentials->type = NULL;
+    credentials->data = json_object();
+}
+
 void wf_impl_credentials_init(
     struct wf_credentials * credentials,
     char const * type,
@@ -38,3 +45,20 @@ char const * wf_impl_credentials_get(
 
     return result;
 }
+
+void wf_impl_credentials_set_type(
+    struct wf_credentials * credentials,
+    char const * type)
+{
+    free(credentials->type);
+    credentials->type = strdup(type);
+}
+
+void wf_impl_credentials_add(
+    struct wf_credentials * credentials,
+    char const * key,
+    char const * value)
+{
+    json_object_set_new(credentials->data, key, json_string(value));
+}
+

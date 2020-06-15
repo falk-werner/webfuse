@@ -65,6 +65,20 @@ extern WF_API void wf_server_service(
 extern WF_API void wf_server_interrupt(
     struct wf_server * server);
 
+//------------------------------------------------------------------------------
+/// \brief Returns the port number used by the server
+///
+/// This function can be used to determine the port number of the server,
+/// if it was configured to let the system choose a free port.
+//
+/// \param server pointer to server
+/// \return Port number used by the server.
+///
+/// \see wf_server_config_set_port
+//------------------------------------------------------------------------------
+extern WF_API int wf_server_get_port(
+    struct wf_server const * server);
+
 #ifdef __cplusplus
 }
 #endif

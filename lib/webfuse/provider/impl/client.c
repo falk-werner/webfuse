@@ -82,12 +82,6 @@ void wfp_impl_client_disconnect(
     wfp_impl_client_protocol_disconnect(&client->protocol);
 }
 
-bool wfp_impl_client_is_connected(
-    struct wfp_client * client)
-{
-    return client->protocol.is_connected;
-}
-
 void wfp_impl_client_service(
     struct wfp_client * client)
 {

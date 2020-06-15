@@ -13,7 +13,7 @@
 #include "webfuse/core/message.h"
 #include "webfuse/core/message_queue.h"
 #include "webfuse/core/container_of.h"
-#include "webfuse/provider/impl/url.h"
+#include "webfuse/core/url.h"
 #include "webfuse/core/protocol_names.h"
 
 #include "webfuse/core/timer/manager.h"
@@ -297,8 +297,8 @@ void wfp_impl_client_protocol_connect(
     struct lws_context * context,
     char const * url)
 {
-    struct wfp_impl_url url_data;
-    bool const success = wfp_impl_url_init(&url_data, url);
+    struct wf_url url_data;
+    bool const success = wf_url_init(&url_data, url);
     if (success)
     {
         struct lws_client_connect_info info;
@@ -316,7 +316,7 @@ void wfp_impl_client_protocol_connect(
 
         lws_client_connect_via_info(&info);
 
-        wfp_impl_url_cleanup(&url_data);
+        wf_url_cleanup(&url_data);
     }
     else
     {

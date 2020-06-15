@@ -5,9 +5,10 @@ Please refer to the [build instructions](build.md) to generate API reference doc
 
 ## Contents
 
--   [Authentication](#Authentication)
+-   [Authentication](#Authentication (Adapter Server))
+-   [Adapter Client](#Adapter Client)
 
-## Authentication
+## Authentication (Adapter Server)
 
 By default, webfuse daemon will redirect each filesystem call to the first connected provider without any authentication.
 This might be good for testing purposes or when an external authentication mechanism is used. In some use cases, explicit authentication is needed. Therefore, authentication can be enabled within webfuse daemon.
@@ -53,3 +54,107 @@ The authenticator type **username** is used to authenticate via username and pas
 -   **password** refers to the password of the user
 
 **Note** that no further encryption is done, so this authenticator type should not be used over unencrypted websocket connections.
+
+## Adapter Client
+
+Webfuse also supports a client version of an adapter. This might be useful
+to connect to a cloud based provider server and request a filesystem.
+
+The adapter client is driven by a callback function, which is triggered whenever
+an event occurs, an adapter should take care of.
+
+    static void client_callback(
+       struct wf_client * client,
+       int reason,
+       void * arg)
+    {
+        switch (reason)
+        {
+            // ... handle events
+            default:
+                break;
+        }
+    }
+
+    // ...
+    void * user_data = ...
+    struct wf_client * client = wf_client_create(&client_callback, user_data);
+
+### Init and Cleanup
+
+There are two events definied to handle init and cleanup of clients:
+
+-   `WF_CLIENT_INIT`
+-   `WF_CLIENT_CLEANUP`
+
+These two are the outer-most events and can be used for custom initialization
+and cleanup.
+
+A thrid event, `WF_CLIENT_CREATED`, is triggered, when the client is fully created.
+You might use this event to connect to a foreign provider.
+
+### Connection Status
+
+The connection status is relected by two events:
+
+-   `WF_CLIENT_CONNECTED`
+-   `WF_CLIENT_DISCONNECTED`
+
+The disconnected event is also triggerd, when an attempt to connect fails.
+
+### Transport Layer Security
+
+During startup, the event `WF_CLIENT_GET_TLS_CONFIG` is triggered.
+In this case, the `arg` parameter points to an instance of `struct wf_client_tlsconfig`.
+
+To enable TLS, set this struct. If the callback is ignorted or the struct is not
+set, TLS is not active.
+
+    static void client_callback(
+        struct wf_client * client,
+        int reason,
+        void * arg)
+    {
+        switch (reason)
+        {
+            // ...
+            case WF_CLIENT_GET_TLS_CONFIG:
+                {
+                    struct wf_client_tlsconfig * tls = arg;
+                    wf_client_tslconfig_set_keypath(tls, "/path/to/key.pem");
+                    wf_client_tslconfig_set_certpath(tls, "/path/to/cert.pem");
+                    wf_client_tslconfig_set_cafilepath(tls, "/path/to/ca_file.pem");
+                }
+                break;
+            default:
+                break;
+        }
+    }
+
+### Authentication (Adapter Client)
+
+During `wf_client_authenticate` the event `WF_CLIENT_AUTHENTICATE_GET_CREDENTIALS`
+is triggered to query credentials for authentication.
+
+In this case, the `arg` paramter point to an instance of `struct wf_credentials`.
+
+    static void client_callback(
+        struct wf_client * client,
+        int reason,
+        void * arg)
+    {
+        switch (reason)
+        {
+            // ...
+            case WF_CLIENT_AUTHENTICATE_GET_CREDENTIALS:
+                {
+                    struct wf_credentials * creds = arg;
+                    wf_credentials_set_type(creds, "username");
+                    wf_credentials_add(creds, "username", "Bob");
+                    wf_credentials_add(creds, "password", "secret");
+                }
+                break;
+            default:
+                break;
+        }
+    }

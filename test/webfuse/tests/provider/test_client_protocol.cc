@@ -3,19 +3,26 @@
 
 #include <webfuse/provider/client_protocol.h>
 #include <webfuse/provider/client_config.h>
-#include "webfuse/utils/ws_server.hpp"
+#include "webfuse/utils/ws_server.h"
 #include "webfuse/mocks/mock_provider_client.hpp"
+#include "webfuse/core/protocol_names.h"
+#include "webfuse/utils/timeout_watcher.hpp"
+
+#include <libwebsockets.h>
 
 #include <cstring>
 #include <thread>
 #include <atomic>
 
-using webfuse_test::WebsocketServer;
+using webfuse_test::WsServer;
 using webfuse_test::MockProviderClient;
 using webfuse_test::IProviderClient;
+using webfuse_test::TimeoutWatcher;
 using testing::_;
 using testing::AtMost;
 using testing::Invoke;
+
+#define DEFAULT_TIMEOUT (std::chrono::milliseconds(5 * 1000))
 
 namespace
 {
@@ -27,29 +34,42 @@ class ClientProtocolFixture
 public:
     explicit ClientProtocolFixture(IProviderClient& client, bool enableAuthentication = false)
     {
+        server = new WsServer(WF_PROTOCOL_NAME_ADAPTER_SERVER);
+
         config = wfp_client_config_create();
         client.AttachTo(config, enableAuthentication);
-
         protocol = wfp_client_protocol_create(config);
 
-        struct lws_protocols client_protocol;
-        memset(&client_protocol, 0, sizeof(struct lws_protocols));
-        wfp_client_protocol_init_lws(protocol, &client_protocol);
+        memset(protocols, 0, sizeof(struct lws_protocols) * 2);
+        wfp_client_protocol_init_lws(protocol, protocols);
 
-        server = new WebsocketServer(54321, &client_protocol, 1);
+        memset(&info, 0, sizeof(struct lws_context_creation_info));
+        info.port = CONTEXT_PORT_NO_LISTEN;
+        info.protocols = protocols;
+        info.uid = -1;
+        info.gid = -1;
+
+        context = lws_create_context(&info);
     }
 
     ~ClientProtocolFixture()
     {
-        delete server;
+        lws_context_destroy(context);
         wfp_client_protocol_dispose(protocol);
         wfp_client_config_dispose(config);
+        delete server;
     }
 
     void Connect()
     {
-        wfp_client_protocol_connect(protocol, server->getContext(), "ws://localhost:54321/");
-        server->waitForConnection();
+        TimeoutWatcher watcher(DEFAULT_TIMEOUT);
+
+        wfp_client_protocol_connect(protocol, context, server->GetUrl().c_str());        
+        while (!server->IsConnected())
+        {
+            watcher.check();
+            lws_service(context, 0);
+        }
     }
 
     void Disconnect()
@@ -59,19 +79,28 @@ public:
 
     void SendToClient(json_t * request)
     {
-        server->sendMessage(request);
+        server->SendMessage(request);
     }
 
     json_t * ReceiveMessageFromClient()
     {
-        return server->receiveMessage();
+        TimeoutWatcher watcher(DEFAULT_TIMEOUT);
+        json_t * result = server->ReceiveMessage();
+        while (nullptr == result)
+        {
+            watcher.check();
+            lws_service(context, 0);
+            result = server->ReceiveMessage();
+        }
+
+        return result;
     }
 
     void AwaitAuthentication(
         std::string const & expected_username,
         std::string const & expected_password)
     {
-        json_t * request = server->receiveMessage();
+        json_t * request = ReceiveMessageFromClient();
         ASSERT_TRUE(json_is_object(request));
 
         json_t * method = json_object_get(request, "method");
@@ -103,14 +132,14 @@ public:
         json_t * response = json_object();
         json_object_set_new(response, "result", json_object());
         json_object_set(response, "id", id);
-        server->sendMessage(response);
+        SendToClient(response);
 
         json_decref(request);
     }
 
     void AwaitAddFilesystem(std::string& filesystemName)
     {
-        json_t * addFilesystemRequest = server->receiveMessage();
+        json_t * addFilesystemRequest = ReceiveMessageFromClient();
         ASSERT_NE(nullptr, addFilesystemRequest);
         ASSERT_TRUE(json_is_object(addFilesystemRequest));
 
@@ -135,15 +164,19 @@ public:
         json_object_set_new(response, "result", result);
         json_object_set(response, "id", id);
 
-        server->sendMessage(response);
+        SendToClient(response);
 
         json_decref(addFilesystemRequest);
     }
 
 private:
-    WebsocketServer * server;
+    WsServer * server;
     wfp_client_config * config;
     wfp_client_protocol * protocol;
+    struct lws_context_creation_info info;
+    struct lws_protocols protocols[2];
+    struct lws_context * context;
+
 };
 
 void GetCredentials(wfp_credentials * credentials)

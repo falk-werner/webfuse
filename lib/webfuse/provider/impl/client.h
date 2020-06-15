@@ -34,9 +34,6 @@ extern void wfp_impl_client_disconnect(
 extern void wfp_impl_client_dispose(
     struct wfp_client * client);
 
-extern bool wfp_impl_client_is_connected(
-    struct wfp_client * client);
-
 extern void wfp_impl_client_service(
     struct wfp_client * client);
 
