@@ -10,6 +10,7 @@ webfuse combines libwebsockets and libfuse. It allows ot attach a remote filesys
 
 -   [Motivation](#Motivation)
 -   [Fellow Repositories](#Fellow-Repositories)
+-   [Known Implementations](#Known-Implementations)
 -   [Concept](#Concept)
 -   [Similar Projects](#Similar-Projects)
 -   [Further Documentation](#Further-Documentation)
@@ -37,6 +38,14 @@ webfuse solves this problem by using the [WebSocket](https://en.wikipedia.org/wi
 -   **[webfused](https://github.com/falk-werner/webfused)**: Reference implementation of webfuse daemon
 -   **[webfuse-provider](https://github.com/falk-werner/webfuse-provider)**: webfuse provider library (C/C++)
 -   **[webfuse-js](https://github.com/falk-werner/webfuse-js)**: webfuse provider library (JavaScript))
+
+## Known Implementations
+
+| Implementation                                                      | Language   | Adatper/Server | Adapter/Client | Provider/Server | Provider/Client |
+| ------------------------------------------------------------------- | ---------- | -------------  | -------------- | --------------- | --------------- |
+| [webfuse](https://github.com/falk-werner/webfuse)                   | C/C++      | - [x]          | - [x]          | - [ ]           | - [ ]           |
+| [webfuse-provider](https://github.com/falk-werner/webfuse-provider) | C/C++      | - [ ]          | - [ ]          | - [ ]           | - [x]           |
+| [webfuse.js](https://github.com/falk-werner/webfuse-js)             | JavaScript | - [ ]          | - [ ]          | - [ ]           | - [x]           |
 
 ## Concept
 
