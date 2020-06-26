@@ -45,7 +45,7 @@ webfuse solves this problem by using the [WebSocket](https://en.wikipedia.org/wi
 | ------------------------------------------------------------------- | ---------- | -------------  | -------------- | --------------- | --------------- |
 | [webfuse](https://github.com/falk-werner/webfuse)                   | C/C++      | &#10004;       | &#10004;       | -               | -               |
 | [webfuse-provider](https://github.com/falk-werner/webfuse-provider) | C/C++      | -              | -              | -               | &#10004;        |
-| [webfuse.js](https://github.com/falk-werner/webfuse-js)             | JavaScript | -              | -              | -               | &#10004;        |
+| [webfuse-js](https://github.com/falk-werner/webfuse-js)             | JavaScript | -              | -              | -               | &#10004;        |
 
 ## Concept
 
