@@ -6,7 +6,7 @@
 
 *   Remove CMake support (change build system to meson)
 *   Make argument credentials const in `wf_authenticate_fn`
-*   Moved provider library into (separate project)[https://github.com/falk-werner/webfuse-provider]
+*   Moved provider library into [separate project](https://github.com/falk-werner/webfuse-provider)
 *   Renamed library (libwebfuse_adapter -> libwebfuse)
 
 ### New Features
