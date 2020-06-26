@@ -64,11 +64,10 @@ A reference implementation of such a daemon is provided within the examples. The
 ### Adapters and Providers
 
 In webfuse, an adapter is a component that adapts the libfuse API to a websocket interface.
-Currently, libwebfuse implements only a server based adapter - a websocket server, that allows clients to connect a remote file system which
-is represented via libfuse on the server side.
+Currently, libwebfuse provides both, server based and client based adapters.
 
 In webfuse, a provider is a component that provides a filesystem via websocket interface.
-Currently, libwebfuse implements only a client based provider - a websocket client that provides a local filesystem to a remote server.
+Take a look at [known implementations](#Known-Implementations) to find provider libraries.
 
 ## Similar Projects
 
