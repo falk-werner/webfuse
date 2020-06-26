@@ -1,8 +1,6 @@
 project('webfuse', 'c', 'cpp', version: '0.4.0', license: 'LGPL-3.0+')
 
-without_adapter = get_option('without_adapter')
-without_provider = get_option('without_provider')
-without_tests = get_option('without_tests') or without_adapter or without_provider
+without_tests = get_option('without_tests')
 
 libwebsockets_dep = dependency('libwebsockets', version: '>=4.0.13', required: false)
 if not libwebsockets_dep.found()
@@ -15,12 +13,15 @@ jansson_dep = dependency('jansson', version: '>=2.11', fallback: ['jansson', 'ja
 
 pkg_config = import('pkgconfig')
 
-# Webfuse core
-
 inc_dir = include_directories('include')
 private_inc_dir = include_directories('include', 'lib')
 
-webfuse_core = static_library('webfuse_core',
+install_subdir('include/webfuse/core', install_dir: 'include/webfuse')
+
+
+libfuse_dep = dependency('fuse3', version: '>=3.8.0', fallback: ['fuse3', 'libfuse_dep'])
+
+webfuse_static = static_library('webfuse',
     'lib/webfuse/core/slist.c',
 	'lib/webfuse/core/message.c',
 	'lib/webfuse/core/message_queue.c',
@@ -39,79 +40,6 @@ webfuse_core = static_library('webfuse_core',
 	'lib/webfuse/core/jsonrpc/request.c',
 	'lib/webfuse/core/jsonrpc/response.c',
 	'lib/webfuse/core/jsonrpc/error.c',
-    c_args: ['-fvisibility=hidden'],
-    include_directories: private_inc_dir,    
-    dependencies: [jansson_dep, libwebsockets_dep])
-
-webfuse_core_dep = declare_dependency(
-    include_directories: inc_dir,
-    link_with: webfuse_core,
-	dependencies: [jansson_dep, libwebsockets_dep])
-
-install_subdir('include/webfuse/core', install_dir: 'include/webfuse')
-
-# Webfuse provider
-
-if not without_provider
-
-webfuse_provider_static = static_library('webfuse_provider',
-	'lib/webfuse/provider/api.c',
-	'lib/webfuse/provider/impl/client.c',
-	'lib/webfuse/provider/impl/client_config.c',
-	'lib/webfuse/provider/impl/client_protocol.c',
-	'lib/webfuse/provider/impl/provider.c',
-	'lib/webfuse/provider/impl/request.c',
-	'lib/webfuse/provider/impl/dirbuffer.c',
-	'lib/webfuse/provider/impl/credentials.c',
-	'lib/webfuse/provider/impl/operation/lookup.c',
-	'lib/webfuse/provider/impl/operation/getattr.c',
-	'lib/webfuse/provider/impl/operation/readdir.c',
-	'lib/webfuse/provider/impl/operation/open.c',
-	'lib/webfuse/provider/impl/operation/close.c',
-	'lib/webfuse/provider/impl/operation/read.c',
-    c_args: ['-fvisibility=hidden'],
-    include_directories: private_inc_dir,
-    dependencies: [webfuse_core_dep])
-
-webfuse_provider_static_dep = declare_dependency(
-    include_directories: inc_dir,
-    link_with: webfuse_provider_static,
-	dependencies: [webfuse_core_dep])
-
-webfuse_provider = shared_library('webfuse_provider',
-    'lib/webfuse/provider/api.c',
-    version: meson.project_version(),
-    c_args: ['-fvisibility=hidden', '-DWFP_API=WFP_EXPORT'],
-    include_directories: private_inc_dir,
-    dependencies: [webfuse_provider_static_dep],
-	install: true)
-
-webfuse_provider_dep = declare_dependency(
-	include_directories: inc_dir,
-	link_with: [webfuse_provider],
-	dependencies: [libwebsockets_dep, jansson_dep])
-
-install_headers('include/webfuse_provider.h', subdir: 'webfuse')
-install_subdir('include/webfuse/provider', install_dir: 'include/webfuse')
-
-pkg_config.generate(
-    libraries: [webfuse_provider],
-	requires: ['libwebsockets', 'jansson'],
-    subdirs: '.',
-    version: meson.project_version(),
-    name: 'libwebfuse_provider',
-    filebase: 'webfuse_provider',
-    description: 'Provider library for websockets filesystem')
-
-endif
-
-#  Webfuse adapter
-
-if not without_adapter
-
-libfuse_dep = dependency('fuse3', version: '>=3.8.0', fallback: ['fuse3', 'libfuse_dep'])
-
-webfuse_adapter_static = static_library('webfuse_adapter',
 	'lib/webfuse/adapter/api.c',
 	'lib/webfuse/adapter/impl/filesystem.c',
 	'lib/webfuse/adapter/impl/server.c',
@@ -136,39 +64,37 @@ webfuse_adapter_static = static_library('webfuse_adapter',
 	'lib/webfuse/adapter/impl/client_tlsconfig.c',
     c_args: ['-fvisibility=hidden'],
     include_directories: private_inc_dir,
-    dependencies: [webfuse_core_dep, libfuse_dep])
+    dependencies: [libfuse_dep, libwebsockets_dep, jansson_dep])
 
-webfuse_adapter_static_dep = declare_dependency(
+webfuse_static_dep = declare_dependency(
 	include_directories: inc_dir,
-	link_with: [webfuse_adapter_static],
-	dependencies: [webfuse_core_dep, libfuse_dep])
+	link_with: [webfuse_static],
+	dependencies: [libfuse_dep, libwebsockets_dep, jansson_dep])
 
-webfuse_adapter = shared_library('webfuse_adapter',
+webfuse = shared_library('webfuse',
     'lib/webfuse/adapter/api.c',
     version: meson.project_version(),
     c_args: ['-fvisibility=hidden', '-DWF_API=WF_EXPORT'],
     include_directories: private_inc_dir,
-    dependencies: [webfuse_adapter_static_dep, libfuse_dep],
+    dependencies: [webfuse_static_dep, libfuse_dep, libwebsockets_dep, jansson_dep],
 	install: true)
 
-webfuse_adapter_dep = declare_dependency(
+webfuse_dep = declare_dependency(
 	include_directories: inc_dir,
-	link_with: [webfuse_adapter],
+	link_with: [webfuse],
 	dependencies: [libfuse_dep, libwebsockets_dep, jansson_dep])
 
 install_headers('include/webfuse_adapter.h', subdir: 'webfuse')
 install_subdir('include/webfuse/adapter', install_dir: 'include/webfuse')
 
 pkg_config.generate(
-    libraries: [webfuse_adapter],
+    libraries: [webfuse],
 	requires: ['fuse3', 'libwebsockets', 'jansson'],
     subdirs: '.',
     version: meson.project_version(),
-    name: 'libwebfuse_adapter',
-    filebase: 'webfuse_adapter',
-    description: 'Websockets filesystem server library')
-
-endif
+    name: 'libwebfuse',
+    filebase: 'webfuse',
+    description: 'Websockets filesystem adapter library')
 
 # Unit Tests
 
@@ -207,7 +133,6 @@ alltests = executable('alltests',
 	'test/webfuse/utils/file_utils.cc',
 	'test/webfuse/utils/timeout_watcher.cc',
 	'test/webfuse/utils/path.c',
-	'test/webfuse/utils/static_filesystem.c',
 	'test/webfuse/utils/ws_server.cc',
 	'test/webfuse/utils/ws_server2.cc',
 	'test/webfuse/utils/adapter_client.cc',
@@ -215,7 +140,6 @@ alltests = executable('alltests',
 	'test/webfuse/mocks/fake_invokation_context.cc',
 	'test/webfuse/mocks/mock_authenticator.cc',
 	'test/webfuse/mocks/mock_request.cc',
-	'test/webfuse/mocks/mock_provider_client.cc',
 	'test/webfuse/mocks/mock_provider.cc',
 	'test/webfuse/mocks/mock_fuse.cc',
 	'test/webfuse/mocks/mock_operation_context.cc',
@@ -243,19 +167,7 @@ alltests = executable('alltests',
 	'test/webfuse/tests/adapter/operation/test_readdir.cc',
 	'test/webfuse/tests/adapter/operation/test_getattr.cc',
 	'test/webfuse/tests/adapter/operation/test_lookup.cc',
-	'test/webfuse/tests/provider/test_client_protocol.cc',
-	'test/webfuse/tests/provider/test_dirbuffer.cc',
-	'test/webfuse/tests/provider/operation/test_close.cc',
-	'test/webfuse/tests/provider/operation/test_getattr.cc',
-	'test/webfuse/tests/provider/operation/test_lookup.cc',
-	'test/webfuse/tests/provider/operation/test_open.cc',
-	'test/webfuse/tests/provider/operation/test_read.cc',
-	'test/webfuse/tests/provider/operation/test_readdir.cc',
-	'test/webfuse/tests/integration/test_lowlevel.cc',
-	'test/webfuse/tests/integration/test_integration.cc',
 	'test/webfuse/tests/integration/file.cc',
-	'test/webfuse/tests/integration/server.cc',
-	'test/webfuse/tests/integration/provider.cc',
 	'test/webfuse/tests/adapter/test_client.cc',
 	'test/webfuse/tests/adapter/test_client_tlsconfig.cc',
 	link_args: [
@@ -279,9 +191,7 @@ alltests = executable('alltests',
 	],
 	include_directories: [private_inc_dir, 'test'],
 	dependencies: [
-		webfuse_adapter_static_dep,
-		webfuse_provider_static_dep,
-		webfuse_core_dep,
+		webfuse_static_dep,
 		libwebsockets_dep,
 		libfuse_dep,
 		jansson_dep,
