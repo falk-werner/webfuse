@@ -35,7 +35,8 @@ webfuse solves this problem by using the [WebSocket](https://en.wikipedia.org/wi
 
 -   **[webfuse-example](https://github.com/falk-werner/webfuse-example)**: Example of webfuse
 -   **[webfused](https://github.com/falk-werner/webfused)**: Reference implementation of webfuse daemon
--   **[webfuse-provider](https://github.com/falk-werner/webfuse-provider)**: Reference implementation of webfuse provider
+-   **[webfuse-provider](https://github.com/falk-werner/webfuse-provider)**: webfuse provider library (C/C++)
+-   **[webfuse-js](https://github.com/falk-werner/webfuse-js)**: webfuse provider library (JavaScript))
 
 ## Concept
 
