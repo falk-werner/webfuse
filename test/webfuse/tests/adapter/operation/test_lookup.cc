@@ -1,6 +1,6 @@
-#include "webfuse/adapter/impl/operation/lookup.h"
+#include "webfuse/impl/operation/lookup.h"
 
-#include "webfuse/core/status.h"
+#include "webfuse/status.h"
 
 #include "webfuse/mocks/mock_fuse.hpp"
 #include "webfuse/mocks/mock_operation_context.hpp"

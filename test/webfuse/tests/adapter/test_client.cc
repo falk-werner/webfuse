@@ -2,9 +2,9 @@
 #include <gmock/gmock.h>
 
 #include "webfuse/utils/adapter_client.hpp"
-#include "webfuse/adapter/client_tlsconfig.h"
-#include "webfuse/adapter/credentials.h"
-#include "webfuse/core/protocol_names.h"
+#include "webfuse/client_tlsconfig.h"
+#include "webfuse/credentials.h"
+#include "webfuse/protocol_names.h"
 #include "webfuse/utils/ws_server2.hpp"
 #include "webfuse/mocks/mock_adapter_client_callback.hpp"
 #include "webfuse/mocks/mock_invokation_handler.hpp"

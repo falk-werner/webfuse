@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 #include "webfuse/core/jsonrpc/response_intern.h"
-#include "webfuse/core/status.h"
+#include "webfuse/status.h"
 
 TEST(wf_json_response, init_result)
 {

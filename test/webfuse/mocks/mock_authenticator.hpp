@@ -2,7 +2,7 @@
 #define MOCK_AUTHENTICATOR_H
 
 #include <gmock/gmock.h>
-#include "webfuse/adapter/impl/authenticator.h"
+#include "webfuse/impl/authenticator.h"
 
 namespace webfuse_test
 {

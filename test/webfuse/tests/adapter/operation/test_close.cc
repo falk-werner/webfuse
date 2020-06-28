@@ -1,4 +1,4 @@
-#include "webfuse/adapter/impl/operation/close.h"
+#include "webfuse/impl/operation/close.h"
 #include <gtest/gtest.h>
 
 #include "webfuse/mocks/mock_fuse.hpp"

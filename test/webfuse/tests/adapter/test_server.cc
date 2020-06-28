@@ -5,8 +5,8 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-#include "webfuse/adapter/server.h"
-#include "webfuse/adapter/server_config.h"
+#include "webfuse/server.h"
+#include "webfuse/server_config.h"
 
 namespace
 {

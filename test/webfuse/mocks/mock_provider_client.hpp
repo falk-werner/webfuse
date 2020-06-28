@@ -3,7 +3,7 @@
 
 #include <gmock/gmock.h>
 #include "webfuse/provider/client_config.h"
-#include "webfuse/core/status.h"
+#include "webfuse/status.h"
 #include <stdexcept>
 
 namespace webfuse_test

@@ -2,7 +2,7 @@
 #define WF_JSON_UTIL_H
 
 #include <jansson.h>
-#include "webfuse/core/status.h"
+#include "webfuse/status.h"
 
 #ifdef __cplusplus
 extern "C"

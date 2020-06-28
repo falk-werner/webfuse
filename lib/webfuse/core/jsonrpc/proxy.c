@@ -1,7 +1,7 @@
 #include "webfuse/core/jsonrpc/proxy_intern.h"
 #include "webfuse/core/jsonrpc/response_intern.h"
 #include "webfuse/core/jsonrpc/error.h"
-#include "webfuse/core/status.h"
+#include "webfuse/status.h"
 
 #include "webfuse/core/timer/timer.h"
 

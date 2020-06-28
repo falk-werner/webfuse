@@ -1,5 +1,5 @@
-#include "webfuse/adapter/impl/operation/context.h"
-#include "webfuse/adapter/impl/session.h"
+#include "webfuse/impl/operation/context.h"
+#include "webfuse/impl/session.h"
 #include <gtest/gtest.h>
 
 TEST(wf_impl_operation_context, get_proxy)

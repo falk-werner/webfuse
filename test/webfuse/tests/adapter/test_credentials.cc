@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 
-#include "webfuse/adapter/credentials.h"
-#include "webfuse/adapter/impl/credentials.h"
+#include "webfuse/credentials.h"
+#include "webfuse/impl/credentials.h"
 #include <jansson.h>
 
 TEST(Credentials, Type)

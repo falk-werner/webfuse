@@ -1,4 +1,4 @@
-#include "webfuse_adapter.h"
+#include "webfuse/webfuse.h"
 #include "webfuse_provider.h"
 #include <libwebsockets.h>
 
