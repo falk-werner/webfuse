@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
-#include "webfuse/adapter/client_tlsconfig.h"
-#include "webfuse/adapter/impl/client_tlsconfig.h"
+#include "webfuse/client_tlsconfig.h"
+#include "webfuse/impl/client_tlsconfig.h"
 
 TEST(ClientTlsConfig, InitAndCleanup)
 {

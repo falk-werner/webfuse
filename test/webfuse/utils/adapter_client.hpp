@@ -1,7 +1,7 @@
 #ifndef WF_UTILS_ADAPTER_CLIENT_HPP
 #define WF_UTILS_APAPTER_CLIENT_HPP
 
-#include "webfuse/adapter/client.h"
+#include "webfuse/client.h"
 #include <string>
 
 namespace webfuse_test

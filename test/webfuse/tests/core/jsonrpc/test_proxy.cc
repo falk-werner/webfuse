@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 #include "webfuse/core/jsonrpc/proxy.h"
-#include "webfuse/core/status.h"
+#include "webfuse/status.h"
 #include "webfuse/core/timer/manager.h"
 
 #include "webfuse/tests/core/jsonrpc/mock_timer.hpp"

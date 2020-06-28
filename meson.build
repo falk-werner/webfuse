@@ -10,16 +10,12 @@ if not libwebsockets_dep.found()
 endif
 
 jansson_dep = dependency('jansson', version: '>=2.11', fallback: ['jansson', 'jansson_dep'])
+libfuse_dep = dependency('fuse3', version: '>=3.8.0', fallback: ['fuse3', 'libfuse_dep'])
 
 pkg_config = import('pkgconfig')
 
 inc_dir = include_directories('include')
 private_inc_dir = include_directories('include', 'lib')
-
-install_subdir('include/webfuse/core', install_dir: 'include/webfuse')
-
-
-libfuse_dep = dependency('fuse3', version: '>=3.8.0', fallback: ['fuse3', 'libfuse_dep'])
 
 webfuse_static = static_library('webfuse',
     'lib/webfuse/core/slist.c',
@@ -40,28 +36,28 @@ webfuse_static = static_library('webfuse',
 	'lib/webfuse/core/jsonrpc/request.c',
 	'lib/webfuse/core/jsonrpc/response.c',
 	'lib/webfuse/core/jsonrpc/error.c',
-	'lib/webfuse/adapter/api.c',
-	'lib/webfuse/adapter/impl/filesystem.c',
-	'lib/webfuse/adapter/impl/server.c',
-	'lib/webfuse/adapter/impl/server_config.c',
-	'lib/webfuse/adapter/impl/server_protocol.c',
-	'lib/webfuse/adapter/impl/session.c',
-	'lib/webfuse/adapter/impl/session_manager.c',
-	'lib/webfuse/adapter/impl/authenticator.c',
-	'lib/webfuse/adapter/impl/authenticators.c',
-	'lib/webfuse/adapter/impl/credentials.c',
-	'lib/webfuse/adapter/impl/mountpoint.c',
-	'lib/webfuse/adapter/impl/mountpoint_factory.c',
-	'lib/webfuse/adapter/impl/operation/context.c',
-	'lib/webfuse/adapter/impl/operation/lookup.c',
-	'lib/webfuse/adapter/impl/operation/getattr.c',
-	'lib/webfuse/adapter/impl/operation/readdir.c',
-	'lib/webfuse/adapter/impl/operation/open.c',
-	'lib/webfuse/adapter/impl/operation/close.c',
-	'lib/webfuse/adapter/impl/operation/read.c',
-	'lib/webfuse/adapter/impl/client.c',
-	'lib/webfuse/adapter/impl/client_protocol.c',
-	'lib/webfuse/adapter/impl/client_tlsconfig.c',
+	'lib/webfuse/api.c',
+	'lib/webfuse/impl/filesystem.c',
+	'lib/webfuse/impl/server.c',
+	'lib/webfuse/impl/server_config.c',
+	'lib/webfuse/impl/server_protocol.c',
+	'lib/webfuse/impl/session.c',
+	'lib/webfuse/impl/session_manager.c',
+	'lib/webfuse/impl/authenticator.c',
+	'lib/webfuse/impl/authenticators.c',
+	'lib/webfuse/impl/credentials.c',
+	'lib/webfuse/impl/mountpoint.c',
+	'lib/webfuse/impl/mountpoint_factory.c',
+	'lib/webfuse/impl/operation/context.c',
+	'lib/webfuse/impl/operation/lookup.c',
+	'lib/webfuse/impl/operation/getattr.c',
+	'lib/webfuse/impl/operation/readdir.c',
+	'lib/webfuse/impl/operation/open.c',
+	'lib/webfuse/impl/operation/close.c',
+	'lib/webfuse/impl/operation/read.c',
+	'lib/webfuse/impl/client.c',
+	'lib/webfuse/impl/client_protocol.c',
+	'lib/webfuse/impl/client_tlsconfig.c',
     c_args: ['-fvisibility=hidden'],
     include_directories: private_inc_dir,
     dependencies: [libfuse_dep, libwebsockets_dep, jansson_dep])
@@ -72,7 +68,7 @@ webfuse_static_dep = declare_dependency(
 	dependencies: [libfuse_dep, libwebsockets_dep, jansson_dep])
 
 webfuse = shared_library('webfuse',
-    'lib/webfuse/adapter/api.c',
+    'lib/webfuse/api.c',
     version: meson.project_version(),
     c_args: ['-fvisibility=hidden', '-DWF_API=WF_EXPORT'],
     include_directories: private_inc_dir,
@@ -84,8 +80,7 @@ webfuse_dep = declare_dependency(
 	link_with: [webfuse],
 	dependencies: [libfuse_dep, libwebsockets_dep, jansson_dep])
 
-install_headers('include/webfuse_adapter.h', subdir: 'webfuse')
-install_subdir('include/webfuse/adapter', install_dir: 'include/webfuse')
+install_subdir('include/webfuse', install_dir: 'include')
 
 pkg_config.generate(
     libraries: [webfuse],

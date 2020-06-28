@@ -2,7 +2,7 @@
 #define WF_MOCK_ADAPTER_CLIENT_CALLBACK_HPP
 
 #include <gmock/gmock.h>
-#include "webfuse/adapter/client_callback.h"
+#include "webfuse/client_callback.h"
 
 namespace webfuse_test
 {

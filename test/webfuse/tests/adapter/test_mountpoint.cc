@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
-#include "webfuse/adapter/mountpoint.h"
+#include "webfuse/mountpoint.h"
 
 namespace
 {

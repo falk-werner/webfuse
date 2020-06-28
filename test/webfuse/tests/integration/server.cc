@@ -6,8 +6,8 @@
 #include <cstring>
 #include <unistd.h>
 #include <sys/stat.h>
-#include "webfuse_adapter.h"
-#include "webfuse/adapter/impl/server.h"
+#include "webfuse/webfuse.h"
+#include "webfuse/impl/server.h"
 
 #define WF_PATH_MAX (100)
 

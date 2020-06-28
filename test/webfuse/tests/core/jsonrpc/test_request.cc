@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 #include "webfuse/core/jsonrpc/request.h"
-#include "webfuse/core/status.h"
+#include "webfuse/status.h"
 
 namespace
 {

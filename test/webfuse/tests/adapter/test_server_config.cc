@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
-#include "webfuse/adapter/server_config.h"
-#include "webfuse/adapter/impl/server_config.h"
-#include "webfuse/adapter/impl/authenticator.h"
+#include "webfuse/server_config.h"
+#include "webfuse/impl/server_config.h"
+#include "webfuse/impl/authenticator.h"
 #include "webfuse/utils/tempdir.hpp"
 
 using webfuse_test::TempDir;

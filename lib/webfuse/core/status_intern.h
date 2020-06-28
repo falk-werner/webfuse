@@ -1,7 +1,7 @@
 #ifndef WF_STATUS_INTERN_H
 #define WF_STATUS_INTERN_H
 
-#include "webfuse/core/status.h"
+#include "webfuse/status.h"
 
 #ifdef __cplusplus
 extern "C" {
