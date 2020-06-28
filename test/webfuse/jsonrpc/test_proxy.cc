@@ -3,7 +3,7 @@
 #include "webfuse/status.h"
 #include "webfuse/impl/timer/manager.h"
 
-#include "webfuse/tests/core/jsonrpc/mock_timer.hpp"
+#include "webfuse/jsonrpc/mock_timer.hpp"
 
 #include <thread>
 #include <chrono>

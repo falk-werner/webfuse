@@ -9,7 +9,7 @@
 #include "webfuse/mocks/mock_adapter_client_callback.hpp"
 #include "webfuse/mocks/mock_invokation_handler.hpp"
 #include "webfuse/test_util/timeout_watcher.hpp"
-#include "webfuse/tests/integration/file.hpp"
+#include "webfuse/integration/file.hpp"
 #include "webfuse/mocks/lookup_matcher.hpp"
 
 using webfuse_test::AdapterClient;
