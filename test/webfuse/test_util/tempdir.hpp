@@ -1,5 +1,5 @@
-#ifndef WF_TEST_TEMPDIR_HPP
-#define WF_TEST_TEMPDIR_HPP
+#ifndef WF_TEST_UTIL_TEMPDIR_HPP
+#define WF_TEST_UTIL_TEMPDIR_HPP
 
 namespace webfuse_test
 {

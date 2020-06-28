@@ -1,5 +1,5 @@
-#include "webfuse/utils/adapter_client.hpp"
-#include "webfuse/utils/tempdir.hpp"
+#include "webfuse/test_util/adapter_client.hpp"
+#include "webfuse/test_util/tempdir.hpp"
 #include <thread>
 #include <mutex>
 

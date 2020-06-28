@@ -1,5 +1,5 @@
-#ifndef WF_UTILS_ADAPTER_CLIENT_HPP
-#define WF_UTILS_APAPTER_CLIENT_HPP
+#ifndef WF_TEST_UTIL_ADAPTER_CLIENT_HPP
+#define WF_TEST_UTIL_APAPTER_CLIENT_HPP
 
 #include "webfuse/client.h"
 #include <string>

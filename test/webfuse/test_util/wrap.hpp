@@ -1,5 +1,5 @@
-#ifndef WF_WRAP_HPP
-#define WF_WRAP_HPP
+#ifndef WF_TEST_UTIL_WRAP_HPP
+#define WF_TEST_UTIL_WRAP_HPP
 
 #define WF_WRAP_FUNC0( GLOBAL_VAR, RETURN_TYPE, FUNC_NAME ) \
     extern RETURN_TYPE __real_ ## FUNC_NAME (); \

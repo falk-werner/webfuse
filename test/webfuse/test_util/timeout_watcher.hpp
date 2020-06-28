@@ -1,5 +1,5 @@
-#ifndef WF_TEST_TIMEOUT_WATCHER_HPP
-#define WF_TEST_TIMEOUT_WATCHER_HPP
+#ifndef WF_TEST_UTIL_TIMEOUT_WATCHER_HPP
+#define WF_TEST_UTIL_TIMEOUT_WATCHER_HPP
 
 #include <chrono>
 #include <functional>

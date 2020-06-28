@@ -1,4 +1,4 @@
-#include "webfuse/utils/ws_server2.hpp"
+#include "webfuse/test_util/ws_server.h"
 #include "webfuse/impl/util/lws_log.h"
 
 #include <libwebsockets.h>
@@ -19,6 +19,43 @@ public:
     virtual void OnConnectionClosed(lws * wsi) = 0;
     virtual void OnMessageReceived(struct lws * wsi, char const * data, size_t length) = 0;
     virtual void OnWritable(struct lws * wsi) = 0;
+};
+
+}
+
+namespace webfuse_test
+{
+
+class WsServer::Private : IServer
+{
+    Private(Private const &) = delete;
+    Private & operator=(Private const &) = delete;
+public:
+    Private(std::string const & protocol, int port);
+    ~Private();
+    bool IsConnected();
+    std::string GetUrl() const;
+    void SendMessage(json_t * message);
+    json_t * ReceiveMessage();
+    void OnConnected(lws * wsi) override;
+    void OnConnectionClosed(lws * wsi) override;
+    void OnMessageReceived(struct lws * wsi, char const * data, size_t length) override;
+    void OnWritable(struct lws * wsi) override;
+
+private:
+    static void run(Private * self);
+    std::string protocol_;
+    int port_;
+    bool is_connected;
+    bool is_shutdown_requested;
+    lws * wsi_;
+    lws_context * ws_context;
+    lws_protocols ws_protocols[2];
+	lws_context_creation_info info;
+    std::thread context;
+    std::mutex mutex;
+    std::queue<std::string> writeQueue;
+    std::queue<std::string> recvQueue;
 };
 
 }
@@ -70,82 +107,41 @@ static int wf_test_utils_ws_server_callback(
 namespace webfuse_test
 {
 
-class WsServer2::Private : public IServer
-{
-    Private(Private const &) = delete;
-    Private & operator=(Private const &) = delete;
-public:
-    Private(IIvokationHandler & handler, std::string const & protocol, int port, bool enable_tls);
-    ~Private();
-    bool IsConnected();
-    std::string const & GetUrl() const;
-    void OnConnected(lws * wsi) override;
-    void OnConnectionClosed(lws * wsi) override;
-    void OnMessageReceived(struct lws * wsi, char const * data, size_t length) override;
-    void OnWritable(struct lws * wsi) override;
-
-    void SendMessage(char const * message);
-    void SendMessage(json_t * message);
-private:
-    static void Run(Private * self);
-
-    IIvokationHandler & handler_;
-    std::string protocol_;
-    bool is_connected;
-    bool is_shutdown_requested;
-    lws * wsi_;
-    lws_context * ws_context;
-    lws_protocols ws_protocols[2];
-	lws_context_creation_info info;
-    std::string url;
-    std::thread context;
-    std::mutex mutex;
-    std::queue<std::string> writeQueue;
-};
-
-WsServer2::WsServer2(
-    IIvokationHandler& handler,
-    std::string const & protocol,
-    int port,
-    bool enable_tls)
-: d(new WsServer2::Private(handler, protocol, port, enable_tls))
+WsServer::WsServer(std::string const & protocol, int port)
+: d(new Private(protocol, port))
 {
 
 }
 
-WsServer2::~WsServer2()
+WsServer::~WsServer()
 {
     delete d;
 }
 
-bool WsServer2::IsConnected()
+bool WsServer::IsConnected()
 {
     return d->IsConnected();
 }
 
-std::string const & WsServer2::GetUrl() const
+void WsServer::SendMessage(json_t * message)
+{
+    d->SendMessage(message);
+}
+
+json_t * WsServer::ReceiveMessage()
+{
+    return d->ReceiveMessage();
+}
+
+std::string WsServer::GetUrl() const
 {
     return d->GetUrl();
 }
 
-void WsServer2::SendMessage(char const * message)
-{
-    d->SendMessage(message);
-}
 
-void WsServer2::SendMessage(json_t * message)
-{
-    d->SendMessage(message);
-}
-
-
-WsServer2::Private::Private(
-    IIvokationHandler & handler,
-    std::string const & protocol,
-    int port,
-    bool enable_tls)
-: handler_(handler)
-, protocol_(protocol)
+WsServer::Private::Private(std::string const & protocol, int port)
+: protocol_(protocol)
+, port_(port)
 , is_connected(false)
 , is_shutdown_requested(false)
 , wsi_(nullptr)
@@ -168,25 +164,15 @@ WsServer2::Private::Private(
     info.options = LWS_SERVER_OPTION_HTTP_HEADERS_SECURITY_BEST_PRACTICES_ENFORCE;
     info.options |= LWS_SERVER_OPTION_EXPLICIT_VHOSTS;
 
-    if (enable_tls)
-    {
-		info.options |= LWS_SERVER_OPTION_DO_SSL_GLOBAL_INIT;
-		info.ssl_cert_filepath = "server-cert.pem";
-		info.ssl_private_key_filepath = "server-key.pem";
-    }
-
     ws_context = lws_create_context(&info);
 
-    std::ostringstream stream;
     struct lws_vhost * vhost = lws_create_vhost(ws_context, &info);
-    stream <<  (enable_tls ? "wss://" : "ws://")
-        << "localhost:" << lws_get_vhost_port(vhost) << "/";
-    url = stream.str();
+    port_ = lws_get_vhost_port(vhost);
 
-    context = std::thread(&Run, this);
+    context = std::thread(&run, this);
 }
 
-WsServer2::Private::~Private()
+WsServer::Private::~Private()
 {
     {
         std::unique_lock<std::mutex> lock(mutex);
@@ -198,7 +184,7 @@ WsServer2::Private::~Private()
     lws_context_destroy(ws_context);
 }
 
-void WsServer2::Private::Run(Private * self)
+void WsServer::Private::run(Private * self)
 {
     bool is_running = true;
     while (is_running)
@@ -211,20 +197,20 @@ void WsServer2::Private::Run(Private * self)
     }
 }
 
-bool WsServer2::Private::IsConnected()
+bool WsServer::Private::IsConnected()
 {
     std::unique_lock<std::mutex> lock(mutex);
     return is_connected;
 }
 
-void WsServer2::Private::OnConnected(lws * wsi)
+void WsServer::Private::OnConnected(lws * wsi)
 {
     std::unique_lock<std::mutex> lock(mutex);
     is_connected = true;
     wsi_ = wsi;
 }
 
-void WsServer2::Private::OnConnectionClosed(lws * wsi)
+void WsServer::Private::OnConnectionClosed(lws * wsi)
 {
     std::unique_lock<std::mutex> lock(mutex);
     if (wsi == wsi_)
@@ -234,7 +220,7 @@ void WsServer2::Private::OnConnectionClosed(lws * wsi)
     }
 }
 
-void WsServer2::Private::OnWritable(struct lws * wsi)
+void WsServer::Private::OnWritable(struct lws * wsi)
 {
     bool notify = false;
 
@@ -261,7 +247,8 @@ void WsServer2::Private::OnWritable(struct lws * wsi)
     }
 }
 
-void WsServer2::Private::SendMessage(char const * message)
+
+void WsServer::Private::SendMessage(json_t * message)
 {
     lws * wsi = nullptr;
 
@@ -270,7 +257,10 @@ void WsServer2::Private::SendMessage(char const * message)
 
         if (nullptr != wsi_)
         {
-            writeQueue.push(message);
+            char* message_text = json_dumps(message, JSON_COMPACT);
+            writeQueue.push(message_text);
+            json_decref(message);
+            free(message_text);
             wsi = wsi_;
         }
     }
@@ -281,50 +271,35 @@ void WsServer2::Private::SendMessage(char const * message)
     }
 }
 
-void WsServer2::Private::SendMessage(json_t * message)
+void WsServer::Private::OnMessageReceived(struct lws * wsi, char const * data, size_t length)
 {
-    char* message_text = json_dumps(message, JSON_COMPACT);
-    SendMessage(message_text);
-    json_decref(message);
-    free(message_text);
+    std::unique_lock<std::mutex> lock(mutex);
+    if (wsi == wsi_)
+    {
+        recvQueue.push(std::string(data, length));
+    }
 }
 
-void WsServer2::Private::OnMessageReceived(struct lws * wsi, char const * data, size_t length)
+json_t * WsServer::Private::ReceiveMessage()
 {
-    (void) wsi;
-
-    json_t * request = json_loadb(data, length, JSON_DECODE_ANY, nullptr);
-    json_t * method = json_object_get(request, "method");
-    json_t * params = json_object_get(request, "params");
-    json_t * id = json_object_get(request, "id");
-
-    if (json_is_string(method) && json_is_array(params) && json_is_integer(id))
+    std::unique_lock<std::mutex> lock(mutex);
+ 
+    json_t * result = nullptr;
+    if (!recvQueue.empty())
     {
-        json_t * response = json_object();
-
-        try 
-        {
-            std::string result_text = handler_.Invoke(json_string_value(method), params);
-            json_t * result = json_loads(result_text.c_str(), JSON_DECODE_ANY, nullptr);
-            json_object_set_new(response, "result", result);
-        }
-        catch (...)
-        {
-            json_t * error = json_object();
-            json_object_set_new(error, "code", json_integer(1));
-            json_object_set_new(response, "error", error);
-        }
-
-        json_object_set(response, "id", id);
-        SendMessage(response);
+        std::string const & message_text = recvQueue.front();
+        result = json_loads(message_text.c_str(), JSON_DECODE_ANY, nullptr);
+        recvQueue.pop();
     }
 
-    json_decref(request);
+    return result;
 }
 
-std::string const & WsServer2::Private::GetUrl() const
+std::string WsServer::Private::GetUrl() const
 {
-    return url;
+    std::ostringstream stream;
+    stream << "ws://localhost:" << port_ << "/";
+    return stream.str();
 }
 
 

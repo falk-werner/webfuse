@@ -2,7 +2,7 @@
 #include "webfuse_provider.h"
 #include <libwebsockets.h>
 
-#include "webfuse/utils/tempdir.hpp"
+#include "webfuse/test_util/tempdir.hpp"
 
 #include <gtest/gtest.h>
 

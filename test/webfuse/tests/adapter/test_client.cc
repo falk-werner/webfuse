@@ -1,14 +1,14 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
-#include "webfuse/utils/adapter_client.hpp"
+#include "webfuse/test_util/adapter_client.hpp"
 #include "webfuse/client_tlsconfig.h"
 #include "webfuse/credentials.h"
 #include "webfuse/protocol_names.h"
-#include "webfuse/utils/ws_server2.hpp"
+#include "webfuse/test_util/ws_server2.hpp"
 #include "webfuse/mocks/mock_adapter_client_callback.hpp"
 #include "webfuse/mocks/mock_invokation_handler.hpp"
-#include "webfuse/utils/timeout_watcher.hpp"
+#include "webfuse/test_util/timeout_watcher.hpp"
 #include "webfuse/tests/integration/file.hpp"
 #include "webfuse/mocks/lookup_matcher.hpp"
 

@@ -1,5 +1,5 @@
 #include "webfuse/mocks/mock_fuse.hpp"
-#include "webfuse/utils/wrap.hpp"
+#include "webfuse/test_util/wrap.hpp"
 
 extern "C"
 {

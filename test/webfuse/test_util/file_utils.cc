@@ -1,4 +1,4 @@
-#include "webfuse/utils/file_utils.hpp"
+#include "webfuse/test_util/file_utils.hpp"
 
 #include <sys/types.h>
 #include <sys/stat.h>
