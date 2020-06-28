@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include "webfuse/core/container_of.h"
+#include "webfuse/impl/util/container_of.h"
 
 namespace
 {

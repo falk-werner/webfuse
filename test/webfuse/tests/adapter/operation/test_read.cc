@@ -16,7 +16,7 @@ using testing::StrEq;
 TEST(wf_impl_operation_read, invoke_proxy)
 {
     MockJsonRpcProxy proxy;
-    EXPECT_CALL(proxy, wf_jsonrpc_proxy_vinvoke(_,_,_,StrEq("read"),StrEq("siiii"))).Times(1);
+    EXPECT_CALL(proxy, wf_impl_jsonrpc_proxy_vinvoke(_,_,_,StrEq("read"),StrEq("siiii"))).Times(1);
 
     MockOperationContext context;
     EXPECT_CALL(context, wf_impl_operation_context_get_proxy(_)).Times(1)
@@ -39,7 +39,7 @@ TEST(wf_impl_operation_read, invoke_proxy)
 TEST(wf_impl_operation_read, invoke_proxy_limit_size)
 {
     MockJsonRpcProxy proxy;
-    EXPECT_CALL(proxy, wf_jsonrpc_proxy_vinvoke(_,_,_,StrEq("read"),StrEq("siiii"))).Times(1);
+    EXPECT_CALL(proxy, wf_impl_jsonrpc_proxy_vinvoke(_,_,_,StrEq("read"),StrEq("siiii"))).Times(1);
 
     MockOperationContext context;
     EXPECT_CALL(context, wf_impl_operation_context_get_proxy(_)).Times(1)

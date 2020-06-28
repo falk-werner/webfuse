@@ -1,5 +1,5 @@
 #include "webfuse/utils/ws_server2.hpp"
-#include "webfuse/core/lws_log.h"
+#include "webfuse/impl/util/lws_log.h"
 
 #include <libwebsockets.h>
 #include <thread>
@@ -150,7 +150,7 @@ WsServer2::Private::Private(
 , is_shutdown_requested(false)
 , wsi_(nullptr)
 {
-    wf_lwslog_disable();
+    wf_impl_lwslog_disable();
     IServer * server = this;
     memset(ws_protocols, 0, sizeof(struct lws_protocols) * 2 );
 

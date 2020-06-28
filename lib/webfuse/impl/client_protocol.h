@@ -2,7 +2,7 @@
 #define WF_ADAPTER_IMPL_CLIENT_PROTOCOL_H
 
 #include "webfuse/client_callback.h"
-#include "webfuse/core/slist.h"
+#include "webfuse/impl/util/slist.h"
 
 #ifndef __cplusplus
 #include <stdbool.h>

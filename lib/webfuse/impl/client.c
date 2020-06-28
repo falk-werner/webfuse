@@ -1,7 +1,7 @@
 #include "webfuse/impl/client.h"
 #include "webfuse/impl/client_protocol.h"
 #include "webfuse/impl/client_tlsconfig.h"
-#include "webfuse/core/lws_log.h"
+#include "webfuse/impl/util/lws_log.h"
 
 #include <libwebsockets.h>
 
@@ -25,7 +25,7 @@ wf_impl_client_create(
     wf_client_callback_fn * callback,
     void * user_data)
 {
-    wf_lwslog_disable();
+    wf_impl_lwslog_disable();
 
     struct wf_client * client = malloc(sizeof(struct wf_client));
     wf_impl_client_tlsconfig_init(&client->tls);

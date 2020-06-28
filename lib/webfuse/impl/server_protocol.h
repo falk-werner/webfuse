@@ -4,8 +4,8 @@
 #include "webfuse/impl/authenticators.h"
 #include "webfuse/impl/mountpoint_factory.h"
 #include "webfuse/impl/session_manager.h"
-#include "webfuse/core/jsonrpc/proxy.h"
-#include "webfuse/core/jsonrpc/server.h"
+#include "webfuse/impl/jsonrpc/proxy.h"
+#include "webfuse/impl/jsonrpc/server.h"
 
 #ifndef __cplusplus
 #include <stdbool.h>

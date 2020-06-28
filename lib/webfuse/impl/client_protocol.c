@@ -4,15 +4,15 @@
 #include "webfuse/impl/filesystem.h"
 #include "webfuse/impl/mountpoint.h"
 #include "webfuse/protocol_names.h"
-#include "webfuse/core/url.h"
-#include "webfuse/core/util.h"
-#include "webfuse/core/timer/manager.h"
-#include "webfuse/core/jsonrpc/response.h"
-#include "webfuse/core/jsonrpc/proxy.h"
+#include "webfuse/impl/util/url.h"
+#include "webfuse/impl/util/util.h"
+#include "webfuse/impl/timer/manager.h"
+#include "webfuse/impl/jsonrpc/response.h"
+#include "webfuse/impl/jsonrpc/proxy.h"
 
-#include "webfuse/core/message.h"
-#include "webfuse/core/message_queue.h"
-#include "webfuse/core/container_of.h"
+#include "webfuse/impl/message.h"
+#include "webfuse/impl/message_queue.h"
+#include "webfuse/impl/util/container_of.h"
 
 
 #include <stddef.h>
@@ -35,9 +35,9 @@ wf_impl_client_protocol_process(
     json_t * message = json_loadb(data, length, 0, NULL);
     if (NULL != message)
     {
-        if (wf_jsonrpc_is_response(message))
+        if (wf_impl_jsonrpc_is_response(message))
         {
-            wf_jsonrpc_proxy_onresult(protocol->proxy, message);
+            wf_impl_jsonrpc_proxy_onresult(protocol->proxy, message);
         }
 
         json_decref(message);
@@ -54,10 +54,10 @@ wf_impl_client_protocol_send(
 
     if (NULL != protocol->wsi)
     {
-        struct wf_message * message = wf_message_create(request);
+        struct wf_message * message = wf_impl_message_create(request);
         if (NULL != message)
         {
-            wf_slist_append(&protocol->messages, &message->item);
+            wf_impl_slist_append(&protocol->messages, &message->item);
             lws_callback_on_writable(protocol->wsi);
             result = true;
         }
@@ -95,7 +95,7 @@ wf_impl_client_protocol_on_add_filesystem_finished(
         if (json_is_string(id))
         {
             char const * name = json_string_value(id);        
-            struct wf_mountpoint * mountpoint = wf_mountpoint_create(context->local_path);
+            struct wf_mountpoint * mountpoint = wf_impl_mountpoint_create(context->local_path);
             protocol->filesystem = wf_impl_filesystem_create(protocol->wsi,protocol->proxy, name, mountpoint);
             if (NULL != protocol->filesystem)
             {
@@ -103,7 +103,7 @@ wf_impl_client_protocol_on_add_filesystem_finished(
             }
             else
             {
-                wf_mountpoint_dispose(mountpoint);
+                wf_impl_mountpoint_dispose(mountpoint);
             }
         }
     }
@@ -126,7 +126,7 @@ static int wf_impl_client_protocol_lws_callback(
 
     if (NULL != protocol)
     {
-        wf_timer_manager_check(protocol->timer_manager);
+        wf_impl_timer_manager_check(protocol->timer_manager);
 
         switch (reason)
         {
@@ -156,14 +156,14 @@ static int wf_impl_client_protocol_lws_callback(
                     {
                         result = 1;
                     }
-                    else if (!wf_slist_empty(&protocol->messages))
+                    else if (!wf_impl_slist_empty(&protocol->messages))
                     {
-                        struct wf_slist_item * item = wf_slist_remove_first(&protocol->messages);
+                        struct wf_slist_item * item = wf_impl_slist_remove_first(&protocol->messages);
                         struct wf_message * message = wf_container_of(item, struct wf_message, item);
                         lws_write(wsi, (unsigned char*) message->data, message->length, LWS_WRITE_TEXT);
-                        wf_message_dispose(message);
+                        wf_impl_message_dispose(message);
 
-                        if (!wf_slist_empty(&protocol->messages))
+                        if (!wf_impl_slist_empty(&protocol->messages))
                         {
                             lws_callback_on_writable(wsi);
                         }
@@ -196,9 +196,9 @@ wf_impl_client_protocol_init(
     protocol->user_data = user_data;
     protocol->filesystem = NULL;
 
-    wf_slist_init(&protocol->messages);
-    protocol->timer_manager = wf_timer_manager_create();
-    protocol->proxy = wf_jsonrpc_proxy_create(protocol->timer_manager, WF_DEFAULT_TIMEOUT, &wf_impl_client_protocol_send, protocol);
+    wf_impl_slist_init(&protocol->messages);
+    protocol->timer_manager = wf_impl_timer_manager_create();
+    protocol->proxy = wf_impl_jsonrpc_proxy_create(protocol->timer_manager, WF_DEFAULT_TIMEOUT, &wf_impl_client_protocol_send, protocol);
 
     protocol->callback(protocol->user_data, WF_CLIENT_INIT, NULL);
 }
@@ -209,9 +209,9 @@ wf_impl_client_protocol_cleanup(
 {
     protocol->callback(protocol->user_data, WF_CLIENT_CLEANUP, NULL);
 
-    wf_jsonrpc_proxy_dispose(protocol->proxy);
-    wf_timer_manager_dispose(protocol->timer_manager);
-    wf_message_queue_cleanup(&protocol->messages);
+    wf_impl_jsonrpc_proxy_dispose(protocol->proxy);
+    wf_impl_timer_manager_dispose(protocol->timer_manager);
+    wf_impl_message_queue_cleanup(&protocol->messages);
 
     if (NULL != protocol->filesystem)
     {
@@ -247,7 +247,7 @@ wf_impl_client_protocol_connect(
     char const * url)
 {
     struct wf_url url_data;
-    bool const success = wf_url_init(&url_data, url);
+    bool const success = wf_impl_url_init(&url_data, url);
     if (success)
     {
         struct lws_client_connect_info info;
@@ -264,7 +264,7 @@ wf_impl_client_protocol_connect(
         info.pwsi = &protocol->wsi;
 
         lws_client_connect_via_info(&info);
-        wf_url_cleanup(&url_data);
+        wf_impl_url_cleanup(&url_data);
     }
     else
     {
@@ -297,7 +297,7 @@ wf_impl_client_protocol_authenticate(
     protocol->callback(protocol->user_data, WF_CLIENT_AUTHENTICATE_GET_CREDENTIALS, &creds);
 
     json_incref(creds.data);
-    wf_jsonrpc_proxy_invoke(
+    wf_impl_jsonrpc_proxy_invoke(
         protocol->proxy,
         &wf_impl_client_protocol_on_authenticate_finished,
         protocol,
@@ -320,7 +320,7 @@ wf_impl_client_protocol_add_filesystem(
         context->protocol = protocol;
         context->local_path = strdup(local_path);
 
-        wf_jsonrpc_proxy_invoke(
+        wf_impl_jsonrpc_proxy_invoke(
             protocol->proxy,
             &wf_impl_client_protocol_on_add_filesystem_finished,
             context,

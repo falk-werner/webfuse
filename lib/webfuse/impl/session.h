@@ -9,12 +9,12 @@
 using std::size_t;
 #endif
 
-#include "webfuse/core/message_queue.h"
+#include "webfuse/impl/message_queue.h"
 #include "webfuse/impl/filesystem.h"
-#include "webfuse/core/slist.h"
+#include "webfuse/impl/util/slist.h"
 
-#include "webfuse/core/jsonrpc/proxy.h"
-#include "webfuse/core/jsonrpc/server.h"
+#include "webfuse/impl/jsonrpc/proxy.h"
+#include "webfuse/impl/jsonrpc/server.h"
 
 #ifdef __cplusplus
 extern "C"

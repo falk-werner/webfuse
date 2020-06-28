@@ -1,7 +1,7 @@
 #ifndef WF_JSONRPC_MOCK_TIMERCALLBACK_HPP
 #define WF_JSONRPC_MOCK_TIMERCALLBACK_HPP
 
-#include "webfuse/core/timer/on_timer_fn.h"
+#include "webfuse/impl/timer/on_timer_fn.h"
 #include <gmock/gmock.h>
 
 namespace wf_jsonrpc_test

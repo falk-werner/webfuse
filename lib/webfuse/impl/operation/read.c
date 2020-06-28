@@ -6,9 +6,9 @@
 #include <limits.h>
 #include <jansson.h>
 
-#include "webfuse/core/jsonrpc/proxy.h"
-#include "webfuse/core/base64.h"
-#include "webfuse/core/json_util.h"
+#include "webfuse/impl/jsonrpc/proxy.h"
+#include "webfuse/impl/util/base64.h"
+#include "webfuse/impl/util/json_util.h"
 
 #define WF_MAX_READ_LENGTH 4096
 
@@ -37,7 +37,7 @@ char * wf_impl_fill_buffer(
 		}
 		else if (0 == strcmp("base64", format))
 		{
-			size_t result = wf_base64_decode(data, data_size, (uint8_t *) buffer, count);
+			size_t result = wf_impl_base64_decode(data, data_size, (uint8_t *) buffer, count);
 			if (result != count)
 			{
 				*status = WF_BAD;
@@ -118,7 +118,7 @@ void wf_impl_operation_read(
 	{
 		int const length = (size <= WF_MAX_READ_LENGTH) ? (int) size : WF_MAX_READ_LENGTH;
 		int handle = (file_info->fh & INT_MAX);
-		wf_jsonrpc_proxy_invoke(rpc, &wf_impl_operation_read_finished, request, "read", "siiii", user_data->name, (int) inode, handle, (int) offset, length);
+		wf_impl_jsonrpc_proxy_invoke(rpc, &wf_impl_operation_read_finished, request, "read", "siiii", user_data->name, (int) inode, handle, (int) offset, length);
 	}
 	else
 	{

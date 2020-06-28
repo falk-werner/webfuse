@@ -8,9 +8,9 @@
 #include <sys/stat.h>
 #include <unistd.h> 
 
-#include "webfuse/core/jsonrpc/proxy.h"
-#include "webfuse/core/json_util.h"
-#include "webfuse/core/util.h"
+#include "webfuse/impl/jsonrpc/proxy.h"
+#include "webfuse/impl/util/json_util.h"
+#include "webfuse/impl/util/util.h"
 
 void wf_impl_operation_getattr_finished(
 	void * user_data,
@@ -85,7 +85,7 @@ void wf_impl_operation_getattr (
 		getattr_context->gid = context->gid;
 		getattr_context->timeout = user_data->timeout;
 
-		wf_jsonrpc_proxy_invoke(rpc, &wf_impl_operation_getattr_finished, getattr_context, "getattr", "si", user_data->name, inode);
+		wf_impl_jsonrpc_proxy_invoke(rpc, &wf_impl_operation_getattr_finished, getattr_context, "getattr", "si", user_data->name, inode);
 	}
 	else
 	{

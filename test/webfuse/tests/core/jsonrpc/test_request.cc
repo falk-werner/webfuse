@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include "webfuse/core/jsonrpc/request.h"
+#include "webfuse/impl/jsonrpc/request.h"
 #include "webfuse/status.h"
 
 namespace
@@ -29,12 +29,12 @@ TEST(wf_jsonrpc_request, create_dispose)
     void * user_data = reinterpret_cast<void*>(&context);
 
     struct  wf_jsonrpc_request * request = 
-            wf_jsonrpc_request_create(42, &jsonrpc_send, user_data);
+            wf_impl_jsonrpc_request_create(42, &jsonrpc_send, user_data);
 
     ASSERT_NE(nullptr, request);
-    ASSERT_EQ(user_data, wf_jsonrpc_request_get_userdata(request));
+    ASSERT_EQ(user_data, wf_impl_jsonrpc_request_get_userdata(request));
 
-    wf_jsonrpc_request_dispose(request);
+    wf_impl_jsonrpc_request_dispose(request);
 }
 
 TEST(wf_jsonrpc_request, respond)
@@ -43,9 +43,9 @@ TEST(wf_jsonrpc_request, respond)
     void * user_data = reinterpret_cast<void*>(&context);
 
     struct  wf_jsonrpc_request * request = 
-            wf_jsonrpc_request_create(42, &jsonrpc_send, user_data);
+            wf_impl_jsonrpc_request_create(42, &jsonrpc_send, user_data);
 
-    wf_jsonrpc_respond(request, json_string("okay"));
+    wf_impl_jsonrpc_respond(request, json_string("okay"));
 
     ASSERT_NE(nullptr, context.response);
 
@@ -72,9 +72,9 @@ TEST(wf_jsonrpc_request, respond_error)
     void * user_data = reinterpret_cast<void*>(&context);
 
     struct  wf_jsonrpc_request * request = 
-            wf_jsonrpc_request_create(42, &jsonrpc_send, user_data);
+            wf_impl_jsonrpc_request_create(42, &jsonrpc_send, user_data);
 
-    wf_jsonrpc_respond_error(request, WF_BAD, "Bad");
+    wf_impl_jsonrpc_respond_error(request, WF_BAD, "Bad");
 
     ASSERT_NE(nullptr, context.response);
 
@@ -109,7 +109,7 @@ TEST(wf_jsonrpc_request, is_request_object_params)
     json_object_set_new(request, "params", json_object());
     json_object_set_new(request, "id", json_integer(42));
 
-    ASSERT_TRUE(wf_jsonrpc_is_request(request));
+    ASSERT_TRUE(wf_impl_jsonrpc_is_request(request));
 
     json_decref(request);
 }
@@ -120,7 +120,7 @@ TEST(wf_jsonrpc_request, is_request_fail_missing_params)
     json_object_set_new(request, "method", json_string("some_method"));
     json_object_set_new(request, "id", json_integer(42));
 
-    ASSERT_FALSE(wf_jsonrpc_is_request(request));
+    ASSERT_FALSE(wf_impl_jsonrpc_is_request(request));
 
     json_decref(request);
 }
@@ -132,7 +132,7 @@ TEST(wf_jsonrpc_request, is_request_fail_params_wrong_type)
     json_object_set_new(request, "params", json_string("invalid_params"));
     json_object_set_new(request, "id", json_integer(42));
 
-    ASSERT_FALSE(wf_jsonrpc_is_request(request));
+    ASSERT_FALSE(wf_impl_jsonrpc_is_request(request));
 
     json_decref(request);
 }

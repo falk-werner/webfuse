@@ -6,7 +6,7 @@
 #include "webfuse/impl/credentials.h"
 #include "webfuse/impl/mountpoint.h"
 
-#include "webfuse/core/util.h"
+#include "webfuse/impl/util/util.h"
 
 #include "webfuse/impl/client.h"
 #include "webfuse/impl/client_tlsconfig.h"

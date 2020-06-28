@@ -5,8 +5,7 @@
 #include <errno.h>
 #include <jansson.h>
 
-#include "webfuse/core/jsonrpc/proxy.h"
-#include "webfuse/core/util.h"
+#include "webfuse/impl/jsonrpc/proxy.h"
 
 void wf_impl_operation_close(
 	fuse_req_t request,
@@ -19,7 +18,7 @@ void wf_impl_operation_close(
 	if (NULL != rpc)
 	{
 		int handle = (int) (file_info->fh & INT_MAX);
-		wf_jsonrpc_proxy_notify(rpc, "close", "siii", user_data->name, inode, handle, file_info->flags);
+		wf_impl_jsonrpc_proxy_notify(rpc, "close", "siii", user_data->name, inode, handle, file_info->flags);
 	}
 	
 	fuse_reply_err(request, 0);

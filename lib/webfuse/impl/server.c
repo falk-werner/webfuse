@@ -10,7 +10,7 @@
 
 #include "webfuse/impl/server_config.h"
 #include "webfuse/impl/server_protocol.h"
-#include "webfuse/core/lws_log.h"
+#include "webfuse/impl/util/lws_log.h"
 
 #define WF_SERVER_PROTOCOL_COUNT 3
 
@@ -34,7 +34,7 @@ static bool wf_impl_server_tls_enabled(
 static struct lws_context * wf_impl_server_context_create(
     struct wf_server * server)
 {
-	wf_lwslog_disable();
+	wf_impl_lwslog_disable();
 
     memset(server->ws_protocols, 0, sizeof(struct lws_protocols) * WF_SERVER_PROTOCOL_COUNT);
     server->ws_protocols[0].name = "http";

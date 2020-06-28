@@ -15,7 +15,7 @@
 #include <dirent.h>
 
 #include <jansson.h>
-#include "webfuse/core/lws_log.h"
+#include "webfuse/impl/lws_log.h"
 
 using webfuse_test::Server;
 using webfuse_test::Provider;

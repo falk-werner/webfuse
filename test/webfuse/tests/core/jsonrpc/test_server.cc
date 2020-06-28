@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
-#include "webfuse/core/jsonrpc/server.h"
-#include "webfuse/core/jsonrpc/request.h"
+#include "webfuse/impl/jsonrpc/server.h"
+#include "webfuse/impl/jsonrpc/request.h"
 #include "webfuse/status.h"
 
 namespace
@@ -34,15 +34,15 @@ namespace
         (void) user_data;
 
         json_t * result = json_string("Hello");
-        wf_jsonrpc_respond(request, result);
+        wf_impl_jsonrpc_respond(request, result);
     }
 
 }
 
 TEST(wf_jsonrpc_server, process_request)
 {
-    struct wf_jsonrpc_server * server = wf_jsonrpc_server_create();
-    wf_jsonrpc_server_add(server, "sayHello", &sayHello, nullptr);
+    struct wf_jsonrpc_server * server = wf_impl_jsonrpc_server_create();
+    wf_impl_jsonrpc_server_add(server, "sayHello", &sayHello, nullptr);
 
     Context context{nullptr, false};
     void * user_data = reinterpret_cast<void*>(&context);
@@ -50,7 +50,7 @@ TEST(wf_jsonrpc_server, process_request)
     json_object_set_new(request, "method", json_string("sayHello"));
     json_object_set_new(request, "params", json_array());
     json_object_set_new(request, "id", json_integer(23));   
-    wf_jsonrpc_server_process(server, request, &jsonrpc_send, user_data);
+    wf_impl_jsonrpc_server_process(server, request, &jsonrpc_send, user_data);
 
     ASSERT_TRUE(context.is_called);
     ASSERT_NE(nullptr, context.response);
@@ -66,13 +66,13 @@ TEST(wf_jsonrpc_server, process_request)
 
     json_decref(context.response);
     json_decref(request);
-    wf_jsonrpc_server_dispose(server); 
+    wf_impl_jsonrpc_server_dispose(server); 
 }
 
 TEST(wf_jsonrpc_server, process_request_with_oject_params)
 {
-    struct wf_jsonrpc_server * server = wf_jsonrpc_server_create();
-    wf_jsonrpc_server_add(server, "sayHello", &sayHello, nullptr);
+    struct wf_jsonrpc_server * server = wf_impl_jsonrpc_server_create();
+    wf_impl_jsonrpc_server_add(server, "sayHello", &sayHello, nullptr);
 
     Context context{nullptr, false};
     void * user_data = reinterpret_cast<void*>(&context);
@@ -80,7 +80,7 @@ TEST(wf_jsonrpc_server, process_request_with_oject_params)
     json_object_set_new(request, "method", json_string("sayHello"));
     json_object_set_new(request, "params", json_object());
     json_object_set_new(request, "id", json_integer(23));   
-    wf_jsonrpc_server_process(server, request, &jsonrpc_send, user_data);
+    wf_impl_jsonrpc_server_process(server, request, &jsonrpc_send, user_data);
 
     ASSERT_TRUE(context.is_called);
     ASSERT_NE(nullptr, context.response);
@@ -96,13 +96,13 @@ TEST(wf_jsonrpc_server, process_request_with_oject_params)
 
     json_decref(context.response);
     json_decref(request);
-    wf_jsonrpc_server_dispose(server); 
+    wf_impl_jsonrpc_server_dispose(server); 
 }
 
 TEST(wf_jsonrpc_server, invoke_unknown_method)
 {
-    struct wf_jsonrpc_server * server = wf_jsonrpc_server_create();
-    wf_jsonrpc_server_add(server, "sayHello", &sayHello, nullptr);
+    struct wf_jsonrpc_server * server = wf_impl_jsonrpc_server_create();
+    wf_impl_jsonrpc_server_add(server, "sayHello", &sayHello, nullptr);
 
     Context context{nullptr, false};
     void * user_data = reinterpret_cast<void*>(&context);
@@ -110,7 +110,7 @@ TEST(wf_jsonrpc_server, invoke_unknown_method)
     json_object_set_new(request, "method", json_string("greet"));
     json_object_set_new(request, "params", json_array());
     json_object_set_new(request, "id", json_integer(42));   
-    wf_jsonrpc_server_process(server, request, &jsonrpc_send, user_data);
+    wf_impl_jsonrpc_server_process(server, request, &jsonrpc_send, user_data);
 
     ASSERT_TRUE(context.is_called);
     ASSERT_NE(nullptr, context.response);
@@ -132,29 +132,29 @@ TEST(wf_jsonrpc_server, invoke_unknown_method)
 
     json_decref(context.response);
     json_decref(request);
-    wf_jsonrpc_server_dispose(server); 
+    wf_impl_jsonrpc_server_dispose(server); 
 }
 
 TEST(wf_jsonrpc_server, skip_invalid_request_missing_id)
 {
-    struct wf_jsonrpc_server * server = wf_jsonrpc_server_create();
+    struct wf_jsonrpc_server * server = wf_impl_jsonrpc_server_create();
 
     Context context{nullptr, false};
     void * user_data = reinterpret_cast<void*>(&context);
     json_t * request = json_object();
     json_object_set_new(request, "method", json_string("sayHello"));
     json_object_set_new(request, "params", json_array());
-    wf_jsonrpc_server_process(server, request, &jsonrpc_send, user_data);
+    wf_impl_jsonrpc_server_process(server, request, &jsonrpc_send, user_data);
 
     ASSERT_FALSE(context.is_called);
 
     json_decref(request);
-    wf_jsonrpc_server_dispose(server); 
+    wf_impl_jsonrpc_server_dispose(server); 
 }
 
 TEST(wf_jsonrpc_server, skip_invalid_request_wrong_id_type)
 {
-    struct wf_jsonrpc_server * server = wf_jsonrpc_server_create();
+    struct wf_jsonrpc_server * server = wf_impl_jsonrpc_server_create();
 
     Context context{nullptr, false};
     void * user_data = reinterpret_cast<void*>(&context);
@@ -162,34 +162,34 @@ TEST(wf_jsonrpc_server, skip_invalid_request_wrong_id_type)
     json_object_set_new(request, "method", json_string("sayHello"));
     json_object_set_new(request, "params", json_array());
     json_object_set_new(request, "id", json_string("42"));   
-    wf_jsonrpc_server_process(server, request, &jsonrpc_send, user_data);
+    wf_impl_jsonrpc_server_process(server, request, &jsonrpc_send, user_data);
 
     ASSERT_FALSE(context.is_called);
 
     json_decref(request);
-    wf_jsonrpc_server_dispose(server); 
+    wf_impl_jsonrpc_server_dispose(server); 
 }
 
 TEST(wf_jsonrpc_server, skip_invalid_request_missing_params)
 {
-    struct wf_jsonrpc_server * server = wf_jsonrpc_server_create();
+    struct wf_jsonrpc_server * server = wf_impl_jsonrpc_server_create();
 
     Context context{nullptr, false};
     void * user_data = reinterpret_cast<void*>(&context);
     json_t * request = json_object();
     json_object_set_new(request, "method", json_string("sayHello"));
     json_object_set_new(request, "id", json_integer(42));   
-    wf_jsonrpc_server_process(server, request, &jsonrpc_send, user_data);
+    wf_impl_jsonrpc_server_process(server, request, &jsonrpc_send, user_data);
 
     ASSERT_FALSE(context.is_called);
 
     json_decref(request);
-    wf_jsonrpc_server_dispose(server); 
+    wf_impl_jsonrpc_server_dispose(server); 
 }
 
 TEST(wf_jsonrpc_server, skip_invalid_request_wrong_params_type)
 {
-    struct wf_jsonrpc_server * server = wf_jsonrpc_server_create();
+    struct wf_jsonrpc_server * server = wf_impl_jsonrpc_server_create();
 
     Context context{nullptr, false};
     void * user_data = reinterpret_cast<void*>(&context);
@@ -197,34 +197,34 @@ TEST(wf_jsonrpc_server, skip_invalid_request_wrong_params_type)
     json_object_set_new(request, "method", json_string("sayHello"));
     json_object_set_new(request, "params", json_string("invalid"));
     json_object_set_new(request, "id", json_integer(42));   
-    wf_jsonrpc_server_process(server, request, &jsonrpc_send, user_data);
+    wf_impl_jsonrpc_server_process(server, request, &jsonrpc_send, user_data);
 
     ASSERT_FALSE(context.is_called);
 
     json_decref(request);
-    wf_jsonrpc_server_dispose(server); 
+    wf_impl_jsonrpc_server_dispose(server); 
 }
 
 TEST(wf_jsonrpc_server, skip_invalid_request_missing_method)
 {
-    struct wf_jsonrpc_server * server = wf_jsonrpc_server_create();
+    struct wf_jsonrpc_server * server = wf_impl_jsonrpc_server_create();
 
     Context context{nullptr, false};
     void * user_data = reinterpret_cast<void*>(&context);
     json_t * request = json_object();
     json_object_set_new(request, "params", json_array());
     json_object_set_new(request, "id", json_integer(42));   
-    wf_jsonrpc_server_process(server, request, &jsonrpc_send, user_data);
+    wf_impl_jsonrpc_server_process(server, request, &jsonrpc_send, user_data);
 
     ASSERT_FALSE(context.is_called);
 
     json_decref(request);
-    wf_jsonrpc_server_dispose(server); 
+    wf_impl_jsonrpc_server_dispose(server); 
 }
 
 TEST(wf_jsonrpc_server, skip_invalid_request_wront_method_type)
 {
-    struct wf_jsonrpc_server * server = wf_jsonrpc_server_create();
+    struct wf_jsonrpc_server * server = wf_impl_jsonrpc_server_create();
 
     Context context{nullptr, false};
     void * user_data = reinterpret_cast<void*>(&context);
@@ -232,10 +232,10 @@ TEST(wf_jsonrpc_server, skip_invalid_request_wront_method_type)
     json_object_set_new(request, "method", json_integer(42));
     json_object_set_new(request, "params", json_array());
     json_object_set_new(request, "id", json_integer(42));   
-    wf_jsonrpc_server_process(server, request, &jsonrpc_send, user_data);
+    wf_impl_jsonrpc_server_process(server, request, &jsonrpc_send, user_data);
 
     ASSERT_FALSE(context.is_called);
 
     json_decref(request);
-    wf_jsonrpc_server_dispose(server); 
+    wf_impl_jsonrpc_server_dispose(server); 
 }

@@ -4,16 +4,16 @@
 #include <ctype.h>
 #include <libwebsockets.h>
 
-#include "webfuse/core/message.h"
-#include "webfuse/core/util.h"
+#include "webfuse/impl/message.h"
+#include "webfuse/impl/util/util.h"
 #include "webfuse/protocol_names.h"
 
 #include "webfuse/impl/credentials.h"
-#include "webfuse/core/status_intern.h"
+#include "webfuse/impl/status.h"
 
-#include "webfuse/core/jsonrpc/request.h"
-#include "webfuse/core/timer/manager.h"
-#include "webfuse/core/timer/timer.h"
+#include "webfuse/impl/jsonrpc/request.h"
+#include "webfuse/impl/timer/manager.h"
+#include "webfuse/impl/timer/timer.h"
 
 static int wf_impl_server_protocol_callback(
 	struct lws * wsi,
@@ -27,7 +27,7 @@ static int wf_impl_server_protocol_callback(
     if (ws_protocol->callback != &wf_impl_server_protocol_callback) { return 0; }
 
     struct wf_server_protocol * protocol = ws_protocol->user;
-    wf_timer_manager_check(protocol->timer_manager);
+    wf_impl_timer_manager_check(protocol->timer_manager);
     struct wf_impl_session * session = wf_impl_session_manager_get(&protocol->session_manager, wsi);
 
     switch (reason)
@@ -127,7 +127,7 @@ static void wf_impl_server_protocol_authenticate(
         struct wf_credentials creds;
          
         wf_impl_credentials_init(&creds, type, creds_holder);
-        struct wf_impl_session * session = wf_jsonrpc_request_get_userdata(request);
+        struct wf_impl_session * session = wf_impl_jsonrpc_request_get_userdata(request);
         result = wf_impl_session_authenticate(session, &creds);
         
         wf_impl_credentials_cleanup(&creds);
@@ -137,11 +137,11 @@ static void wf_impl_server_protocol_authenticate(
     if (result)
     {
         json_t * result = json_object();
-        wf_jsonrpc_respond(request, result);
+        wf_impl_jsonrpc_respond(request, result);
     }
     else
     {
-        wf_jsonrpc_respond_error(request, WF_BAD_ACCESS_DENIED, wf_status_tostring(WF_BAD_ACCESS_DENIED));
+        wf_impl_jsonrpc_respond_error(request, WF_BAD_ACCESS_DENIED, wf_impl_status_tostring(WF_BAD_ACCESS_DENIED));
     }    
 }
 
@@ -166,7 +166,7 @@ static void wf_impl_server_protocol_add_filesystem(
     json_t * params,
     void * WF_UNUSED_PARAM(user_data))
 {
-    struct wf_impl_session * session = wf_jsonrpc_request_get_userdata(request);
+    struct wf_impl_session * session = wf_impl_jsonrpc_request_get_userdata(request);
     wf_status status = (session->is_authenticated) ? WF_GOOD : WF_BAD_ACCESS_DENIED;
 
     char const * name = NULL;
@@ -200,11 +200,11 @@ static void wf_impl_server_protocol_add_filesystem(
     {
         json_t * result = json_object();
         json_object_set_new(result, "id", json_string(name));
-        wf_jsonrpc_respond(request, result);
+        wf_impl_jsonrpc_respond(request, result);
     }
     else
     {
-        wf_jsonrpc_respond_error(request, status, wf_status_tostring(status));
+        wf_impl_jsonrpc_respond_error(request, status, wf_impl_status_tostring(status));
     }
     
 
@@ -218,13 +218,13 @@ void wf_impl_server_protocol_init(
 
     wf_impl_mountpoint_factory_clone(mountpoint_factory, &protocol->mountpoint_factory);
 
-    protocol->timer_manager = wf_timer_manager_create();
+    protocol->timer_manager = wf_impl_timer_manager_create();
     wf_impl_session_manager_init(&protocol->session_manager);
     wf_impl_authenticators_init(&protocol->authenticators);
 
-    protocol->server = wf_jsonrpc_server_create();
-    wf_jsonrpc_server_add(protocol->server, "authenticate", &wf_impl_server_protocol_authenticate, protocol);
-    wf_jsonrpc_server_add(protocol->server, "add_filesystem", &wf_impl_server_protocol_add_filesystem, protocol);
+    protocol->server = wf_impl_jsonrpc_server_create();
+    wf_impl_jsonrpc_server_add(protocol->server, "authenticate", &wf_impl_server_protocol_authenticate, protocol);
+    wf_impl_jsonrpc_server_add(protocol->server, "add_filesystem", &wf_impl_server_protocol_add_filesystem, protocol);
 }
 
 void wf_impl_server_protocol_cleanup(
@@ -232,8 +232,8 @@ void wf_impl_server_protocol_cleanup(
 {
     protocol->is_operational = false;
 
-    wf_jsonrpc_server_dispose(protocol->server);
-    wf_timer_manager_dispose(protocol->timer_manager);
+    wf_impl_jsonrpc_server_dispose(protocol->server);
+    wf_impl_timer_manager_dispose(protocol->timer_manager);
     wf_impl_authenticators_cleanup(&protocol->authenticators);
     wf_impl_session_manager_cleanup(&protocol->session_manager);
     wf_impl_mountpoint_factory_cleanup(&protocol->mountpoint_factory);

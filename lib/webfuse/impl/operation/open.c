@@ -1,10 +1,10 @@
 #include "webfuse/impl/operation/open.h"
 #include "webfuse/impl/operation/context.h"
 
-#include "webfuse/core/jsonrpc/proxy.h"
-#include "webfuse/core/util.h"
+#include "webfuse/impl/jsonrpc/proxy.h"
+#include "webfuse/impl/util/util.h"
 #include "webfuse/status.h"
-#include "webfuse/core/json_util.h"
+#include "webfuse/impl/util/json_util.h"
 
 #include <string.h>
 #include <errno.h>
@@ -53,7 +53,7 @@ void wf_impl_operation_open(
 
 	if (NULL != rpc)
 	{
-		wf_jsonrpc_proxy_invoke(rpc, &wf_impl_operation_open_finished, request, "open", "sii", user_data->name, inode, file_info->flags);
+		wf_impl_jsonrpc_proxy_invoke(rpc, &wf_impl_operation_open_finished, request, "open", "sii", user_data->name, inode, file_info->flags);
 	}
 	else
 	{

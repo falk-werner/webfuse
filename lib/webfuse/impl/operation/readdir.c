@@ -9,9 +9,9 @@
 #include <sys/stat.h>
 #include <unistd.h> 
 
-#include "webfuse/core/jsonrpc/proxy.h"
-#include "webfuse/core/util.h"
-#include "webfuse/core/json_util.h"
+#include "webfuse/impl/jsonrpc/proxy.h"
+#include "webfuse/impl/util/util.h"
+#include "webfuse/impl/util/json_util.h"
 
 
 #define WF_DIRBUFFER_INITIAL_SIZE 1024
@@ -151,7 +151,7 @@ void wf_impl_operation_readdir (
 		readdir_context->size = size;
 		readdir_context->offset = offset;
 
-		wf_jsonrpc_proxy_invoke(rpc, &wf_impl_operation_readdir_finished, readdir_context, "readdir", "si", user_data->name, inode);
+		wf_impl_jsonrpc_proxy_invoke(rpc, &wf_impl_operation_readdir_finished, readdir_context, "readdir", "si", user_data->name, inode);
 	}
 	else
 	{

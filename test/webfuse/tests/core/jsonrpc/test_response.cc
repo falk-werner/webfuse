@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include "webfuse/core/jsonrpc/response_intern.h"
+#include "webfuse/impl/jsonrpc/response_intern.h"
 #include "webfuse/status.h"
 
 TEST(wf_json_response, init_result)
@@ -9,14 +9,14 @@ TEST(wf_json_response, init_result)
     json_object_set_new(message, "id", json_integer(11));
 
     struct wf_jsonrpc_response response;
-    wf_jsonrpc_response_init(&response, message);
+    wf_impl_jsonrpc_response_init(&response, message);
 
     ASSERT_EQ(nullptr, response.error);
     ASSERT_TRUE(json_is_integer(response.result));
     ASSERT_EQ(47, json_integer_value(response.result));
     ASSERT_EQ(11, response.id);
 
-    wf_jsonrpc_response_cleanup(&response);
+    wf_impl_jsonrpc_response_cleanup(&response);
     json_decref(message);
 }
 
@@ -30,14 +30,14 @@ TEST(wf_json_response, init_error)
     json_object_set_new(message, "id", json_integer(23));
 
     struct wf_jsonrpc_response response;
-    wf_jsonrpc_response_init(&response, message);
+    wf_impl_jsonrpc_response_init(&response, message);
 
     ASSERT_EQ(42, json_integer_value(json_object_get(response.error, "code")));
     ASSERT_STREQ("Don't Panic!", json_string_value(json_object_get(response.error, "message")));
     ASSERT_EQ(nullptr, response.result);
     ASSERT_EQ(23, response.id);
 
-    wf_jsonrpc_response_cleanup(&response);
+    wf_impl_jsonrpc_response_cleanup(&response);
     json_decref(message);
 }
 
@@ -47,13 +47,13 @@ TEST(wf_json_response, init_fail_missing_result_and_error)
     json_object_set_new(message, "id", json_integer(12));
 
     struct wf_jsonrpc_response response;
-    wf_jsonrpc_response_init(&response, message);
+    wf_impl_jsonrpc_response_init(&response, message);
 
     ASSERT_EQ(WF_BAD_FORMAT, json_integer_value(json_object_get(response.error, "code")));
     ASSERT_EQ(nullptr, response.result);
     ASSERT_EQ(12, response.id);
 
-    wf_jsonrpc_response_cleanup(&response);
+    wf_impl_jsonrpc_response_cleanup(&response);
     json_decref(message);
 }
 
@@ -63,13 +63,13 @@ TEST(wf_json_response, init_fail_missing_id)
     json_object_set_new(message, "result", json_integer(47));
 
     struct wf_jsonrpc_response response;
-    wf_jsonrpc_response_init(&response, message);
+    wf_impl_jsonrpc_response_init(&response, message);
 
     ASSERT_EQ(WF_BAD_FORMAT, json_integer_value(json_object_get(response.error, "code")));
     ASSERT_EQ(nullptr, response.result);
     ASSERT_EQ(-1, response.id);
 
-    wf_jsonrpc_response_cleanup(&response);
+    wf_impl_jsonrpc_response_cleanup(&response);
     json_decref(message);
 }
 
@@ -80,13 +80,13 @@ TEST(wf_json_response, init_fail_wrong_id_type)
     json_object_set_new(message, "id", json_string("42"));
 
     struct wf_jsonrpc_response response;
-    wf_jsonrpc_response_init(&response, message);
+    wf_impl_jsonrpc_response_init(&response, message);
 
     ASSERT_EQ(WF_BAD_FORMAT, json_integer_value(json_object_get(response.error, "code")));
     ASSERT_EQ(nullptr, response.result);
     ASSERT_EQ(-1, response.id);
 
-    wf_jsonrpc_response_cleanup(&response);
+    wf_impl_jsonrpc_response_cleanup(&response);
     json_decref(message);
 }
 
@@ -99,13 +99,13 @@ TEST(wf_json_response, init_fail_error_missing_code)
     json_object_set_new(message, "id", json_integer(23));
 
     struct wf_jsonrpc_response response;
-    wf_jsonrpc_response_init(&response, message);
+    wf_impl_jsonrpc_response_init(&response, message);
 
     ASSERT_EQ(WF_BAD_FORMAT, json_integer_value(json_object_get(response.error, "code")));
     ASSERT_EQ(nullptr, response.result);
     ASSERT_EQ(23, response.id);
 
-    wf_jsonrpc_response_cleanup(&response);
+    wf_impl_jsonrpc_response_cleanup(&response);
     json_decref(message);
 }
 
@@ -119,13 +119,13 @@ TEST(wf_json_response, init_fail_error_wrong_code_type)
     json_object_set_new(message, "id", json_integer(23));
 
     struct wf_jsonrpc_response response;
-    wf_jsonrpc_response_init(&response, message);
+    wf_impl_jsonrpc_response_init(&response, message);
 
     ASSERT_EQ(WF_BAD_FORMAT, json_integer_value(json_object_get(response.error, "code")));
     ASSERT_EQ(nullptr, response.result);
     ASSERT_EQ(23, response.id);
 
-    wf_jsonrpc_response_cleanup(&response);
+    wf_impl_jsonrpc_response_cleanup(&response);
     json_decref(message);
 }
 
@@ -136,12 +136,12 @@ TEST(wf_json_response, init_fail_error_wrong_type)
     json_object_set_new(message, "id", json_integer(23));
 
     struct wf_jsonrpc_response response;
-    wf_jsonrpc_response_init(&response, message);
+    wf_impl_jsonrpc_response_init(&response, message);
 
     ASSERT_EQ(WF_BAD_FORMAT, json_integer_value(json_object_get(response.error, "code")));
     ASSERT_EQ(nullptr, response.result);
     ASSERT_EQ(23, response.id);
 
-    wf_jsonrpc_response_cleanup(&response);
+    wf_impl_jsonrpc_response_cleanup(&response);
     json_decref(message);
 }

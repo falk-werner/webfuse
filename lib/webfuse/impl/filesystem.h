@@ -7,7 +7,7 @@
 
 #include "webfuse/impl/fuse_wrapper.h"
 #include "webfuse/impl/operation/context.h"
-#include "webfuse/core/slist.h"
+#include "webfuse/impl/util/slist.h"
 
 #ifdef __cplusplus
 extern "C"

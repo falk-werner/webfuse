@@ -34,7 +34,7 @@ void free_context(
 TEST(wf_impl_operation_getattr, invoke_proxy)
 {
     MockJsonRpcProxy proxy;
-    EXPECT_CALL(proxy, wf_jsonrpc_proxy_vinvoke(_,_,_,StrEq("getattr"),StrEq("si"))).Times(1)
+    EXPECT_CALL(proxy, wf_impl_jsonrpc_proxy_vinvoke(_,_,_,StrEq("getattr"),StrEq("si"))).Times(1)
         .WillOnce(Invoke(free_context));
 
     MockOperationContext context;

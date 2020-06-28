@@ -17,7 +17,7 @@ using testing::StrEq;
 TEST(wf_impl_operation_close, notify_proxy)
 {
     MockJsonRpcProxy proxy;
-    EXPECT_CALL(proxy, wf_jsonrpc_proxy_vnotify(_,StrEq("close"),StrEq("siii"))).Times(1);
+    EXPECT_CALL(proxy, wf_impl_jsonrpc_proxy_vnotify(_,StrEq("close"),StrEq("siii"))).Times(1);
 
     MockOperationContext context;
     EXPECT_CALL(context, wf_impl_operation_context_get_proxy(_)).Times(1)
@@ -39,7 +39,7 @@ TEST(wf_impl_operation_close, notify_proxy)
 TEST(wf_impl_operation_close, fail_rpc_null)
 {
     MockJsonRpcProxy proxy;
-    EXPECT_CALL(proxy, wf_jsonrpc_proxy_vnotify(_,_,_)).Times(0);
+    EXPECT_CALL(proxy, wf_impl_jsonrpc_proxy_vnotify(_,_,_)).Times(0);
 
     MockOperationContext context;
     EXPECT_CALL(context, wf_impl_operation_context_get_proxy(_)).Times(1)
