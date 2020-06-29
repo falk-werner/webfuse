@@ -8,15 +8,16 @@
 #include "webfuse/test_util/ws_server.hpp"
 #include "webfuse/mocks/mock_adapter_client_callback.hpp"
 #include "webfuse/mocks/mock_invokation_handler.hpp"
-#include "webfuse/test_util/timeout_watcher.hpp"
 #include "webfuse/integration/file.hpp"
 #include "webfuse/mocks/lookup_matcher.hpp"
+
+#include <future>
+#include <chrono>
 
 using webfuse_test::AdapterClient;
 using webfuse_test::WsServer;
 using webfuse_test::MockInvokationHander;
 using webfuse_test::MockAdapterClientCallback;
-using webfuse_test::TimeoutWatcher;
 using webfuse_test::File;
 using webfuse_test::Lookup;
 using testing::_;
@@ -26,7 +27,7 @@ using testing::Return;
 using testing::Throw;
 using testing::StrEq;
 
-#define TIMEOUT (std::chrono::milliseconds(30 * 1000))
+#define TIMEOUT (std::chrono::seconds(30))
 
 namespace
 {
@@ -58,8 +59,6 @@ TEST(AdapterClient, CreateAndDispose)
 
 TEST(AdapterClient, Connect)
 {
-    TimeoutWatcher watcher(TIMEOUT);
-
     MockInvokationHander handler;
     WsServer server(handler, WF_PROTOCOL_NAME_PROVIDER_SERVER);
     EXPECT_CALL(handler, Invoke(_,_)).Times(0);
@@ -70,27 +69,25 @@ TEST(AdapterClient, Connect)
     EXPECT_CALL(callback, Invoke(_, WF_CLIENT_GET_TLS_CONFIG, _)).Times(1);
     EXPECT_CALL(callback, Invoke(_, WF_CLIENT_CLEANUP, nullptr)).Times(1);
 
-    bool connected = false;
+    std::promise<void> connected;
     EXPECT_CALL(callback, Invoke(_, WF_CLIENT_CONNECTED, nullptr)).Times(1)
-        .WillOnce(Invoke([&] (wf_client *, int, void *) mutable { connected = true; }));
+        .WillOnce(Invoke([&] (wf_client *, int, void *) mutable { connected.set_value(); }));
 
-    bool disconnected = false;
+    std::promise<void> disconnected;
     EXPECT_CALL(callback, Invoke(_, WF_CLIENT_DISCONNECTED, nullptr)).Times(1)
-        .WillOnce(Invoke([&] (wf_client *, int, void *) mutable { disconnected = true; }));
+        .WillOnce(Invoke([&] (wf_client *, int, void *) mutable { disconnected.set_value(); }));
 
     AdapterClient client(callback.GetCallbackFn(), callback.GetUserData(), server.GetUrl());
 
     client.Connect();
-    ASSERT_TRUE(watcher.waitUntil([&]() mutable { return connected; }));
+    ASSERT_EQ(std::future_status::ready, connected.get_future().wait_for(TIMEOUT));
 
     client.Disconnect();
-    ASSERT_TRUE(watcher.waitUntil([&]() mutable { return disconnected; }));
+    ASSERT_EQ(std::future_status::ready, disconnected.get_future().wait_for(TIMEOUT));
 }
 
 TEST(AdapterClient, IgnoreNonJsonMessage)
 {
-    TimeoutWatcher watcher(TIMEOUT);
-
     MockInvokationHander handler;
     WsServer server(handler, WF_PROTOCOL_NAME_PROVIDER_SERVER);
     EXPECT_CALL(handler, Invoke(_,_)).Times(0);
@@ -101,30 +98,28 @@ TEST(AdapterClient, IgnoreNonJsonMessage)
     EXPECT_CALL(callback, Invoke(_, WF_CLIENT_GET_TLS_CONFIG, _)).Times(1);
     EXPECT_CALL(callback, Invoke(_, WF_CLIENT_CLEANUP, nullptr)).Times(1);
 
-    bool connected = false;
+    std::promise<void> connected;
     EXPECT_CALL(callback, Invoke(_, WF_CLIENT_CONNECTED, nullptr)).Times(1)
-        .WillOnce(Invoke([&] (wf_client *, int, void *) mutable { connected = true; }));
+        .WillOnce(Invoke([&] (wf_client *, int, void *) mutable { connected.set_value(); }));
 
-    bool disconnected = false;
+    std::promise<void> disconnected;
     EXPECT_CALL(callback, Invoke(_, WF_CLIENT_DISCONNECTED, nullptr)).Times(1)
-        .WillOnce(Invoke([&] (wf_client *, int, void *) mutable { disconnected = true; }));
+        .WillOnce(Invoke([&] (wf_client *, int, void *) mutable { disconnected.set_value(); }));
 
     AdapterClient client(callback.GetCallbackFn(), callback.GetUserData(), server.GetUrl());
 
     client.Connect();
-    ASSERT_TRUE(watcher.waitUntil([&]() mutable { return connected; }));
+    ASSERT_EQ(std::future_status::ready, connected.get_future().wait_for(TIMEOUT));
 
     server.SendMessage("brummni");
 
     client.Disconnect();
-    ASSERT_TRUE(watcher.waitUntil([&]() mutable { return disconnected; }));
+    ASSERT_EQ(std::future_status::ready, disconnected.get_future().wait_for(TIMEOUT));
 }
 
 
 TEST(AdapterClient, IgnoreInvalidJsonMessage)
 {
-    TimeoutWatcher watcher(TIMEOUT);
-
     MockInvokationHander handler;
     WsServer server(handler, WF_PROTOCOL_NAME_PROVIDER_SERVER);
     EXPECT_CALL(handler, Invoke(_,_)).Times(0);
@@ -135,30 +130,28 @@ TEST(AdapterClient, IgnoreInvalidJsonMessage)
     EXPECT_CALL(callback, Invoke(_, WF_CLIENT_GET_TLS_CONFIG, _)).Times(1);
     EXPECT_CALL(callback, Invoke(_, WF_CLIENT_CLEANUP, nullptr)).Times(1);
 
-    bool connected = false;
+    std::promise<void> connected;
     EXPECT_CALL(callback, Invoke(_, WF_CLIENT_CONNECTED, nullptr)).Times(1)
-        .WillOnce(Invoke([&] (wf_client *, int, void *) mutable { connected = true; }));
+        .WillOnce(Invoke([&] (wf_client *, int, void *) mutable { connected.set_value(); }));
 
-    bool disconnected = false;
+    std::promise<void> disconnected;
     EXPECT_CALL(callback, Invoke(_, WF_CLIENT_DISCONNECTED, nullptr)).Times(1)
-        .WillOnce(Invoke([&] (wf_client *, int, void *) mutable { disconnected = true; }));
+        .WillOnce(Invoke([&] (wf_client *, int, void *) mutable { disconnected.set_value(); }));
 
     AdapterClient client(callback.GetCallbackFn(), callback.GetUserData(), server.GetUrl());
 
     client.Connect();
-    ASSERT_TRUE(watcher.waitUntil([&]() mutable { return connected; }));
+    ASSERT_EQ(std::future_status::ready, connected.get_future().wait_for(TIMEOUT));
 
     json_t * invalid_request = json_object();
     server.SendMessage(invalid_request);
 
     client.Disconnect();
-    ASSERT_TRUE(watcher.waitUntil([&]() mutable { return disconnected; }));
+    ASSERT_EQ(std::future_status::ready, disconnected.get_future().wait_for(TIMEOUT));
 }
 
 TEST(AdapterClient, ConnectWithTls)
 {
-    TimeoutWatcher watcher(TIMEOUT);
-
     MockInvokationHander handler;
     WsServer server(handler, WF_PROTOCOL_NAME_PROVIDER_SERVER, 0, true);
     EXPECT_CALL(handler, Invoke(_,_)).Times(0);
@@ -175,49 +168,44 @@ TEST(AdapterClient, ConnectWithTls)
         }));
     EXPECT_CALL(callback, Invoke(_, WF_CLIENT_CLEANUP, nullptr)).Times(1);
 
-    bool connected = false;
+    std::promise<void> connected;
     EXPECT_CALL(callback, Invoke(_, WF_CLIENT_CONNECTED, nullptr)).Times(1)
-        .WillOnce(Invoke([&] (wf_client *, int, void *) mutable { connected = true; }));
+        .WillOnce(Invoke([&] (wf_client *, int, void *) mutable { connected.set_value(); }));
 
-    bool disconnected = false;
+    std::promise<void> disconnected;
     EXPECT_CALL(callback, Invoke(_, WF_CLIENT_DISCONNECTED, nullptr)).Times(1)
-        .WillOnce(Invoke([&] (wf_client *, int, void *) mutable { disconnected = true; }));
+        .WillOnce(Invoke([&] (wf_client *, int, void *) mutable { disconnected.set_value(); }));
 
     AdapterClient client(callback.GetCallbackFn(), callback.GetUserData(), server.GetUrl());
 
     client.Connect();
-    ASSERT_TRUE(watcher.waitUntil([&]() mutable { return connected; }));
+    ASSERT_EQ(std::future_status::ready, connected.get_future().wait_for(TIMEOUT));
 
     client.Disconnect();
-    ASSERT_TRUE(watcher.waitUntil([&]() mutable { return disconnected; }));
+    ASSERT_EQ(std::future_status::ready, disconnected.get_future().wait_for(TIMEOUT));
 }
 
 TEST(AdapterClient, FailedToConnectInvalidPort)
 {
-    TimeoutWatcher watcher(TIMEOUT);
-
-
     MockAdapterClientCallback callback;
     EXPECT_CALL(callback, Invoke(_, WF_CLIENT_INIT, nullptr)).Times(1);
     EXPECT_CALL(callback, Invoke(_, WF_CLIENT_CREATED, nullptr)).Times(1);
     EXPECT_CALL(callback, Invoke(_, WF_CLIENT_GET_TLS_CONFIG, _)).Times(1);
     EXPECT_CALL(callback, Invoke(_, WF_CLIENT_CLEANUP, nullptr)).Times(1);
 
-    bool disconnected = false;
+    std::promise<void> disconnected;
     EXPECT_CALL(callback, Invoke(_, WF_CLIENT_DISCONNECTED, nullptr)).Times(1)
-        .WillOnce(Invoke([&] (wf_client *, int, void *) mutable { disconnected = true; }));
+        .WillOnce(Invoke([&] (wf_client *, int, void *) mutable { disconnected.set_value(); }));
 
     AdapterClient client(callback.GetCallbackFn(), callback.GetUserData(), "ws://localhost:4/");
 
     client.Connect();
-    ASSERT_TRUE(watcher.waitUntil([&]() mutable { return disconnected; }));
+    ASSERT_EQ(std::future_status::ready, disconnected.get_future().wait_for(TIMEOUT));
 }
 
 
 TEST(AdapterClient, Authenticate)
 {
-    TimeoutWatcher watcher(TIMEOUT);
-
     MockInvokationHander handler;
     WsServer server(handler, WF_PROTOCOL_NAME_PROVIDER_SERVER);
     EXPECT_CALL(handler, Invoke(StrEq("authenticate"),_)).Times(1)
@@ -226,57 +214,53 @@ TEST(AdapterClient, Authenticate)
     MockAdapterClientCallback callback;
     EXPECT_CALL(callback, Invoke(_, _, _)).Times(AnyNumber());
 
-    bool connected = false;
+    std::promise<void> connected;
     EXPECT_CALL(callback, Invoke(_, WF_CLIENT_CONNECTED, nullptr)).Times(1)
-        .WillOnce(Invoke([&] (wf_client *, int, void *) mutable { connected = true; }));
+        .WillOnce(Invoke([&] (wf_client *, int, void *) mutable { connected.set_value(); }));
 
-    bool disconnected = false;
+    std::promise<void> disconnected;
     EXPECT_CALL(callback, Invoke(_, WF_CLIENT_DISCONNECTED, nullptr)).Times(1)
-        .WillOnce(Invoke([&] (wf_client *, int, void *) mutable { disconnected = true; }));
+        .WillOnce(Invoke([&] (wf_client *, int, void *) mutable { disconnected.set_value(); }));
 
     EXPECT_CALL(callback, Invoke(_, WF_CLIENT_AUTHENTICATE_GET_CREDENTIALS, _)).Times(1)
         .WillOnce(Invoke(GetCredentials));
 
-    bool authenticated = false;
+    std::promise<void> authenticated;
     EXPECT_CALL(callback, Invoke(_, WF_CLIENT_AUTHENTICATED, nullptr)).Times(1)
-        .WillOnce(Invoke([&] (wf_client *, int, void *) mutable { authenticated = true; }));
+        .WillOnce(Invoke([&] (wf_client *, int, void *) mutable { authenticated.set_value(); }));
 
     AdapterClient client(callback.GetCallbackFn(), callback.GetUserData(), server.GetUrl());
 
     client.Connect();
-    ASSERT_TRUE(watcher.waitUntil([&]() mutable { return connected; }));
+    ASSERT_EQ(std::future_status::ready, connected.get_future().wait_for(TIMEOUT));
 
     client.Authenticate();
-    ASSERT_TRUE(watcher.waitUntil([&]() mutable { return authenticated; }));
+    ASSERT_EQ(std::future_status::ready, authenticated.get_future().wait_for(TIMEOUT));
 
     client.Disconnect();
-    ASSERT_TRUE(watcher.waitUntil([&]() mutable { return disconnected; }));
+    ASSERT_EQ(std::future_status::ready, disconnected.get_future().wait_for(TIMEOUT));
 }
 
 TEST(AdapterClient, AuthenticateFailedWithoutConnect)
 {
-    TimeoutWatcher watcher(TIMEOUT);
-
     MockAdapterClientCallback callback;
     EXPECT_CALL(callback, Invoke(_, _, _)).Times(AnyNumber());
     EXPECT_CALL(callback, Invoke(_, WF_CLIENT_AUTHENTICATE_GET_CREDENTIALS, _)).Times(1)
         .WillOnce(Invoke(GetCredentials));
-    bool called = false;
+    std::promise<void> called;
     EXPECT_CALL(callback, Invoke(_, WF_CLIENT_AUTHENTICATION_FAILED, nullptr)).Times(1)
-        .WillOnce(Invoke([&called] (wf_client *, int, void *) mutable {
-            called = true;
+        .WillOnce(Invoke([&] (wf_client *, int, void *) mutable {
+            called.set_value();
         }));
 
     AdapterClient client(callback.GetCallbackFn(), callback.GetUserData(), "");
 
     client.Authenticate();
-    ASSERT_TRUE(watcher.waitUntil([&]() mutable { return called; }));
+    ASSERT_EQ(std::future_status::ready, called.get_future().wait_for(TIMEOUT));
 }
 
 TEST(AdapterClient, AuthenticationFailed)
 {
-    TimeoutWatcher watcher(TIMEOUT);
-
     MockInvokationHander handler;
     WsServer server(handler, WF_PROTOCOL_NAME_PROVIDER_SERVER);
     EXPECT_CALL(handler, Invoke(StrEq("authenticate"),_)).Times(1)
@@ -285,39 +269,37 @@ TEST(AdapterClient, AuthenticationFailed)
     MockAdapterClientCallback callback;
     EXPECT_CALL(callback, Invoke(_, _, _)).Times(AnyNumber());
 
-    bool connected = false;
+    std::promise<void> connected;
     EXPECT_CALL(callback, Invoke(_, WF_CLIENT_CONNECTED, nullptr)).Times(1)
-        .WillOnce(Invoke([&] (wf_client *, int, void *) mutable { connected = true; }));
+        .WillOnce(Invoke([&] (wf_client *, int, void *) mutable { connected.set_value(); }));
 
-    bool disconnected = false;
+    std::promise<void> disconnected;
     EXPECT_CALL(callback, Invoke(_, WF_CLIENT_DISCONNECTED, nullptr)).Times(1)
-        .WillOnce(Invoke([&] (wf_client *, int, void *) mutable { disconnected = true; }));
+        .WillOnce(Invoke([&] (wf_client *, int, void *) mutable { disconnected.set_value(); }));
 
     EXPECT_CALL(callback, Invoke(_, WF_CLIENT_AUTHENTICATE_GET_CREDENTIALS, _)).Times(1)
         .WillOnce(Invoke(GetCredentials));
 
-    bool called = false;
+    std::promise<void> called;
     EXPECT_CALL(callback, Invoke(_, WF_CLIENT_AUTHENTICATION_FAILED, nullptr)).Times(1)
         .WillOnce(Invoke([&called] (wf_client *, int, void *) mutable {
-            called = true;
+            called.set_value();
         }));
 
     AdapterClient client(callback.GetCallbackFn(), callback.GetUserData(), server.GetUrl());
 
     client.Connect();
-    ASSERT_TRUE(watcher.waitUntil([&]() mutable { return connected; }));
+    ASSERT_EQ(std::future_status::ready, connected.get_future().wait_for(TIMEOUT));
 
     client.Authenticate();
-    ASSERT_TRUE(watcher.waitUntil([&]() mutable { return called; }));
+    ASSERT_EQ(std::future_status::ready, called.get_future().wait_for(TIMEOUT));
 
     client.Disconnect();
-    ASSERT_TRUE(watcher.waitUntil([&]() mutable { return disconnected; }));
+    ASSERT_EQ(std::future_status::ready, disconnected.get_future().wait_for(TIMEOUT));
 }
 
 TEST(AdapterClient, AddFileSystem)
 {
-    TimeoutWatcher watcher(TIMEOUT);
-
     MockInvokationHander handler;
     WsServer server(handler, WF_PROTOCOL_NAME_PROVIDER_SERVER);
     EXPECT_CALL(handler, Invoke(StrEq("add_filesystem"),_)).Times(1)
@@ -328,36 +310,34 @@ TEST(AdapterClient, AddFileSystem)
     MockAdapterClientCallback callback;
     EXPECT_CALL(callback, Invoke(_, _, _)).Times(AnyNumber());
 
-    bool connected = false;
+    std::promise<void> connected;
     EXPECT_CALL(callback, Invoke(_, WF_CLIENT_CONNECTED, nullptr)).Times(1)
-        .WillOnce(Invoke([&] (wf_client *, int, void *) mutable { connected = true; }));
+        .WillOnce(Invoke([&] (wf_client *, int, void *) mutable { connected.set_value(); }));
 
-    bool disconnected = false;
+    std::promise<void> disconnected;
     EXPECT_CALL(callback, Invoke(_, WF_CLIENT_DISCONNECTED, nullptr)).Times(1)
-        .WillOnce(Invoke([&] (wf_client *, int, void *) mutable { disconnected = true; }));
+        .WillOnce(Invoke([&] (wf_client *, int, void *) mutable { disconnected.set_value(); }));
 
-    bool called = false;
+    std::promise<void> called;
     EXPECT_CALL(callback, Invoke(_, WF_CLIENT_FILESYSTEM_ADDED, nullptr)).Times(1)
-        .WillOnce(Invoke([&called] (wf_client *, int, void *) mutable {
-            called = true;
+        .WillOnce(Invoke([&] (wf_client *, int, void *) mutable {
+            called.set_value();
         }));
 
     AdapterClient client(callback.GetCallbackFn(), callback.GetUserData(), server.GetUrl());
 
     client.Connect();
-    ASSERT_TRUE(watcher.waitUntil([&]() mutable { return connected; }));
+    ASSERT_EQ(std::future_status::ready, connected.get_future().wait_for(TIMEOUT));
 
     client.AddFileSystem();
-    ASSERT_TRUE(watcher.waitUntil([&]() mutable { return called; }));
+    ASSERT_EQ(std::future_status::ready, called.get_future().wait_for(TIMEOUT));
 
     client.Disconnect();
-    ASSERT_TRUE(watcher.waitUntil([&]() mutable { return disconnected; }));
+    ASSERT_EQ(std::future_status::ready, disconnected.get_future().wait_for(TIMEOUT));
 }
 
 TEST(AdapterClient, FailToAddFileSystemTwice)
 {
-    TimeoutWatcher watcher(TIMEOUT);
-
     MockInvokationHander handler;
     WsServer server(handler, WF_PROTOCOL_NAME_PROVIDER_SERVER);
     EXPECT_CALL(handler, Invoke(StrEq("add_filesystem"),_)).Times(1)
@@ -368,45 +348,43 @@ TEST(AdapterClient, FailToAddFileSystemTwice)
     MockAdapterClientCallback callback;
     EXPECT_CALL(callback, Invoke(_, _, _)).Times(AnyNumber());
 
-    bool connected = false;
+    std::promise<void> connected;
     EXPECT_CALL(callback, Invoke(_, WF_CLIENT_CONNECTED, nullptr)).Times(1)
-        .WillOnce(Invoke([&] (wf_client *, int, void *) mutable { connected = true; }));
+        .WillOnce(Invoke([&] (wf_client *, int, void *) mutable { connected.set_value(); }));
 
-    bool disconnected = false;
+    std::promise<void> disconnected;
     EXPECT_CALL(callback, Invoke(_, WF_CLIENT_DISCONNECTED, nullptr)).Times(1)
-        .WillOnce(Invoke([&] (wf_client *, int, void *) mutable { disconnected = true; }));
+        .WillOnce(Invoke([&] (wf_client *, int, void *) mutable { disconnected.set_value(); }));
 
-    bool filesystem_added = false;
+    std::promise<void> filesystem_added;
     EXPECT_CALL(callback, Invoke(_, WF_CLIENT_FILESYSTEM_ADDED, nullptr)).Times(1)
         .WillOnce(Invoke([&] (wf_client *, int, void *) mutable {
-            filesystem_added = true;
+            filesystem_added.set_value();
         }));
 
-    bool filesystem_add_failed = false;
+    std::promise<void> filesystem_add_failed;
     EXPECT_CALL(callback, Invoke(_, WF_CLIENT_FILESYSTEM_ADD_FAILED, nullptr)).Times(1)
         .WillOnce(Invoke([&] (wf_client *, int, void *) mutable {
-            filesystem_add_failed = true;
+            filesystem_add_failed.set_value();
         }));
 
     AdapterClient client(callback.GetCallbackFn(), callback.GetUserData(), server.GetUrl());
 
     client.Connect();
-    ASSERT_TRUE(watcher.waitUntil([&]() mutable { return connected; }));
+    ASSERT_EQ(std::future_status::ready, connected.get_future().wait_for(TIMEOUT));
 
     client.AddFileSystem();
-    ASSERT_TRUE(watcher.waitUntil([&]() mutable { return filesystem_added; }));
+    ASSERT_EQ(std::future_status::ready, filesystem_added.get_future().wait_for(TIMEOUT));
 
     client.AddFileSystem();
-    ASSERT_TRUE(watcher.waitUntil([&]() mutable { return filesystem_add_failed; }));
+    ASSERT_EQ(std::future_status::ready, filesystem_add_failed.get_future().wait_for(TIMEOUT));
 
     client.Disconnect();
-    ASSERT_TRUE(watcher.waitUntil([&]() mutable { return disconnected; }));
+    ASSERT_EQ(std::future_status::ready, disconnected.get_future().wait_for(TIMEOUT));
 }
 
 TEST(AdapterClient, FailToAddFileSystemMissingId)
 {
-    TimeoutWatcher watcher(TIMEOUT);
-
     MockInvokationHander handler;
     WsServer server(handler, WF_PROTOCOL_NAME_PROVIDER_SERVER);
     EXPECT_CALL(handler, Invoke(StrEq("add_filesystem"),_)).Times(1)
@@ -417,36 +395,34 @@ TEST(AdapterClient, FailToAddFileSystemMissingId)
     MockAdapterClientCallback callback;
     EXPECT_CALL(callback, Invoke(_, _, _)).Times(AnyNumber());
 
-    bool connected = false;
+    std::promise<void> connected;
     EXPECT_CALL(callback, Invoke(_, WF_CLIENT_CONNECTED, nullptr)).Times(1)
-        .WillOnce(Invoke([&] (wf_client *, int, void *) mutable { connected = true; }));
+        .WillOnce(Invoke([&] (wf_client *, int, void *) mutable { connected.set_value(); }));
 
-    bool disconnected = false;
+    std::promise<void> disconnected;
     EXPECT_CALL(callback, Invoke(_, WF_CLIENT_DISCONNECTED, nullptr)).Times(1)
-        .WillOnce(Invoke([&] (wf_client *, int, void *) mutable { disconnected = true; }));
+        .WillOnce(Invoke([&] (wf_client *, int, void *) mutable { disconnected.set_value(); }));
 
-    bool filesystem_add_failed = false;
+    std::promise<void> filesystem_add_failed;
     EXPECT_CALL(callback, Invoke(_, WF_CLIENT_FILESYSTEM_ADD_FAILED, nullptr)).Times(1)
         .WillOnce(Invoke([&] (wf_client *, int, void *) mutable {
-            filesystem_add_failed = true;
+            filesystem_add_failed.set_value();
         }));
 
     AdapterClient client(callback.GetCallbackFn(), callback.GetUserData(), server.GetUrl());
 
     client.Connect();
-    ASSERT_TRUE(watcher.waitUntil([&]() mutable { return connected; }));
+    ASSERT_EQ(std::future_status::ready, connected.get_future().wait_for(TIMEOUT));
 
     client.AddFileSystem();
-    ASSERT_TRUE(watcher.waitUntil([&]() mutable { return filesystem_add_failed; }));
+    ASSERT_EQ(std::future_status::ready, filesystem_add_failed.get_future().wait_for(TIMEOUT));
 
     client.Disconnect();
-    ASSERT_TRUE(watcher.waitUntil([&]() mutable { return disconnected; }));
+    ASSERT_EQ(std::future_status::ready, disconnected.get_future().wait_for(TIMEOUT));
 }
 
 TEST(AdapterClient, FailToAddFileSystemIdNotString)
 {
-    TimeoutWatcher watcher(TIMEOUT);
-
     MockInvokationHander handler;
     WsServer server(handler, WF_PROTOCOL_NAME_PROVIDER_SERVER);
     EXPECT_CALL(handler, Invoke(StrEq("add_filesystem"),_)).Times(1)
@@ -457,37 +433,35 @@ TEST(AdapterClient, FailToAddFileSystemIdNotString)
     MockAdapterClientCallback callback;
     EXPECT_CALL(callback, Invoke(_, _, _)).Times(AnyNumber());
 
-    bool connected = false;
+    std::promise<void> connected;
     EXPECT_CALL(callback, Invoke(_, WF_CLIENT_CONNECTED, nullptr)).Times(1)
-        .WillOnce(Invoke([&] (wf_client *, int, void *) mutable { connected = true; }));
+        .WillOnce(Invoke([&] (wf_client *, int, void *) mutable { connected.set_value(); }));
 
-    bool disconnected = false;
+    std::promise<void> disconnected;
     EXPECT_CALL(callback, Invoke(_, WF_CLIENT_DISCONNECTED, nullptr)).Times(1)
-        .WillOnce(Invoke([&] (wf_client *, int, void *) mutable { disconnected = true; }));
+        .WillOnce(Invoke([&] (wf_client *, int, void *) mutable { disconnected.set_value(); }));
 
-    bool filesystem_add_failed = false;
+    std::promise<void> filesystem_add_failed;
     EXPECT_CALL(callback, Invoke(_, WF_CLIENT_FILESYSTEM_ADD_FAILED, nullptr)).Times(1)
         .WillOnce(Invoke([&] (wf_client *, int, void *) mutable {
-            filesystem_add_failed = true;
+            filesystem_add_failed.set_value();
         }));
 
     AdapterClient client(callback.GetCallbackFn(), callback.GetUserData(), server.GetUrl());
 
     client.Connect();
-    ASSERT_TRUE(watcher.waitUntil([&]() mutable { return connected; }));
+    ASSERT_EQ(std::future_status::ready, connected.get_future().wait_for(TIMEOUT));
 
     client.AddFileSystem();
-    ASSERT_TRUE(watcher.waitUntil([&]() mutable { return filesystem_add_failed; }));
+    ASSERT_EQ(std::future_status::ready, filesystem_add_failed.get_future().wait_for(TIMEOUT));
 
     client.Disconnect();
-    ASSERT_TRUE(watcher.waitUntil([&]() mutable { return disconnected; }));
+    ASSERT_EQ(std::future_status::ready, disconnected.get_future().wait_for(TIMEOUT));
 }
 
 
 TEST(AdapterClient, AddFileSystemFailed)
 {
-    TimeoutWatcher watcher(TIMEOUT);
-
     MockInvokationHander handler;
     WsServer server(handler, WF_PROTOCOL_NAME_PROVIDER_SERVER);
     EXPECT_CALL(handler, Invoke(StrEq("add_filesystem"),_)).Times(1)
@@ -496,36 +470,34 @@ TEST(AdapterClient, AddFileSystemFailed)
     MockAdapterClientCallback callback;
     EXPECT_CALL(callback, Invoke(_, _, _)).Times(AnyNumber());
 
-    bool connected = false;
+    std::promise<void> connected;
     EXPECT_CALL(callback, Invoke(_, WF_CLIENT_CONNECTED, nullptr)).Times(1)
-        .WillOnce(Invoke([&] (wf_client *, int, void *) mutable { connected = true; }));
+        .WillOnce(Invoke([&] (wf_client *, int, void *) mutable { connected.set_value(); }));
 
-    bool disconnected = false;
+    std::promise<void> disconnected;
     EXPECT_CALL(callback, Invoke(_, WF_CLIENT_DISCONNECTED, nullptr)).Times(1)
-        .WillOnce(Invoke([&] (wf_client *, int, void *) mutable { disconnected = true; }));
+        .WillOnce(Invoke([&] (wf_client *, int, void *) mutable { disconnected.set_value(); }));
 
-    bool called = false;
+    std::promise<void> called;
     EXPECT_CALL(callback, Invoke(_, WF_CLIENT_FILESYSTEM_ADD_FAILED, nullptr)).Times(1)
         .WillOnce(Invoke([&called] (wf_client *, int, void *) mutable {
-            called = true;
+            called.set_value();
         }));
 
     AdapterClient client(callback.GetCallbackFn(), callback.GetUserData(), server.GetUrl());
 
     client.Connect();
-    ASSERT_TRUE(watcher.waitUntil([&]() mutable { return connected; }));
+    ASSERT_EQ(std::future_status::ready, connected.get_future().wait_for(TIMEOUT));
 
     client.AddFileSystem();
-    ASSERT_TRUE(watcher.waitUntil([&]() mutable { return called; }));
+    ASSERT_EQ(std::future_status::ready, called.get_future().wait_for(TIMEOUT));
 
     client.Disconnect();
-    ASSERT_TRUE(watcher.waitUntil([&]() mutable { return disconnected; }));
+    ASSERT_EQ(std::future_status::ready, disconnected.get_future().wait_for(TIMEOUT));
 }
 
 TEST(AdapterClient, LookupFile)
 {
-    TimeoutWatcher watcher(TIMEOUT);
-
     MockInvokationHander handler;
     WsServer server(handler, WF_PROTOCOL_NAME_PROVIDER_SERVER);
     EXPECT_CALL(handler, Invoke(StrEq("add_filesystem"),_)).Times(1)
@@ -548,32 +520,32 @@ TEST(AdapterClient, LookupFile)
     MockAdapterClientCallback callback;
     EXPECT_CALL(callback, Invoke(_, _, _)).Times(AnyNumber());
 
-    bool connected = false;
+    std::promise<void> connected;
     EXPECT_CALL(callback, Invoke(_, WF_CLIENT_CONNECTED, nullptr)).Times(1)
-        .WillOnce(Invoke([&] (wf_client *, int, void *) mutable { connected = true; }));
+        .WillOnce(Invoke([&] (wf_client *, int, void *) mutable { connected.set_value(); }));
 
-    bool disconnected = false;
+    std::promise<void> disconnected;
     EXPECT_CALL(callback, Invoke(_, WF_CLIENT_DISCONNECTED, nullptr)).Times(1)
-        .WillOnce(Invoke([&] (wf_client *, int, void *) mutable { disconnected = true; }));
+        .WillOnce(Invoke([&] (wf_client *, int, void *) mutable { disconnected.set_value(); }));
 
-    bool called = false;
+    std::promise<void> called;
     EXPECT_CALL(callback, Invoke(_, WF_CLIENT_FILESYSTEM_ADDED, nullptr)).Times(1)
         .WillOnce(Invoke([&called] (wf_client *, int, void *) mutable {
-            called = true;
+            called.set_value();
         }));
 
     AdapterClient client(callback.GetCallbackFn(), callback.GetUserData(), server.GetUrl());
 
     client.Connect();
-    ASSERT_TRUE(watcher.waitUntil([&]() mutable { return connected; }));
+    ASSERT_EQ(std::future_status::ready, connected.get_future().wait_for(TIMEOUT));
 
     client.AddFileSystem();
-    ASSERT_TRUE(watcher.waitUntil([&]() mutable { return called; }));
+    ASSERT_EQ(std::future_status::ready, called.get_future().wait_for(TIMEOUT));
 
     std::string file_name = client.GetDir() + "/Hello.txt";
     File file(file_name);
     ASSERT_TRUE(file.isFile());
 
     client.Disconnect();
-    ASSERT_TRUE(watcher.waitUntil([&]() mutable { return disconnected; }));
+    ASSERT_EQ(std::future_status::ready, disconnected.get_future().wait_for(TIMEOUT));
 }
