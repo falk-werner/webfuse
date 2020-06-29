@@ -2,7 +2,7 @@ project('webfuse', 'c', 'cpp', version: '0.4.0', license: 'LGPL-3.0+')
 
 without_tests = get_option('without_tests')
 
-libwebsockets_dep = dependency('libwebsockets', version: '>=4.0.13', required: false)
+libwebsockets_dep = dependency('libwebsockets', version: '>=4.0.0', required: false)
 if not libwebsockets_dep.found()
 	cmake = import('cmake')
 	libwebsockets = cmake.subproject('libwebsockets')
