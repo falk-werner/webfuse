@@ -77,7 +77,6 @@ class WsServer2::Private : public IServer
 public:
     Private(IIvokationHandler & handler, std::string const & protocol, int port, bool enable_tls);
     ~Private();
-    bool IsConnected();
     std::string const & GetUrl() const;
     void OnConnected(lws * wsi) override;
     void OnConnectionClosed(lws * wsi) override;
@@ -91,7 +90,6 @@ private:
 
     IIvokationHandler & handler_;
     std::string protocol_;
-    bool is_connected;
     bool is_shutdown_requested;
     lws * wsi_;
     lws_context * ws_context;
@@ -118,11 +116,6 @@ WsServer2::~WsServer2()
     delete d;
 }
 
-bool WsServer2::IsConnected()
-{
-    return d->IsConnected();
-}
-
 std::string const & WsServer2::GetUrl() const
 {
     return d->GetUrl();
@@ -146,7 +139,6 @@ WsServer2::Private::Private(
     bool enable_tls)
 : handler_(handler)
 , protocol_(protocol)
-, is_connected(false)
 , is_shutdown_requested(false)
 , wsi_(nullptr)
 {
@@ -211,16 +203,9 @@ void WsServer2::Private::Run(Private * self)
     }
 }
 
-bool WsServer2::Private::IsConnected()
-{
-    std::unique_lock<std::mutex> lock(mutex);
-    return is_connected;
-}
-
 void WsServer2::Private::OnConnected(lws * wsi)
 {
     std::unique_lock<std::mutex> lock(mutex);
-    is_connected = true;
     wsi_ = wsi;
 }
 
@@ -229,7 +214,6 @@ void WsServer2::Private::OnConnectionClosed(lws * wsi)
     std::unique_lock<std::mutex> lock(mutex);
     if (wsi == wsi_)
     {
-        is_connected = false;
         wsi_ = nullptr;
     }
 }

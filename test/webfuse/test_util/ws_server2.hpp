@@ -25,7 +25,6 @@ public:
         int port = 0,
         bool enable_tls = false);
     virtual ~WsServer2();
-    bool IsConnected();
     std::string const & GetUrl() const;
     void SendMessage(char const * message);
     void SendMessage(json_t * message);
