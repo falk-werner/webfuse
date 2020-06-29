@@ -5,7 +5,7 @@
 #include "webfuse/client_tlsconfig.h"
 #include "webfuse/credentials.h"
 #include "webfuse/protocol_names.h"
-#include "webfuse/test_util/ws_server2.hpp"
+#include "webfuse/test_util/ws_server.hpp"
 #include "webfuse/mocks/mock_adapter_client_callback.hpp"
 #include "webfuse/mocks/mock_invokation_handler.hpp"
 #include "webfuse/test_util/timeout_watcher.hpp"
@@ -13,7 +13,7 @@
 #include "webfuse/mocks/lookup_matcher.hpp"
 
 using webfuse_test::AdapterClient;
-using webfuse_test::WsServer2;
+using webfuse_test::WsServer;
 using webfuse_test::MockInvokationHander;
 using webfuse_test::MockAdapterClientCallback;
 using webfuse_test::TimeoutWatcher;
@@ -61,7 +61,7 @@ TEST(AdapterClient, Connect)
     TimeoutWatcher watcher(TIMEOUT);
 
     MockInvokationHander handler;
-    WsServer2 server(handler, WF_PROTOCOL_NAME_PROVIDER_SERVER);
+    WsServer server(handler, WF_PROTOCOL_NAME_PROVIDER_SERVER);
     EXPECT_CALL(handler, Invoke(_,_)).Times(0);
 
     MockAdapterClientCallback callback;
@@ -92,7 +92,7 @@ TEST(AdapterClient, IgnoreNonJsonMessage)
     TimeoutWatcher watcher(TIMEOUT);
 
     MockInvokationHander handler;
-    WsServer2 server(handler, WF_PROTOCOL_NAME_PROVIDER_SERVER);
+    WsServer server(handler, WF_PROTOCOL_NAME_PROVIDER_SERVER);
     EXPECT_CALL(handler, Invoke(_,_)).Times(0);
 
     MockAdapterClientCallback callback;
@@ -126,7 +126,7 @@ TEST(AdapterClient, IgnoreInvalidJsonMessage)
     TimeoutWatcher watcher(TIMEOUT);
 
     MockInvokationHander handler;
-    WsServer2 server(handler, WF_PROTOCOL_NAME_PROVIDER_SERVER);
+    WsServer server(handler, WF_PROTOCOL_NAME_PROVIDER_SERVER);
     EXPECT_CALL(handler, Invoke(_,_)).Times(0);
 
     MockAdapterClientCallback callback;
@@ -160,7 +160,7 @@ TEST(AdapterClient, ConnectWithTls)
     TimeoutWatcher watcher(TIMEOUT);
 
     MockInvokationHander handler;
-    WsServer2 server(handler, WF_PROTOCOL_NAME_PROVIDER_SERVER, 0, true);
+    WsServer server(handler, WF_PROTOCOL_NAME_PROVIDER_SERVER, 0, true);
     EXPECT_CALL(handler, Invoke(_,_)).Times(0);
 
     MockAdapterClientCallback callback;
@@ -219,7 +219,7 @@ TEST(AdapterClient, Authenticate)
     TimeoutWatcher watcher(TIMEOUT);
 
     MockInvokationHander handler;
-    WsServer2 server(handler, WF_PROTOCOL_NAME_PROVIDER_SERVER);
+    WsServer server(handler, WF_PROTOCOL_NAME_PROVIDER_SERVER);
     EXPECT_CALL(handler, Invoke(StrEq("authenticate"),_)).Times(1)
         .WillOnce(Return("{}"));
 
@@ -278,7 +278,7 @@ TEST(AdapterClient, AuthenticationFailed)
     TimeoutWatcher watcher(TIMEOUT);
 
     MockInvokationHander handler;
-    WsServer2 server(handler, WF_PROTOCOL_NAME_PROVIDER_SERVER);
+    WsServer server(handler, WF_PROTOCOL_NAME_PROVIDER_SERVER);
     EXPECT_CALL(handler, Invoke(StrEq("authenticate"),_)).Times(1)
         .WillOnce(Throw(std::runtime_error("authentication failed")));
 
@@ -319,7 +319,7 @@ TEST(AdapterClient, AddFileSystem)
     TimeoutWatcher watcher(TIMEOUT);
 
     MockInvokationHander handler;
-    WsServer2 server(handler, WF_PROTOCOL_NAME_PROVIDER_SERVER);
+    WsServer server(handler, WF_PROTOCOL_NAME_PROVIDER_SERVER);
     EXPECT_CALL(handler, Invoke(StrEq("add_filesystem"),_)).Times(1)
         .WillOnce(Return("{\"id\": \"test\"}"));
     EXPECT_CALL(handler, Invoke(StrEq("lookup"), _)).Times(AnyNumber())
@@ -359,7 +359,7 @@ TEST(AdapterClient, FailToAddFileSystemTwice)
     TimeoutWatcher watcher(TIMEOUT);
 
     MockInvokationHander handler;
-    WsServer2 server(handler, WF_PROTOCOL_NAME_PROVIDER_SERVER);
+    WsServer server(handler, WF_PROTOCOL_NAME_PROVIDER_SERVER);
     EXPECT_CALL(handler, Invoke(StrEq("add_filesystem"),_)).Times(1)
         .WillOnce(Return("{\"id\": \"test\"}"));
     EXPECT_CALL(handler, Invoke(StrEq("lookup"), _)).Times(AnyNumber())
@@ -408,7 +408,7 @@ TEST(AdapterClient, FailToAddFileSystemMissingId)
     TimeoutWatcher watcher(TIMEOUT);
 
     MockInvokationHander handler;
-    WsServer2 server(handler, WF_PROTOCOL_NAME_PROVIDER_SERVER);
+    WsServer server(handler, WF_PROTOCOL_NAME_PROVIDER_SERVER);
     EXPECT_CALL(handler, Invoke(StrEq("add_filesystem"),_)).Times(1)
         .WillOnce(Return("{}"));
     EXPECT_CALL(handler, Invoke(StrEq("lookup"), _)).Times(AnyNumber())
@@ -448,7 +448,7 @@ TEST(AdapterClient, FailToAddFileSystemIdNotString)
     TimeoutWatcher watcher(TIMEOUT);
 
     MockInvokationHander handler;
-    WsServer2 server(handler, WF_PROTOCOL_NAME_PROVIDER_SERVER);
+    WsServer server(handler, WF_PROTOCOL_NAME_PROVIDER_SERVER);
     EXPECT_CALL(handler, Invoke(StrEq("add_filesystem"),_)).Times(1)
         .WillOnce(Return("{\"id\": 42}"));
     EXPECT_CALL(handler, Invoke(StrEq("lookup"), _)).Times(AnyNumber())
@@ -489,7 +489,7 @@ TEST(AdapterClient, AddFileSystemFailed)
     TimeoutWatcher watcher(TIMEOUT);
 
     MockInvokationHander handler;
-    WsServer2 server(handler, WF_PROTOCOL_NAME_PROVIDER_SERVER);
+    WsServer server(handler, WF_PROTOCOL_NAME_PROVIDER_SERVER);
     EXPECT_CALL(handler, Invoke(StrEq("add_filesystem"),_)).Times(1)
         .WillOnce(Throw(std::runtime_error("failed")));
 
@@ -527,7 +527,7 @@ TEST(AdapterClient, LookupFile)
     TimeoutWatcher watcher(TIMEOUT);
 
     MockInvokationHander handler;
-    WsServer2 server(handler, WF_PROTOCOL_NAME_PROVIDER_SERVER);
+    WsServer server(handler, WF_PROTOCOL_NAME_PROVIDER_SERVER);
     EXPECT_CALL(handler, Invoke(StrEq("add_filesystem"),_)).Times(1)
         .WillOnce(Return("{\"id\": \"test\"}"));
     EXPECT_CALL(handler, Invoke(StrEq("lookup"), _)).Times(AnyNumber())

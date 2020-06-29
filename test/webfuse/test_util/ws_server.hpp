@@ -14,17 +14,17 @@ public:
     virtual std::string Invoke(char const * method, json_t * params) = 0;
 };
 
-class WsServer2
+class WsServer
 {
-    WsServer2(WsServer2 const &) = delete;
-    WsServer2 & operator=(WsServer2 const & ) = delete;
+    WsServer(WsServer const &) = delete;
+    WsServer & operator=(WsServer const & ) = delete;
 public:
-    WsServer2(
+    WsServer(
         IIvokationHandler& handler,
         std::string const & protocol,
         int port = 0,
         bool enable_tls = false);
-    virtual ~WsServer2();
+    virtual ~WsServer();
     std::string const & GetUrl() const;
     void SendMessage(char const * message);
     void SendMessage(json_t * message);

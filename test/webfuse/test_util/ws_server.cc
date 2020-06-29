@@ -1,4 +1,4 @@
-#include "webfuse/test_util/ws_server2.hpp"
+#include "webfuse/test_util/ws_server.hpp"
 #include "webfuse/impl/util/lws_log.h"
 
 #include <libwebsockets.h>
@@ -70,7 +70,7 @@ static int wf_test_utils_ws_server_callback(
 namespace webfuse_test
 {
 
-class WsServer2::Private : public IServer
+class WsServer::Private : public IServer
 {
     Private(Private const &) = delete;
     Private & operator=(Private const &) = delete;
@@ -101,38 +101,38 @@ private:
     std::queue<std::string> writeQueue;
 };
 
-WsServer2::WsServer2(
+WsServer::WsServer(
     IIvokationHandler& handler,
     std::string const & protocol,
     int port,
     bool enable_tls)
-: d(new WsServer2::Private(handler, protocol, port, enable_tls))
+: d(new WsServer::Private(handler, protocol, port, enable_tls))
 {
 
 }
 
-WsServer2::~WsServer2()
+WsServer::~WsServer()
 {
     delete d;
 }
 
-std::string const & WsServer2::GetUrl() const
+std::string const & WsServer::GetUrl() const
 {
     return d->GetUrl();
 }
 
-void WsServer2::SendMessage(char const * message)
+void WsServer::SendMessage(char const * message)
 {
     d->SendMessage(message);
 }
 
-void WsServer2::SendMessage(json_t * message)
+void WsServer::SendMessage(json_t * message)
 {
     d->SendMessage(message);
 }
 
 
-WsServer2::Private::Private(
+WsServer::Private::Private(
     IIvokationHandler & handler,
     std::string const & protocol,
     int port,
@@ -178,7 +178,7 @@ WsServer2::Private::Private(
     context = std::thread(&Run, this);
 }
 
-WsServer2::Private::~Private()
+WsServer::Private::~Private()
 {
     {
         std::unique_lock<std::mutex> lock(mutex);
@@ -190,7 +190,7 @@ WsServer2::Private::~Private()
     lws_context_destroy(ws_context);
 }
 
-void WsServer2::Private::Run(Private * self)
+void WsServer::Private::Run(Private * self)
 {
     bool is_running = true;
     while (is_running)
@@ -203,13 +203,13 @@ void WsServer2::Private::Run(Private * self)
     }
 }
 
-void WsServer2::Private::OnConnected(lws * wsi)
+void WsServer::Private::OnConnected(lws * wsi)
 {
     std::unique_lock<std::mutex> lock(mutex);
     wsi_ = wsi;
 }
 
-void WsServer2::Private::OnConnectionClosed(lws * wsi)
+void WsServer::Private::OnConnectionClosed(lws * wsi)
 {
     std::unique_lock<std::mutex> lock(mutex);
     if (wsi == wsi_)
@@ -218,7 +218,7 @@ void WsServer2::Private::OnConnectionClosed(lws * wsi)
     }
 }
 
-void WsServer2::Private::OnWritable(struct lws * wsi)
+void WsServer::Private::OnWritable(struct lws * wsi)
 {
     bool notify = false;
 
@@ -245,7 +245,7 @@ void WsServer2::Private::OnWritable(struct lws * wsi)
     }
 }
 
-void WsServer2::Private::SendMessage(char const * message)
+void WsServer::Private::SendMessage(char const * message)
 {
     lws * wsi = nullptr;
 
@@ -265,7 +265,7 @@ void WsServer2::Private::SendMessage(char const * message)
     }
 }
 
-void WsServer2::Private::SendMessage(json_t * message)
+void WsServer::Private::SendMessage(json_t * message)
 {
     char* message_text = json_dumps(message, JSON_COMPACT);
     SendMessage(message_text);
@@ -273,7 +273,7 @@ void WsServer2::Private::SendMessage(json_t * message)
     free(message_text);
 }
 
-void WsServer2::Private::OnMessageReceived(struct lws * wsi, char const * data, size_t length)
+void WsServer::Private::OnMessageReceived(struct lws * wsi, char const * data, size_t length)
 {
     (void) wsi;
 
@@ -306,7 +306,7 @@ void WsServer2::Private::OnMessageReceived(struct lws * wsi, char const * data, 
     json_decref(request);
 }
 
-std::string const & WsServer2::Private::GetUrl() const
+std::string const & WsServer::Private::GetUrl() const
 {
     return url;
 }

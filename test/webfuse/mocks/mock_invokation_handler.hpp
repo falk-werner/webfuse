@@ -1,7 +1,7 @@
 #ifndef WF_MOCK_INVOKATION_HANDLER_HPP
 #define WF_MOCK_INVOKATION_HANDLER_HPP
 
-#include "webfuse/test_util/ws_server2.hpp"
+#include "webfuse/test_util/ws_server.hpp"
 #include <gtest/gtest.h>
 
 namespace webfuse_test
