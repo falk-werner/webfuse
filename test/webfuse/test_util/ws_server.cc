@@ -1,4 +1,5 @@
 #include "webfuse/test_util/ws_server.hpp"
+#include "webfuse/test_util/invokation_handler.hpp"
 #include "webfuse/impl/util/lws_log.h"
 
 #include <libwebsockets.h>
@@ -75,7 +76,7 @@ class WsServer::Private : public IServer
     Private(Private const &) = delete;
     Private & operator=(Private const &) = delete;
 public:
-    Private(IIvokationHandler & handler, std::string const & protocol, int port, bool enable_tls);
+    Private(InvokationHandler & handler, std::string const & protocol, int port, bool enable_tls);
     ~Private();
     std::string const & GetUrl() const;
     void OnConnected(lws * wsi) override;
@@ -88,7 +89,7 @@ public:
 private:
     static void Run(Private * self);
 
-    IIvokationHandler & handler_;
+    InvokationHandler & handler_;
     std::string protocol_;
     bool is_shutdown_requested;
     lws * wsi_;
@@ -102,7 +103,7 @@ private:
 };
 
 WsServer::WsServer(
-    IIvokationHandler& handler,
+    InvokationHandler& handler,
     std::string const & protocol,
     int port,
     bool enable_tls)
@@ -133,7 +134,7 @@ void WsServer::SendMessage(json_t * message)
 
 
 WsServer::Private::Private(
-    IIvokationHandler & handler,
+    InvokationHandler & handler,
     std::string const & protocol,
     int port,
     bool enable_tls)

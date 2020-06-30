@@ -7,12 +7,7 @@
 namespace webfuse_test
 {
 
-class IIvokationHandler
-{
-public:
-    virtual ~IIvokationHandler() = default;
-    virtual std::string Invoke(char const * method, json_t * params) = 0;
-};
+class InvokationHandler;
 
 class WsServer
 {
@@ -20,7 +15,7 @@ class WsServer
     WsServer & operator=(WsServer const & ) = delete;
 public:
     WsServer(
-        IIvokationHandler& handler,
+        InvokationHandler& handler,
         std::string const & protocol,
         int port = 0,
         bool enable_tls = false);
