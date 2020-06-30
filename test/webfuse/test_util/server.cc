@@ -1,13 +1,15 @@
-#include "webfuse/tests/integration/server.hpp"
+#include "webfuse/test_util/server.hpp"
 #include <thread>
 #include <mutex>
-#include <sstream>
 #include <cstdlib>
 #include <cstring>
 #include <unistd.h>
 #include <sys/stat.h>
+#include <string>
+
 #include "webfuse/webfuse.h"
 #include "webfuse/impl/server.h"
+#include "webfuse/test_util/tempdir.hpp"
 
 #define WF_PATH_MAX (100)
 
@@ -50,20 +52,13 @@ class Server::Private
 public:
     Private()
     : is_shutdown_requested(false)
+    , tempdir("webfuse_test_integration")
     {
-        snprintf(base_dir, WF_PATH_MAX, "%s", "/tmp/webfuse_test_integration_XXXXXX");
-        char const * result = mkdtemp(base_dir);
-        if (NULL == result)
-        {
-            throw std::runtime_error("unable to create temp dir");
-        }
-
-
         config = wf_server_config_create();
         wf_server_config_set_port(config, 0);
         wf_server_config_set_mountpoint_factory(config, 
             &webfuse_test_server_create_mountpoint,
-            reinterpret_cast<void*>(base_dir));
+            reinterpret_cast<void*>(const_cast<char*>(tempdir.path())));
         wf_server_config_set_keypath(config, "server-key.pem");
         wf_server_config_set_certpath(config, "server-cert.pem");
 
@@ -82,9 +77,27 @@ public:
     {
         RequestShutdown();
         thread.join();
-        rmdir(base_dir);
         wf_server_dispose(server);
         wf_server_config_dispose(config);
+    }
+
+    char const * GetBaseDir()
+    {
+        return tempdir.path();
+    }
+
+    int GetPort(void) const
+    {
+        return wf_server_get_port(server);
+    }
+
+private:
+    static void Run(Private * context)
+    {
+        while (!context->IsShutdownRequested())
+        {
+            wf_server_service(context->server);
+        }
     }
 
     bool IsShutdownRequested()
@@ -93,15 +106,6 @@ public:
         return is_shutdown_requested;
     }
 
-    std::string GetUrl(void) const
-    {
-        int const port = wf_server_get_port(server);
-        std::ostringstream stream;
-        stream << "wss://localhost:" << port << "/";
-        return stream.str();
-    }
-
-private:
     void RequestShutdown()
     {
         std::lock_guard<std::mutex> lock(shutdown_lock);
@@ -109,22 +113,10 @@ private:
         wf_server_interrupt(server);
     }
 
-    static void Run(Server::Private * context)
-    {
-        while (!context->IsShutdownRequested())
-        {
-            wf_server_service(context->server);
-        }
-    }
-
-
     std::mutex shutdown_lock;
     std::thread thread;
     bool is_shutdown_requested;
-
-
-public:
-    char base_dir[WF_PATH_MAX];
+    TempDir tempdir;
     wf_server_config * config;
     wf_server * server;
 };
@@ -142,12 +134,12 @@ Server::~Server()
 
 char const * Server::GetBaseDir(void) const
 {
-    return d->base_dir;
+    return d->GetBaseDir();
 }
 
-std::string Server::GetUrl(void) const
+int Server::GetPort(void) const
 {
-    return d->GetUrl();
+    return d->GetPort();
 }
 
 

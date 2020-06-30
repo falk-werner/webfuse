@@ -4,9 +4,20 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <chrono>
 
 #include "webfuse/server.h"
 #include "webfuse/server_config.h"
+#include "webfuse/test_util/server.hpp"
+#include "webfuse/test_util/ws_client.hpp"
+#include "webfuse/mocks/mock_invokation_handler.hpp"
+#include "webfuse/protocol_names.h"
+
+using webfuse_test::MockInvokationHander;
+using webfuse_test::WsClient;
+using webfuse_test::Server;
+
+#define TIMEOUT (std::chrono::seconds(10))
 
 namespace
 {
@@ -36,4 +47,15 @@ TEST(server, create_dispose)
     wf_server_config_dispose(config);
 
     rmdir("test");
+}
+
+TEST(server, connect)
+{
+    Server server;
+    MockInvokationHander handler;
+    WsClient client(handler, WF_PROTOCOL_NAME_PROVIDER_CLIENT);
+
+    auto future = client.Connect(server.GetPort(), WF_PROTOCOL_NAME_ADAPTER_SERVER);
+    ASSERT_EQ(std::future_status::ready, future.wait_for(TIMEOUT));
+    // future.get();
 }

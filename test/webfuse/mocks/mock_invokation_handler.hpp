@@ -2,7 +2,7 @@
 #define WF_MOCK_INVOKATION_HANDLER_HPP
 
 #include "webfuse/test_util/invokation_handler.hpp"
-#include <gtest/gtest.h>
+#include <gmock/gmock.h>
 
 namespace webfuse_test
 {

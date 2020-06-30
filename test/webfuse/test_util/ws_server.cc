@@ -143,7 +143,6 @@ WsServer::Private::Private(
 , is_shutdown_requested(false)
 , wsi_(nullptr)
 {
-    wf_impl_lwslog_disable();
     IServer * server = this;
     memset(ws_protocols, 0, sizeof(struct lws_protocols) * 2 );
 
