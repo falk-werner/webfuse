@@ -55,7 +55,11 @@ TEST(server, connect)
     MockInvokationHander handler;
     WsClient client(handler, WF_PROTOCOL_NAME_PROVIDER_CLIENT);
 
-    auto future = client.Connect(server.GetPort(), WF_PROTOCOL_NAME_ADAPTER_SERVER);
-    ASSERT_EQ(std::future_status::ready, future.wait_for(TIMEOUT));
-    // future.get();
+    auto connected = client.Connect(server.GetPort(), WF_PROTOCOL_NAME_ADAPTER_SERVER);
+    ASSERT_EQ(std::future_status::ready, connected.wait_for(TIMEOUT));
+    ASSERT_TRUE(connected.get());
+
+    auto disconnected = client.Disconnect();
+    ASSERT_EQ(std::future_status::ready, disconnected.wait_for(TIMEOUT));
+    ASSERT_TRUE(disconnected.get());
 }

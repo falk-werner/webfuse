@@ -18,7 +18,8 @@ public:
         InvokationHandler& handler,
         std::string const & protocol);
     virtual ~WsClient();
-    std::future<void> Connect(int port, std::string const & protocol, bool use_tls = true);
+    std::future<bool> Connect(int port, std::string const & protocol, bool use_tls = true);
+    std::future<bool> Disconnect();
     std::future<std::string> Invoke(std::string const & message);
 private:
     class Private;

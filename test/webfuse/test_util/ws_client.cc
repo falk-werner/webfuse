@@ -15,6 +15,11 @@ class IServer
 {
 public:
     virtual ~IServer() = default;
+    virtual void OnConnectionEstablished(lws * wsi) = 0;
+    virtual void OnConnectionError(lws * wsi) = 0;
+    virtual void OnConnectionClosed(lws * wsi) = 0;
+    virtual void OnMessageReceived(lws * wsi, void * data, size_t length) = 0;
+    virtual int OnWritable(lws * wsi) = 0;
 };
 
 }
@@ -29,7 +34,37 @@ static int webfuse_test_WsClient_callback(
         void * in,
         size_t len)
 {
-    return 0;
+    int result = 0;
+    struct lws_protocols const * protocol = lws_get_protocol(wsi);
+    IServer * server = (nullptr != protocol) ? reinterpret_cast<IServer*>(protocol->user) : nullptr;
+
+    if (nullptr != server)
+    {
+        switch (reason)
+        {
+            case LWS_CALLBACK_CLIENT_ESTABLISHED:
+                server->OnConnectionEstablished(wsi);
+                break;
+            case LWS_CALLBACK_CLIENT_CONNECTION_ERROR:
+                server->OnConnectionError(wsi);
+                break;
+            case LWS_CALLBACK_CLIENT_CLOSED:
+                server->OnConnectionClosed(wsi);
+                break;
+            case LWS_CALLBACK_CLIENT_RECEIVE:
+                server->OnMessageReceived(wsi, in, len);
+                break;
+            case LWS_CALLBACK_SERVER_WRITEABLE:
+                // fall-through
+            case LWS_CALLBACK_CLIENT_WRITEABLE:
+                result = server->OnWritable(wsi);
+                break;
+            default:
+                break;
+        }
+    }
+
+    return result;
 }
 
 }
@@ -43,8 +78,11 @@ public:
     Private(
         InvokationHandler & handler,
         std::string const & protocol)
-    : handler_(handler)
+    : wsi_(nullptr)
+    , handler_(handler)
     , protocol_(protocol)
+    , promise_connected(nullptr)
+    , promise_disconnected(nullptr)
     , remote_port(0)
     , remote_use_tls(false)
     {
@@ -84,19 +122,36 @@ public:
         lws_context_destroy(context);
     }
 
-    std::future<void> Connect(int port, std::string const & protocol, bool use_tls)
+    std::future<bool> Connect(int port, std::string const & protocol, bool use_tls)
     {
+        std::future<bool> result;
         {
             std::unique_lock<std::mutex> lock(mutex);
             remote_port = port;
             remote_protocol = protocol;
             remote_use_tls = use_tls;
             commands.push(command::connect);
+            promise_connected = new std::promise<bool>;
+            result = promise_connected->get_future();
         }
+        lws_cancel_service(context);
 
-        std::promise<void> p;
-        p.set_exception(std::make_exception_ptr(std::runtime_error("not implemented")));
-        return p.get_future();
+        return result;
+    }
+
+    std::future<bool> Disconnect()
+    {
+        std::future<bool> result;
+        {
+            std::unique_lock<std::mutex> lock(mutex);
+            commands.push(command::disconnect);
+            promise_disconnected = new std::promise<bool>;
+            result = promise_disconnected->get_future();
+        }
+        lws_cancel_service(context);
+
+        return result;
+
     }
 
     std::future<std::string> Invoke(std::string const & message)
@@ -106,12 +161,74 @@ public:
         return p.get_future();
     }
 
+    void OnConnectionEstablished(lws * wsi)
+    {
+        std::unique_lock<std::mutex> lock(mutex);
+        wsi_ = wsi;
+        if (nullptr != promise_connected)
+        {
+            promise_connected->set_value(true);
+            delete promise_connected;
+            promise_connected = nullptr;
+        }
+    }
+
+    void OnConnectionError(lws * wsi)
+    {
+        std::unique_lock<std::mutex> lock(mutex);
+        if (nullptr != promise_connected)
+        {
+            promise_connected->set_value(false);
+            delete promise_connected;
+            promise_connected = nullptr;
+        }
+    }
+
+    void OnConnectionClosed(lws * wsi)
+    {
+        std::unique_lock<std::mutex> lock(mutex);
+        if (wsi == wsi_)
+        {
+            wsi_ = nullptr;
+            if (nullptr != promise_connected)
+            {
+                promise_connected->set_value(false);
+                delete promise_connected;
+                promise_connected = nullptr;
+            }
+            if (nullptr != promise_disconnected)
+            {
+                promise_disconnected->set_value(true);
+                delete promise_disconnected;
+                promise_disconnected = nullptr;
+            }
+        }
+    }
+
+    void OnMessageReceived(lws * wsi, void * data, size_t length)
+    {
+
+    }
+
+    int OnWritable(lws * wsi)
+    {
+        std::unique_lock<std::mutex> lock(mutex);
+        if (nullptr != promise_disconnected)
+        {
+            return 1;
+        }
+
+        return 0;
+    }
+
+
 private:
     enum class command
     {
         run,
         shutdown,
-        connect
+        connect,
+        disconnect
     };
 
     static void Run(Private * self)
@@ -129,7 +246,29 @@ private:
                     is_running = false;
                     break;
                 case command::connect:
-                    // ToDo: connect
+                    {
+                        struct lws_client_connect_info info;
+                        memset(&info, 0 ,sizeof(struct lws_client_connect_info));
+                        {
+                            std::unique_lock<std::mutex> lock(self->mutex);
+
+                            info.context = self->context;
+                            info.port = self->remote_port;
+                            info.address = "localhost";
+                            info.path = "/";
+                            info.host = info.address;
+                            info.origin = info.address;
+                            info.ssl_connection = (self->remote_use_tls) ? LCCSCF_USE_SSL : 0;
+                            info.protocol = self->remote_protocol.c_str();
+                            info.local_protocol_name = self->protocol_.c_str();
+                            info.pwsi = nullptr;
+                        }
+
+                        lws_client_connect_via_info(&info);
+                    }
+                    break;
+                case command::disconnect:
+                    lws_callback_on_writable(self->wsi_);
                     break;
                 default:
                     break;
@@ -157,8 +296,13 @@ private:
         commands.push(command);
     }
 
+    lws * wsi_;
     InvokationHandler & handler_;
     std::string protocol_;
+
+    std::promise<bool> * promise_connected;
+    std::promise<bool> * promise_disconnected;
+
     lws_context_creation_info info;
     lws_protocols protocols[2];
     lws_context * context;
@@ -183,9 +327,14 @@ WsClient::~WsClient()
     delete d;
 }
 
-std::future<void> WsClient::Connect(int port, std::string const & protocol, bool use_tls)
+std::future<bool> WsClient::Connect(int port, std::string const & protocol, bool use_tls)
 {
     return d->Connect(port, protocol, use_tls);
+}
+
+std::future<bool> WsClient::Disconnect()
+{
+    return d->Disconnect();
 }
 
 std::future<std::string> WsClient::Invoke(std::string const & message)
