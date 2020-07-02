@@ -90,3 +90,12 @@ TEST(url, FailToParseMissingPath)
     ASSERT_EQ(nullptr, url.host);
 }
 
+TEST(url, FailToParseWithPortMissingPath)
+{
+    struct wf_url url;
+    bool result = wf_impl_url_init(&url, "ws://localhost:54321");
+    ASSERT_FALSE(result);
+    ASSERT_EQ(0, url.port);
+    ASSERT_EQ(nullptr, url.path);
+    ASSERT_EQ(nullptr, url.host);
+}
