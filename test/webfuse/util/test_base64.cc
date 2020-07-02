@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 #include "webfuse/impl/util/base64.h"
+#include <cstring>
 
 TEST(Base64, EncodedSize)
 {
@@ -32,6 +33,11 @@ TEST(Base64, Encode)
     length = wf_impl_base64_encode((uint8_t const*) in.c_str(), in.size(), buffer, 42);
     ASSERT_EQ(8, length);
     ASSERT_STREQ("Qmx1ZQ==", buffer);
+
+    in = "Blue";
+    length = wf_impl_base64_encode((uint8_t const*) in.c_str(), in.size(), buffer, 8);
+    ASSERT_EQ(8, length);
+    ASSERT_EQ(0, strncmp("Qmx1ZQ==", buffer, 8));
 }
 
 TEST(Base64, FailedToEncodeBufferTooSmall)
@@ -56,6 +62,14 @@ TEST(Base64, DecodedSize)
     in = "Qmx1ZQ==";    // Blue
     length = wf_impl_base64_decoded_size(in.c_str(), in.size());
     ASSERT_EQ(4, length);
+
+    in = "invalid";
+    length = wf_impl_base64_decoded_size(in.c_str(), 0);
+    ASSERT_EQ(0, length);
+
+    in = "invalid";
+    length = wf_impl_base64_decoded_size(in.c_str(), 3);
+    ASSERT_EQ(0, length);
 }
 
 TEST(Base64, IsValid)
@@ -120,3 +134,11 @@ TEST(Base64, FailToDecodeBufferTooSmall)
     ASSERT_EQ(0, length);
 }
 
+TEST(Base64, FailToDecodeInvalid)
+{
+    char buffer[42];
+
+    std::string in = "invalid";
+    size_t length = wf_impl_base64_decode(in.c_str(), in.size(), (uint8_t*) buffer, 42);
+    ASSERT_EQ(0, length);
+}
