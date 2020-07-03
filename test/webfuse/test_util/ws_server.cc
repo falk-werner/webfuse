@@ -180,10 +180,9 @@ WsServer::Private::Private(
 
 WsServer::Private::~Private()
 {
-    {
-        std::unique_lock<std::mutex> lock(mutex);
-        is_shutdown_requested = true;
-    }
+    std::unique_lock<std::mutex> lock(mutex);
+    is_shutdown_requested = true;
+    lock.unlock();
 
     lws_cancel_service(ws_context);
     context.join();

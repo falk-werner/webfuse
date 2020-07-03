@@ -77,7 +77,7 @@ bool File::hasSubdirectory(std::string const & subdir)
 bool File::hasContents(std::string const & contents)
 {
     std::stringstream command;
-    command << "./fs_check -c has_contents -f " << path_ << " -a " << contents;
+    command << "./fs_check -c has_contents -f " << path_ << " -a \'" << contents << "\'";
 
     return  invoke(command.str());
 }

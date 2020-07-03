@@ -1,12 +1,18 @@
 #include "webfuse/test_util/ws_client.hpp"
 #include "webfuse/test_util/invokation_handler.hpp"
+#include "webfuse/status.h"
 
 #include <libwebsockets.h>
+#include <jansson.h>
 
 #include <cstring>
 #include <thread>
 #include <mutex>
 #include <queue>
+#include <condition_variable>
+#include <chrono>
+
+#define TIMEOUT (std::chrono::seconds(10))
 
 namespace
 {
@@ -18,7 +24,7 @@ public:
     virtual void OnConnectionEstablished(lws * wsi) = 0;
     virtual void OnConnectionError(lws * wsi) = 0;
     virtual void OnConnectionClosed(lws * wsi) = 0;
-    virtual void OnMessageReceived(lws * wsi, void * data, size_t length) = 0;
+    virtual void OnMessageReceived(lws * wsi, char * data, size_t length) = 0;
     virtual int OnWritable(lws * wsi) = 0;
 };
 
@@ -52,7 +58,7 @@ static int webfuse_test_WsClient_callback(
                 server->OnConnectionClosed(wsi);
                 break;
             case LWS_CALLBACK_CLIENT_RECEIVE:
-                server->OnMessageReceived(wsi, in, len);
+                server->OnMessageReceived(wsi, reinterpret_cast<char*>(in), len);
                 break;
             case LWS_CALLBACK_SERVER_WRITEABLE:
                 // fall-through
@@ -81,8 +87,8 @@ public:
     : wsi_(nullptr)
     , handler_(handler)
     , protocol_(protocol)
-    , promise_connected(nullptr)
-    , promise_disconnected(nullptr)
+    , conn_state(connection_state::disconnected)
+    , await_response(false)
     , remote_port(0)
     , remote_use_tls(false)
     {
@@ -122,66 +128,75 @@ public:
         lws_context_destroy(context);
     }
 
-    std::future<bool> Connect(int port, std::string const & protocol, bool use_tls)
+    bool Connect(int port, std::string const & protocol, bool use_tls)
     {
-        std::future<bool> result;
-        {
-            std::unique_lock<std::mutex> lock(mutex);
-            remote_port = port;
-            remote_protocol = protocol;
-            remote_use_tls = use_tls;
-            commands.push(command::connect);
-            promise_connected = new std::promise<bool>;
-            result = promise_connected->get_future();
-        }
-        lws_cancel_service(context);
+        std::unique_lock<std::mutex> lock(mutex);
+        remote_port = port;
+        remote_protocol = protocol;
+        remote_use_tls = use_tls;
+        conn_state = connection_state::connecting;
+        commands.push(command::connect);
 
-        return result;
+        lock.unlock();
+        lws_cancel_service(context);
+        lock.lock();
+
+        convar.wait_for(lock, TIMEOUT, [&]() { 
+            return (conn_state != connection_state::connecting);
+        });
+
+        return (connection_state::connected == conn_state);
     }
 
-    std::future<bool> Disconnect()
+    bool Disconnect()
     {
-        std::future<bool> result;
-        {
-            std::unique_lock<std::mutex> lock(mutex);
-            commands.push(command::disconnect);
-            promise_disconnected = new std::promise<bool>;
-            result = promise_disconnected->get_future();
-        }
+        std::unique_lock<std::mutex> lock(mutex);
+        commands.push(command::disconnect);
+        conn_state = connection_state::disconnecting;
+
+        lock.unlock();
         lws_cancel_service(context);
+        lock.lock();
 
-        return result;
+       convar.wait_for(lock, TIMEOUT, [&]() { 
+            return (conn_state != connection_state::disconnecting);
+        });
 
+        return (connection_state::disconnected == conn_state);
     }
 
-    std::future<std::string> Invoke(std::string const & message)
+    std::string Invoke(std::string const & message)
     {
-        std::promise<std::string> p;
-        p.set_exception(std::make_exception_ptr(std::runtime_error("not implemented")));
-        return p.get_future();
+        std::unique_lock<std::mutex> lock(mutex);
+        send_queue.push(message);
+        commands.push(command::send);
+        await_response = true;
+
+        lock.unlock();
+        lws_cancel_service(context);
+        lock.lock();
+
+        convar.wait_for(lock, TIMEOUT, [&]() {
+            return !await_response;
+        });
+
+        return response;
     }
 
     void OnConnectionEstablished(lws * wsi)
     {
         std::unique_lock<std::mutex> lock(mutex);
         wsi_ = wsi;
-        if (nullptr != promise_connected)
-        {
-            promise_connected->set_value(true);
-            delete promise_connected;
-            promise_connected = nullptr;
-        }
+        conn_state = connection_state::connected;
+        convar.notify_all();
     }
 
     void OnConnectionError(lws * wsi)
     {
         std::unique_lock<std::mutex> lock(mutex);
-        if (nullptr != promise_connected)
-        {
-            promise_connected->set_value(false);
-            delete promise_connected;
-            promise_connected = nullptr;
-        }
+        wsi_ = nullptr;
+        conn_state = connection_state::disconnected;
+        convar.notify_all();
     }
 
     void OnConnectionClosed(lws * wsi)
@@ -190,32 +205,96 @@ public:
         if (wsi == wsi_)
         {
             wsi_ = nullptr;
-            if (nullptr != promise_connected)
-            {
-                promise_connected->set_value(false);
-                delete promise_connected;
-                promise_connected = nullptr;
-            }
-            if (nullptr != promise_disconnected)
-            {
-                promise_disconnected->set_value(true);
-                delete promise_disconnected;
-                promise_disconnected = nullptr;
-            }
+            conn_state = connection_state::disconnected;
+            convar.notify_all();
         }
     }
 
-    void OnMessageReceived(lws * wsi, void * data, size_t length)
+    void OnMessageReceived(lws * wsi, char * data, size_t length)
     {
+        std::unique_lock<std::mutex> lock(mutex);
+        if (await_response)
+        {
+            response = std::string(data, length);
+            await_response = false;
+            convar.notify_all();
+        }
+        else
+        {
+            lock.unlock();
 
+            json_t * request = json_loadb(data, length, 0, nullptr);
+            if (nullptr != request)
+            {
+                json_t * method = json_object_get(request, "method");
+                json_t * params = json_object_get(request, "params");
+                json_t * id = json_object_get(request, "id");
+
+                json_t * response = json_object();
+                try
+                {
+                    std::string result_text = handler_.Invoke(json_string_value(method), params);
+                    json_t * result = json_loads(result_text.c_str(), 0, nullptr);
+                    if (nullptr != result)
+                    {
+                        json_object_set_new(response, "result", result);
+                    }
+                    else
+                    {
+                        json_t * error = json_object();
+                        json_object_set_new(error, "code", json_integer(WF_BAD));
+                        json_object_set_new(response, "error",error);
+                    }
+                    
+                }
+                catch (...)
+                {
+                    json_t * error = json_object();
+                    json_object_set_new(error, "code", json_integer(WF_BAD));
+                    json_object_set_new(response, "error",error);
+                }
+
+                json_object_set(response, "id", id);
+
+                char * response_text = json_dumps(response, 0);
+                lock.lock();
+                send_queue.push(response_text);
+                commands.push(command::send);
+                lock.unlock();
+
+                lws_cancel_service(context);
+
+                free(response_text);
+
+                json_decref(response);
+                json_decref(request);
+            }
+        }
     }
 
     int OnWritable(lws * wsi)
     {
         std::unique_lock<std::mutex> lock(mutex);
-        if (nullptr != promise_disconnected)
+        if (conn_state == connection_state::disconnecting)
         {
             return 1;
+        }
+        else if (!send_queue.empty())
+        {
+            std::string message = send_queue.front();
+            send_queue.pop();
+            bool has_more = !send_queue.empty();
+            lock.unlock();
+
+            unsigned char * data = new unsigned char[LWS_PRE + message.size()];
+            memcpy(&data[LWS_PRE], message.c_str(), message.size());
+            lws_write(wsi, &data[LWS_PRE], message.size(), LWS_WRITE_TEXT);
+            delete[] data;
+
+            if (has_more)
+            {
+                lws_callback_on_writable(wsi);
+            }
         }
 
         return 0;
@@ -228,7 +307,16 @@ private:
         run,
         shutdown,
         connect,
-        disconnect
+        disconnect,
+        send
+    };
+
+    enum class connection_state
+    {
+        disconnected,
+        connected,
+        connecting,
+        disconnecting
     };
 
     static void Run(Private * self)
@@ -270,6 +358,9 @@ private:
                 case command::disconnect:
                     lws_callback_on_writable(self->wsi_);
                     break;
+                case command::send:
+                    lws_callback_on_writable(self->wsi_);
+                    break;
                 default:
                     break;
             }
@@ -299,19 +390,22 @@ private:
     lws * wsi_;
     InvokationHandler & handler_;
     std::string protocol_;
-
-    std::promise<bool> * promise_connected;
-    std::promise<bool> * promise_disconnected;
+    connection_state conn_state;
+    bool await_response;
+    std::string response;
 
     lws_context_creation_info info;
     lws_protocols protocols[2];
     lws_context * context;
     std::thread thread;
     std::mutex mutex;
+    std::condition_variable convar;
     std::queue<command> commands;
     int remote_port;
     std::string remote_protocol;
     bool remote_use_tls;
+
+    std::queue<std::string> send_queue;
 };
 
 WsClient::WsClient(
@@ -327,17 +421,17 @@ WsClient::~WsClient()
     delete d;
 }
 
-std::future<bool> WsClient::Connect(int port, std::string const & protocol, bool use_tls)
+bool WsClient::Connect(int port, std::string const & protocol, bool use_tls)
 {
     return d->Connect(port, protocol, use_tls);
 }
 
-std::future<bool> WsClient::Disconnect()
+bool WsClient::Disconnect()
 {
     return d->Disconnect();
 }
 
-std::future<std::string> WsClient::Invoke(std::string const & message)
+std::string WsClient::Invoke(std::string const & message)
 {
     return d->Invoke(message);
 }
