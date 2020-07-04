@@ -121,7 +121,9 @@ public:
 
     ~Private()
     {
-        Invoke(command::shutdown);
+        std::unique_lock<std::mutex> lock(mutex);
+        commands.push(command::shutdown);
+        lock.unlock();
         lws_cancel_service(context);
 
         thread.join();
@@ -356,10 +358,18 @@ private:
                     }
                     break;
                 case command::disconnect:
-                    lws_callback_on_writable(self->wsi_);
-                    break;
+                    // fallthrough
                 case command::send:
-                    lws_callback_on_writable(self->wsi_);
+                    {
+                        std::unique_lock<std::mutex> lock(self->mutex);
+                        lws * wsi = self->wsi_;
+                        lock.unlock();
+
+                        if (nullptr != wsi)
+                        {
+                            lws_callback_on_writable(wsi);
+                        } 
+                    }
                     break;
                 default:
                     break;
@@ -379,12 +389,6 @@ private:
         }
 
         return command;
-    }
-
-    void Invoke(command command)
-    {
-        std::unique_lock<std::mutex> lock(mutex);
-        commands.push(command);
     }
 
     lws * wsi_;
