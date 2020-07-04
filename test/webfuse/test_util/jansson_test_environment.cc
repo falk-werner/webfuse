@@ -7,10 +7,14 @@ namespace webfuse_test
 class JanssonTestEnvironment: public ::testing::Environment
 {
 public:
-    void SetUp()
+    ~JanssonTestEnvironment() override { }
+
+    void SetUp() override
     {
         json_object_seed(0);
     }
 };
-#
+
+::testing::Environment * const jansson_env = ::testing::AddGlobalTestEnvironment(new JanssonTestEnvironment());
+
 }

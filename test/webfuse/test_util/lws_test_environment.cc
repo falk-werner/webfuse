@@ -13,4 +13,6 @@ public:
     }
 };
 
+::testing::Environment * const lws_env = ::testing::AddGlobalTestEnvironment(new LwsTestEnvironment());
+
 }
