@@ -1,7 +1,7 @@
 #ifndef MOCK_FUSE_HPP
 #define MOCK_FUSE_HPP
 
-#include "webfuse/adapter/impl/fuse_wrapper.h"
+#include "webfuse/impl/fuse_wrapper.h"
 #include <gmock/gmock.h>
 
 namespace webfuse_test

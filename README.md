@@ -10,6 +10,7 @@ webfuse combines libwebsockets and libfuse. It allows ot attach a remote filesys
 
 -   [Motivation](#Motivation)
 -   [Fellow Repositories](#Fellow-Repositories)
+-   [Known Implementations](#Known-Implementations)
 -   [Concept](#Concept)
 -   [Similar Projects](#Similar-Projects)
 -   [Further Documentation](#Further-Documentation)
@@ -35,7 +36,16 @@ webfuse solves this problem by using the [WebSocket](https://en.wikipedia.org/wi
 
 -   **[webfuse-example](https://github.com/falk-werner/webfuse-example)**: Example of webfuse
 -   **[webfused](https://github.com/falk-werner/webfused)**: Reference implementation of webfuse daemon
--   **[webfuse-provider](https://github.com/falk-werner/webfuse-provider)**: Reference implementation of webfuse provider
+-   **[webfuse-provider](https://github.com/falk-werner/webfuse-provider)**: webfuse provider library (C/C++)
+-   **[webfuse-js](https://github.com/falk-werner/webfuse-js)**: webfuse provider library (JavaScript))
+
+## Known Implementations
+
+| Implementation                                                      | Language   | Adatper/Server | Adapter/Client | Provider/Server | Provider/Client |
+| ------------------------------------------------------------------- | ---------- | -------------  | -------------- | --------------- | --------------- |
+| [webfuse](https://github.com/falk-werner/webfuse)                   | C/C++      | &#10004;       | &#10004;       | -               | -               |
+| [webfuse-provider](https://github.com/falk-werner/webfuse-provider) | C/C++      | -              | -              | -               | &#10004;        |
+| [webfuse-js](https://github.com/falk-werner/webfuse-js)             | JavaScript | -              | -              | -               | &#10004;        |
 
 ## Concept
 
@@ -54,11 +64,10 @@ A reference implementation of such a daemon is provided within the examples. The
 ### Adapters and Providers
 
 In webfuse, an adapter is a component that adapts the libfuse API to a websocket interface.
-Currently, libwebfuse implements only a server based adapter - a websocket server, that allows clients to connect a remote file system which
-is represented via libfuse on the server side.
+Currently, libwebfuse provides both, server based and client based adapters.
 
 In webfuse, a provider is a component that provides a filesystem via websocket interface.
-Currently, libwebfuse implements only a client based provider - a websocket client that provides a local filesystem to a remote server.
+Take a look at [known implementations](#Known-Implementations) to find provider libraries.
 
 ## Similar Projects
 

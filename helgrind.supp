@@ -1,0 +1,13 @@
+{
+   lws realloc
+   Helgrind:Race
+   fun:_realloc
+   fun:lws_realloc
+}
+
+{
+   lws zalloc
+   Helgrind:Race
+   fun:_realloc
+   fun:lws_zalloc
+}

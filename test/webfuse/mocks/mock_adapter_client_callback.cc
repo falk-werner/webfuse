@@ -1,5 +1,5 @@
 #include "webfuse/mocks/mock_adapter_client_callback.hpp"
-#include "webfuse/adapter/client.h"
+#include "webfuse/client.h"
 
 extern "C"
 {
