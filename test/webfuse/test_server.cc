@@ -109,6 +109,8 @@ TEST(server, read)
     EXPECT_CALL(handler, Invoke(StrEq("lookup"), _)).Times(AnyNumber());
     EXPECT_CALL(handler, Invoke(StrEq("lookup"), Lookup(1, "a.file"))).Times(1)
         .WillOnce(Return("{\"inode\": 2, \"mode\": 420, \"type\": \"file\", \"size\": 1}"));
+    EXPECT_CALL(handler, Invoke(StrEq("getattr"), GetAttr(1))).Times(AnyNumber())
+        .WillOnce(Return("{\"mode\": 420, \"type\": \"dir\"}"));
     EXPECT_CALL(handler, Invoke(StrEq("open"), Open(2))).Times(1)
         .WillOnce(Return("{\"handle\": 42}"));
     EXPECT_CALL(handler, Invoke(StrEq("read"), _)).Times(1)
@@ -142,7 +144,7 @@ TEST(server, readdir)
     Server server;
     MockInvokationHander handler;
     EXPECT_CALL(handler, Invoke(StrEq("lookup"), _)).Times(AnyNumber());
-    EXPECT_CALL(handler, Invoke(StrEq("getattr"), GetAttr(1))).Times(1)
+    EXPECT_CALL(handler, Invoke(StrEq("getattr"), GetAttr(1))).Times(AnyNumber())
         .WillOnce(Return("{\"mode\": 420, \"type\": \"dir\"}"));
     EXPECT_CALL(handler, Invoke(StrEq("readdir"), ReadDir(1))).Times(1)
         .WillOnce(Return("[{\"name\": \"foo\", \"inode\": 23}]"));
