@@ -6,7 +6,7 @@
 #include "webfuse/server_config.h"
 #include "webfuse/test_util/server.hpp"
 #include "webfuse/test_util/ws_client.hpp"
-#include "webfuse/integration/file.hpp"
+#include "webfuse/test_util/file.hpp"
 #include "webfuse/mocks/mock_invokation_handler.hpp"
 #include "webfuse/protocol_names.h"
 #include "webfuse/mocks/open_matcher.hpp"

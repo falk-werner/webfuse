@@ -1,4 +1,4 @@
-#include "webfuse/integration/file.hpp"
+#include "webfuse/test_util/file.hpp"
 #include <cstdio>
 #include <sstream>
 

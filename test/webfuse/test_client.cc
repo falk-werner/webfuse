@@ -8,7 +8,7 @@
 #include "webfuse/test_util/ws_server.hpp"
 #include "webfuse/mocks/mock_adapter_client_callback.hpp"
 #include "webfuse/mocks/mock_invokation_handler.hpp"
-#include "webfuse/integration/file.hpp"
+#include "webfuse/test_util/file.hpp"
 #include "webfuse/mocks/lookup_matcher.hpp"
 
 #include <future>
