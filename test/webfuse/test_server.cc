@@ -2,12 +2,6 @@
 
 #include <jansson.h>
 
-#include <cstdlib>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
-#include <chrono>
-
 #include "webfuse/server.h"
 #include "webfuse/server_config.h"
 #include "webfuse/test_util/server.hpp"
@@ -31,6 +25,7 @@ using webfuse_test::ReadDir;
 using testing::StrEq;
 using testing::_;
 using testing::AnyNumber;
+using testing::AtMost;
 using testing::Return;
 
 #define TIMEOUT (std::chrono::seconds(10))
@@ -118,7 +113,7 @@ TEST(server, read)
         .WillOnce(Return("{\"handle\": 42}"));
     EXPECT_CALL(handler, Invoke(StrEq("read"), _)).Times(1)
         .WillOnce(Return("{\"data\": \"*\", \"format\": \"identity\", \"count\": 1}"));
-    EXPECT_CALL(handler, Invoke(StrEq("close"), _)).Times(1);
+    EXPECT_CALL(handler, Invoke(StrEq("close"), _)).Times(AtMost(1));
     WsClient client(handler, WF_PROTOCOL_NAME_PROVIDER_CLIENT);
 
     auto connected = client.Connect(server.GetPort(), WF_PROTOCOL_NAME_ADAPTER_SERVER);
@@ -134,6 +129,7 @@ TEST(server, read)
     json_decref(response);
 
     std::string base_dir = server.GetBaseDir();
+    ASSERT_TRUE(File(base_dir).isDirectory());
     File file(base_dir + "/test/a.file");
     ASSERT_TRUE(file.hasContents("*"));
 
@@ -165,6 +161,7 @@ TEST(server, readdir)
     json_decref(response);
 
     std::string base_dir = server.GetBaseDir();
+    ASSERT_TRUE(File(base_dir).isDirectory());
     File file(base_dir + "/test");
     ASSERT_TRUE(file.hasSubdirectory("foo"));
 
