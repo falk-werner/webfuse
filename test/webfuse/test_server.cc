@@ -28,8 +28,6 @@ using testing::AnyNumber;
 using testing::AtMost;
 using testing::Return;
 
-#define TIMEOUT (std::chrono::seconds(10))
-
 namespace
 {
 struct wf_mountpoint *
@@ -78,7 +76,7 @@ TEST(server, add_filesystem)
     Server server;
     MockInvokationHander handler;
     EXPECT_CALL(handler, Invoke(StrEq("lookup"), _)).Times(AnyNumber());
-    EXPECT_CALL(handler, Invoke(StrEq("getattr"), GetAttr(1))).Times(1)
+    EXPECT_CALL(handler, Invoke(StrEq("getattr"), GetAttr(1))).Times(AnyNumber())
         .WillOnce(Return("{\"mode\": 420, \"type\": \"dir\"}"));
     WsClient client(handler, WF_PROTOCOL_NAME_PROVIDER_CLIENT);
 
@@ -95,6 +93,7 @@ TEST(server, add_filesystem)
     json_decref(response);
 
     std::string base_dir = server.GetBaseDir();
+    ASSERT_TRUE(File(base_dir).isDirectory());
     File file(base_dir + "/test");
     ASSERT_TRUE(file.isDirectory());
 
@@ -155,7 +154,7 @@ TEST(server, add_filesystem_fail_invalid_name)
     auto connected = client.Connect(server.GetPort(), WF_PROTOCOL_NAME_ADAPTER_SERVER);
     ASSERT_TRUE(connected);
 
-    std::string response_text = client.Invoke("{\"method\": \"add_filesystem\", \"params\": [\"invalid/name\"], \"id\": 42}");
+    std::string response_text = client.Invoke("{\"method\": \"add_filesystem\", \"params\": [\"invalid_1/name\"], \"id\": 42}");
     json_t * response = json_loads(response_text.c_str(), 0, nullptr);
     ASSERT_TRUE(json_is_object(response));
     json_t * error = json_object_get(response, "error");
