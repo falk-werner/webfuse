@@ -102,6 +102,117 @@ TEST(server, add_filesystem)
     ASSERT_TRUE(disconnected);
 }
 
+
+TEST(server, authenticate)
+{
+    Server server;
+    MockInvokationHander handler;
+    WsClient client(handler, WF_PROTOCOL_NAME_PROVIDER_CLIENT);
+
+    auto connected = client.Connect(server.GetPort(), WF_PROTOCOL_NAME_ADAPTER_SERVER);
+    ASSERT_TRUE(connected);
+
+    std::string response_text = client.Invoke("{\"method\": \"authenticate\", \"params\": [\"username\", {\"username\": \"bob\", \"password\": \"secret\"}], \"id\": 42}");
+    json_t * response = json_loads(response_text.c_str(), 0, nullptr);
+    ASSERT_TRUE(json_is_object(response));
+    json_t * result = json_object_get(response, "result");
+    ASSERT_TRUE(json_is_object(result));
+    json_t * id = json_object_get(response, "id");
+    ASSERT_EQ(42, json_integer_value(id));
+    json_decref(response);
+
+    auto disconnected = client.Disconnect();
+    ASSERT_TRUE(disconnected);
+}
+
+TEST(server, authenticate_fail_missing_params)
+{
+    Server server;
+    MockInvokationHander handler;
+    WsClient client(handler, WF_PROTOCOL_NAME_PROVIDER_CLIENT);
+
+    auto connected = client.Connect(server.GetPort(), WF_PROTOCOL_NAME_ADAPTER_SERVER);
+    ASSERT_TRUE(connected);
+
+    std::string response_text = client.Invoke("{\"method\": \"authenticate\", \"params\": [], \"id\": 42}");
+    json_t * response = json_loads(response_text.c_str(), 0, nullptr);
+    ASSERT_TRUE(json_is_object(response));
+    json_t * error = json_object_get(response, "error");
+    ASSERT_TRUE(json_is_object(error));
+    json_t * id = json_object_get(response, "id");
+    ASSERT_EQ(42, json_integer_value(id));
+    json_decref(response);
+
+    auto disconnected = client.Disconnect();
+    ASSERT_TRUE(disconnected);
+}
+
+TEST(server, authenticate_fail_invalid_type)
+{
+    Server server;
+    MockInvokationHander handler;
+    WsClient client(handler, WF_PROTOCOL_NAME_PROVIDER_CLIENT);
+
+    auto connected = client.Connect(server.GetPort(), WF_PROTOCOL_NAME_ADAPTER_SERVER);
+    ASSERT_TRUE(connected);
+
+    std::string response_text = client.Invoke("{\"method\": \"authenticate\", \"params\": [42, {\"username\": \"bob\", \"password\": \"secret\"}], \"id\": 42}");
+    json_t * response = json_loads(response_text.c_str(), 0, nullptr);
+    ASSERT_TRUE(json_is_object(response));
+    json_t * error = json_object_get(response, "error");
+    ASSERT_TRUE(json_is_object(error));
+    json_t * id = json_object_get(response, "id");
+    ASSERT_EQ(42, json_integer_value(id));
+    json_decref(response);
+
+    auto disconnected = client.Disconnect();
+    ASSERT_TRUE(disconnected);
+}
+
+TEST(server, authenticate_fail_invalid_credentials)
+{
+    Server server;
+    MockInvokationHander handler;
+    WsClient client(handler, WF_PROTOCOL_NAME_PROVIDER_CLIENT);
+
+    auto connected = client.Connect(server.GetPort(), WF_PROTOCOL_NAME_ADAPTER_SERVER);
+    ASSERT_TRUE(connected);
+
+    std::string response_text = client.Invoke("{\"method\": \"authenticate\", \"params\": [\"username\", 42], \"id\": 42}");
+    json_t * response = json_loads(response_text.c_str(), 0, nullptr);
+    ASSERT_TRUE(json_is_object(response));
+    json_t * error = json_object_get(response, "error");
+    ASSERT_TRUE(json_is_object(error));
+    json_t * id = json_object_get(response, "id");
+    ASSERT_EQ(42, json_integer_value(id));
+    json_decref(response);
+
+    auto disconnected = client.Disconnect();
+    ASSERT_TRUE(disconnected);
+}
+
+TEST(server, authenticate_fail_missing_credentials)
+{
+    Server server;
+    MockInvokationHander handler;
+    WsClient client(handler, WF_PROTOCOL_NAME_PROVIDER_CLIENT);
+
+    auto connected = client.Connect(server.GetPort(), WF_PROTOCOL_NAME_ADAPTER_SERVER);
+    ASSERT_TRUE(connected);
+
+    std::string response_text = client.Invoke("{\"method\": \"authenticate\", \"params\": [\"username\"], \"id\": 42}");
+    json_t * response = json_loads(response_text.c_str(), 0, nullptr);
+    ASSERT_TRUE(json_is_object(response));
+    json_t * error = json_object_get(response, "error");
+    ASSERT_TRUE(json_is_object(error));
+    json_t * id = json_object_get(response, "id");
+    ASSERT_EQ(42, json_integer_value(id));
+    json_decref(response);
+
+    auto disconnected = client.Disconnect();
+    ASSERT_TRUE(disconnected);
+}
+
 TEST(server, read)
 {
     Server server;
