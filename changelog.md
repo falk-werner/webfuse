@@ -1,5 +1,7 @@
 # webfuse changelog
 
+## 0.5.0 _(unknown)_
+
 ## 0.4.0 _(Sun Jul 05 2020)_
 
 ### Breaking Changes

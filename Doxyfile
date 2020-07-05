@@ -5,7 +5,7 @@
 #---------------------------------------------------------------------------
 DOXYFILE_ENCODING      = UTF-8
 PROJECT_NAME           = "webfuse"
-PROJECT_NUMBER         = 0.4.0
+PROJECT_NUMBER         = 0.5.0
 PROJECT_BRIEF          = "Websocket filesystem based on libfuse"
 PROJECT_LOGO           =
 OUTPUT_DIRECTORY       = "doc/api"
