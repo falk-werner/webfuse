@@ -26,6 +26,7 @@ MATCHER_P(GetAttr, inode, "")
     {
         *result_listener << "inode mismatch: expected" << inode 
             << " but was " << json_integer_value(inode_);
+        return false;
     }
 
     return true;

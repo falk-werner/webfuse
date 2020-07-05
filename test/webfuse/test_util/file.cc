@@ -82,4 +82,12 @@ bool File::hasContents(std::string const & contents)
     return  invoke(command.str());
 }
 
+bool File::readAll()
+{
+    std::stringstream command;
+    command << "./fs_check -c read_all -f " << path_;
+
+    return  invoke(command.str());
+}
+
 }

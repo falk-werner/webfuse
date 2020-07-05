@@ -70,6 +70,7 @@ static bool print_usage(
         "\thas_size     - checks, if <file> has the size given in <arg>\n"
         "\thas_subdir   - checks, if <file> contains the sub directory given in <arg>\n"
         "\thas_contents - checks, if <file> has the contents given in <arg>\n"
+        "\tread_all     - checks, if alls contents of <file> can be read\n"
     );
 
     return command->success;
@@ -159,6 +160,30 @@ static bool has_contents(
     return result;
 }
 
+
+static bool read_all(
+    struct command * command)
+{
+    bool result = false;
+
+    struct stat info;
+    int rc = stat(command->file, &info);
+    if (0 != rc) { return false; }
+    size_t length = info.st_size;
+
+    char * buffer = malloc(length);
+    FILE * file = fopen(command->file, "rb");
+    {
+        ssize_t count = fread(buffer, 1, length, file);
+        fclose(file);
+
+        result = (count == (ssize_t) length);
+    }
+
+    free(buffer);
+    return result;
+}
+
 static bool get_command(
     struct command * command,
     char const * name)
@@ -175,6 +200,7 @@ static bool get_command(
         {"has_size"    , &has_size    , true},
         {"has_subdir"  , &has_subdir  , true},
         {"has_contents", &has_contents, true},
+        {"read_all"    , &read_all    , false},
         {NULL, NULL, false}
     };
 

@@ -17,6 +17,7 @@ public:
     bool hasSize(size_t size);
     bool hasSubdirectory(std::string const & subdir);
     bool hasContents(std::string const & contents);
+    bool readAll();
 private:
     std::string path_;
 };
