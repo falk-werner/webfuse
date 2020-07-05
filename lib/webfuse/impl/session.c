@@ -17,6 +17,7 @@
 #include <stdlib.h>
 
 #define WF_DEFAULT_TIMEOUT (10 * 1000)
+#define WF_DEFAULT_MESSAGE_SIZE (8 * 1024)
 
 static bool wf_impl_session_send(
     json_t * request,
@@ -60,6 +61,7 @@ struct wf_impl_session * wf_impl_session_create(
     session->mountpoint_factory = mountpoint_factory;
     session->rpc = wf_impl_jsonrpc_proxy_create(timer_manager, WF_DEFAULT_TIMEOUT, &wf_impl_session_send, session);
     wf_impl_slist_init(&session->messages);
+    wf_impl_buffer_init(&session->recv_buffer, WF_DEFAULT_MESSAGE_SIZE);
 
     return session;
 }
@@ -85,6 +87,7 @@ void wf_impl_session_dispose(
     wf_impl_message_queue_cleanup(&session->messages);
 
     wf_impl_session_dispose_filesystems(&session->filesystems);
+    wf_impl_buffer_cleanup(&session->recv_buffer);
     free(session);
 } 
 
@@ -146,8 +149,7 @@ void wf_impl_session_onwritable(
     }
 }
 
-
-void wf_impl_session_receive(
+static void wf_impl_session_process(
     struct wf_impl_session * session,
     char const * data,
     size_t length)
@@ -164,9 +166,35 @@ void wf_impl_session_receive(
             wf_impl_jsonrpc_server_process(session->server, message, &wf_impl_session_send, session);
         }
 
-	    json_decref(message);
+        json_decref(message);
     }
+}
 
+void wf_impl_session_receive(
+    struct wf_impl_session * session,
+    char const * data,
+    size_t length,
+    bool is_final_fragment)
+{
+    if (is_final_fragment)
+    {
+        if (wf_impl_buffer_is_empty(&session->recv_buffer))
+        {
+            wf_impl_session_process(session, data, length);
+        }
+        else
+        {
+            wf_impl_buffer_append(&session->recv_buffer, data, length);
+            wf_impl_session_process(session,
+                wf_impl_buffer_data(&session->recv_buffer),
+                wf_impl_buffer_size(&session->recv_buffer));
+            wf_impl_buffer_clear(&session->recv_buffer);
+        }        
+    }
+    else
+    {
+        wf_impl_buffer_append(&session->recv_buffer, data, length);
+    }
 }
 
 static struct wf_impl_filesystem * wf_impl_session_get_filesystem(

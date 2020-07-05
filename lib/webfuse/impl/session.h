@@ -12,6 +12,7 @@ using std::size_t;
 #include "webfuse/impl/message_queue.h"
 #include "webfuse/impl/filesystem.h"
 #include "webfuse/impl/util/slist.h"
+#include "webfuse/impl/util/buffer.h"
 
 #include "webfuse/impl/jsonrpc/proxy.h"
 #include "webfuse/impl/jsonrpc/server.h"
@@ -38,6 +39,7 @@ struct wf_impl_session
     struct wf_jsonrpc_server * server;
     struct wf_jsonrpc_proxy * rpc;
     struct wf_slist filesystems;
+    struct wf_buffer recv_buffer; 
 };
 
 extern struct wf_impl_session * wf_impl_session_create(
@@ -61,7 +63,8 @@ extern bool wf_impl_session_add_filesystem(
 extern void wf_impl_session_receive(
     struct wf_impl_session * session,
     char const * data,
-    size_t length);
+    size_t length,
+    bool is_final_fragment);
 
 extern void wf_impl_session_onwritable(
     struct wf_impl_session * session);

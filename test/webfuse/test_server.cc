@@ -324,16 +324,13 @@ TEST(server, read_large_file)
     EXPECT_CALL(handler, Invoke(StrEq("lookup"), Lookup(1, "a.file"))).Times(1)
         .WillOnce(Return("{\"inode\": 2, \"mode\": 420, \"type\": \"file\", \"size\": 4096}"));
     EXPECT_CALL(handler, Invoke(StrEq("getattr"), GetAttr(1))).Times(AnyNumber())
-        .WillOnce(Return("{\"mode\": 420, \"type\": \"dir\"}"));
+        .WillRepeatedly(Return("{\"mode\": 420, \"type\": \"dir\"}"));
     EXPECT_CALL(handler, Invoke(StrEq("open"), Open(2))).Times(1)
         .WillOnce(Return("{\"handle\": 42}"));
     EXPECT_CALL(handler, Invoke(StrEq("read"), _)).Times(AnyNumber())
         .WillRepeatedly(Invoke([](char const *, json_t * params) {
             int offset = json_integer_value(json_array_get(params, 3));
             int length = json_integer_value(json_array_get(params, 4));
-
-            std::cout << "offset: " << offset << std::endl;
-            std::cout << "length: " << length << std::endl;
 
             int remaining = (offset < 4096) ? 4096 - offset : 0;
             int count = (length < remaining) ? length : remaining;
@@ -348,6 +345,7 @@ TEST(server, read_large_file)
             char * result_text = json_dumps(result, 0);
             std::string result_str = result_text;
             free(result_text);
+            json_decref(result);
 
             return result_str;
         })); 
@@ -369,7 +367,8 @@ TEST(server, read_large_file)
     std::string base_dir = server.GetBaseDir();
     ASSERT_TRUE(File(base_dir).isDirectory());
     File file(base_dir + "/test/a.file");
-    ASSERT_TRUE(file.hasContents("*"));
+    std::string contents(4096, '*');
+    ASSERT_TRUE(file.hasContents(contents));
 
     auto disconnected = client.Disconnect();
     ASSERT_TRUE(disconnected);
