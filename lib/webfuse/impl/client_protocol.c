@@ -19,6 +19,7 @@
 #include <libwebsockets.h>
 
 #define WF_DEFAULT_TIMEOUT (10 * 1000)
+#define WF_DEFAULT_MESSAGE_SIZE (10 * 1024)
 
 struct wf_impl_client_protocol_add_filesystem_context
 {
@@ -32,6 +33,7 @@ wf_impl_client_protocol_process(
      char const * data,
      size_t length)
 {
+
     json_t * message = json_loadb(data, length, 0, NULL);
     if (NULL != message)
     {
@@ -43,6 +45,35 @@ wf_impl_client_protocol_process(
         json_decref(message);
     }
 }
+
+static void
+wf_impl_client_protocol_receive(
+     struct wf_client_protocol * protocol, 
+     char const * data,
+     size_t length,
+     bool is_final_fragment)
+{
+    if (is_final_fragment)
+    {
+        if (wf_impl_buffer_is_empty(&protocol->recv_buffer))
+        {
+            wf_impl_client_protocol_process(protocol, data, length);
+        }
+        else
+        {
+            wf_impl_buffer_append(&protocol->recv_buffer, data, length);
+            wf_impl_client_protocol_process(protocol,
+                wf_impl_buffer_data(&protocol->recv_buffer),
+                wf_impl_buffer_size(&protocol->recv_buffer));
+            wf_impl_buffer_clear(&protocol->recv_buffer);
+        }        
+    }
+    else
+    {
+        wf_impl_buffer_append(&protocol->recv_buffer, data, length);
+    }
+}
+
 
 static bool
 wf_impl_client_protocol_send(
@@ -145,7 +176,7 @@ static int wf_impl_client_protocol_lws_callback(
                 protocol->callback(protocol->user_data, WF_CLIENT_DISCONNECTED, NULL);
                 break;
             case LWS_CALLBACK_CLIENT_RECEIVE:
-                wf_impl_client_protocol_process(protocol, in, len);
+                wf_impl_client_protocol_receive(protocol, in, len, lws_is_final_fragment(wsi));
                 break;
             case LWS_CALLBACK_SERVER_WRITEABLE:
                 // fall-through
@@ -196,6 +227,7 @@ wf_impl_client_protocol_init(
     protocol->user_data = user_data;
     protocol->filesystem = NULL;
 
+    wf_impl_buffer_init(&protocol->recv_buffer, WF_DEFAULT_MESSAGE_SIZE);
     wf_impl_slist_init(&protocol->messages);
     protocol->timer_manager = wf_impl_timer_manager_create();
     protocol->proxy = wf_impl_jsonrpc_proxy_create(protocol->timer_manager, WF_DEFAULT_TIMEOUT, &wf_impl_client_protocol_send, protocol);
@@ -218,6 +250,8 @@ wf_impl_client_protocol_cleanup(
         wf_impl_filesystem_dispose(protocol->filesystem);
         protocol->filesystem = NULL;
     }
+
+    wf_impl_buffer_cleanup(&protocol->recv_buffer);
 }
 
 void

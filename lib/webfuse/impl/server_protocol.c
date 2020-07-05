@@ -61,7 +61,7 @@ static int wf_impl_server_protocol_callback(
         case LWS_CALLBACK_RECEIVE:
             if (NULL != session)
             {
-                wf_impl_session_receive(session, in, len);
+                wf_impl_session_receive(session, in, len, lws_is_final_fragment(wsi));
             }
             break;
         case LWS_CALLBACK_RAW_RX_FILE:

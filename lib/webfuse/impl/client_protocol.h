@@ -3,6 +3,7 @@
 
 #include "webfuse/client_callback.h"
 #include "webfuse/impl/util/slist.h"
+#include "webfuse/impl/util/buffer.h"
 
 #ifndef __cplusplus
 #include <stdbool.h>
@@ -37,6 +38,7 @@ struct wf_client_protocol
     struct wf_timer_manager * timer_manager;
     struct wf_jsonrpc_proxy * proxy;
     struct wf_slist messages;
+    struct wf_buffer recv_buffer;
 };
 
 extern void
