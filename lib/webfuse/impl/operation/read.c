@@ -10,7 +10,8 @@
 #include "webfuse/impl/util/base64.h"
 #include "webfuse/impl/util/json_util.h"
 
-#define WF_MAX_READ_LENGTH 4096
+// do not read chunks larger than 1 MByte
+#define WF_MAX_READ_LENGTH (1024 * 1024)
 
 char * wf_impl_fill_buffer(
 	char const * data,
@@ -114,11 +115,15 @@ void wf_impl_operation_read(
     struct wf_impl_operation_context * user_data = fuse_req_userdata(request);
     struct wf_jsonrpc_proxy * rpc = wf_impl_operation_context_get_proxy(user_data);
 
-	if (NULL != rpc)
+	if ((NULL != rpc) && (size <= WF_MAX_READ_LENGTH))
 	{
-		int const length = (size <= WF_MAX_READ_LENGTH) ? (int) size : WF_MAX_READ_LENGTH;
+		int const length = (int) size;
 		int handle = (file_info->fh & INT_MAX);
 		wf_impl_jsonrpc_proxy_invoke(rpc, &wf_impl_operation_read_finished, request, "read", "siiii", user_data->name, (int) inode, handle, (int) offset, length);
+	}
+	else if (size > WF_MAX_READ_LENGTH)
+	{
+		fuse_reply_err(request, ENOMEM);
 	}
 	else
 	{

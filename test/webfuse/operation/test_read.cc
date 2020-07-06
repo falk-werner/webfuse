@@ -39,7 +39,7 @@ TEST(wf_impl_operation_read, invoke_proxy)
 TEST(wf_impl_operation_read, invoke_proxy_limit_size)
 {
     MockJsonRpcProxy proxy;
-    EXPECT_CALL(proxy, wf_impl_jsonrpc_proxy_vinvoke(_,_,_,StrEq("read"),StrEq("siiii"))).Times(1);
+    EXPECT_CALL(proxy, wf_impl_jsonrpc_proxy_vinvoke(_,_,_,StrEq("read"),StrEq("siiii"))).Times(0);
 
     MockOperationContext context;
     EXPECT_CALL(context, wf_impl_operation_context_get_proxy(_)).Times(1)
@@ -49,6 +49,7 @@ TEST(wf_impl_operation_read, invoke_proxy_limit_size)
     op_context.name = nullptr;
     FuseMock fuse;
     EXPECT_CALL(fuse, fuse_req_userdata(_)).Times(1).WillOnce(Return(&op_context));
+    EXPECT_CALL(fuse, fuse_reply_err(_,_)).Times(1);
 
     fuse_req_t request = nullptr;
     fuse_ino_t inode = 1;
