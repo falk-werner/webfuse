@@ -558,11 +558,11 @@ TEST(AdapterClient, ReadFile)
     EXPECT_CALL(handler, Invoke(StrEq("lookup"), _)).Times(AnyNumber())
         .WillRepeatedly(Throw(std::runtime_error("unknown")));
     EXPECT_CALL(handler, Invoke(StrEq("lookup"), Lookup(1, "a.file"))).Times(1)
-        .WillOnce(Return("{\"inode\": 2, \"mode\": 420, \"type\": \"file\", \"size\": 8192}"));
+        .WillOnce(Return("{\"inode\": 2, \"mode\": 420, \"type\": \"file\", \"size\": 4096}"));
     EXPECT_CALL(handler, Invoke(StrEq("getattr"), GetAttr(1))).Times(AnyNumber())
         .WillRepeatedly(Return("{\"mode\": 420, \"type\": \"dir\"}"));
     EXPECT_CALL(handler, Invoke(StrEq("getattr"), GetAttr(2))).Times(AnyNumber())
-        .WillRepeatedly(Return("{\"mode\": 420, \"type\": \"file\", \"size\": 8192}"));
+        .WillRepeatedly(Return("{\"mode\": 420, \"type\": \"file\", \"size\": 4096}"));
     EXPECT_CALL(handler, Invoke(StrEq("open"), Open(2))).Times(1)
         .WillOnce(Return("{\"handle\": 42}"));
     EXPECT_CALL(handler, Invoke(StrEq("read"), _)).Times(AnyNumber())
@@ -570,7 +570,7 @@ TEST(AdapterClient, ReadFile)
             int offset = json_integer_value(json_array_get(params, 3));
             int length = json_integer_value(json_array_get(params, 4));
 
-            int remaining = (offset < 8192) ? 8192 - offset : 0;
+            int remaining = (offset < 4096) ? 4096 - offset : 0;
             int count = (length < remaining) ? length : remaining;
 
             std::string data = std::string(count, '*');
@@ -617,7 +617,7 @@ TEST(AdapterClient, ReadFile)
     std::string base_dir = client.GetDir();
     ASSERT_TRUE(File(base_dir).isDirectory());
     File file(base_dir + "/a.file");
-    std::string contents(8192, '*');
+    std::string contents(4096, '*');
     ASSERT_TRUE(file.hasContents(contents));
 
     client.Disconnect();
