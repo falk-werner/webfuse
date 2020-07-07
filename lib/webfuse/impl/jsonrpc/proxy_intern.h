@@ -10,21 +10,11 @@ extern "C"
 {
 #endif
 
-struct wf_timer;
-
-struct wf_jsonrpc_request
-{
-    bool is_pending;
-    wf_jsonrpc_proxy_finished_fn * finished;
-    void * user_data;
-    int id;
-    struct wf_timer * timer;
-};
+struct wf_jsonrpc_proxy_request_manager;
 
 struct wf_jsonrpc_proxy
 {
-    struct wf_jsonrpc_request request;
-    int timeout;
+    struct wf_jsonrpc_proxy_request_manager * request_manager;
     wf_jsonrpc_send_fn * send;
     void * user_data;
 };

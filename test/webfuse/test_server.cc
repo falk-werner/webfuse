@@ -394,8 +394,6 @@ TEST(server, read_large_file)
             int offset = json_integer_value(json_array_get(params, 3));
             int length = json_integer_value(json_array_get(params, 4));
 
-            std::cout << "offset: " <<  offset << ", length: " << length << std::endl;
-
             int remaining = (offset < 1024000) ? 1024000 - offset : 0;
             int count = (length < remaining) ? length : remaining;
 

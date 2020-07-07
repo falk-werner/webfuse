@@ -1,9 +1,9 @@
 #include "webfuse/impl/jsonrpc/proxy_intern.h"
+#include "webfuse/impl/jsonrpc/proxy_request_manager.h"
 #include "webfuse/impl/jsonrpc/response_intern.h"
 #include "webfuse/impl/jsonrpc/error.h"
 #include "webfuse/status.h"
 
-#include "webfuse/impl/timer/timer.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -28,25 +28,6 @@ void wf_impl_jsonrpc_proxy_dispose(
     free(proxy);
 }
 
-static void wf_impl_jsonrpc_proxy_on_timeout(
-    struct wf_timer * timer, void * proxy_ptr)
-{
-    struct wf_jsonrpc_proxy * proxy = proxy_ptr;
-
-    if (proxy->request.is_pending)
-    {
-        wf_jsonrpc_proxy_finished_fn * finished = proxy->request.finished;
-        void * user_data = proxy->request.user_data;
-
-        proxy->request.is_pending = false;
-        proxy->request.id = 0;
-        proxy->request.user_data = NULL;
-        proxy->request.finished = NULL;
-        wf_impl_timer_cancel(timer);
-
-        wf_impl_jsonrpc_propate_error(finished, user_data, WF_BAD_TIMEOUT, "Timeout");
-    }
-}
 
 static json_t * wf_impl_jsonrpc_request_create(
 	char const * method,
@@ -106,31 +87,16 @@ void wf_impl_jsonrpc_proxy_init(
     void * user_data)
 {
     proxy->send = send;
-    proxy->timeout = timeout;
     proxy->user_data = user_data;
-    proxy->request.is_pending = false;
-    proxy->request.timer = wf_impl_timer_create(timeout_manager, 
-        &wf_impl_jsonrpc_proxy_on_timeout, proxy);    
+
+    proxy->request_manager = wf_impl_jsonrpc_proxy_request_manager_create(
+        timeout_manager, timeout);
 }
 
 void wf_impl_jsonrpc_proxy_cleanup(
     struct wf_jsonrpc_proxy * proxy)
 {
-    if (proxy->request.is_pending)
-    {
-        void * user_data = proxy->request.user_data;
-        wf_jsonrpc_proxy_finished_fn * finished = proxy->request.finished;
-
-        proxy->request.is_pending = false;
-        proxy->request.finished = NULL;
-        proxy->request.user_data = NULL;
-        proxy->request.id = 0;
-        wf_impl_timer_cancel(proxy->request.timer);
-
-        wf_impl_jsonrpc_propate_error(finished, user_data, WF_BAD, "Bad: cancelled pending request during shutdown");
-    }
-
-    wf_impl_timer_dispose(proxy->request.timer);
+    wf_impl_jsonrpc_proxy_request_manager_dispose(proxy->request_manager);
 }
 
 void wf_impl_jsonrpc_proxy_vinvoke(
@@ -141,36 +107,20 @@ void wf_impl_jsonrpc_proxy_vinvoke(
 	char const * param_info,
 	va_list args)
 {
-    if (!proxy->request.is_pending)
+    int id = wf_impl_jsonrpc_proxy_request_manager_add_request(
+            proxy->request_manager, finished, user_data);
+
+    json_t * request = wf_impl_jsonrpc_request_create(method_name, id, param_info, args);
+    bool const is_send = ((NULL != request) && (proxy->send(request, proxy->user_data)));
+    if (!is_send)
     {
-        proxy->request.is_pending = true;
-        proxy->request.finished = finished;
-        proxy->request.user_data = user_data;
-        proxy->request.id = 42;
-        wf_impl_timer_start(proxy->request.timer, proxy->timeout);
-        
-        json_t * request = wf_impl_jsonrpc_request_create(method_name, proxy->request.id, param_info, args);
-
-        bool const is_send = ((NULL != request) && (proxy->send(request, proxy->user_data)));
-        if (!is_send)
-        {
-            proxy->request.is_pending = false;
-            proxy->request.finished = NULL;
-            proxy->request.user_data = NULL;
-            proxy->request.id = 0;
-            wf_impl_timer_cancel(proxy->request.timer);
-
-            wf_impl_jsonrpc_propate_error(finished, user_data, WF_BAD, "Bad: requenst is not sent");
-        }
-
-        if (NULL != request)
-        {
-            json_decref(request);
-        }
+        wf_impl_jsonrpc_proxy_request_manager_cancel_request(
+            proxy->request_manager, id, WF_BAD, "Bad: failed to send request");
     }
-    else
+
+    if (NULL != request)
     {
-        wf_impl_jsonrpc_propate_error(finished, user_data, WF_BAD_BUSY, "Busy");
+        json_decref(request);
     }
 }
 
@@ -197,19 +147,8 @@ void wf_impl_jsonrpc_proxy_onresult(
 	struct wf_jsonrpc_response response;
 	wf_impl_jsonrpc_response_init(&response, message);
 
-    if ((proxy->request.is_pending) && (response.id == proxy->request.id))
-    {
-        wf_jsonrpc_proxy_finished_fn * finished = proxy->request.finished;
-        void * user_data = proxy->request.user_data;
-
-        proxy->request.is_pending = false;
-        proxy->request.id = 0;
-        proxy->request.user_data = NULL;
-        proxy->request.finished = NULL;
-        wf_impl_timer_cancel(proxy->request.timer);
-
-        finished(user_data, response.result, response.error);
-    }
+    wf_impl_jsonrpc_proxy_request_manager_finish_request(
+        proxy->request_manager, &response);
 
     wf_impl_jsonrpc_response_cleanup(&response);
 }
