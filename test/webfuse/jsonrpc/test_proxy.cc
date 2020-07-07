@@ -174,7 +174,7 @@ TEST(wf_jsonrpc_proxy, invoke_calls_finish_if_send_fails)
     wf_impl_timer_manager_dispose(timer_manager);
 }
 
-TEST(wf_jsonrpc_proxy, invoke_fails_if_another_request_is_pending)
+TEST(wf_jsonrpc_proxy, invoke_if_another_request_is_pending)
 {
     struct wf_timer_manager * timer_manager = wf_impl_timer_manager_create();
 
@@ -194,9 +194,6 @@ TEST(wf_jsonrpc_proxy, invoke_fails_if_another_request_is_pending)
     ASSERT_TRUE(json_is_object(send_context.response));
 
     ASSERT_FALSE(finished_context.is_called);
-
-    ASSERT_TRUE(finished_context2.is_called);
-    ASSERT_EQ(WF_BAD_BUSY, jsonrpc_get_status(finished_context2.error));
 
     wf_impl_jsonrpc_proxy_dispose(proxy);
     wf_impl_timer_manager_dispose(timer_manager);
@@ -385,28 +382,6 @@ TEST(wf_jsonrpc_proxy, notify_dont_send_invalid_request)
 
     wf_impl_jsonrpc_proxy_dispose(proxy);
     wf_impl_timer_manager_dispose(timer_manager);
-}
-
-TEST(wf_jsonrpc_proxy, swallow_timeout_if_no_request_pending)
-{
-    MockTimer timer_api;
-
-    wf_timer_on_timer_fn * on_timer = nullptr;
-    void * timer_context = nullptr;
-    EXPECT_CALL(timer_api, wf_impl_timer_create(_, _, _))
-        .Times(1)
-        .WillOnce(DoAll(SaveArg<1>(&on_timer), SaveArg<2>(&timer_context), Return(nullptr)));
-    EXPECT_CALL(timer_api, wf_impl_timer_dispose(_)).Times(1);
-
-    SendContext send_context;
-    void * send_data = reinterpret_cast<void*>(&send_context);
-    struct wf_jsonrpc_proxy * proxy = wf_impl_jsonrpc_proxy_create(nullptr, 1, &jsonrpc_send, send_data);
-
-    on_timer(nullptr, timer_context);
-    ASSERT_FALSE(send_context.is_called);
-
-
-    wf_impl_jsonrpc_proxy_dispose(proxy);
 }
 
 TEST(wf_jsonrpc_proxy, on_result_swallow_if_no_request_pending)
