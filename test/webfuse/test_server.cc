@@ -382,11 +382,11 @@ TEST(server, read_large_file)
     MockInvokationHander handler;
     EXPECT_CALL(handler, Invoke(StrEq("lookup"), _)).Times(AnyNumber());
     EXPECT_CALL(handler, Invoke(StrEq("lookup"), Lookup(1, "a.file"))).Times(1)
-        .WillOnce(Return("{\"inode\": 2, \"mode\": 420, \"type\": \"file\", \"size\": 102400}"));
+        .WillOnce(Return("{\"inode\": 2, \"mode\": 420, \"type\": \"file\", \"size\": 1024000}"));
     EXPECT_CALL(handler, Invoke(StrEq("getattr"), GetAttr(1))).Times(AnyNumber())
         .WillRepeatedly(Return("{\"mode\": 420, \"type\": \"dir\"}"));
     EXPECT_CALL(handler, Invoke(StrEq("getattr"), GetAttr(2))).Times(AnyNumber())
-        .WillRepeatedly(Return("{\"mode\": 420, \"type\": \"file\", \"size\": 102400}"));
+        .WillRepeatedly(Return("{\"mode\": 420, \"type\": \"file\", \"size\": 1024000}"));
     EXPECT_CALL(handler, Invoke(StrEq("open"), Open(2))).Times(1)
         .WillOnce(Return("{\"handle\": 42}"));
     EXPECT_CALL(handler, Invoke(StrEq("read"), _)).Times(AnyNumber())
@@ -394,7 +394,9 @@ TEST(server, read_large_file)
             int offset = json_integer_value(json_array_get(params, 3));
             int length = json_integer_value(json_array_get(params, 4));
 
-            int remaining = (offset < 102400) ? 102400 - offset : 0;
+            std::cout << "offset: " <<  offset << ", length: " << length << std::endl;
+
+            int remaining = (offset < 1024000) ? 1024000 - offset : 0;
             int count = (length < remaining) ? length : remaining;
 
             std::string data = std::string(count, '*');
