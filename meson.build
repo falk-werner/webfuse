@@ -28,6 +28,7 @@ webfuse_static = static_library('webfuse',
     'lib/webfuse/impl/timer/manager.c',
     'lib/webfuse/impl/timer/timepoint.c',
     'lib/webfuse/impl/timer/timer.c',
+	'lib/webfuse/impl/json/writer.c',
 	'lib/webfuse/impl/jsonrpc/proxy.c',
 	'lib/webfuse/impl/jsonrpc/proxy_request_manager.c',
 	'lib/webfuse/impl/jsonrpc/proxy_variadic.c',
@@ -115,6 +116,7 @@ test_certs_dep = declare_dependency(
 	sources: [test_server_certs, test_client_certs])
 
 alltests = executable('alltests',
+	'test/webfuse/json/test_writer.cc',
 	'test/webfuse/jsonrpc/mock_timer_callback.cc',
 	'test/webfuse/jsonrpc/mock_timer.cc',
 	'test/webfuse/jsonrpc/test_is_request.cc',
