@@ -12,6 +12,7 @@
 #include "webfuse/impl/status.h"
 
 #include "webfuse/impl/jsonrpc/request.h"
+#include "webfuse/impl/jsonrpc/response_writer.h"
 #include "webfuse/impl/timer/manager.h"
 #include "webfuse/impl/timer/timer.h"
 
@@ -136,8 +137,7 @@ static void wf_impl_server_protocol_authenticate(
 
     if (result)
     {
-        json_t * result = json_object();
-        wf_impl_jsonrpc_respond(request, result);
+        wf_impl_jsonrpc_respond(request);
     }
     else
     {
@@ -198,9 +198,9 @@ static void wf_impl_server_protocol_add_filesystem(
 
     if (WF_GOOD == status)
     {
-        json_t * result = json_object();
-        json_object_set_new(result, "id", json_string(name));
-        wf_impl_jsonrpc_respond(request, result);
+        struct wf_jsonrpc_response_writer * writer = wf_impl_jsonrpc_request_get_response_writer(request);
+        wf_impl_jsonrpc_response_add_string(writer, "id", name);
+        wf_impl_jsonrpc_respond(request);
     }
     else
     {

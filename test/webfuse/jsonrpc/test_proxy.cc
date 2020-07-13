@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 #include "webfuse/impl/jsonrpc/proxy.h"
+#include "webfuse/impl/message.h"
 #include "webfuse/status.h"
 #include "webfuse/impl/timer/manager.h"
 
@@ -40,22 +41,23 @@ namespace
 
         ~SendContext() 
         {
-            if (nullptr != response)
-            {
-                json_decref(response);
-            }
+            json_decref(response);
         }
     };
 
     bool jsonrpc_send(
-        json_t * request,
+        wf_message * request,
         void * user_data)
     {
         SendContext * context = reinterpret_cast<SendContext*>(user_data);
         context->is_called = true;
-        context->response = request;
-        json_incref(request);
+        if (nullptr != context->response)
+        {
+            json_decref(context->response);
+        }
+        context->response = json_loadb(request->data, request->length, 0, nullptr);
 
+        wf_impl_message_dispose(request);
         return context->result;
     }
 
@@ -199,7 +201,7 @@ TEST(wf_jsonrpc_proxy, invoke_if_another_request_is_pending)
     wf_impl_timer_manager_dispose(timer_manager);
 }
 
-TEST(wf_jsonrpc_proxy, invoke_fails_if_request_is_invalid)
+TEST(wf_jsonrpc_proxy, invoke_invalid_request)
 {
     struct wf_timer_manager * timer_manager = wf_impl_timer_manager_create();
 
@@ -211,10 +213,9 @@ TEST(wf_jsonrpc_proxy, invoke_fails_if_request_is_invalid)
     void * finished_data = reinterpret_cast<void*>(&finished_context);
     wf_impl_jsonrpc_proxy_invoke(proxy, &jsonrpc_finished, finished_data, "foo", "?", "error");
 
-    ASSERT_FALSE(send_context.is_called);
+    ASSERT_TRUE(send_context.is_called);
 
-    ASSERT_TRUE(finished_context.is_called);
-    ASSERT_EQ(WF_BAD, jsonrpc_get_status(finished_context.error));
+    ASSERT_FALSE(finished_context.is_called);
 
     wf_impl_jsonrpc_proxy_dispose(proxy);
     wf_impl_timer_manager_dispose(timer_manager);
@@ -368,7 +369,7 @@ TEST(wf_jsonrpc_proxy, notify)
     wf_impl_timer_manager_dispose(timer_manager);
 }
 
-TEST(wf_jsonrpc_proxy, notify_dont_send_invalid_request)
+TEST(wf_jsonrpc_proxy, notify_send_invalid_request)
 {
     struct wf_timer_manager * timer_manager = wf_impl_timer_manager_create();
 
@@ -378,7 +379,7 @@ TEST(wf_jsonrpc_proxy, notify_dont_send_invalid_request)
 
     wf_impl_jsonrpc_proxy_notify(proxy, "foo", "?");
 
-    ASSERT_FALSE(send_context.is_called);
+    ASSERT_TRUE(send_context.is_called);
 
     wf_impl_jsonrpc_proxy_dispose(proxy);
     wf_impl_timer_manager_dispose(timer_manager);

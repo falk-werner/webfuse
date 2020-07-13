@@ -20,15 +20,13 @@
 #define WF_DEFAULT_MESSAGE_SIZE (8 * 1024)
 
 static bool wf_impl_session_send(
-    json_t * request,
+    struct wf_message * message,
     void * user_data)
 {
     struct wf_impl_session * session = user_data;
-    struct wf_message * message = wf_impl_message_create(request);
+    bool result = false;
 
-    bool result = (session->is_authenticated || wf_impl_jsonrpc_is_response(request)) && (NULL != session->wsi);
-
-    if (result)
+    if (NULL != session->wsi)
     {
         wf_impl_slist_append(&session->messages, &message->item);
         lws_callback_on_writable(session->wsi);

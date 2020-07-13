@@ -8,6 +8,8 @@ extern "C"
 {
 #endif
 
+struct wf_json_writer;
+
 struct wf_credentials
 {
     char * type;
@@ -40,6 +42,11 @@ extern void wf_impl_credentials_add(
     struct wf_credentials * credentials,
     char const * key,
     char const * value);
+
+extern void
+wf_impl_credentials_write(
+    struct wf_json_writer * writer,
+    void * data);
 
 #ifdef __cplusplus
 }

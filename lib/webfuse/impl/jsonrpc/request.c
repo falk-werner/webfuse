@@ -1,9 +1,15 @@
 #include "webfuse/impl/jsonrpc/request.h"
 #include "webfuse/impl/jsonrpc/error.h"
+#include "webfuse/impl/json/writer.h"
+#include "webfuse/impl/jsonrpc/response_writer.h"
+#include "webfuse/impl/message.h"
+
+#include <libwebsockets.h>
 #include <stdlib.h>
 
 struct wf_jsonrpc_request
 {
+    struct wf_jsonrpc_response_writer * writer;
     int id;
     wf_jsonrpc_send_fn * send;
     void * user_data;
@@ -29,6 +35,7 @@ wf_impl_jsonrpc_request_create(
     void * user_data)
 {
     struct wf_jsonrpc_request * request = malloc(sizeof(struct wf_jsonrpc_request));
+    request->writer = wf_impl_jsonrpc_response_writer_create(id);
     request->id = id;
     request->send = send;
     request->user_data = user_data;
@@ -40,6 +47,7 @@ void
 wf_impl_jsonrpc_request_dispose(
     struct wf_jsonrpc_request * request)
 {
+    wf_impl_jsonrpc_response_writer_dispose(request->writer);
     free(request);
 }
 
@@ -50,18 +58,21 @@ wf_impl_jsonrpc_request_get_userdata(
     return request->user_data;
 }
 
+struct wf_jsonrpc_response_writer *
+wf_impl_jsonrpc_request_get_response_writer(
+    struct wf_jsonrpc_request * request)
+{
+    return request->writer;
+}
+
 
 void
 wf_impl_jsonrpc_respond(
-    struct wf_jsonrpc_request * request,
-    json_t * result)
+    struct wf_jsonrpc_request * request)
 {
-    json_t * response = json_object();
-    json_object_set_new(response, "result", result);
-    json_object_set_new(response, "id", json_integer(request->id));
+    struct wf_message * response = wf_impl_jsonrpc_response_writer_take_message(request->writer);
 
     request->send(response, request->user_data);
-    json_decref(response);
     wf_impl_jsonrpc_request_dispose(request);
 }
 
@@ -70,11 +81,21 @@ void wf_impl_jsonrpc_respond_error(
     int code,
     char const * message)
 {
-    json_t * response = json_object();
-    json_object_set_new(response, "error", wf_impl_jsonrpc_error(code, message));
-    json_object_set_new(response, "id", json_integer(request->id));
+    struct wf_json_writer * writer = wf_impl_json_writer_create(128, LWS_PRE);
+    wf_impl_json_write_object_begin(writer);
+    wf_impl_json_write_object_begin_object(writer, "error");
+    wf_impl_json_write_object_int(writer, "code", code);
+    wf_impl_json_write_object_string(writer, "message", message);
+    wf_impl_json_write_object_end(writer);
+    wf_impl_json_write_object_int(writer, "id", request->id);
+    wf_impl_json_write_object_end(writer);
 
+    size_t length;
+    char * data = wf_impl_json_writer_take(writer, &length);
+    wf_impl_json_writer_dispose(writer);
+
+    struct wf_message * response = wf_impl_message_create(data, length);
     request->send(response, request->user_data);
-    json_decref(response);
+
     wf_impl_jsonrpc_request_dispose(request);
 }

@@ -2,11 +2,16 @@
 #include "webfuse/impl/jsonrpc/proxy_request_manager.h"
 #include "webfuse/impl/jsonrpc/response_intern.h"
 #include "webfuse/impl/jsonrpc/error.h"
+#include "webfuse/impl/json/writer.h"
+#include "webfuse/impl/message.h"
 #include "webfuse/status.h"
 
+#include <libwebsockets.h>
 
 #include <stdlib.h>
 #include <string.h>
+
+#define WF_JSONRPC_PROXY_DEFAULT_MESSAGE_SIZE 1024
 
 struct wf_jsonrpc_proxy *
 wf_impl_jsonrpc_proxy_create(
@@ -29,15 +34,17 @@ void wf_impl_jsonrpc_proxy_dispose(
 }
 
 
-static json_t * wf_impl_jsonrpc_request_create(
+static struct wf_message * 
+wf_impl_jsonrpc_request_create(
 	char const * method,
 	int id,
 	char const * param_info,
 	va_list args)
 {
-	json_t * request = json_object();
-	json_object_set_new(request, "method", json_string(method));
-	json_t * params = json_array();
+    struct wf_json_writer * writer = wf_impl_json_writer_create(WF_JSONRPC_PROXY_DEFAULT_MESSAGE_SIZE, LWS_PRE);
+    wf_impl_json_write_object_begin(writer);
+    wf_impl_json_write_object_string(writer, "method", method);
+    wf_impl_json_write_object_begin_array(writer, "params");
 	
 	for (char const * param_type = param_info; '\0' != *param_type; param_type++)
 	{
@@ -46,37 +53,41 @@ static json_t * wf_impl_jsonrpc_request_create(
 			case 's':
 			{
 				char const * const value = va_arg(args, char const *);
-				json_array_append_new(params, json_string(value));
+                wf_impl_json_write_string(writer, value);
 			}
 			break;
 			case 'i':
 			{
 				int const value = va_arg(args, int);
-				json_array_append_new(params, json_integer(value));
+                wf_impl_json_write_int(writer, value);
 			}
 			break;
             case 'j':
             {
-                json_t * const value = va_arg(args, json_t *);
-                json_array_append_new(params, value);
+                wf_jsonrpc_custom_write_fn * write = va_arg(args, wf_jsonrpc_custom_write_fn *);
+                void * data = va_arg(args, void *);
+                write(writer, data);
             }
             break;
 			default:
-			fprintf(stderr, "fatal: unknown param_type '%c'\n", *param_type);
-            json_decref(params);
-            json_decref(request);
-            return NULL;
+			    fprintf(stderr, "fatal: unknown param_type '%c'\n", *param_type);
+            break;
 		}
 	}
-	
+	wf_impl_json_write_array_end(writer);
 
-	json_object_set_new(request, "params", params);
 	if (0 != id)
 	{
-		json_object_set_new(request, "id", json_integer(id));
+		wf_impl_json_write_object_int(writer, "id", id);
 	}
+    
+    wf_impl_json_write_object_end(writer);
 	
-	return request;
+    size_t length;
+    char * message = wf_impl_json_writer_take(writer, &length);
+    wf_impl_json_writer_dispose(writer);
+
+	return wf_impl_message_create(message, length);
 }
 
 void wf_impl_jsonrpc_proxy_init(
@@ -110,17 +121,12 @@ void wf_impl_jsonrpc_proxy_vinvoke(
     int id = wf_impl_jsonrpc_proxy_request_manager_add_request(
             proxy->request_manager, finished, user_data);
 
-    json_t * request = wf_impl_jsonrpc_request_create(method_name, id, param_info, args);
-    bool const is_send = ((NULL != request) && (proxy->send(request, proxy->user_data)));
+    struct wf_message * request = wf_impl_jsonrpc_request_create(method_name, id, param_info, args);
+    bool const is_send = proxy->send(request, proxy->user_data);
     if (!is_send)
     {
         wf_impl_jsonrpc_proxy_request_manager_cancel_request(
             proxy->request_manager, id, WF_BAD, "Bad: failed to send request");
-    }
-
-    if (NULL != request)
-    {
-        json_decref(request);
     }
 }
 
@@ -130,13 +136,8 @@ extern void wf_impl_jsonrpc_proxy_vnotify(
 	char const * param_info,
 	va_list args)
 {
-    json_t * request = wf_impl_jsonrpc_request_create(method_name, 0, param_info, args);
-
-    if (NULL != request)
-    {
-        proxy->send(request, proxy->user_data);
-        json_decref(request);
-    }
+    struct wf_message * request = wf_impl_jsonrpc_request_create(method_name, 0, param_info, args);
+    proxy->send(request, proxy->user_data);
 }
 
 

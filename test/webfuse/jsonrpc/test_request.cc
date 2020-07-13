@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 #include "webfuse/impl/jsonrpc/request.h"
+#include "webfuse/impl/message.h"
 #include "webfuse/status.h"
 
 namespace
@@ -7,17 +8,17 @@ namespace
 
 struct Context
 {
-    json_t * response;
+    std::string response;
 };
 
 bool jsonrpc_send(
-	json_t * request,
+	wf_message * request,
     void * user_data)
 {
    Context * context = reinterpret_cast<Context*>(user_data);
-   context->response = request;
-   json_incref(request);
+   context->response = std::string(request->data, request->length);
 
+    wf_impl_message_dispose(request);
    return true;
 }
 
@@ -25,7 +26,7 @@ bool jsonrpc_send(
 
 TEST(wf_jsonrpc_request, create_dispose)
 {
-    Context context{nullptr};
+    Context context;
     void * user_data = reinterpret_cast<void*>(&context);
 
     struct  wf_jsonrpc_request * request = 
@@ -39,18 +40,15 @@ TEST(wf_jsonrpc_request, create_dispose)
 
 TEST(wf_jsonrpc_request, respond)
 {
-    Context context{nullptr};
+    Context context;
     void * user_data = reinterpret_cast<void*>(&context);
 
     struct  wf_jsonrpc_request * request = 
             wf_impl_jsonrpc_request_create(42, &jsonrpc_send, user_data);
 
-    wf_impl_jsonrpc_respond(request, json_string("okay"));
+    wf_impl_jsonrpc_respond(request);
 
-    ASSERT_NE(nullptr, context.response);
-
-
-    json_t * response = reinterpret_cast<json_t*>(context.response);
+    json_t * response = json_loads(context.response.c_str(), 0, nullptr);
     ASSERT_TRUE(json_is_object(response));
     
     json_t * id = json_object_get(response, "id");
@@ -58,8 +56,7 @@ TEST(wf_jsonrpc_request, respond)
     ASSERT_EQ(42, json_integer_value(id));
 
     json_t * result = json_object_get(response, "result");
-    ASSERT_TRUE(json_is_string(result));
-    ASSERT_STREQ("okay", json_string_value(result));
+    ASSERT_TRUE(json_is_object(result));
 
     ASSERT_EQ(nullptr, json_object_get(response, "error"));
 
@@ -68,7 +65,7 @@ TEST(wf_jsonrpc_request, respond)
 
 TEST(wf_jsonrpc_request, respond_error)
 {
-    Context context{nullptr};
+    Context context;
     void * user_data = reinterpret_cast<void*>(&context);
 
     struct  wf_jsonrpc_request * request = 
@@ -76,10 +73,7 @@ TEST(wf_jsonrpc_request, respond_error)
 
     wf_impl_jsonrpc_respond_error(request, WF_BAD, "Bad");
 
-    ASSERT_NE(nullptr, context.response);
-
-
-    json_t * response = reinterpret_cast<json_t*>(context.response);
+    json_t * response = json_loads(context.response.c_str(), 0, nullptr);
     ASSERT_TRUE(json_is_object(response));
     
     json_t * id = json_object_get(response, "id");

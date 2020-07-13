@@ -412,7 +412,7 @@ wf_impl_json_write_object_begin_object(
     char const * key)
 {
     wf_impl_json_write_object_key(writer, key);
-    wf_impl_json_write_array_end(writer);
+    wf_impl_json_write_object_begin(writer);
 }
 
 // -- 

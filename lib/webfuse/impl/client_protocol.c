@@ -77,7 +77,7 @@ wf_impl_client_protocol_receive(
 
 static bool
 wf_impl_client_protocol_send(
-    json_t * request,
+    struct wf_message * message,
     void * user_data)
 {
     bool result = false;
@@ -85,13 +85,13 @@ wf_impl_client_protocol_send(
 
     if (NULL != protocol->wsi)
     {
-        struct wf_message * message = wf_impl_message_create(request);
-        if (NULL != message)
-        {
-            wf_impl_slist_append(&protocol->messages, &message->item);
-            lws_callback_on_writable(protocol->wsi);
-            result = true;
-        }
+        wf_impl_slist_append(&protocol->messages, &message->item);
+        lws_callback_on_writable(protocol->wsi);
+        result = true;
+    }
+    else
+    {
+        wf_impl_message_dispose(message);
     }
 
     return result;
@@ -330,14 +330,13 @@ wf_impl_client_protocol_authenticate(
     wf_impl_credentials_init_default(&creds);
     protocol->callback(protocol->user_data, WF_CLIENT_AUTHENTICATE_GET_CREDENTIALS, &creds);
 
-    json_incref(creds.data);
     wf_impl_jsonrpc_proxy_invoke(
         protocol->proxy,
         &wf_impl_client_protocol_on_authenticate_finished,
         protocol,
         "authenticate",
         "sj",
-        creds.type, creds.data);
+        creds.type, &wf_impl_credentials_write, &creds);
 
     wf_impl_credentials_cleanup(&creds);
 }

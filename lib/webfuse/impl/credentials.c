@@ -1,4 +1,5 @@
 #include "webfuse/impl/credentials.h"
+#include "webfuse/impl/json/writer.h"
 #include <string.h>
 
 void wf_impl_credentials_init_default(
@@ -62,3 +63,19 @@ void wf_impl_credentials_add(
     json_object_set_new(credentials->data, key, json_string(value));
 }
 
+void
+wf_impl_credentials_write(
+    struct wf_json_writer * writer,
+    void * data)
+{
+    struct wf_credentials * credentials = data;
+    char const * key;
+    json_t * value;
+
+    wf_impl_json_write_object_begin(writer);
+    json_object_foreach(credentials->data, key, value)
+    {
+        wf_impl_json_write_object_string(writer, key, json_string_value(value));
+    }
+    wf_impl_json_write_object_end(writer);
+}
