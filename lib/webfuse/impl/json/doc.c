@@ -37,7 +37,7 @@ wf_impl_json_doc_dispose(
 }
 
 struct wf_json const *
-wf_impl_jsoc_doc_root(
+wf_impl_json_doc_root(
     struct wf_json_doc * doc)
 {
     return &doc->root;

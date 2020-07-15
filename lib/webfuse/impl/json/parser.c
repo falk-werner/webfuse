@@ -210,7 +210,7 @@ wf_impl_json_parse_array(
         }
     } while ((result) && (',' == c));
     
-    if ((result) && (']' == c))
+    if ((result) && (']' != c))
     {
         result = false;
     }

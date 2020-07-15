@@ -129,6 +129,7 @@ wf_impl_json_cleanup(
                     struct wf_json * actual = &(json->value.a.items[i]);
                     wf_impl_json_cleanup(actual);
                 }
+                free(json->value.a.items);
             }
             break;
         case WF_JSON_TYPE_OBJECT:
@@ -139,6 +140,7 @@ wf_impl_json_cleanup(
                     struct wf_json * actual = &(json->value.o.items[i].json);
                     wf_impl_json_cleanup(actual);
                 }
+                free(json->value.o.items);
             }
             break;
         default:

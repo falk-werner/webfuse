@@ -121,7 +121,7 @@ wf_impl_json_reader_read_string(
 {
     wf_impl_json_reader_skip_whitespace(reader);
     char c = wf_impl_json_reader_get_char(reader);
-    if ('\"' == c) { return value; }
+    if ('\"' != c) { return false; }
 
     size_t p = reader->pos;
     *value = &(reader->contents[p]);
