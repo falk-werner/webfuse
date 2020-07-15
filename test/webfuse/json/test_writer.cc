@@ -213,3 +213,57 @@ TEST(json_writer, reset)
 
     ASSERT_EQ("42", writer.take());
 }
+
+TEST(json_writer, write_object_null)
+{
+    writer writer;
+    wf_impl_json_write_object_begin(writer);
+    wf_impl_json_write_object_null(writer, "error");
+    wf_impl_json_write_object_end(writer);
+
+    ASSERT_EQ("{\"error\":null}", writer.take());
+}
+
+TEST(json_writer, write_object_bool)
+{
+    writer writer;
+    wf_impl_json_write_object_begin(writer);
+    wf_impl_json_write_object_bool(writer, "result", true);
+    wf_impl_json_write_object_end(writer);
+
+    ASSERT_EQ("{\"result\":true}", writer.take());
+}
+
+TEST(json_writer, write_object_string_nocheck)
+{
+    writer writer;
+    wf_impl_json_write_object_begin(writer);
+    wf_impl_json_write_object_string(writer, "result", "Hello,\tWorld!");
+    wf_impl_json_write_object_end(writer);
+
+    ASSERT_EQ("{\"result\": \"Hello,\tWorld!\"}", writer.take());
+}
+
+TEST(json_writer, write_object_bytes)
+{
+    writer writer;
+    wf_impl_json_write_object_begin(writer);
+    wf_impl_json_write_object_bytes(writer, "result", "\0\0", 2);
+    wf_impl_json_write_object_end(writer);
+
+    ASSERT_EQ("{\"result\": \"AAA\"}", writer.take());
+}
+
+TEST(json_writer, realloc_buffer)
+{
+    writer writer(1);
+    wf_impl_json_write_string(writer, "very large contents");
+
+    ASSERT_EQ("very large contents", writer.take());
+}
+
+TEST(json_writer, unexpected_end)
+{
+    writer writer;
+    wf_impl_json_write_array_end(writer);
+}
