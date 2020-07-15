@@ -22,7 +22,7 @@ wf_impl_json_reader_skip_whitespace(
     struct wf_json_reader * reader)
 {
     char c = wf_impl_json_reader_peek(reader);
-    if ((' ' == c) || ('\n' == c) || ('\t' == c) || ('\r' == c))
+    while ((' ' == c) || ('\n' == c) || ('\t' == c) || ('\r' == c))
     {
         reader->pos++;
         c = wf_impl_json_reader_peek(reader);
@@ -126,7 +126,7 @@ wf_impl_json_reader_read_string(
     size_t p = reader->pos;
     *value = &(reader->contents[p]);
     c = wf_impl_json_reader_get_char(reader);
-    while (('\"' != c) && ('\"' != c))
+    while (('\"' != c) && ('\0' != c))
     {
         if ('\\' != c)
         {
@@ -135,7 +135,7 @@ wf_impl_json_reader_read_string(
         else
         {
             char unescaped = wf_impl_json_unescape(wf_impl_json_reader_get_char(reader));
-            if ('\0' != c)
+            if ('\0' != unescaped)
             {
                 reader->contents[p++] = unescaped;
 
