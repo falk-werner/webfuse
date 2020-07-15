@@ -122,6 +122,7 @@ test_certs_dep = declare_dependency(
 
 alltests = executable('alltests',
 	'test/webfuse/json/test_writer.cc',
+	'test/webfuse/json/test_doc.cc',
 	'test/webfuse/jsonrpc/mock_timer_callback.cc',
 	'test/webfuse/jsonrpc/mock_timer.cc',
 	'test/webfuse/jsonrpc/test_is_request.cc',
