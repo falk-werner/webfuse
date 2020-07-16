@@ -62,7 +62,7 @@ extern bool wf_impl_session_add_filesystem(
 
 extern void wf_impl_session_receive(
     struct wf_impl_session * session,
-    char const * data,
+    char * data,
     size_t length,
     bool is_final_fragment);
 

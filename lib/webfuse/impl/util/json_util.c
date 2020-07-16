@@ -1,14 +1,19 @@
 #include "webfuse/impl/util/json_util.h"
 #include "webfuse/impl/jsonrpc/error.h"
+#include "webfuse/impl/json/node.h"
 
-int wf_impl_json_get_int(json_t const * object, char const * key, int default_value)
+int
+wf_impl_json_get_int(
+	struct wf_json const * object,
+	char const * key,
+	int default_value)
 {
 	int result = default_value;
 
-	json_t * holder = json_object_get(object, key);
-	if (json_is_integer(holder))
+	struct wf_json const * holder = wf_impl_json_object_get(object, key);
+	if (WF_JSON_TYPE_INT == wf_impl_json_type(holder))
 	{
-		result = json_integer_value(holder);
+		result = wf_impl_json_int_get(holder);
 	}
 
 	return result;

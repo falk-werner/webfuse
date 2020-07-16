@@ -11,6 +11,7 @@
 #include "webfuse/impl/jsonrpc/proxy.h"
 #include "webfuse/impl/jsonrpc/request.h"
 #include "webfuse/impl/jsonrpc/response.h"
+#include "webfuse/impl/json/doc.h"
 
 #include <libwebsockets.h>
 #include <stddef.h>
@@ -149,12 +150,13 @@ void wf_impl_session_onwritable(
 
 static void wf_impl_session_process(
     struct wf_impl_session * session,
-    char const * data,
+    char * data,
     size_t length)
 {
-    json_t * message = json_loadb(data, length, 0, NULL);
-    if (NULL != message)
+    struct wf_json_doc * doc = wf_impl_json_doc_loadb(data, length);
+    if (NULL != doc)
     {
+        struct wf_json const * message = wf_impl_json_doc_root(doc);
         if (wf_impl_jsonrpc_is_response(message))
         {
             wf_impl_jsonrpc_proxy_onresult(session->rpc, message);
@@ -164,13 +166,13 @@ static void wf_impl_session_process(
             wf_impl_jsonrpc_server_process(session->server, message, &wf_impl_session_send, session);
         }
 
-        json_decref(message);
+        wf_impl_json_doc_dispose(doc);
     }
 }
 
 void wf_impl_session_receive(
     struct wf_impl_session * session,
-    char const * data,
+    char * data,
     size_t length,
     bool is_final_fragment)
 {

@@ -13,6 +13,7 @@
 
 #include "webfuse/impl/jsonrpc/request.h"
 #include "webfuse/impl/jsonrpc/response_writer.h"
+#include "webfuse/impl/json/node.h"
 #include "webfuse/impl/timer/manager.h"
 #include "webfuse/impl/timer/timer.h"
 
@@ -114,17 +115,17 @@ void wf_impl_server_protocol_init_lws(
 static void wf_impl_server_protocol_authenticate(
     struct wf_jsonrpc_request * request,
     char const * WF_UNUSED_PARAM(method_name),
-    json_t * params,
+    struct wf_json const * params,
     void * WF_UNUSED_PARAM(user_data))
 {
     bool result = false;
 
-    json_t * type_holder = json_array_get(params, 0);
-    json_t * creds_holder = json_array_get(params, 1);
+    struct wf_json const * type_holder = wf_impl_json_array_get(params, 0);
+    struct wf_json const * creds_holder = wf_impl_json_array_get(params, 1);
 
-    if (json_is_string(type_holder) && json_is_object(creds_holder))
+    if ((WF_JSON_TYPE_STRING == wf_impl_json_type(type_holder)) && (WF_JSON_TYPE_OBJECT == wf_impl_json_type(creds_holder)))
     {
-        char const * type = json_string_value(type_holder);
+        char const * type = wf_impl_json_string_get(type_holder);
         struct wf_credentials creds;
          
         wf_impl_credentials_init(&creds, type, creds_holder);
@@ -163,7 +164,7 @@ static bool wf_impl_server_protocol_check_name(char const * value)
 static void wf_impl_server_protocol_add_filesystem(
     struct wf_jsonrpc_request * request,
     char const * WF_UNUSED_PARAM(method_name),
-    json_t * params,
+    struct wf_json const * params,
     void * WF_UNUSED_PARAM(user_data))
 {
     struct wf_impl_session * session = wf_impl_jsonrpc_request_get_userdata(request);
@@ -172,10 +173,10 @@ static void wf_impl_server_protocol_add_filesystem(
     char const * name = NULL;
     if (WF_GOOD == status)
     {
-        json_t * name_holder = json_array_get(params, 0);
-        if (json_is_string(name_holder))
+        struct wf_json const * name_holder = wf_impl_json_array_get(params, 0);
+        if (WF_JSON_TYPE_STRING == wf_impl_json_type(name_holder))
         {
-            name = json_string_value(name_holder);
+            name = wf_impl_json_string_get(name_holder);
             if (wf_impl_server_protocol_check_name(name))
             {
                 bool const success = wf_impl_session_add_filesystem(session, name);
@@ -206,8 +207,6 @@ static void wf_impl_server_protocol_add_filesystem(
     {
         wf_impl_jsonrpc_respond_error(request, status, wf_impl_status_tostring(status));
     }
-    
-
 }
 
 void wf_impl_server_protocol_init(

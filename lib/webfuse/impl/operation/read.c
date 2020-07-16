@@ -2,11 +2,12 @@
 #include "webfuse/impl/operation/context.h"
 
 #include <errno.h>
+#include <stdlib.h>
 #include <string.h>
 #include <limits.h>
-#include <jansson.h>
 
 #include "webfuse/impl/jsonrpc/proxy.h"
+#include "webfuse/impl/json/node.h"
 #include "webfuse/impl/util/base64.h"
 #include "webfuse/impl/util/json_util.h"
 
@@ -61,7 +62,7 @@ char * wf_impl_fill_buffer(
 
 void wf_impl_operation_read_finished(
 	void * user_data, 
-	json_t const * result,
+	struct wf_json const * result,
 	struct wf_jsonrpc_error const * error)
 {
 	wf_status status = wf_impl_jsonrpc_get_status(error);
@@ -71,18 +72,18 @@ void wf_impl_operation_read_finished(
 	size_t length = 0;
 	if (NULL != result)
 	{
-		json_t * data_holder = json_object_get(result, "data");
-		json_t * format_holder = json_object_get(result, "format");
-		json_t * count_holder = json_object_get(result, "count");
+		struct wf_json const * data_holder = wf_impl_json_object_get(result, "data");
+		struct wf_json const * format_holder = wf_impl_json_object_get(result, "format");
+		struct wf_json const * count_holder = wf_impl_json_object_get(result, "count");
 
-		if (json_is_string(data_holder) &&
-        	json_is_string(format_holder) &&
-            json_is_integer(count_holder))
+		if ((WF_JSON_TYPE_STRING == wf_impl_json_type(data_holder)) &&
+        	(WF_JSON_TYPE_STRING == wf_impl_json_type(format_holder)) &&
+            (WF_JSON_TYPE_INT == wf_impl_json_type(count_holder)))
 		{
-			char const * const data = json_string_value(data_holder);
-			size_t const data_size = json_string_length(data_holder);
-			char const * const format = json_string_value(format_holder);
-			length = (size_t) json_integer_value(count_holder);
+			char const * const data = wf_impl_json_string_get(data_holder);
+			size_t const data_size = wf_impl_json_string_size(data_holder);
+			char const * const format = wf_impl_json_string_get(format_holder);
+			length = (size_t) wf_impl_json_int_get(count_holder);
 
 			buffer = wf_impl_fill_buffer(data, data_size, format, length, &status);
 		}

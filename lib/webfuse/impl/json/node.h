@@ -42,6 +42,10 @@ extern char const *
 wf_impl_json_string_get(
     struct wf_json const * json);
 
+extern size_t
+wf_impl_json_string_size(
+    struct wf_json const * json);
+
 extern struct wf_json const *
 wf_impl_json_array_get(
     struct wf_json const * json,

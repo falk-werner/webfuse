@@ -161,8 +161,10 @@ TEST(json_reader, read_string)
     wf_impl_json_reader_init(&reader, const_cast<char*>(text.data()), text.size());
 
     char * value;
-    ASSERT_TRUE(wf_impl_json_reader_read_string(&reader, &value));
+    size_t size;
+    ASSERT_TRUE(wf_impl_json_reader_read_string(&reader, &value, &size));
     ASSERT_STREQ("brummni", value);
+    ASSERT_EQ(7, size);
 }
 
 TEST(json_reader, read_string_escaped)
@@ -172,8 +174,10 @@ TEST(json_reader, read_string_escaped)
     wf_impl_json_reader_init(&reader, const_cast<char*>(text.data()), text.size());
 
     char * value;
-    ASSERT_TRUE(wf_impl_json_reader_read_string(&reader, &value));
+    size_t size;
+    ASSERT_TRUE(wf_impl_json_reader_read_string(&reader, &value, &size));
     ASSERT_STREQ("_\"_\\_/_\b_\f_\n_\r_\t_", value);
+    ASSERT_EQ(17, size);
 }
 
 TEST(json_reader, read_string_fail_missig_start_quot)
@@ -183,7 +187,8 @@ TEST(json_reader, read_string_fail_missig_start_quot)
     wf_impl_json_reader_init(&reader, const_cast<char*>(text.data()), text.size());
 
     char * value;
-    ASSERT_FALSE(wf_impl_json_reader_read_string(&reader, &value));
+    size_t size;
+    ASSERT_FALSE(wf_impl_json_reader_read_string(&reader, &value, &size));
 }
 
 TEST(json_reader, read_string_fail_missig_end_quot)
@@ -193,7 +198,8 @@ TEST(json_reader, read_string_fail_missig_end_quot)
     wf_impl_json_reader_init(&reader, const_cast<char*>(text.data()), text.size());
 
     char * value;
-    ASSERT_FALSE(wf_impl_json_reader_read_string(&reader, &value));
+    size_t size;
+    ASSERT_FALSE(wf_impl_json_reader_read_string(&reader, &value, &size));
 }
 
 TEST(json_reader, read_string_fail_invalid_escape_seq)
@@ -203,5 +209,6 @@ TEST(json_reader, read_string_fail_invalid_escape_seq)
     wf_impl_json_reader_init(&reader, const_cast<char*>(text.data()), text.size());
 
     char * value;
-    ASSERT_FALSE(wf_impl_json_reader_read_string(&reader, &value));
+    size_t size;
+    ASSERT_FALSE(wf_impl_json_reader_read_string(&reader, &value, &size));
 }

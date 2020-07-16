@@ -1,54 +1,51 @@
 #include "webfuse/impl/jsonrpc/response_intern.h"
 #include "webfuse/impl/jsonrpc/error.h"
+#include "webfuse/impl/json/node.h"
 #include "webfuse/status.h"
 
 bool
 wf_impl_jsonrpc_is_response(
-    json_t * message)
+    struct wf_json const * message)
 {
-	json_t * id = json_object_get(message, "id");
-	json_t * err = json_object_get(message, "error");
-	json_t * result = json_object_get(message, "result");
+	struct wf_json const * id = wf_impl_json_object_get(message, "id");
+	struct wf_json const * err = wf_impl_json_object_get(message, "error");
+	struct wf_json const * result = wf_impl_json_object_get(message, "result");
 
-	return (json_is_integer(id) && 
-		(json_is_object(err) ||  (NULL != result)));
+	return ((WF_JSON_TYPE_INT == wf_impl_json_type(id)) && 
+		((WF_JSON_TYPE_OBJECT == wf_impl_json_type(err)) ||  (WF_JSON_TYPE_UNDEFINED != wf_impl_json_type(result))));
 }
 
 
 void
 wf_impl_jsonrpc_response_init(
 	struct wf_jsonrpc_response * result,
-	json_t * response)
+	struct wf_json const * response)
 {
 	result->id = -1;
 	result->result = NULL;
 	result->error = NULL;
 
-	json_t * id_holder = json_object_get(response, "id");
-	if (!json_is_integer(id_holder))
+	struct wf_json const * id_holder = wf_impl_json_object_get(response, "id");
+	if (WF_JSON_TYPE_INT != wf_impl_json_type(id_holder))
 	{
 		result->error = wf_impl_jsonrpc_error(WF_BAD_FORMAT, "invalid format: missing id");
 		return;
 	}
 	
-	result->id = json_integer_value(id_holder);
-	result->result = json_object_get(response, "result");
-	if (NULL != result->result)
-	{
-		json_incref(result->result);
-	}
-	else
+	result->id = wf_impl_json_int_get(id_holder);
+	result->result = wf_impl_json_object_get(response, "result");
+	if (WF_JSON_TYPE_UNDEFINED == wf_impl_json_type(result->result))
 	{
 		int code = WF_BAD_FORMAT;
 		char const * message = "invalid format: invalid error object";
 
-		json_t * error = json_object_get(response, "error");
-		json_t * code_holder = json_object_get(error, "code");
-		if (json_is_integer(code_holder))
+		struct wf_json const * error = wf_impl_json_object_get(response, "error");
+		struct wf_json const * code_holder = wf_impl_json_object_get(error, "code");
+		if (WF_JSON_TYPE_INT == wf_impl_json_type(code_holder))
 		{
-			code = json_integer_value(json_object_get(error, "code"));
-			json_t * message_holder = json_object_get(error, "message");
-			message = json_is_string(message_holder) ? json_string_value(message_holder) : "";
+			code = wf_impl_json_int_get(code_holder);
+			struct wf_json const * message_holder = wf_impl_json_object_get(error, "message");
+			message = wf_impl_json_string_get(message_holder);
 		}
 
 		result->error = wf_impl_jsonrpc_error(code, message);
@@ -59,10 +56,5 @@ void
 wf_impl_jsonrpc_response_cleanup(
 	struct wf_jsonrpc_response * response)
 {
-    if (NULL != response->result)
-    {
-        json_decref(response->result);
-    }
-
 	wf_impl_jsonrpc_error_dispose(response->error);
 }

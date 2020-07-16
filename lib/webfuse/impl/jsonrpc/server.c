@@ -1,6 +1,7 @@
 #include "webfuse/impl/jsonrpc/server.h"
 #include "webfuse/impl/jsonrpc/method.h"
 #include "webfuse/impl/jsonrpc/request.h"
+#include "webfuse/impl/json/node.h"
 #include "webfuse/status.h"
 #include "webfuse/impl/util/util.h"
 
@@ -70,7 +71,7 @@ void wf_impl_jsonrpc_server_add(
 static void wf_impl_jsonrpc_server_invalid_method_invoke(
     struct wf_jsonrpc_request * request,
     char const * WF_UNUSED_PARAM(method_name),
-    json_t * WF_UNUSED_PARAM(params),
+    struct wf_json const * WF_UNUSED_PARAM(params),
     void * WF_UNUSED_PARAM(user_data))
 {
     wf_impl_jsonrpc_respond_error(request, WF_BAD_NOTIMPLEMENTED, "not implemented");
@@ -105,20 +106,20 @@ wf_impl_jsonrpc_server_get_method(
 
 void wf_impl_jsonrpc_server_process(
     struct wf_jsonrpc_server * server,
-    json_t * request_data,
+    struct wf_json const * request_data,
     wf_jsonrpc_send_fn * send,
     void * user_data)
 {
-    json_t * method_holder = json_object_get(request_data, "method");
-    json_t * params = json_object_get(request_data, "params");
-    json_t * id_holder = json_object_get(request_data, "id");
+    struct wf_json const * method_holder = wf_impl_json_object_get(request_data, "method");
+    struct wf_json const * params = wf_impl_json_object_get(request_data, "params");
+    struct wf_json const * id_holder = wf_impl_json_object_get(request_data, "id");
 
-    if (json_is_string(method_holder) &&
-        (json_is_array(params) || (json_is_object(params))) &&
-        json_is_integer(id_holder))
+    if ((WF_JSON_TYPE_STRING == wf_impl_json_type(method_holder)) &&
+        ((WF_JSON_TYPE_ARRAY == wf_impl_json_type(params)) || (WF_JSON_TYPE_OBJECT == wf_impl_json_type(params))) &&
+        (WF_JSON_TYPE_INT == wf_impl_json_type(id_holder)))
     {
-        char const * method_name = json_string_value(method_holder);
-        int id = json_integer_value(id_holder);
+        char const * method_name = wf_impl_json_string_get(method_holder);
+        int id = wf_impl_json_int_get(id_holder);
         struct wf_jsonrpc_request * request = wf_impl_jsonrpc_request_create(id, send, user_data);
         struct wf_jsonrpc_method const * method = wf_impl_jsonrpc_server_get_method(server, method_name);
 

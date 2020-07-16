@@ -8,6 +8,12 @@ extern "C"
 {
 #endif
 
+struct wf_json_string
+{
+    char * data;
+    size_t size;
+};
+
 struct wf_json_array
 {
     struct wf_json * items;
@@ -26,7 +32,7 @@ union wf_json_value
 {
     bool b;
     int i;
-    char * s;
+    struct wf_json_string s;
     struct wf_json_array a;
     struct wf_json_object o;
 };

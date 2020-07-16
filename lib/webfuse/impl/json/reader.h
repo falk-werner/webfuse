@@ -56,7 +56,8 @@ wf_impl_json_reader_read_int(
 extern bool
 wf_impl_json_reader_read_string(
     struct wf_json_reader * reader,
-    char * * value);
+    char * * value,
+    size_t * size);
 
 #ifdef __cplusplus
 }

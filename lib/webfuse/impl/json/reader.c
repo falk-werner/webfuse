@@ -117,14 +117,15 @@ wf_impl_json_reader_read_int(
 bool
 wf_impl_json_reader_read_string(
     struct wf_json_reader * reader,
-    char * * value)
+    char * * value,
+    size_t * size)
 {
     wf_impl_json_reader_skip_whitespace(reader);
     char c = wf_impl_json_reader_get_char(reader);
     if ('\"' != c) { return false; }
 
+    size_t start = reader->pos;
     size_t p = reader->pos;
-    *value = &(reader->contents[p]);
     c = wf_impl_json_reader_get_char(reader);
     while (('\"' != c) && ('\0' != c))
     {
@@ -142,7 +143,6 @@ wf_impl_json_reader_read_string(
             }
             else
             {
-                *value = NULL;
                 return false;
             }
         }
@@ -154,6 +154,8 @@ wf_impl_json_reader_read_string(
     if (result)
     {
         reader->contents[p] = '\0';
+        *value = &(reader->contents[start]);
+        *size = p - start;
     }
 
     return result;

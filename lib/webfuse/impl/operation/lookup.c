@@ -12,12 +12,13 @@
 #include <stdlib.h>
 
 #include "webfuse/impl/jsonrpc/proxy.h"
+#include "webfuse/impl/json/node.h"
 #include "webfuse/impl/util/json_util.h"
 #include "webfuse/impl/util/util.h"
 
 void wf_impl_operation_lookup_finished(
 	void * user_data,
-	json_t const * result,
+	struct wf_json const * result,
 	struct wf_jsonrpc_error const * error
 )
 {
@@ -27,19 +28,19 @@ void wf_impl_operation_lookup_finished(
 
 	if (NULL != result)
 	{
-		json_t * inode_holder = json_object_get(result, "inode"); 
-		json_t * mode_holder = json_object_get(result, "mode");
-		json_t * type_holder = json_object_get(result, "type");
-		if ((json_is_integer(inode_holder)) &&
-			(json_is_integer(mode_holder)) && 
-		    (json_is_string(type_holder)))
+		struct wf_json const * inode_holder = wf_impl_json_object_get(result, "inode"); 
+		struct wf_json const * mode_holder = wf_impl_json_object_get(result, "mode");
+		struct wf_json const * type_holder = wf_impl_json_object_get(result, "type");
+		if ((WF_JSON_TYPE_INT == wf_impl_json_type(inode_holder)) &&
+			(WF_JSON_TYPE_INT == wf_impl_json_type(mode_holder)) && 
+		    (WF_JSON_TYPE_INT == wf_impl_json_type(type_holder)))
 		{
             memset(&buffer, 0, sizeof(struct stat));
 
-			buffer.ino = json_integer_value(inode_holder);
+			buffer.ino = wf_impl_json_int_get(inode_holder);
 			buffer.attr.st_ino = buffer.ino;
-			buffer.attr.st_mode = json_integer_value(mode_holder) & 0555;
-			char const * type = json_string_value(type_holder);
+			buffer.attr.st_mode = wf_impl_json_int_get(mode_holder) & 0555;
+			char const * type = wf_impl_json_string_get(type_holder);
 			if (0 == strcmp("file", type)) 
 			{
 				buffer.attr.st_mode |= S_IFREG;

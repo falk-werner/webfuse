@@ -34,8 +34,16 @@ char const *
 wf_impl_json_string_get(
     struct wf_json const * json)
 {
-    return (WF_JSON_TYPE_STRING == json->type) ? json->value.s : "";
+    return (WF_JSON_TYPE_STRING == json->type) ? json->value.s.data : "";
 }
+
+size_t
+wf_impl_json_string_size(
+    struct wf_json const * json)
+{
+    return (WF_JSON_TYPE_STRING == json->type) ? json->value.s.size : 0;
+}
+
 
 struct wf_json const *
 wf_impl_json_array_get(

@@ -143,7 +143,7 @@ extern void wf_impl_jsonrpc_proxy_vnotify(
 
 void wf_impl_jsonrpc_proxy_onresult(
     struct wf_jsonrpc_proxy * proxy,
-    json_t * message)
+    struct wf_json const * message)
 {
 	struct wf_jsonrpc_response response;
 	wf_impl_jsonrpc_response_init(&response, message);

@@ -161,11 +161,13 @@ wf_impl_json_parse_string(
     struct wf_json * json)
 {
     char * value;
-    bool const result = wf_impl_json_reader_read_string(reader, &value);
+    size_t size;
+    bool const result = wf_impl_json_reader_read_string(reader, &value, &size);
     if (result)
     {
         json->type = WF_JSON_TYPE_STRING;
-        json->value.s = value;
+        json->value.s.data = value;
+        json->value.s.size = size;
     }
 
     return result;
@@ -254,7 +256,8 @@ wf_impl_json_parse_object(
         }
 
         struct wf_json_object_item * item = &(json->value.o.items[json->value.o.size]);
-        result = wf_impl_json_reader_read_string(reader, &(item->key));
+        size_t key_size;
+        result = wf_impl_json_reader_read_string(reader, &(item->key), &key_size);
         if (result)
         {
             wf_impl_json_reader_skip_whitespace(reader);

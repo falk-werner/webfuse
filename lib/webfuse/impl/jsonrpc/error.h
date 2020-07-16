@@ -1,7 +1,6 @@
 #ifndef WF_IMPL_JSONRPC_ERROR_H
 #define WF_IMPL_JSONRPC_ERROR_H
 
-#include <jansson.h>
 #include "webfuse/impl/jsonrpc/proxy_finished_fn.h"
 
 #ifdef __cplusplus

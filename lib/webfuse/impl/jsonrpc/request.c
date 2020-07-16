@@ -1,6 +1,7 @@
 #include "webfuse/impl/jsonrpc/request.h"
 #include "webfuse/impl/jsonrpc/error.h"
 #include "webfuse/impl/json/writer.h"
+#include "webfuse/impl/json/node.h"
 #include "webfuse/impl/jsonrpc/response_writer.h"
 #include "webfuse/impl/message.h"
 
@@ -17,14 +18,14 @@ struct wf_jsonrpc_request
 
 bool
 wf_impl_jsonrpc_is_request(
-    json_t * message)
+    struct wf_json const * message)
 {
-    json_t * id = json_object_get(message, "id");
-    json_t * method = json_object_get(message, "method");
-    json_t * params = json_object_get(message, "params");
+    struct wf_json const * id = wf_impl_json_object_get(message, "id");
+    struct wf_json const * method = wf_impl_json_object_get(message, "method");
+    struct wf_json const * params = wf_impl_json_object_get(message, "params");
 
-    return (json_is_integer(id) && json_is_string(method) &&
-            (json_is_array(params) || json_is_object(params)));
+    return ( (WF_JSON_TYPE_INT == wf_impl_json_type(id)) && (WF_JSON_TYPE_STRING == wf_impl_json_type(method)) &&
+            ( (WF_JSON_TYPE_ARRAY == wf_impl_json_type(params)) || (WF_JSON_TYPE_OBJECT == wf_impl_json_type(params)) ));
 }
 
 

@@ -9,6 +9,8 @@
 #include "webfuse/impl/timer/manager.h"
 #include "webfuse/impl/jsonrpc/response.h"
 #include "webfuse/impl/jsonrpc/proxy.h"
+#include "webfuse/impl/json/doc.h"
+#include "webfuse/impl/json/node.h"
 
 #include "webfuse/impl/message.h"
 #include "webfuse/impl/message_queue.h"
@@ -30,26 +32,26 @@ struct wf_impl_client_protocol_add_filesystem_context
 static void
 wf_impl_client_protocol_process(
      struct wf_client_protocol * protocol, 
-     char const * data,
+     char * data,
      size_t length)
 {
-
-    json_t * message = json_loadb(data, length, 0, NULL);
-    if (NULL != message)
+    struct wf_json_doc * doc = wf_impl_json_doc_loadb(data, length);
+    if (NULL != doc)
     {
+        struct wf_json const * message = wf_impl_json_doc_root(doc);
         if (wf_impl_jsonrpc_is_response(message))
         {
             wf_impl_jsonrpc_proxy_onresult(protocol->proxy, message);
         }
 
-        json_decref(message);
+        wf_impl_json_doc_dispose(doc);
     }
 }
 
 static void
 wf_impl_client_protocol_receive(
      struct wf_client_protocol * protocol, 
-     char const * data,
+     char * data,
      size_t length,
      bool is_final_fragment)
 {
@@ -101,7 +103,7 @@ wf_impl_client_protocol_send(
 static void
 wf_impl_client_protocol_on_authenticate_finished(
 	void * user_data,
-	json_t const * result,
+	struct wf_json const * result,
 	struct wf_jsonrpc_error const * WF_UNUSED_PARAM(error))    
 {
     struct wf_client_protocol * protocol = user_data;
@@ -113,7 +115,7 @@ wf_impl_client_protocol_on_authenticate_finished(
 static void
 wf_impl_client_protocol_on_add_filesystem_finished(
 	void * user_data,
-	json_t const * result,
+	struct wf_json const * result,
 	struct wf_jsonrpc_error const * WF_UNUSED_PARAM(error))
 {
     struct wf_impl_client_protocol_add_filesystem_context * context = user_data;
@@ -122,10 +124,10 @@ wf_impl_client_protocol_on_add_filesystem_finished(
     int reason = WF_CLIENT_FILESYSTEM_ADD_FAILED;
     if (NULL == protocol->filesystem)
     {
-        json_t * id = json_object_get(result, "id");
-        if (json_is_string(id))
+        struct wf_json const * id = wf_impl_json_object_get(result, "id");
+        if (WF_JSON_TYPE_STRING == wf_impl_json_type(id))
         {
-            char const * name = json_string_value(id);        
+            char const * name = wf_impl_json_string_get(id);        
             struct wf_mountpoint * mountpoint = wf_impl_mountpoint_create(context->local_path);
             protocol->filesystem = wf_impl_filesystem_create(protocol->wsi,protocol->proxy, name, mountpoint);
             if (NULL != protocol->filesystem)
