@@ -39,16 +39,19 @@ wf_impl_jsonrpc_response_init(
 	}
 	else
 	{
+		int code = WF_BAD_FORMAT;
+		char const * message = "invalid format: invalid error object";
+
 		json_t * error = json_object_get(response, "error");
-		if ((json_is_object(error)) && (json_is_integer(json_object_get(error, "code"))))
+		json_t * code_holder = json_object_get(error, "code");
+		if (json_is_integer(code_holder))
 		{
-			result->error = error;
-			json_incref(result->error);
+			code = json_integer_value(json_object_get(error, "code"));
+			json_t * message_holder = json_object_get(error, "message");
+			message = json_is_string(message_holder) ? json_string_value(message_holder) : "";
 		}
-		else
-		{
-			result->error = wf_impl_jsonrpc_error(WF_BAD_FORMAT, "invalid format: invalid error object");
-		}
+
+		result->error = wf_impl_jsonrpc_error(code, message);
 	}
 }
 
@@ -61,8 +64,5 @@ wf_impl_jsonrpc_response_cleanup(
         json_decref(response->result);
     }
 
-    if (NULL != response->error)
-    {
-        json_decref(response->error);
-    }
+	wf_impl_jsonrpc_error_dispose(response->error);
 }

@@ -14,10 +14,12 @@ using std::size_t;
 extern "C" {
 #endif
 
+struct wf_jsonrpc_error;
+
 struct wf_jsonrpc_response
 {
 	json_t * result;	
-	json_t * error;
+	struct wf_jsonrpc_error * error;
 	int id;
 };
 

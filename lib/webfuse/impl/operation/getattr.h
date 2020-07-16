@@ -11,6 +11,8 @@ extern "C"
 {
 #endif
 
+struct wf_jsonrpc_error;
+
 struct wf_impl_operation_getattr_context
 {
 	fuse_req_t request;
@@ -23,7 +25,7 @@ struct wf_impl_operation_getattr_context
 extern void wf_impl_operation_getattr_finished(
 	void * user_data,
 	json_t const * result,
-	json_t const * error);
+	struct wf_jsonrpc_error const * error);
 
 extern void wf_impl_operation_getattr (
 		fuse_req_t request,

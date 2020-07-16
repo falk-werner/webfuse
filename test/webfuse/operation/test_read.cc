@@ -1,4 +1,5 @@
 #include "webfuse/impl/operation/read.h"
+#include "webfuse/impl/jsonrpc/error.h"
 
 #include "webfuse/mocks/mock_fuse.hpp"
 #include "webfuse/mocks/mock_operation_context.hpp"
@@ -230,8 +231,7 @@ TEST(wf_impl_operation_read, finished_fail_error)
     EXPECT_CALL(fuse, fuse_reply_buf(_,_,_)).Times(0);
     EXPECT_CALL(fuse, fuse_reply_err(_, _)).Times(1).WillOnce(Return(0));
 
-    json_t * error = json_object();
-    json_object_set_new(error, "code", json_integer(WF_BAD));
+    struct wf_jsonrpc_error * error = wf_impl_jsonrpc_error(WF_BAD, "");
     wf_impl_operation_read_finished(nullptr, nullptr, error);
-    json_decref(error);
+    wf_impl_jsonrpc_error_dispose(error);
 }

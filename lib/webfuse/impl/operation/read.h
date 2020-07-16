@@ -11,6 +11,8 @@ extern "C"
 {
 #endif
 
+struct wf_jsonrpc_error;
+
 extern void wf_impl_operation_read(
 	fuse_req_t request,
 	fuse_ino_t ino, size_t size, off_t off,
@@ -26,7 +28,7 @@ extern char * wf_impl_fill_buffer(
 extern void wf_impl_operation_read_finished(
 	void * user_data, 
 	json_t const * result,
-	json_t const * error);
+	struct wf_jsonrpc_error const * error);
 
 
 #ifdef __cplusplus

@@ -12,7 +12,7 @@
 void wf_impl_operation_open_finished(
 	void * user_data,
 	json_t const * result,
-	json_t const * error)
+	struct wf_jsonrpc_error const * error)
 {
 	wf_status status = wf_impl_jsonrpc_get_status(error);
 	fuse_req_t request = user_data;

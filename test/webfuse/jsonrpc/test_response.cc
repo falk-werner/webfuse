@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 #include "webfuse/impl/jsonrpc/response_intern.h"
+#include "webfuse/impl/jsonrpc/error.h"
 #include "webfuse/status.h"
 
 TEST(wf_json_response, init_result)
@@ -32,8 +33,8 @@ TEST(wf_json_response, init_error)
     struct wf_jsonrpc_response response;
     wf_impl_jsonrpc_response_init(&response, message);
 
-    ASSERT_EQ(42, json_integer_value(json_object_get(response.error, "code")));
-    ASSERT_STREQ("Don't Panic!", json_string_value(json_object_get(response.error, "message")));
+    ASSERT_EQ(42, wf_impl_jsonrpc_error_code(response.error));
+    ASSERT_STREQ("Don't Panic!", wf_impl_jsonrpc_error_message(response.error));
     ASSERT_EQ(nullptr, response.result);
     ASSERT_EQ(23, response.id);
 
@@ -49,7 +50,7 @@ TEST(wf_json_response, init_fail_missing_result_and_error)
     struct wf_jsonrpc_response response;
     wf_impl_jsonrpc_response_init(&response, message);
 
-    ASSERT_EQ(WF_BAD_FORMAT, json_integer_value(json_object_get(response.error, "code")));
+    ASSERT_EQ(WF_BAD_FORMAT, wf_impl_jsonrpc_error_code(response.error));
     ASSERT_EQ(nullptr, response.result);
     ASSERT_EQ(12, response.id);
 
@@ -65,7 +66,7 @@ TEST(wf_json_response, init_fail_missing_id)
     struct wf_jsonrpc_response response;
     wf_impl_jsonrpc_response_init(&response, message);
 
-    ASSERT_EQ(WF_BAD_FORMAT, json_integer_value(json_object_get(response.error, "code")));
+    ASSERT_EQ(WF_BAD_FORMAT, wf_impl_jsonrpc_error_code(response.error));
     ASSERT_EQ(nullptr, response.result);
     ASSERT_EQ(-1, response.id);
 
@@ -82,7 +83,7 @@ TEST(wf_json_response, init_fail_wrong_id_type)
     struct wf_jsonrpc_response response;
     wf_impl_jsonrpc_response_init(&response, message);
 
-    ASSERT_EQ(WF_BAD_FORMAT, json_integer_value(json_object_get(response.error, "code")));
+    ASSERT_EQ(WF_BAD_FORMAT, wf_impl_jsonrpc_error_code(response.error));
     ASSERT_EQ(nullptr, response.result);
     ASSERT_EQ(-1, response.id);
 
@@ -101,7 +102,7 @@ TEST(wf_json_response, init_fail_error_missing_code)
     struct wf_jsonrpc_response response;
     wf_impl_jsonrpc_response_init(&response, message);
 
-    ASSERT_EQ(WF_BAD_FORMAT, json_integer_value(json_object_get(response.error, "code")));
+    ASSERT_EQ(WF_BAD_FORMAT, wf_impl_jsonrpc_error_code(response.error));
     ASSERT_EQ(nullptr, response.result);
     ASSERT_EQ(23, response.id);
 
@@ -121,7 +122,7 @@ TEST(wf_json_response, init_fail_error_wrong_code_type)
     struct wf_jsonrpc_response response;
     wf_impl_jsonrpc_response_init(&response, message);
 
-    ASSERT_EQ(WF_BAD_FORMAT, json_integer_value(json_object_get(response.error, "code")));
+    ASSERT_EQ(WF_BAD_FORMAT, wf_impl_jsonrpc_error_code(response.error));
     ASSERT_EQ(nullptr, response.result);
     ASSERT_EQ(23, response.id);
 
@@ -138,7 +139,7 @@ TEST(wf_json_response, init_fail_error_wrong_type)
     struct wf_jsonrpc_response response;
     wf_impl_jsonrpc_response_init(&response, message);
 
-    ASSERT_EQ(WF_BAD_FORMAT, json_integer_value(json_object_get(response.error, "code")));
+    ASSERT_EQ(WF_BAD_FORMAT, wf_impl_jsonrpc_error_code(response.error));
     ASSERT_EQ(nullptr, response.result);
     ASSERT_EQ(23, response.id);
 

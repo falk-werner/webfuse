@@ -8,10 +8,12 @@ extern "C"
 {
 #endif
 
+struct wf_jsonrpc_error;
+
 typedef void wf_jsonrpc_proxy_finished_fn(
 	void * user_data,
 	json_t const * result,
-    json_t const * error);
+    struct wf_jsonrpc_error const * error);
 
 #ifdef __cplusplus
 }

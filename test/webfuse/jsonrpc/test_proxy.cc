@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 #include "webfuse/impl/jsonrpc/proxy.h"
+#include "webfuse/impl/jsonrpc/error.h"
 #include "webfuse/impl/message.h"
 #include "webfuse/status.h"
 #include "webfuse/impl/timer/manager.h"
@@ -20,12 +21,6 @@ using testing::SaveArg;
 
 namespace
 {
-    int jsonrpc_get_status(json_t * error)
-    {
-        json_t * code = json_object_get(error, "code");
-        return (json_is_integer(code)) ? json_integer_value(code) : WF_BAD_FORMAT;
-    }
-
     struct SendContext
     {
         json_t * response;
@@ -65,7 +60,7 @@ namespace
     {
         bool is_called;
         json_t * result;
-        json_t * error;
+        wf_jsonrpc_error * error;
 
         FinishedContext()
         : is_called(false)
@@ -82,22 +77,24 @@ namespace
                 json_decref(result);
             }
 
-            if (nullptr != error)
-            {
-                json_decref(error);
-            }
+            wf_impl_jsonrpc_error_dispose(error);
         }
     };
 
     void jsonrpc_finished(
         void * user_data,
         json_t const * result,
-        json_t const * error)
+        wf_jsonrpc_error const * error)
     {
         FinishedContext * context = reinterpret_cast<FinishedContext*>(user_data);
         context->is_called = true;
         context->result = json_deep_copy(result);
-        context->error = json_deep_copy(error);
+
+        if (nullptr != error)
+        {
+            context->error = wf_impl_jsonrpc_error(wf_impl_jsonrpc_error_code(error),
+                wf_impl_jsonrpc_error_message(error));
+        }
     }
 }
 
@@ -305,7 +302,7 @@ TEST(wf_jsonrpc_proxy, timeout)
     wf_impl_timer_manager_check(timer_manager);
 
     ASSERT_TRUE(finished_context.is_called);
-    ASSERT_EQ(WF_BAD_TIMEOUT, jsonrpc_get_status(finished_context.error));
+    ASSERT_EQ(WF_BAD_TIMEOUT, wf_impl_jsonrpc_error_code(finished_context.error));
 
     wf_impl_jsonrpc_proxy_dispose(proxy);
     wf_impl_timer_manager_dispose(timer_manager);

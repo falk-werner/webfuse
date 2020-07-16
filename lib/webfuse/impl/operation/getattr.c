@@ -15,7 +15,7 @@
 void wf_impl_operation_getattr_finished(
 	void * user_data,
 	json_t const * result,
-	json_t const * error)
+	struct wf_jsonrpc_error const * error)
 {
 	wf_status status = wf_impl_jsonrpc_get_status(error);
 	struct wf_impl_operation_getattr_context * context = user_data;

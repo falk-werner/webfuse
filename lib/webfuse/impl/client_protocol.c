@@ -102,7 +102,7 @@ static void
 wf_impl_client_protocol_on_authenticate_finished(
 	void * user_data,
 	json_t const * result,
-	json_t const * WF_UNUSED_PARAM(error))    
+	struct wf_jsonrpc_error const * WF_UNUSED_PARAM(error))    
 {
     struct wf_client_protocol * protocol = user_data;
     int const reason = (NULL != result) ? WF_CLIENT_AUTHENTICATED : WF_CLIENT_AUTHENTICATION_FAILED;
@@ -114,7 +114,7 @@ static void
 wf_impl_client_protocol_on_add_filesystem_finished(
 	void * user_data,
 	json_t const * result,
-	json_t const * WF_UNUSED_PARAM(error))
+	struct wf_jsonrpc_error const * WF_UNUSED_PARAM(error))
 {
     struct wf_impl_client_protocol_add_filesystem_context * context = user_data;
     struct wf_client_protocol * protocol = context->protocol;

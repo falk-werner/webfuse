@@ -9,6 +9,8 @@ extern "C"
 {
 #endif
 
+struct wf_jsonrpc_error;
+
 struct wf_impl_operation_readdir_context
 {
 	fuse_req_t request;
@@ -26,7 +28,7 @@ extern void wf_impl_operation_readdir (
 extern void wf_impl_operation_readdir_finished(
 	void * user_data,
 	json_t const * result,
-	json_t const * error);
+	struct wf_jsonrpc_error const * error);
 
 #ifdef __cplusplus
 }

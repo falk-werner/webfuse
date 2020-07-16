@@ -9,6 +9,8 @@ extern "C"
 {
 #endif
 
+struct wf_jsonrpc_error;
+
 extern int
 wf_impl_json_get_int(
     json_t const * object,
@@ -17,7 +19,7 @@ wf_impl_json_get_int(
 
 extern wf_status 
 wf_impl_jsonrpc_get_status(
-    json_t const * error);
+    struct wf_jsonrpc_error const * error);
 
 #ifdef __cplusplus
 }

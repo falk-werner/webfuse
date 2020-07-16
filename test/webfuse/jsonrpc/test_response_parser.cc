@@ -2,6 +2,7 @@
 #include <gtest/gtest.h>
 
 #include "webfuse/impl/jsonrpc/response_intern.h"
+#include "webfuse/impl/jsonrpc/error.h"
 
 
 static void response_parse_str(
@@ -44,7 +45,7 @@ TEST(response_parser, test)
 	// custom error code
 	response_parse_str("{\"error\":{\"code\": 42}, \"id\": 42}", &response);
 	ASSERT_NE(nullptr, response.error);
-	ASSERT_EQ(42, json_integer_value(json_object_get(response.error, "code")));
+	ASSERT_EQ(42, wf_impl_jsonrpc_error_code(response.error));
 	ASSERT_EQ(42, response.id);
 	ASSERT_EQ(nullptr, response.result);
 	wf_impl_jsonrpc_response_cleanup(&response);

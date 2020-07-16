@@ -1,4 +1,5 @@
 #include "webfuse/impl/operation/lookup.h"
+#include "webfuse/impl/jsonrpc/error.h"
 
 #include "webfuse/status.h"
 
@@ -243,13 +244,12 @@ TEST(wf_impl_operation_lookup, finished_error)
     EXPECT_CALL(fuse, fuse_reply_open(_,_)).Times(0);
     EXPECT_CALL(fuse, fuse_reply_err(_, ENOENT)).Times(1).WillOnce(Return(0));
 
-    json_t * error = json_object();
-    json_object_set_new(error, "code", json_integer(WF_BAD));
+    struct wf_jsonrpc_error * error = wf_impl_jsonrpc_error(WF_BAD, "");
 
     auto * context = reinterpret_cast<wf_impl_operation_lookup_context*>(malloc(sizeof(wf_impl_operation_lookup_context)));
     context->timeout = 1.0;
     context->gid = 0;
     context->uid = 0;
     wf_impl_operation_lookup_finished(context, nullptr, error);
-    json_decref(error);
+    wf_impl_jsonrpc_error_dispose(error);
 }

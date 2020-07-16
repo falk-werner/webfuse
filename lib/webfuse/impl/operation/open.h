@@ -9,6 +9,8 @@ extern "C"
 {
 #endif
 
+struct wf_jsonrpc_error;
+
 extern void wf_impl_operation_open(
 	fuse_req_t request,
 	fuse_ino_t inode,
@@ -17,7 +19,7 @@ extern void wf_impl_operation_open(
 extern void wf_impl_operation_open_finished(
 	void * user_data,
 	json_t const * result,
-	json_t const * error);
+	struct wf_jsonrpc_error const * error);
 
 #ifdef __cplusplus
 }
