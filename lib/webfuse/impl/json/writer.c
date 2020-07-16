@@ -263,12 +263,12 @@ wf_impl_json_write_bytes(
     size_t length)
 {
     size_t encoded_length = wf_impl_base64_encoded_size(length);
-    wf_impl_json_reserve(writer, length + WF_JSON_WRITER_ADDITIONAL_STRING_SIZE);
+    wf_impl_json_reserve(writer, encoded_length + WF_JSON_WRITER_ADDITIONAL_STRING_SIZE);
     wf_impl_json_begin_value(writer);
 
     wf_impl_json_write_raw_char(writer, '\"');
     wf_impl_base64_encode((uint8_t const *) data, length, &(writer->data[writer->offset]), encoded_length);
-    writer->offset = encoded_length;
+    writer->offset += encoded_length;
     wf_impl_json_write_raw_char(writer, '\"');
 
     wf_impl_json_end_value(writer);

@@ -200,7 +200,7 @@ TEST(json_writer, write_bytes)
     writer writer;
     wf_impl_json_write_bytes(writer, "\0\0", 2);
 
-    ASSERT_EQ("\"AAA\"", writer.take());
+    ASSERT_EQ("\"AAA=\"", writer.take());
 }
 
 TEST(json_writer, reset)
@@ -238,10 +238,10 @@ TEST(json_writer, write_object_string_nocheck)
 {
     writer writer;
     wf_impl_json_write_object_begin(writer);
-    wf_impl_json_write_object_string(writer, "result", "Hello,\tWorld!");
+    wf_impl_json_write_object_string_nocheck(writer, "result", "Hello,\tWorld!");
     wf_impl_json_write_object_end(writer);
 
-    ASSERT_EQ("{\"result\": \"Hello,\tWorld!\"}", writer.take());
+    ASSERT_EQ("{\"result\":\"Hello,\tWorld!\"}", writer.take());
 }
 
 TEST(json_writer, write_object_bytes)
@@ -251,7 +251,8 @@ TEST(json_writer, write_object_bytes)
     wf_impl_json_write_object_bytes(writer, "result", "\0\0", 2);
     wf_impl_json_write_object_end(writer);
 
-    ASSERT_EQ("{\"result\": \"AAA\"}", writer.take());
+
+    ASSERT_EQ("{\"result\":\"AAA=\"}", writer.take());
 }
 
 TEST(json_writer, realloc_buffer)
@@ -259,7 +260,7 @@ TEST(json_writer, realloc_buffer)
     writer writer(1);
     wf_impl_json_write_string(writer, "very large contents");
 
-    ASSERT_EQ("very large contents", writer.take());
+    ASSERT_EQ("\"very large contents\"", writer.take());
 }
 
 TEST(json_writer, unexpected_end)
