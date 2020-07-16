@@ -72,6 +72,16 @@ TEST(json_parser, fail_unterminated_array)
     ASSERT_FALSE(try_parse("[1"));
 }
 
+TEST(json_parser, fail_missing_array_separator)
+{
+    ASSERT_FALSE(try_parse("[1 2]"));
+}
+
+TEST(json_parser, fail_missing_array_value)
+{
+    ASSERT_FALSE(try_parse("[1,]"));
+}
+
 TEST(json_parser, empty_object)
 {
     ASSERT_TRUE(try_parse("{}"));
@@ -100,4 +110,14 @@ TEST(json_parser, fail_missing_object_terminator)
 TEST(json_parser, fail_missing_object_value)
 {
     ASSERT_FALSE(try_parse("{\"a\":}"));
+}
+
+TEST(json_parser, fail_missing_object_separator)
+{
+    ASSERT_FALSE(try_parse("{\"a\":1 \"b\":2}"));
+}
+
+TEST(json_parser, fail_missing_object_item)
+{
+    ASSERT_FALSE(try_parse("{\"a\":1,}"));
 }

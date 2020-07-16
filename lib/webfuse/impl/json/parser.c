@@ -210,7 +210,7 @@ wf_impl_json_parse_array(
         }
     } while ((result) && (',' == c));
     
-    if ((result) && (']' != c))
+    if (']' != c)
     {
         result = false;
     }
@@ -272,9 +272,9 @@ wf_impl_json_parse_object(
             wf_impl_json_reader_skip_whitespace(reader);
             c = wf_impl_json_reader_get_char(reader);
         }
-    } while ((reader) && (',' == c));
+    } while ((result) && (',' == c));
 
-    if ((reader) && ('}' != c))
+    if ('}' != c)
     {
         result = false;
     }
