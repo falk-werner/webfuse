@@ -31,6 +31,34 @@ wf_impl_json_type(
     struct wf_json const * json);
 
 extern bool
+wf_impl_json_is_undefined(
+    struct wf_json const * json);
+
+extern bool
+wf_impl_json_is_null(
+    struct wf_json const * json);
+
+extern bool
+wf_impl_json_is_bool(
+    struct wf_json const * json);
+
+extern bool
+wf_impl_json_is_int(
+    struct wf_json const * json);
+
+extern bool
+wf_impl_json_is_string(
+    struct wf_json const * json);
+
+extern bool
+wf_impl_json_is_array(
+    struct wf_json const * json);
+
+extern bool
+wf_impl_json_is_object(
+    struct wf_json const * json);
+
+extern bool
 wf_impl_json_bool_get(
     struct wf_json const * json);
 

@@ -123,7 +123,7 @@ static void wf_impl_server_protocol_authenticate(
     struct wf_json const * type_holder = wf_impl_json_array_get(params, 0);
     struct wf_json const * creds_holder = wf_impl_json_array_get(params, 1);
 
-    if ((WF_JSON_TYPE_STRING == wf_impl_json_type(type_holder)) && (WF_JSON_TYPE_OBJECT == wf_impl_json_type(creds_holder)))
+    if ((wf_impl_json_is_string(type_holder)) && (wf_impl_json_is_object(creds_holder)))
     {
         char const * type = wf_impl_json_string_get(type_holder);
         struct wf_credentials creds;
@@ -174,7 +174,7 @@ static void wf_impl_server_protocol_add_filesystem(
     if (WF_GOOD == status)
     {
         struct wf_json const * name_holder = wf_impl_json_array_get(params, 0);
-        if (WF_JSON_TYPE_STRING == wf_impl_json_type(name_holder))
+        if (wf_impl_json_is_string(name_holder))
         {
             name = wf_impl_json_string_get(name_holder);
             if (wf_impl_server_protocol_check_name(name))

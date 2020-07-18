@@ -24,8 +24,8 @@ wf_impl_jsonrpc_is_request(
     struct wf_json const * method = wf_impl_json_object_get(message, "method");
     struct wf_json const * params = wf_impl_json_object_get(message, "params");
 
-    return ( (WF_JSON_TYPE_INT == wf_impl_json_type(id)) && (WF_JSON_TYPE_STRING == wf_impl_json_type(method)) &&
-            ( (WF_JSON_TYPE_ARRAY == wf_impl_json_type(params)) || (WF_JSON_TYPE_OBJECT == wf_impl_json_type(params)) ));
+    return ( (wf_impl_json_is_int(id)) && (wf_impl_json_is_string(method)) &&
+            ( (wf_impl_json_is_array(params)) || (wf_impl_json_is_object(params)) ));
 }
 
 

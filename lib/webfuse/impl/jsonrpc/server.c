@@ -114,9 +114,9 @@ void wf_impl_jsonrpc_server_process(
     struct wf_json const * params = wf_impl_json_object_get(request_data, "params");
     struct wf_json const * id_holder = wf_impl_json_object_get(request_data, "id");
 
-    if ((WF_JSON_TYPE_STRING == wf_impl_json_type(method_holder)) &&
-        ((WF_JSON_TYPE_ARRAY == wf_impl_json_type(params)) || (WF_JSON_TYPE_OBJECT == wf_impl_json_type(params))) &&
-        (WF_JSON_TYPE_INT == wf_impl_json_type(id_holder)))
+    if ((wf_impl_json_is_string(method_holder)) &&
+        ((wf_impl_json_is_array(params)) || (wf_impl_json_is_object(params))) &&
+        (wf_impl_json_is_int(id_holder)))
     {
         char const * method_name = wf_impl_json_string_get(method_holder);
         int id = wf_impl_json_int_get(id_holder);

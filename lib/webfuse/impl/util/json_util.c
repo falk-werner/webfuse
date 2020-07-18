@@ -11,7 +11,7 @@ wf_impl_json_get_int(
 	int result = default_value;
 
 	struct wf_json const * holder = wf_impl_json_object_get(object, key);
-	if (WF_JSON_TYPE_INT == wf_impl_json_type(holder))
+	if (wf_impl_json_is_int(holder))
 	{
 		result = wf_impl_json_int_get(holder);
 	}

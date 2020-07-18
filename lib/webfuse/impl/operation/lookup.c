@@ -31,9 +31,9 @@ void wf_impl_operation_lookup_finished(
 		struct wf_json const * inode_holder = wf_impl_json_object_get(result, "inode"); 
 		struct wf_json const * mode_holder = wf_impl_json_object_get(result, "mode");
 		struct wf_json const * type_holder = wf_impl_json_object_get(result, "type");
-		if ((WF_JSON_TYPE_INT == wf_impl_json_type(inode_holder)) &&
-			(WF_JSON_TYPE_INT == wf_impl_json_type(mode_holder)) && 
-		    (WF_JSON_TYPE_INT == wf_impl_json_type(type_holder)))
+		if ((wf_impl_json_is_int(inode_holder)) &&
+			(wf_impl_json_is_int(mode_holder)) && 
+		    (wf_impl_json_is_int(type_holder)))
 		{
             memset(&buffer, 0, sizeof(struct stat));
 

@@ -23,6 +23,55 @@ wf_impl_json_bool_get(
     return (WF_JSON_TYPE_BOOL == json->type) ? json->value.b : false;
 }
 
+bool
+wf_impl_json_is_undefined(
+    struct wf_json const * json)
+{
+    return (WF_JSON_TYPE_UNDEFINED == json->type);
+}
+
+bool
+wf_impl_json_is_null(
+    struct wf_json const * json)
+{
+    return (WF_JSON_TYPE_NULL == json->type);
+}
+
+bool
+wf_impl_json_is_bool(
+    struct wf_json const * json)
+{
+    return (WF_JSON_TYPE_BOOL == json->type);
+}
+
+bool
+wf_impl_json_is_int(
+    struct wf_json const * json)
+{
+    return (WF_JSON_TYPE_INT == json->type);
+}
+
+bool
+wf_impl_json_is_string(
+    struct wf_json const * json)
+{
+    return (WF_JSON_TYPE_STRING == json->type);
+}
+
+bool
+wf_impl_json_is_array(
+    struct wf_json const * json)
+{
+    return (WF_JSON_TYPE_ARRAY == json->type);
+}
+
+bool
+wf_impl_json_is_object(
+    struct wf_json const * json)
+{
+    return (WF_JSON_TYPE_OBJECT == json->type);
+}
+
 int
 wf_impl_json_int_get(
     struct wf_json const * json)

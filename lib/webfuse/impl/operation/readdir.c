@@ -78,18 +78,18 @@ void wf_impl_operation_readdir_finished(
 	struct wf_impl_dirbuffer buffer;
 	wf_impl_dirbuffer_init(&buffer);
 
-	if (WF_JSON_TYPE_ARRAY == wf_impl_json_type(result)) 
+	if (wf_impl_json_is_array(result)) 
 	{
 		size_t const count = wf_impl_json_array_size(result);
 		for(size_t i = 0; i < count; i++)
 		{
 			struct wf_json const * entry = wf_impl_json_array_get(result, i);
-			if (WF_JSON_TYPE_OBJECT == wf_impl_json_type(entry))
+			if (wf_impl_json_is_object(entry))
 			{
 				struct wf_json const * name_holder = wf_impl_json_object_get(entry, "name");
 				struct wf_json const * inode_holder = wf_impl_json_object_get(entry, "inode");
 
-				if ((WF_JSON_TYPE_STRING == wf_impl_json_type(name_holder)) && (WF_JSON_TYPE_INT == wf_impl_json_type(inode_holder)))
+				if ((wf_impl_json_is_string(name_holder)) && (wf_impl_json_is_int(inode_holder)))
 				{
 					char const * name = wf_impl_json_string_get(name_holder);
 					fuse_ino_t entry_inode = (fuse_ino_t) wf_impl_json_int_get(inode_holder);

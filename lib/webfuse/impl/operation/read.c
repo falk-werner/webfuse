@@ -76,9 +76,9 @@ void wf_impl_operation_read_finished(
 		struct wf_json const * format_holder = wf_impl_json_object_get(result, "format");
 		struct wf_json const * count_holder = wf_impl_json_object_get(result, "count");
 
-		if ((WF_JSON_TYPE_STRING == wf_impl_json_type(data_holder)) &&
-        	(WF_JSON_TYPE_STRING == wf_impl_json_type(format_holder)) &&
-            (WF_JSON_TYPE_INT == wf_impl_json_type(count_holder)))
+		if ((wf_impl_json_is_string(data_holder)) &&
+        	(wf_impl_json_is_string(format_holder)) &&
+            (wf_impl_json_is_int(count_holder)))
 		{
 			char const * const data = wf_impl_json_string_get(data_holder);
 			size_t const data_size = wf_impl_json_string_size(data_holder);

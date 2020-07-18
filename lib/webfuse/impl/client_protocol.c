@@ -125,7 +125,7 @@ wf_impl_client_protocol_on_add_filesystem_finished(
     if (NULL == protocol->filesystem)
     {
         struct wf_json const * id = wf_impl_json_object_get(result, "id");
-        if (WF_JSON_TYPE_STRING == wf_impl_json_type(id))
+        if (wf_impl_json_is_string(id))
         {
             char const * name = wf_impl_json_string_get(id);        
             struct wf_mountpoint * mountpoint = wf_impl_mountpoint_create(context->local_path);

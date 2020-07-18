@@ -23,7 +23,7 @@ void wf_impl_operation_open_finished(
 	if (NULL != result)
 	{
         struct wf_json const * handle_holder = wf_impl_json_object_get(result, "handle");
-        if (WF_JSON_TYPE_INT == wf_impl_json_type(handle_holder))
+        if (wf_impl_json_is_int(handle_holder))
         {
             file_info.fh = wf_impl_json_int_get(handle_holder);
         }
