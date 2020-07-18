@@ -1,12 +1,14 @@
 #include "webfuse/impl/operation/read.h"
 #include "webfuse/impl/jsonrpc/error.h"
 
+#include "webfuse/test_util/json_doc.hpp"
 #include "webfuse/mocks/mock_fuse.hpp"
 #include "webfuse/mocks/mock_operation_context.hpp"
 #include "webfuse/mocks/mock_jsonrpc_proxy.hpp"
 
 #include <gtest/gtest.h>
 
+using webfuse_test::JsonDoc;
 using webfuse_test::MockJsonRpcProxy;
 using webfuse_test::MockOperationContext;
 using webfuse_test::FuseMock;
@@ -136,12 +138,8 @@ TEST(wf_impl_operation_read, finished)
     FuseMock fuse;
     EXPECT_CALL(fuse, fuse_reply_buf(_,_,7)).Times(1).WillOnce(Return(0));
 
-    json_t * result = json_object();
-    json_object_set_new(result, "data", json_string("brummni"));
-    json_object_set_new(result, "format", json_string("identity"));
-    json_object_set_new(result, "count", json_integer(7));
-    wf_impl_operation_read_finished(nullptr, result, nullptr);
-    json_decref(result);
+    JsonDoc result("{\"data\": \"brummni\", \"format\": \"identity\", \"count\": 7}");
+    wf_impl_operation_read_finished(nullptr, result.root(), nullptr);
 }
 
 TEST(wf_impl_operation_read, finished_fail_no_data)
@@ -150,11 +148,8 @@ TEST(wf_impl_operation_read, finished_fail_no_data)
     EXPECT_CALL(fuse, fuse_reply_buf(_,_,_)).Times(0);
     EXPECT_CALL(fuse, fuse_reply_err(_, _)).Times(1).WillOnce(Return(0));
 
-    json_t * result = json_object();
-    json_object_set_new(result, "format", json_string("identity"));
-    json_object_set_new(result, "count", json_integer(7));
-    wf_impl_operation_read_finished(nullptr, result, nullptr);
-    json_decref(result);
+    JsonDoc result("{\"format\": \"identity\", \"count\": 7}");
+    wf_impl_operation_read_finished(nullptr, result.root(), nullptr);
 }
 
 TEST(wf_impl_operation_read, finished_fail_invalid_data_type)
@@ -163,12 +158,8 @@ TEST(wf_impl_operation_read, finished_fail_invalid_data_type)
     EXPECT_CALL(fuse, fuse_reply_buf(_,_,_)).Times(0);
     EXPECT_CALL(fuse, fuse_reply_err(_, _)).Times(1).WillOnce(Return(0));
 
-    json_t * result = json_object();
-    json_object_set_new(result, "data", json_integer(42));
-    json_object_set_new(result, "format", json_string("identity"));
-    json_object_set_new(result, "count", json_integer(7));
-    wf_impl_operation_read_finished(nullptr, result, nullptr);
-    json_decref(result);
+    JsonDoc result("{\"data\": 42, \"format\": \"identity\", \"count\": 7}");
+    wf_impl_operation_read_finished(nullptr, result.root(), nullptr);
 }
 
 TEST(wf_impl_operation_read, finished_fail_no_format)
@@ -177,11 +168,8 @@ TEST(wf_impl_operation_read, finished_fail_no_format)
     EXPECT_CALL(fuse, fuse_reply_buf(_,_,_)).Times(0);
     EXPECT_CALL(fuse, fuse_reply_err(_, _)).Times(1).WillOnce(Return(0));
 
-    json_t * result = json_object();
-    json_object_set_new(result, "data", json_string("brummni"));
-    json_object_set_new(result, "count", json_integer(7));
-    wf_impl_operation_read_finished(nullptr, result, nullptr);
-    json_decref(result);
+    JsonDoc result("{\"data\": \"brummni\", \"count\": 7}");
+    wf_impl_operation_read_finished(nullptr, result.root(), nullptr);
 }
 
 TEST(wf_impl_operation_read, finished_fail_invalid_format_type)
@@ -190,12 +178,8 @@ TEST(wf_impl_operation_read, finished_fail_invalid_format_type)
     EXPECT_CALL(fuse, fuse_reply_buf(_,_,_)).Times(0);
     EXPECT_CALL(fuse, fuse_reply_err(_, _)).Times(1).WillOnce(Return(0));
 
-    json_t * result = json_object();
-    json_object_set_new(result, "data", json_string("brummni"));
-    json_object_set_new(result, "format", json_integer(42));
-    json_object_set_new(result, "count", json_integer(7));
-    wf_impl_operation_read_finished(nullptr, result, nullptr);
-    json_decref(result);
+    JsonDoc result("{\"data\": \"brummni\", \"format\": 42, \"count\": 7}");
+    wf_impl_operation_read_finished(nullptr, result.root(), nullptr);
 }
 
 TEST(wf_impl_operation_read, finished_fail_no_count)
@@ -204,11 +188,8 @@ TEST(wf_impl_operation_read, finished_fail_no_count)
     EXPECT_CALL(fuse, fuse_reply_buf(_,_,_)).Times(0);
     EXPECT_CALL(fuse, fuse_reply_err(_, _)).Times(1).WillOnce(Return(0));
 
-    json_t * result = json_object();
-    json_object_set_new(result, "data", json_string("brummni"));
-    json_object_set_new(result, "format", json_string("identity"));
-    wf_impl_operation_read_finished(nullptr, result, nullptr);
-    json_decref(result);
+    JsonDoc result("{\"data\": \"brummni\", \"format\": \"identity\"}");
+    wf_impl_operation_read_finished(nullptr, result.root(), nullptr);
 }
 
 TEST(wf_impl_operation_read, finished_fail_invalid_count_type)
@@ -217,12 +198,8 @@ TEST(wf_impl_operation_read, finished_fail_invalid_count_type)
     EXPECT_CALL(fuse, fuse_reply_buf(_,_,_)).Times(0);
     EXPECT_CALL(fuse, fuse_reply_err(_, _)).Times(1).WillOnce(Return(0));
 
-    json_t * result = json_object();
-    json_object_set_new(result, "data", json_string("brummni"));
-    json_object_set_new(result, "format", json_string("identity"));
-    json_object_set_new(result, "count", json_string("7"));
-    wf_impl_operation_read_finished(nullptr, result, nullptr);
-    json_decref(result);
+    JsonDoc result("{\"data\": \"brummni\", \"format\": \"identity\", \"count\": \"7\"}");
+    wf_impl_operation_read_finished(nullptr, result.root(), nullptr);
 }
 
 TEST(wf_impl_operation_read, finished_fail_error)

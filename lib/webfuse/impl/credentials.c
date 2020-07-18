@@ -21,18 +21,21 @@ void wf_impl_credentials_init(
     char const * type,
     struct wf_json const * data)
 {
-    size_t count = wf_impl_json_object_size(data);
+    size_t count = (NULL != data) ? wf_impl_json_object_size(data) : 0;
     credentials->type = strdup(type);
     credentials->capacity = (count > 0) ? count : WF_CREDENTIALS_INITIAL_CAPACITY;
     credentials->entries = malloc(sizeof(struct wf_credentials_entry) * credentials->capacity);
     credentials->size = 0;
 
-    for (size_t i; i < count; i++)
+    for (size_t i = 0; i < count; i++)
     {
         char const * key = wf_impl_json_object_key(data, i);
         struct wf_json const * value = wf_impl_json_object_value(data, i);
 
-        wf_impl_credentials_add(credentials, key, wf_impl_json_string_get(value));
+        if (wf_impl_json_is_string(value))
+        {
+            wf_impl_credentials_add(credentials, key, wf_impl_json_string_get(value));
+        }
     }
 }
 
@@ -82,6 +85,16 @@ void wf_impl_credentials_add(
     char const * key,
     char const * value)
 {
+    for(size_t i = 0; i < credentials->size; i++)
+    {
+        if (0 == strcmp(key, credentials->entries[i].key))
+        {
+            free(credentials->entries[i].value);
+            credentials->entries[i].value = strdup(value);
+            return;
+        }
+    }
+
     if (credentials->size >= credentials->capacity)
     {
         credentials->capacity *= 2;

@@ -7,6 +7,8 @@ bool
 wf_impl_jsonrpc_is_response(
     struct wf_json const * message)
 {
+	if (NULL == message) { return false; }
+
 	struct wf_json const * id = wf_impl_json_object_get(message, "id");
 	struct wf_json const * err = wf_impl_json_object_get(message, "error");
 	struct wf_json const * result = wf_impl_json_object_get(message, "result");
@@ -26,7 +28,7 @@ wf_impl_jsonrpc_response_init(
 	result->error = NULL;
 
 	struct wf_json const * id_holder = wf_impl_json_object_get(response, "id");
-	if (wf_impl_json_is_int(id_holder))
+	if (!wf_impl_json_is_int(id_holder))
 	{
 		result->error = wf_impl_jsonrpc_error(WF_BAD_FORMAT, "invalid format: missing id");
 		return;
@@ -49,6 +51,7 @@ wf_impl_jsonrpc_response_init(
 		}
 
 		result->error = wf_impl_jsonrpc_error(code, message);
+		result->result = NULL;
 	}
 }
 

@@ -8,6 +8,7 @@ wf_impl_json_get_int(
 	char const * key,
 	int default_value)
 {
+	if (NULL == object) { return default_value; }
 	int result = default_value;
 
 	struct wf_json const * holder = wf_impl_json_object_get(object, key);

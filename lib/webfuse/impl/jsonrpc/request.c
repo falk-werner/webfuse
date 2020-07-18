@@ -20,6 +20,8 @@ bool
 wf_impl_jsonrpc_is_request(
     struct wf_json const * message)
 {
+    if (NULL == message) { return false; }
+
     struct wf_json const * id = wf_impl_json_object_get(message, "id");
     struct wf_json const * method = wf_impl_json_object_get(message, "method");
     struct wf_json const * params = wf_impl_json_object_get(message, "params");

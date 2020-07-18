@@ -78,7 +78,7 @@ void wf_impl_operation_readdir_finished(
 	struct wf_impl_dirbuffer buffer;
 	wf_impl_dirbuffer_init(&buffer);
 
-	if (wf_impl_json_is_array(result)) 
+	if ((NULL != result) && (wf_impl_json_is_array(result)))
 	{
 		size_t const count = wf_impl_json_array_size(result);
 		for(size_t i = 0; i < count; i++)

@@ -9,9 +9,32 @@ JsonDoc::JsonDoc(std::string const & text)
     doc = wf_impl_json_doc_loadb(const_cast<char*>(contents.data()), contents.size());
 }
 
+JsonDoc::JsonDoc(JsonDoc && other)
+{
+    contents = std::move(other.contents);
+    doc = other.doc;
+    other.doc = nullptr;
+}
+
+JsonDoc& JsonDoc::operator=(JsonDoc && other)
+{
+    if (this != &other)
+    {
+        wf_impl_json_doc_dispose(doc);
+        contents = std::move(other.contents);
+        doc = other.doc;
+        other.doc = nullptr;
+    }
+
+    return *this;
+}
+
 JsonDoc::~JsonDoc()
 {
-    wf_impl_json_doc_dispose(doc);
+    if (nullptr != doc)
+    {
+        wf_impl_json_doc_dispose(doc);
+    }
 }
 
 wf_json const * JsonDoc::root()

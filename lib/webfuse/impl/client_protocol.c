@@ -122,7 +122,7 @@ wf_impl_client_protocol_on_add_filesystem_finished(
     struct wf_client_protocol * protocol = context->protocol;
 
     int reason = WF_CLIENT_FILESYSTEM_ADD_FAILED;
-    if (NULL == protocol->filesystem)
+    if ((NULL == protocol->filesystem) && (NULL != result))
     {
         struct wf_json const * id = wf_impl_json_object_get(result, "id");
         if (wf_impl_json_is_string(id))

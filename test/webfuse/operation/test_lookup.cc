@@ -3,12 +3,14 @@
 
 #include "webfuse/status.h"
 
+#include "webfuse/test_util/json_doc.hpp"
 #include "webfuse/mocks/mock_fuse.hpp"
 #include "webfuse/mocks/mock_operation_context.hpp"
 #include "webfuse/mocks/mock_jsonrpc_proxy.hpp"
 
 #include <gtest/gtest.h>
 
+using webfuse_test::JsonDoc;
 using webfuse_test::MockJsonRpcProxy;
 using webfuse_test::MockOperationContext;
 using webfuse_test::FuseMock;
@@ -78,17 +80,12 @@ TEST(wf_impl_operation_lookup, finished_file)
     FuseMock fuse;
     EXPECT_CALL(fuse, fuse_reply_entry(_,_)).Times(1).WillOnce(Return(0));
 
-    json_t * result = json_object();
-    json_object_set_new(result, "inode", json_integer(42));
-    json_object_set_new(result, "mode", json_integer(0755));
-    json_object_set_new(result, "type", json_string("file"));
-
+    JsonDoc result("{\"inode\": 42, \"mode\": 493, \"type\": \"file\"}");
     auto * context = reinterpret_cast<wf_impl_operation_lookup_context*>(malloc(sizeof(wf_impl_operation_lookup_context)));
     context->timeout = 1.0;
     context->gid = 0;
     context->uid = 0;
-    wf_impl_operation_lookup_finished(context, result, nullptr);
-    json_decref(result);
+    wf_impl_operation_lookup_finished(context, result.root(), nullptr);
 }
 
 TEST(wf_impl_operation_lookup, finished_dir)
@@ -96,17 +93,12 @@ TEST(wf_impl_operation_lookup, finished_dir)
     FuseMock fuse;
     EXPECT_CALL(fuse, fuse_reply_entry(_,_)).Times(1).WillOnce(Return(0));
 
-    json_t * result = json_object();
-    json_object_set_new(result, "inode", json_integer(42));
-    json_object_set_new(result, "mode", json_integer(0755));
-    json_object_set_new(result, "type", json_string("dir"));
-
+    JsonDoc result("{\"inode\": 42, \"mode\": 493, \"type\": \"dir\"}");
     auto * context = reinterpret_cast<wf_impl_operation_lookup_context*>(malloc(sizeof(wf_impl_operation_lookup_context)));
     context->timeout = 1.0;
     context->gid = 0;
     context->uid = 0;
-    wf_impl_operation_lookup_finished(context, result, nullptr);
-    json_decref(result);
+    wf_impl_operation_lookup_finished(context, result.root(), nullptr);
 }
 
 TEST(wf_impl_operation_lookup, finished_unknown_type)
@@ -114,17 +106,12 @@ TEST(wf_impl_operation_lookup, finished_unknown_type)
     FuseMock fuse;
     EXPECT_CALL(fuse, fuse_reply_entry(_,_)).Times(1).WillOnce(Return(0));
 
-    json_t * result = json_object();
-    json_object_set_new(result, "inode", json_integer(42));
-    json_object_set_new(result, "mode", json_integer(0755));
-    json_object_set_new(result, "type", json_string("unknown"));
-
+    JsonDoc result("{\"inode\": 42, \"mode\": 493, \"type\": \"unknown\"}");
     auto * context = reinterpret_cast<wf_impl_operation_lookup_context*>(malloc(sizeof(wf_impl_operation_lookup_context)));
     context->timeout = 1.0;
     context->gid = 0;
     context->uid = 0;
-    wf_impl_operation_lookup_finished(context, result, nullptr);
-    json_decref(result);
+    wf_impl_operation_lookup_finished(context, result.root(), nullptr);
 }
 
 TEST(wf_impl_operation_lookup, finished_fail_missing_inode)
@@ -133,16 +120,12 @@ TEST(wf_impl_operation_lookup, finished_fail_missing_inode)
     EXPECT_CALL(fuse, fuse_reply_open(_,_)).Times(0);
     EXPECT_CALL(fuse, fuse_reply_err(_, ENOENT)).Times(1).WillOnce(Return(0));
 
-    json_t * result = json_object();
-    json_object_set_new(result, "mode", json_integer(0755));
-    json_object_set_new(result, "type", json_string("file"));
-
+    JsonDoc result("{\"mode\": 493, \"type\": \"file\"}");
     auto * context = reinterpret_cast<wf_impl_operation_lookup_context*>(malloc(sizeof(wf_impl_operation_lookup_context)));
     context->timeout = 1.0;
     context->gid = 0;
     context->uid = 0;
-    wf_impl_operation_lookup_finished(context, result, nullptr);
-    json_decref(result);
+    wf_impl_operation_lookup_finished(context, result.root(), nullptr);
 }
 
 TEST(wf_impl_operation_lookup, finished_fail_invalid_inode_type)
@@ -151,17 +134,12 @@ TEST(wf_impl_operation_lookup, finished_fail_invalid_inode_type)
     EXPECT_CALL(fuse, fuse_reply_open(_,_)).Times(0);
     EXPECT_CALL(fuse, fuse_reply_err(_, ENOENT)).Times(1).WillOnce(Return(0));
 
-    json_t * result = json_object();
-    json_object_set_new(result, "inode", json_string("42"));
-    json_object_set_new(result, "mode", json_string("0755"));
-    json_object_set_new(result, "type", json_string("file"));
-
+    JsonDoc result("{\"inode\": \"42\", \"mode\": 493, \"type\": \"file\"}");
     auto * context = reinterpret_cast<wf_impl_operation_lookup_context*>(malloc(sizeof(wf_impl_operation_lookup_context)));
     context->timeout = 1.0;
     context->gid = 0;
     context->uid = 0;
-    wf_impl_operation_lookup_finished(context, result, nullptr);
-    json_decref(result);
+    wf_impl_operation_lookup_finished(context, result.root(), nullptr);
 }
 
 TEST(wf_impl_operation_lookup, finished_fail_missing_mode)
@@ -170,16 +148,12 @@ TEST(wf_impl_operation_lookup, finished_fail_missing_mode)
     EXPECT_CALL(fuse, fuse_reply_open(_,_)).Times(0);
     EXPECT_CALL(fuse, fuse_reply_err(_, ENOENT)).Times(1).WillOnce(Return(0));
 
-    json_t * result = json_object();
-    json_object_set_new(result, "inode", json_integer(42));
-    json_object_set_new(result, "type", json_string("file"));
-
+    JsonDoc result("{\"inode\": 42, \"type\": \"file\"}");
     auto * context = reinterpret_cast<wf_impl_operation_lookup_context*>(malloc(sizeof(wf_impl_operation_lookup_context)));
     context->timeout = 1.0;
     context->gid = 0;
     context->uid = 0;
-    wf_impl_operation_lookup_finished(context, result, nullptr);
-    json_decref(result);
+    wf_impl_operation_lookup_finished(context, result.root(), nullptr);
 }
 
 TEST(wf_impl_operation_lookup, finished_fail_invalid_mode_type)
@@ -188,35 +162,26 @@ TEST(wf_impl_operation_lookup, finished_fail_invalid_mode_type)
     EXPECT_CALL(fuse, fuse_reply_open(_,_)).Times(0);
     EXPECT_CALL(fuse, fuse_reply_err(_, ENOENT)).Times(1).WillOnce(Return(0));
 
-    json_t * result = json_object();
-    json_object_set_new(result, "inode", json_integer(42));
-    json_object_set_new(result, "mode", json_string("0755"));
-    json_object_set_new(result, "type", json_string("file"));
-
+    JsonDoc result("{\"inode\": 42, \"mode\": \"0755\", \"type\": \"file\"}");
     auto * context = reinterpret_cast<wf_impl_operation_lookup_context*>(malloc(sizeof(wf_impl_operation_lookup_context)));
     context->timeout = 1.0;
     context->gid = 0;
     context->uid = 0;
-    wf_impl_operation_lookup_finished(context, result, nullptr);
-    json_decref(result);
+    wf_impl_operation_lookup_finished(context, result.root(), nullptr);
 }
 
-TEST(wf_impl_operation_lookup, finished_fail_type_mode)
+TEST(wf_impl_operation_lookup, finished_fail_missing_type)
 {
     FuseMock fuse;
     EXPECT_CALL(fuse, fuse_reply_open(_,_)).Times(0);
     EXPECT_CALL(fuse, fuse_reply_err(_, ENOENT)).Times(1).WillOnce(Return(0));
 
-    json_t * result = json_object();
-    json_object_set_new(result, "inode", json_integer(42));
-    json_object_set_new(result, "mode", json_integer(0755));
-
+    JsonDoc result("{\"inode\": 42, \"mode\": 493}");
     auto * context = reinterpret_cast<wf_impl_operation_lookup_context*>(malloc(sizeof(wf_impl_operation_lookup_context)));
     context->timeout = 1.0;
     context->gid = 0;
     context->uid = 0;
-    wf_impl_operation_lookup_finished(context, result, nullptr);
-    json_decref(result);
+    wf_impl_operation_lookup_finished(context, result.root(), nullptr);
 }
 
 TEST(wf_impl_operation_lookup, finished_fail_invalid_type_type)
@@ -225,17 +190,12 @@ TEST(wf_impl_operation_lookup, finished_fail_invalid_type_type)
     EXPECT_CALL(fuse, fuse_reply_open(_,_)).Times(0);
     EXPECT_CALL(fuse, fuse_reply_err(_, ENOENT)).Times(1).WillOnce(Return(0));
 
-    json_t * result = json_object();
-    json_object_set_new(result, "inode", json_integer(42));
-    json_object_set_new(result, "mode", json_integer(0755));
-    json_object_set_new(result, "type", json_integer(42));
-
+    JsonDoc result("{\"inode\": 42, \"mode\": 493, \"type\": 42}");
     auto * context = reinterpret_cast<wf_impl_operation_lookup_context*>(malloc(sizeof(wf_impl_operation_lookup_context)));
     context->timeout = 1.0;
     context->gid = 0;
     context->uid = 0;
-    wf_impl_operation_lookup_finished(context, result, nullptr);
-    json_decref(result);
+    wf_impl_operation_lookup_finished(context, result.root(), nullptr);
 }
 
 TEST(wf_impl_operation_lookup, finished_error)

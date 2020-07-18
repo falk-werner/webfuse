@@ -3,12 +3,15 @@
 
 #include "webfuse/status.h"
 
+#include "webfuse/test_util/json_doc.hpp"
 #include "webfuse/mocks/mock_fuse.hpp"
 #include "webfuse/mocks/mock_operation_context.hpp"
 #include "webfuse/mocks/mock_jsonrpc_proxy.hpp"
 
 #include <gtest/gtest.h>
+#include <sstream>
 
+using webfuse_test::JsonDoc;
 using webfuse_test::MockJsonRpcProxy;
 using webfuse_test::MockOperationContext;
 using webfuse_test::FuseMock;
@@ -81,18 +84,12 @@ TEST(wf_impl_operation_readdir, finished)
     FuseMock fuse;
     EXPECT_CALL(fuse, fuse_reply_buf(_,_,_)).Times(1).WillOnce(Return(0));
 
-    json_t * result = json_array();
-    json_t * item = json_object();
-    json_object_set_new(item, "name", json_string("a.file"));
-    json_object_set_new(item, "inode", json_integer(42));
-    json_array_append_new(result, item);
-
+    JsonDoc result("[{\"name\": \"a.file\", \"inode\": 42}]");
     auto * context = reinterpret_cast<wf_impl_operation_readdir_context*>(malloc(sizeof(wf_impl_operation_readdir_context)));
     context->request = nullptr;
     context->size = 1;
     context->offset = 0;
-    wf_impl_operation_readdir_finished(reinterpret_cast<void*>(context), result, nullptr);
-    json_decref(result);
+    wf_impl_operation_readdir_finished(reinterpret_cast<void*>(context), result.root(), nullptr);
 }
 
 TEST(wf_impl_operation_readdir, finished_many_items)
@@ -100,22 +97,20 @@ TEST(wf_impl_operation_readdir, finished_many_items)
     FuseMock fuse;
     EXPECT_CALL(fuse, fuse_reply_buf(_,_,_)).Times(1).WillOnce(Return(0));
 
-    json_t * result = json_array();
-    for(int i = 0; i < 100; i++)
+    std::ostringstream stream;
+    stream << "[" << "{\"name\": \"file_0.txt\", \"inode\": 1}";
+    for(int i = 1; i < 100; i++)
     {
-        json_t * item = json_object();
-        json_object_set_new(item, "name", json_sprintf("file_%d.txt", i));
-        json_object_set_new(item, "inode", json_integer(1 + i));
-        json_array_append_new(result, item);
+        stream << ",{\"name\": \"file_" << i << ".txt\", \"inode\": " << (i+1) << "}";
     }
+    stream << "]";
 
-
+    JsonDoc result(stream.str());
     auto * context = reinterpret_cast<wf_impl_operation_readdir_context*>(malloc(sizeof(wf_impl_operation_readdir_context)));
     context->request = nullptr;
     context->size = 100;
     context->offset = 0;
-    wf_impl_operation_readdir_finished(reinterpret_cast<void*>(context), result, nullptr);
-    json_decref(result);
+    wf_impl_operation_readdir_finished(reinterpret_cast<void*>(context), result.root(), nullptr);
 }
 
 TEST(wf_impl_operation_readdir, finished_read_after_end)
@@ -123,18 +118,12 @@ TEST(wf_impl_operation_readdir, finished_read_after_end)
     FuseMock fuse;
     EXPECT_CALL(fuse, fuse_reply_buf(_,_,_)).Times(1).WillOnce(Return(0));
 
-    json_t * result = json_array();
-    json_t * item = json_object();
-    json_object_set_new(item, "name", json_string("a.file"));
-    json_object_set_new(item, "inode", json_integer(42));
-    json_array_append_new(result, item);
-
+    JsonDoc result("[{\"name\": \"a.file\", \"inode\": 42}]");
     auto * context = reinterpret_cast<wf_impl_operation_readdir_context*>(malloc(sizeof(wf_impl_operation_readdir_context)));
     context->request = nullptr;
     context->size = 10;
     context->offset = 2;
-    wf_impl_operation_readdir_finished(reinterpret_cast<void*>(context), result, nullptr);
-    json_decref(result);
+    wf_impl_operation_readdir_finished(reinterpret_cast<void*>(context), result.root(), nullptr);
 }
 
 TEST(wf_impl_operation_readdir, finished_fail_error)
@@ -159,14 +148,12 @@ TEST(wf_impl_operation_readdir, finished_fail_invalid_result_type)
     EXPECT_CALL(fuse, fuse_reply_buf(_,_,_)).Times(0);
     EXPECT_CALL(fuse, fuse_reply_err(_, ENOENT)).Times(1).WillOnce(Return(0));
 
-    json_t * result = json_object();
- 
+    JsonDoc result("{}");
     auto * context = reinterpret_cast<wf_impl_operation_readdir_context*>(malloc(sizeof(wf_impl_operation_readdir_context)));
     context->request = nullptr;
     context->size = 1;
     context->offset = 0;
-    wf_impl_operation_readdir_finished(reinterpret_cast<void*>(context), result, nullptr);
-    json_decref(result);
+    wf_impl_operation_readdir_finished(reinterpret_cast<void*>(context), result.root(), nullptr);
 }
 
 TEST(wf_impl_operation_readdir, finished_fail_missing_name)
@@ -175,17 +162,12 @@ TEST(wf_impl_operation_readdir, finished_fail_missing_name)
     EXPECT_CALL(fuse, fuse_reply_buf(_,_,_)).Times(0);
     EXPECT_CALL(fuse, fuse_reply_err(_, ENOENT)).Times(1).WillOnce(Return(0));
 
-    json_t * result = json_array();
-    json_t * item = json_object();
-    json_object_set_new(item, "inode", json_integer(42));
-    json_array_append_new(result, item);
-
+    JsonDoc result("[{\"inode\": 42}]");
     auto * context = reinterpret_cast<wf_impl_operation_readdir_context*>(malloc(sizeof(wf_impl_operation_readdir_context)));
     context->request = nullptr;
     context->size = 1;
     context->offset = 0;
-    wf_impl_operation_readdir_finished(reinterpret_cast<void*>(context), result, nullptr);
-    json_decref(result);
+    wf_impl_operation_readdir_finished(reinterpret_cast<void*>(context), result.root(), nullptr);
 }
 
 TEST(wf_impl_operation_readdir, finished_fail_invalid_name_type)
@@ -194,18 +176,12 @@ TEST(wf_impl_operation_readdir, finished_fail_invalid_name_type)
     EXPECT_CALL(fuse, fuse_reply_buf(_,_,_)).Times(0);
     EXPECT_CALL(fuse, fuse_reply_err(_, ENOENT)).Times(1).WillOnce(Return(0));
 
-    json_t * result = json_array();
-    json_t * item = json_object();
-    json_object_set_new(item, "name", json_integer(42));
-    json_object_set_new(item, "inode", json_integer(42));
-    json_array_append_new(result, item);
-
+    JsonDoc result("[{\"name\": 42, \"inode\": 42}]");
     auto * context = reinterpret_cast<wf_impl_operation_readdir_context*>(malloc(sizeof(wf_impl_operation_readdir_context)));
     context->request = nullptr;
     context->size = 1;
     context->offset = 0;
-    wf_impl_operation_readdir_finished(reinterpret_cast<void*>(context), result, nullptr);
-    json_decref(result);
+    wf_impl_operation_readdir_finished(reinterpret_cast<void*>(context), result.root(), nullptr);
 }
 
 TEST(wf_impl_operation_readdir, finished_fail_missing_inode)
@@ -214,17 +190,12 @@ TEST(wf_impl_operation_readdir, finished_fail_missing_inode)
     EXPECT_CALL(fuse, fuse_reply_buf(_,_,_)).Times(0);
     EXPECT_CALL(fuse, fuse_reply_err(_, ENOENT)).Times(1).WillOnce(Return(0));
 
-    json_t * result = json_array();
-    json_t * item = json_object();
-    json_object_set_new(item, "name", json_string("a.file"));
-    json_array_append_new(result, item);
-
+    JsonDoc result("[{\"name\": \"a.file\"}]");
     auto * context = reinterpret_cast<wf_impl_operation_readdir_context*>(malloc(sizeof(wf_impl_operation_readdir_context)));
     context->request = nullptr;
     context->size = 1;
     context->offset = 0;
-    wf_impl_operation_readdir_finished(reinterpret_cast<void*>(context), result, nullptr);
-    json_decref(result);
+    wf_impl_operation_readdir_finished(reinterpret_cast<void*>(context), result.root(), nullptr);
 }
 
 TEST(wf_impl_operation_readdir, finished_fail_invalid_inode_type)
@@ -233,18 +204,12 @@ TEST(wf_impl_operation_readdir, finished_fail_invalid_inode_type)
     EXPECT_CALL(fuse, fuse_reply_buf(_,_,_)).Times(0);
     EXPECT_CALL(fuse, fuse_reply_err(_, ENOENT)).Times(1).WillOnce(Return(0));
 
-    json_t * result = json_array();
-    json_t * item = json_object();
-    json_object_set_new(item, "name", json_string("a.file"));
-    json_object_set_new(item, "inode", json_string("42"));
-    json_array_append_new(result, item);
-
+    JsonDoc result("[{\"name\": \"a.file\", \"inode\": \"42\"}]");
     auto * context = reinterpret_cast<wf_impl_operation_readdir_context*>(malloc(sizeof(wf_impl_operation_readdir_context)));
     context->request = nullptr;
     context->size = 1;
     context->offset = 0;
-    wf_impl_operation_readdir_finished(reinterpret_cast<void*>(context), result, nullptr);
-    json_decref(result);
+    wf_impl_operation_readdir_finished(reinterpret_cast<void*>(context), result.root(), nullptr);
 }
 
 TEST(wf_impl_operation_readdir, finished_fail_invalid_item_type)
@@ -253,13 +218,10 @@ TEST(wf_impl_operation_readdir, finished_fail_invalid_item_type)
     EXPECT_CALL(fuse, fuse_reply_buf(_,_,_)).Times(0);
     EXPECT_CALL(fuse, fuse_reply_err(_, ENOENT)).Times(1).WillOnce(Return(0));
 
-    json_t * result = json_array();
-    json_array_append_new(result, json_string("item"));
-
+    JsonDoc result("[\"item\"]");
     auto * context = reinterpret_cast<wf_impl_operation_readdir_context*>(malloc(sizeof(wf_impl_operation_readdir_context)));
     context->request = nullptr;
     context->size = 1;
     context->offset = 0;
-    wf_impl_operation_readdir_finished(reinterpret_cast<void*>(context), result, nullptr);
-    json_decref(result);
+    wf_impl_operation_readdir_finished(reinterpret_cast<void*>(context), result.root(), nullptr);
 }

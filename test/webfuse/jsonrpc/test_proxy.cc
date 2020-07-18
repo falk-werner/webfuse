@@ -1,17 +1,20 @@
 #include <gtest/gtest.h>
 #include "webfuse/impl/jsonrpc/proxy.h"
 #include "webfuse/impl/jsonrpc/error.h"
+#include "webfuse/impl/json/node.h"
 #include "webfuse/impl/message.h"
 #include "webfuse/status.h"
 #include "webfuse/impl/timer/manager.h"
 
 #include "webfuse/jsonrpc/mock_timer.hpp"
+#include "webfuse/test_util/json_doc.hpp"
 
 #include <thread>
 #include <chrono>
 
 using namespace std::chrono_literals;
 using wf_jsonrpc_test::MockTimer;
+using webfuse_test::JsonDoc;
 using testing::Return;
 using testing::_;
 using testing::DoAll;
@@ -23,20 +26,17 @@ namespace
 {
     struct SendContext
     {
-        json_t * response;
+        JsonDoc doc;
+        wf_json const * response;
         bool result;
         bool is_called;
 
         explicit SendContext(bool result_ = true)
-        : response(nullptr)
+        : doc("null")
+        , response(nullptr)
         , result(result_)
         , is_called(false)
         {
-        }
-
-        ~SendContext() 
-        {
-            json_decref(response);
         }
     };
 
@@ -46,11 +46,8 @@ namespace
     {
         SendContext * context = reinterpret_cast<SendContext*>(user_data);
         context->is_called = true;
-        if (nullptr != context->response)
-        {
-            json_decref(context->response);
-        }
-        context->response = json_loadb(request->data, request->length, 0, nullptr);
+        context->doc = std::move(JsonDoc(std::string(request->data, request->length)));
+        context->response = context->doc.root();
 
         wf_impl_message_dispose(request);
         return context->result;
@@ -59,12 +56,10 @@ namespace
     struct FinishedContext
     {
         bool is_called;
-        json_t * result;
         wf_jsonrpc_error * error;
 
         FinishedContext()
         : is_called(false)
-        , result(nullptr)
         , error(nullptr)
         {
 
@@ -72,23 +67,17 @@ namespace
 
         ~FinishedContext()
         {
-            if (nullptr != result)
-            {
-                json_decref(result);
-            }
-
             wf_impl_jsonrpc_error_dispose(error);
         }
     };
 
     void jsonrpc_finished(
         void * user_data,
-        json_t const * result,
+        wf_json const *,
         wf_jsonrpc_error const * error)
     {
         FinishedContext * context = reinterpret_cast<FinishedContext*>(user_data);
         context->is_called = true;
-        context->result = json_deep_copy(result);
 
         if (nullptr != error)
         {
@@ -125,22 +114,22 @@ TEST(wf_jsonrpc_proxy, invoke)
     wf_impl_jsonrpc_proxy_invoke(proxy, &jsonrpc_finished, finished_data, "foo", "si", "bar", 42);
 
     ASSERT_TRUE(send_context.is_called);
-    ASSERT_TRUE(json_is_object(send_context.response));
+    ASSERT_TRUE(wf_impl_json_is_object(send_context.response));
 
-    json_t * method = json_object_get(send_context.response, "method");
-    ASSERT_TRUE(json_is_string(method));
-    ASSERT_STREQ("foo", json_string_value(method));
+    wf_json const * method = wf_impl_json_object_get(send_context.response, "method");
+    ASSERT_TRUE(wf_impl_json_is_string(method));
+    ASSERT_STREQ("foo", wf_impl_json_string_get(method));
 
-    json_t * params = json_object_get(send_context.response, "params");
-    ASSERT_TRUE(json_is_array(params));
-    ASSERT_EQ(2, json_array_size(params));
-    ASSERT_TRUE(json_is_string(json_array_get(params, 0)));
-    ASSERT_STREQ("bar", json_string_value(json_array_get(params, 0)));
-    ASSERT_TRUE(json_is_integer(json_array_get(params, 1)));
-    ASSERT_EQ(42, json_integer_value(json_array_get(params, 1)));
+    wf_json const * params = wf_impl_json_object_get(send_context.response, "params");
+    ASSERT_TRUE(wf_impl_json_is_array(params));
+    ASSERT_EQ(2, wf_impl_json_array_size(params));
+    ASSERT_TRUE(wf_impl_json_is_string(wf_impl_json_array_get(params, 0)));
+    ASSERT_STREQ("bar", wf_impl_json_string_get(wf_impl_json_array_get(params, 0)));
+    ASSERT_TRUE(wf_impl_json_is_int(wf_impl_json_array_get(params, 1)));
+    ASSERT_EQ(42, wf_impl_json_int_get(wf_impl_json_array_get(params, 1)));
 
-    json_t * id = json_object_get(send_context.response, "id");
-    ASSERT_TRUE(json_is_integer(id));
+    wf_json const * id = wf_impl_json_object_get(send_context.response, "id");
+    ASSERT_TRUE(wf_impl_json_is_int(id));
 
     ASSERT_FALSE(finished_context.is_called);
 
@@ -164,7 +153,7 @@ TEST(wf_jsonrpc_proxy, invoke_calls_finish_if_send_fails)
     wf_impl_jsonrpc_proxy_invoke(proxy, &jsonrpc_finished, finished_data, "foo", "si", "bar", 42);
 
     ASSERT_TRUE(send_context.is_called);
-    ASSERT_TRUE(json_is_object(send_context.response));
+    ASSERT_TRUE(wf_impl_json_is_object(send_context.response));
 
     ASSERT_TRUE(finished_context.is_called);
     ASSERT_FALSE(nullptr == finished_context.error);
@@ -190,7 +179,7 @@ TEST(wf_jsonrpc_proxy, invoke_if_another_request_is_pending)
     wf_impl_jsonrpc_proxy_invoke(proxy, &jsonrpc_finished, finished_data2, "foo", "");
 
     ASSERT_TRUE(send_context.is_called);
-    ASSERT_TRUE(json_is_object(send_context.response));
+    ASSERT_TRUE(wf_impl_json_is_object(send_context.response));
 
     ASSERT_FALSE(finished_context.is_called);
 
@@ -231,22 +220,16 @@ TEST(wf_jsonrpc_proxy, on_result)
     wf_impl_jsonrpc_proxy_invoke(proxy, &jsonrpc_finished, finished_data, "foo", "si", "bar", 42);
 
     ASSERT_TRUE(send_context.is_called);
-    ASSERT_TRUE(json_is_object(send_context.response));
+    ASSERT_TRUE(wf_impl_json_is_object(send_context.response));
 
-    json_t * id = json_object_get(send_context.response, "id");
-    ASSERT_TRUE(json_is_number(id));
+    wf_json const * id = wf_impl_json_object_get(send_context.response, "id");
+    ASSERT_TRUE(wf_impl_json_is_int(id));
 
-    json_t * response = json_object();
-    json_object_set_new(response, "result", json_string("okay"));
-    json_object_set(response, "id", id);
-
-    wf_impl_jsonrpc_proxy_onresult(proxy, response);
-    json_decref(response);
+    JsonDoc response("{\"result\": \"okay\", \"id\": " + std::to_string(wf_impl_json_int_get(id)) + "}");
+    wf_impl_jsonrpc_proxy_onresult(proxy, response.root());
 
     ASSERT_TRUE(finished_context.is_called);
     ASSERT_EQ(nullptr, finished_context.error);
-    ASSERT_TRUE(json_is_string(finished_context.result));
-    ASSERT_STREQ("okay", json_string_value(finished_context.result));
 
     wf_impl_jsonrpc_proxy_dispose(proxy);
     wf_impl_timer_manager_dispose(timer_manager);
@@ -265,17 +248,13 @@ TEST(wf_jsonrpc_proxy, on_result_reject_response_with_unknown_id)
     wf_impl_jsonrpc_proxy_invoke(proxy, &jsonrpc_finished, finished_data, "foo", "si", "bar", 42);
 
     ASSERT_TRUE(send_context.is_called);
-    ASSERT_TRUE(json_is_object(send_context.response));
+    ASSERT_TRUE(wf_impl_json_is_object(send_context.response));
 
-    json_t * id = json_object_get(send_context.response, "id");
-    ASSERT_TRUE(json_is_number(id));
+    wf_json const * id = wf_impl_json_object_get(send_context.response, "id");
+    ASSERT_TRUE(wf_impl_json_is_int(id));
 
-    json_t * response = json_object();
-    json_object_set_new(response, "result", json_string("okay"));
-    json_object_set_new(response, "id", json_integer(1 + json_integer_value(id)));
-
-    wf_impl_jsonrpc_proxy_onresult(proxy, response);
-    json_decref(response);
+    JsonDoc response("{\"result\": \"okay\", \"id\": " + std::to_string(wf_impl_json_int_get(id) + 1) + "}");
+    wf_impl_jsonrpc_proxy_onresult(proxy, response.root());
 
     ASSERT_FALSE(finished_context.is_called);
 
@@ -296,7 +275,7 @@ TEST(wf_jsonrpc_proxy, timeout)
     wf_impl_jsonrpc_proxy_invoke(proxy, &jsonrpc_finished, finished_data, "foo", "si", "bar", 42);
 
     ASSERT_TRUE(send_context.is_called);
-    ASSERT_TRUE(json_is_object(send_context.response));
+    ASSERT_TRUE(wf_impl_json_is_object(send_context.response));
 
     std::this_thread::sleep_for(10ms);
     wf_impl_timer_manager_check(timer_manager);
@@ -321,7 +300,7 @@ TEST(wf_jsonrpc_proxy, cleanup_pending_request)
     wf_impl_jsonrpc_proxy_invoke(proxy, &jsonrpc_finished, finished_data, "foo", "si", "bar", 42);
 
     ASSERT_TRUE(send_context.is_called);
-    ASSERT_TRUE(json_is_object(send_context.response));
+    ASSERT_TRUE(wf_impl_json_is_object(send_context.response));
 
     ASSERT_FALSE(finished_context.is_called);
 
@@ -345,22 +324,22 @@ TEST(wf_jsonrpc_proxy, notify)
     wf_impl_jsonrpc_proxy_notify(proxy, "foo", "si", "bar", 42);
 
     ASSERT_TRUE(send_context.is_called);
-    ASSERT_TRUE(json_is_object(send_context.response));
+    ASSERT_TRUE(wf_impl_json_is_object(send_context.response));
 
-    json_t * method = json_object_get(send_context.response, "method");
-    ASSERT_TRUE(json_is_string(method));
-    ASSERT_STREQ("foo", json_string_value(method));
+    wf_json const * method = wf_impl_json_object_get(send_context.response, "method");
+    ASSERT_TRUE(wf_impl_json_is_string(method));
+    ASSERT_STREQ("foo", wf_impl_json_string_get(method));
 
-    json_t * params = json_object_get(send_context.response, "params");
-    ASSERT_TRUE(json_is_array(params));
-    ASSERT_EQ(2, json_array_size(params));
-    ASSERT_TRUE(json_is_string(json_array_get(params, 0)));
-    ASSERT_STREQ("bar", json_string_value(json_array_get(params, 0)));
-    ASSERT_TRUE(json_is_integer(json_array_get(params, 1)));
-    ASSERT_EQ(42, json_integer_value(json_array_get(params, 1)));
+    wf_json const * params = wf_impl_json_object_get(send_context.response, "params");
+    ASSERT_TRUE(wf_impl_json_is_array(params));
+    ASSERT_EQ(2, wf_impl_json_array_size(params));
+    ASSERT_TRUE(wf_impl_json_is_string(wf_impl_json_array_get(params, 0)));
+    ASSERT_STREQ("bar", wf_impl_json_string_get(wf_impl_json_array_get(params, 0)));
+    ASSERT_TRUE(wf_impl_json_is_int(wf_impl_json_array_get(params, 1)));
+    ASSERT_EQ(42, wf_impl_json_int_get(wf_impl_json_array_get(params, 1)));
 
-    json_t * id = json_object_get(send_context.response, "id");
-    ASSERT_EQ(nullptr, id);
+    wf_json const * id = wf_impl_json_object_get(send_context.response, "id");
+    ASSERT_TRUE(wf_impl_json_is_undefined(id));
 
     wf_impl_jsonrpc_proxy_dispose(proxy);
     wf_impl_timer_manager_dispose(timer_manager);
@@ -390,12 +369,8 @@ TEST(wf_jsonrpc_proxy, on_result_swallow_if_no_request_pending)
     void * send_data = reinterpret_cast<void*>(&send_context);
     struct wf_jsonrpc_proxy * proxy = wf_impl_jsonrpc_proxy_create(timer_manager, WF_DEFAULT_TIMEOUT, &jsonrpc_send, send_data);
 
-    json_t * response = json_object();
-    json_object_set_new(response, "result", json_string("okay"));
-    json_object_set_new(response, "id", json_integer(42));
-
-    wf_impl_jsonrpc_proxy_onresult(proxy, response);
-    json_decref(response);
+    JsonDoc response("{\"result\": \"okay\", \"id\": 42}");
+    wf_impl_jsonrpc_proxy_onresult(proxy, response.root());
 
     wf_impl_jsonrpc_proxy_dispose(proxy);
     wf_impl_timer_manager_dispose(timer_manager);

@@ -1,7 +1,12 @@
-#include <gtest/gtest.h>
 #include "webfuse/impl/jsonrpc/request.h"
+#include "webfuse/impl/json/node.h"
 #include "webfuse/impl/message.h"
 #include "webfuse/status.h"
+#include "webfuse/test_util/json_doc.hpp"
+
+#include <gtest/gtest.h>
+
+using webfuse_test::JsonDoc;
 
 namespace
 {
@@ -48,19 +53,18 @@ TEST(wf_jsonrpc_request, respond)
 
     wf_impl_jsonrpc_respond(request);
 
-    json_t * response = json_loads(context.response.c_str(), 0, nullptr);
-    ASSERT_TRUE(json_is_object(response));
+    JsonDoc doc(context.response);
+    struct wf_json const * response = doc.root();
+    ASSERT_TRUE(wf_impl_json_is_object(response));
     
-    json_t * id = json_object_get(response, "id");
-    ASSERT_TRUE(json_is_integer(id));
-    ASSERT_EQ(42, json_integer_value(id));
+    struct wf_json const * id = wf_impl_json_object_get(response, "id");
+    ASSERT_TRUE(wf_impl_json_is_int(id));
+    ASSERT_EQ(42, wf_impl_json_int_get(id));
 
-    json_t * result = json_object_get(response, "result");
-    ASSERT_TRUE(json_is_object(result));
+    struct wf_json const * result = wf_impl_json_object_get(response, "result");
+    ASSERT_TRUE(wf_impl_json_is_object(result));
 
-    ASSERT_EQ(nullptr, json_object_get(response, "error"));
-
-    json_decref(response);
+    ASSERT_TRUE(wf_impl_json_is_undefined(wf_impl_json_object_get(response, "error")));
 }
 
 TEST(wf_jsonrpc_request, respond_error)
@@ -73,60 +77,24 @@ TEST(wf_jsonrpc_request, respond_error)
 
     wf_impl_jsonrpc_respond_error(request, WF_BAD, "Bad");
 
-    json_t * response = json_loads(context.response.c_str(), 0, nullptr);
-    ASSERT_TRUE(json_is_object(response));
+    JsonDoc doc(context.response);
+    struct wf_json const * response = doc.root();
+    ASSERT_TRUE(wf_impl_json_is_object(response));
     
-    json_t * id = json_object_get(response, "id");
-    ASSERT_TRUE(json_is_integer(id));
-    ASSERT_EQ(42, json_integer_value(id));
+    struct wf_json const * id = wf_impl_json_object_get(response, "id");
+    ASSERT_TRUE(wf_impl_json_is_int(id));
+    ASSERT_EQ(42, wf_impl_json_int_get(id));
 
-    ASSERT_EQ(nullptr, json_object_get(response, "result"));
+    ASSERT_TRUE(wf_impl_json_is_undefined(wf_impl_json_object_get(response, "result")));
 
-    json_t * err = json_object_get(response, "error");
-    ASSERT_TRUE(json_is_object(err));
+    struct wf_json const * err = wf_impl_json_object_get(response, "error");
+    ASSERT_TRUE(wf_impl_json_is_object(err));
 
-    json_t * err_code = json_object_get(err, "code");
-    ASSERT_TRUE(json_is_integer(err_code));
-    ASSERT_EQ(WF_BAD, json_integer_value(err_code));
+    struct wf_json const * err_code = wf_impl_json_object_get(err, "code");
+    ASSERT_TRUE(wf_impl_json_is_int(err_code));
+    ASSERT_EQ(WF_BAD, wf_impl_json_int_get(err_code));
 
-    json_t * err_message = json_object_get(err, "message");
-    ASSERT_TRUE(json_is_string(err_message));
-    ASSERT_STREQ("Bad", json_string_value(err_message));
-
-    json_decref(response);
-}
-
-TEST(wf_jsonrpc_request, is_request_object_params)
-{
-    json_t * request = json_object();
-    json_object_set_new(request, "method", json_string("some_method"));
-    json_object_set_new(request, "params", json_object());
-    json_object_set_new(request, "id", json_integer(42));
-
-    ASSERT_TRUE(wf_impl_jsonrpc_is_request(request));
-
-    json_decref(request);
-}
-
-TEST(wf_jsonrpc_request, is_request_fail_missing_params)
-{
-    json_t * request = json_object();
-    json_object_set_new(request, "method", json_string("some_method"));
-    json_object_set_new(request, "id", json_integer(42));
-
-    ASSERT_FALSE(wf_impl_jsonrpc_is_request(request));
-
-    json_decref(request);
-}
-
-TEST(wf_jsonrpc_request, is_request_fail_params_wrong_type)
-{
-    json_t * request = json_object();
-    json_object_set_new(request, "method", json_string("some_method"));
-    json_object_set_new(request, "params", json_string("invalid_params"));
-    json_object_set_new(request, "id", json_integer(42));
-
-    ASSERT_FALSE(wf_impl_jsonrpc_is_request(request));
-
-    json_decref(request);
+    struct wf_json const * err_message = wf_impl_json_object_get(err, "message");
+    ASSERT_TRUE(wf_impl_json_is_string(err_message));
+    ASSERT_STREQ("Bad", wf_impl_json_string_get(err_message));
 }

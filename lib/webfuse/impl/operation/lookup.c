@@ -33,7 +33,7 @@ void wf_impl_operation_lookup_finished(
 		struct wf_json const * type_holder = wf_impl_json_object_get(result, "type");
 		if ((wf_impl_json_is_int(inode_holder)) &&
 			(wf_impl_json_is_int(mode_holder)) && 
-		    (wf_impl_json_is_int(type_holder)))
+		    (wf_impl_json_is_string(type_holder)))
 		{
             memset(&buffer, 0, sizeof(struct stat));
 

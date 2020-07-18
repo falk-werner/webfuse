@@ -1,8 +1,11 @@
-#include <gtest/gtest.h>
-
 #include "webfuse/credentials.h"
 #include "webfuse/impl/credentials.h"
+#include "webfuse/test_util/json_doc.hpp"
+
 #include <jansson.h>
+#include <gtest/gtest.h>
+
+using webfuse_test::JsonDoc;
 
 TEST(Credentials, Type)
 {
@@ -16,31 +19,27 @@ TEST(Credentials, Type)
 TEST(Credentials, Get)
 {
     struct wf_credentials creds;
-    json_t * data = json_object();
-    json_object_set_new(data, "username", json_string("bob"));
-    json_object_set_new(data, "password", json_string("<secret>"));
+    JsonDoc doc("{\"username\": \"bob\", \"password\": \"<secret>\"}");
 
-    wf_impl_credentials_init(&creds, "username", data);
+    wf_impl_credentials_init(&creds, "username", doc.root());
     ASSERT_STREQ("username", wf_credentials_type(&creds));
     ASSERT_STREQ("bob", wf_credentials_get(&creds, "username"));
     ASSERT_STREQ("<secret>", wf_credentials_get(&creds, "password"));
 
     wf_impl_credentials_cleanup(&creds);
-    json_decref(data);
 }
 
 TEST(Credentials, FailedToGetNonexistingValue)
 {
     struct wf_credentials creds;
-    json_t * data = json_object();
+    JsonDoc doc("{}");
 
-    wf_impl_credentials_init(&creds, "username", data);
+    wf_impl_credentials_init(&creds, "username", doc.root());
     ASSERT_STREQ("username", wf_credentials_type(&creds));
     ASSERT_STREQ(nullptr, wf_credentials_get(&creds, "username"));
     ASSERT_STREQ(nullptr, wf_credentials_get(&creds, "password"));
 
     wf_impl_credentials_cleanup(&creds);
-    json_decref(data);    
 }
 
 TEST(Credentials, FailedToGetWithoutData)
@@ -58,30 +57,27 @@ TEST(Credentials, FailedToGetWithoutData)
 TEST(Credentials, FailedToGetWrongDataType)
 {
     struct wf_credentials creds;
-    json_t * data = json_string("invalid_creds");
+    JsonDoc doc("invalid_creds");
 
-    wf_impl_credentials_init(&creds, "username", data);
+    wf_impl_credentials_init(&creds, "username", doc.root());
     ASSERT_STREQ("username", wf_credentials_type(&creds));
     ASSERT_STREQ(nullptr, wf_credentials_get(&creds, "username"));
     ASSERT_STREQ(nullptr, wf_credentials_get(&creds, "password"));
 
     wf_impl_credentials_cleanup(&creds);
-    json_decref(data);    
 }
 
 TEST(Credentials, FailedToGetWrongElementDataType)
 {
     struct wf_credentials creds;
-    json_t * data = json_object();
-    json_object_set_new(data, "username", json_integer(42));
+    JsonDoc doc("{\"username\": 42}");
 
-    wf_impl_credentials_init(&creds, "username", data);
+    wf_impl_credentials_init(&creds, "username", doc.root());
     ASSERT_STREQ("username", wf_credentials_type(&creds));
     ASSERT_STREQ(nullptr, wf_credentials_get(&creds, "username"));
     ASSERT_STREQ(nullptr, wf_credentials_get(&creds, "password"));
 
     wf_impl_credentials_cleanup(&creds);
-    json_decref(data);    
 }
 
 TEST(Credentials, SetType)
