@@ -14,32 +14,28 @@
 // do not read chunks larger than 1 MByte
 #define WF_MAX_READ_LENGTH (1024 * 1024)
 
-char * wf_impl_fill_buffer(
-	char const * data,
+char * wf_impl_operation_read_transform(
+	char * data,
 	size_t data_size,
 	char const * format,
 	size_t count,
 	wf_status * status)
 {
 	*status = WF_GOOD;
-	char * buffer = malloc(count);
+	char * buffer = data;
 
 	if (0 < count)
 	{
 		if (0 == strcmp("identity", format))
 		{
-			if (count == data_size)
-			{
-				memcpy(buffer, data, count);
-			}
-			else
+			if (count != data_size)
 			{
 				*status = WF_BAD;
 			}			
 		}
 		else if (0 == strcmp("base64", format))
 		{
-			size_t result = wf_impl_base64_decode(data, data_size, (uint8_t *) buffer, count);
+			size_t result = wf_impl_base64_decode(data, data_size, (uint8_t *) data, count);
 			if (result != count)
 			{
 				*status = WF_BAD;
@@ -49,12 +45,6 @@ char * wf_impl_fill_buffer(
 		{
 			*status = WF_BAD;
 		}
-	}
-
-	if (WF_GOOD != *status)
-	{
-		free(buffer);
-		buffer = NULL;
 	}
 
 	return buffer;
@@ -80,12 +70,12 @@ void wf_impl_operation_read_finished(
         	(wf_impl_json_is_string(format_holder)) &&
             (wf_impl_json_is_int(count_holder)))
 		{
-			char const * const data = wf_impl_json_string_get(data_holder);
+			char * const data = (char*) wf_impl_json_string_get(data_holder);
 			size_t const data_size = wf_impl_json_string_size(data_holder);
 			char const * const format = wf_impl_json_string_get(format_holder);
 			length = (size_t) wf_impl_json_int_get(count_holder);
 
-			buffer = wf_impl_fill_buffer(data, data_size, format, length, &status);
+			buffer = wf_impl_operation_read_transform(data, data_size, format, length, &status);
 		}
 		else
 		{
@@ -101,9 +91,6 @@ void wf_impl_operation_read_finished(
 	{
    		fuse_reply_err(request, ENOENT);
 	}
-	
-    free(buffer);
-
 }
 
 void wf_impl_operation_read(

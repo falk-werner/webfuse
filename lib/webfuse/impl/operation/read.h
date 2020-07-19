@@ -17,8 +17,8 @@ extern void wf_impl_operation_read(
 	fuse_ino_t ino, size_t size, off_t off,
 			struct fuse_file_info *fi);
 
-extern char * wf_impl_fill_buffer(
-	char const * data,
+extern char * wf_impl_operation_read_transform(
+	char * data,
 	size_t data_size,
 	char const * format,
 	size_t count,

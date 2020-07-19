@@ -84,53 +84,52 @@ TEST(wf_impl_operation_read, fail_rpc_null)
 TEST(wf_impl_operation_read, fill_buffer_identity)
 {
     wf_status status;
-    char * buffer = wf_impl_fill_buffer("brummni", 8, "identity", 8, &status);
+    char text[] = "brummni";
+    char * buffer = wf_impl_operation_read_transform(text, 8, "identity", 8, &status);
     ASSERT_EQ(WF_GOOD, status);
     ASSERT_STREQ("brummni", buffer);
-    free(buffer);
 }
 
 TEST(wf_impl_operation_read, fill_buffer_identity_fail_inconsistent_size)
 {
     wf_status status;
-    char * buffer = wf_impl_fill_buffer("brummni", 8, "identity", 7, &status);
+    char text[] = "brummni";
+    wf_impl_operation_read_transform(text, 8, "identity", 7, &status);
     ASSERT_NE(WF_GOOD, status);
-    ASSERT_EQ(nullptr, buffer);
 }
 
 TEST(wf_impl_operation_read, fill_buffer_base64)
 {
     wf_status status;
-    char * buffer = wf_impl_fill_buffer("YnJ1bW1uaQ==", 12, "base64", 7, &status);    
+    char text[] = "YnJ1bW1uaQ==";
+    char * buffer = wf_impl_operation_read_transform(text, 12, "base64", 7, &status);    
 
     ASSERT_EQ(WF_GOOD, status);
     ASSERT_EQ(0, strncmp("brummni", buffer, 7));
-    free(buffer);
 }
 
 TEST(wf_impl_operation_read, fill_buffer_base64_fail_invalid_data)
 {
     wf_status status;
-    char * buffer = wf_impl_fill_buffer("YnJ1bW1uaQ=A", 12, "base64", 8, &status);    
+    char text[] = "YnJ1bW1uaQ=A";
+    wf_impl_operation_read_transform(text, 12, "base64", 8, &status);    
     ASSERT_NE(WF_GOOD, status);
-    ASSERT_EQ(nullptr, buffer);
 }
 
 TEST(wf_impl_operation_read, fill_buffer_empty)
 {
     wf_status status;
-    char * buffer = wf_impl_fill_buffer(nullptr, 0, "identity", 0, &status);    
+    wf_impl_operation_read_transform(nullptr, 0, "identity", 0, &status);    
 
     ASSERT_EQ(WF_GOOD, status);
-    free(buffer);
 }
 
 TEST(wf_impl_operation_read, fill_buffer_fail_invalid_format)
 {
     wf_status status;
-    char * buffer = wf_impl_fill_buffer("some data", 9, "unknown", 9, &status);    
+    char text[] = "some data";
+    wf_impl_operation_read_transform(text, 9, "unknown", 9, &status);    
     ASSERT_NE(WF_GOOD, status);
-    ASSERT_EQ(nullptr, buffer);
 }
 
 TEST(wf_impl_operation_read, finished)
