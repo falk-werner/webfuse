@@ -23,7 +23,7 @@ RUN set -x \
        ca-certificates \
        openssl \
        libssl-dev \
-   && pip3 install --system meson
+   && pip3 install --system 'meson==0.54.3'
 
 COPY src /usr/local/src
 

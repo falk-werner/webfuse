@@ -2,43 +2,40 @@
 #include "webfuse/impl/operation/context.h"
 
 #include <errno.h>
+#include <stdlib.h>
 #include <string.h>
 #include <limits.h>
-#include <jansson.h>
 
 #include "webfuse/impl/jsonrpc/proxy.h"
+#include "webfuse/impl/json/node.h"
 #include "webfuse/impl/util/base64.h"
 #include "webfuse/impl/util/json_util.h"
 
 // do not read chunks larger than 1 MByte
 #define WF_MAX_READ_LENGTH (1024 * 1024)
 
-char * wf_impl_fill_buffer(
-	char const * data,
+char * wf_impl_operation_read_transform(
+	char * data,
 	size_t data_size,
 	char const * format,
 	size_t count,
 	wf_status * status)
 {
 	*status = WF_GOOD;
-	char * buffer = malloc(count);
+	char * buffer = data;
 
 	if (0 < count)
 	{
 		if (0 == strcmp("identity", format))
 		{
-			if (count == data_size)
-			{
-				memcpy(buffer, data, count);
-			}
-			else
+			if (count != data_size)
 			{
 				*status = WF_BAD;
 			}			
 		}
 		else if (0 == strcmp("base64", format))
 		{
-			size_t result = wf_impl_base64_decode(data, data_size, (uint8_t *) buffer, count);
+			size_t result = wf_impl_base64_decode(data, data_size, (uint8_t *) data, count);
 			if (result != count)
 			{
 				*status = WF_BAD;
@@ -50,19 +47,13 @@ char * wf_impl_fill_buffer(
 		}
 	}
 
-	if (WF_GOOD != *status)
-	{
-		free(buffer);
-		buffer = NULL;
-	}
-
 	return buffer;
 }
 
 void wf_impl_operation_read_finished(
 	void * user_data, 
-	json_t const * result,
-	json_t const * error)
+	struct wf_json const * result,
+	struct wf_jsonrpc_error const * error)
 {
 	wf_status status = wf_impl_jsonrpc_get_status(error);
 	fuse_req_t request = user_data;
@@ -71,20 +62,20 @@ void wf_impl_operation_read_finished(
 	size_t length = 0;
 	if (NULL != result)
 	{
-		json_t * data_holder = json_object_get(result, "data");
-		json_t * format_holder = json_object_get(result, "format");
-		json_t * count_holder = json_object_get(result, "count");
+		struct wf_json const * data_holder = wf_impl_json_object_get(result, "data");
+		struct wf_json const * format_holder = wf_impl_json_object_get(result, "format");
+		struct wf_json const * count_holder = wf_impl_json_object_get(result, "count");
 
-		if (json_is_string(data_holder) &&
-        	json_is_string(format_holder) &&
-            json_is_integer(count_holder))
+		if ((wf_impl_json_is_string(data_holder)) &&
+        	(wf_impl_json_is_string(format_holder)) &&
+            (wf_impl_json_is_int(count_holder)))
 		{
-			char const * const data = json_string_value(data_holder);
-			size_t const data_size = json_string_length(data_holder);
-			char const * const format = json_string_value(format_holder);
-			length = (size_t) json_integer_value(count_holder);
+			char * const data = (char*) wf_impl_json_string_get(data_holder);
+			size_t const data_size = wf_impl_json_string_size(data_holder);
+			char const * const format = wf_impl_json_string_get(format_holder);
+			length = (size_t) wf_impl_json_int_get(count_holder);
 
-			buffer = wf_impl_fill_buffer(data, data_size, format, length, &status);
+			buffer = wf_impl_operation_read_transform(data, data_size, format, length, &status);
 		}
 		else
 		{
@@ -100,9 +91,6 @@ void wf_impl_operation_read_finished(
 	{
    		fuse_reply_err(request, ENOENT);
 	}
-	
-    free(buffer);
-
 }
 
 void wf_impl_operation_read(

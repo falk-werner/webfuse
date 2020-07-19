@@ -11,7 +11,6 @@
 using std::size_t;
 #endif
 
-#include <jansson.h>
 #include "webfuse/impl/jsonrpc/send_fn.h"
 
 #ifdef __cplusplus
@@ -20,9 +19,11 @@ extern "C"
 #endif
 
 struct wf_jsonrpc_request;
+struct wf_jsonrpc_response_writer;
+struct wf_json;
 
 extern bool wf_impl_jsonrpc_is_request(
-    json_t * message);
+    struct wf_json const * message);
 
 extern struct wf_jsonrpc_request *
 wf_impl_jsonrpc_request_create(
@@ -36,9 +37,12 @@ extern void wf_impl_jsonrpc_request_dispose(
 extern void * wf_impl_jsonrpc_request_get_userdata(
     struct wf_jsonrpc_request * request);
 
+extern struct wf_jsonrpc_response_writer *
+wf_impl_jsonrpc_request_get_response_writer(
+    struct wf_jsonrpc_request * request);
+
 extern void wf_impl_jsonrpc_respond(
-    struct wf_jsonrpc_request * request,
-    json_t * result);
+    struct wf_jsonrpc_request * request);
 
 extern void wf_impl_jsonrpc_respond_error(
     struct wf_jsonrpc_request * request,

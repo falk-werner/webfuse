@@ -14,16 +14,19 @@ using std::size_t;
 extern "C" {
 #endif
 
+struct wf_jsonrpc_error;
+struct wf_json;
+
 struct wf_jsonrpc_response
 {
-	json_t * result;	
-	json_t * error;
+	struct wf_json const * result;	
+	struct wf_jsonrpc_error * error;
 	int id;
 };
 
 extern void wf_impl_jsonrpc_response_init(
 	struct wf_jsonrpc_response * response,
-    json_t * message);
+    struct wf_json const * message);
 
 extern void wf_impl_jsonrpc_response_cleanup(
 	struct wf_jsonrpc_response * response);

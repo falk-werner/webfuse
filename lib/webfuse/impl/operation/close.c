@@ -3,7 +3,6 @@
 
 #include <limits.h>
 #include <errno.h>
-#include <jansson.h>
 
 #include "webfuse/impl/jsonrpc/proxy.h"
 

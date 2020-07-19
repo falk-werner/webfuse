@@ -1,56 +1,68 @@
-#include <string>
-#include <gtest/gtest.h>
 
 #include "webfuse/impl/jsonrpc/response_intern.h"
+#include "webfuse/impl/jsonrpc/error.h"
+#include "webfuse/test_util/json_doc.hpp"
 
+#include <gtest/gtest.h>
+#include <string>
 
-static void response_parse_str(
-	std::string const & buffer,
-	struct wf_jsonrpc_response * response)
+using webfuse_test::JsonDoc;
+
+TEST(response_parser, invalid_no_object)
 {
-	json_t * message = json_loadb(buffer.c_str(), buffer.size(), 0, nullptr);
-	if (nullptr != message)
-	{
-		wf_impl_jsonrpc_response_init(response, message);
-		json_decref(message);
-	}
+	JsonDoc doc("[]");
+	struct wf_jsonrpc_response response;
+	wf_impl_jsonrpc_response_init(&response, doc.root());
+
+	ASSERT_NE(nullptr, response.error);
+	ASSERT_EQ(-1, response.id);
+	ASSERT_EQ(nullptr, response.result);
+	wf_impl_jsonrpc_response_cleanup(&response);
 }
 
-TEST(response_parser, test)
+TEST(response_parser, invalid_empty_object)
 {
+	JsonDoc doc("{}");
 	struct wf_jsonrpc_response response;
+	wf_impl_jsonrpc_response_init(&response, doc.root());
 
-	// no object
-	response_parse_str("[]", &response);
 	ASSERT_NE(nullptr, response.error);
 	ASSERT_EQ(-1, response.id);
 	ASSERT_EQ(nullptr, response.result);
 	wf_impl_jsonrpc_response_cleanup(&response);
+}
 
-	// empty
-	response_parse_str("{}", &response);
-	ASSERT_NE(nullptr, response.error);
-	ASSERT_EQ(-1, response.id);
-	ASSERT_EQ(nullptr, response.result);
-	wf_impl_jsonrpc_response_cleanup(&response);
+TEST(response_parser, invalid_missin_result_and_error)
+{
+	JsonDoc doc("{\"id\":42}");
+	struct wf_jsonrpc_response response;
+	wf_impl_jsonrpc_response_init(&response, doc.root());
 
-	// no data
-	response_parse_str("{\"id\":42}", &response);
 	ASSERT_NE(nullptr, response.error);
 	ASSERT_EQ(42, response.id);
 	ASSERT_EQ(nullptr, response.result);
 	wf_impl_jsonrpc_response_cleanup(&response);
+}
 
-	// custom error code
-	response_parse_str("{\"error\":{\"code\": 42}, \"id\": 42}", &response);
+TEST(response_parser, custom_error_code)
+{
+	JsonDoc doc("{\"error\":{\"code\": 42}, \"id\": 42}");
+	struct wf_jsonrpc_response response;
+	wf_impl_jsonrpc_response_init(&response, doc.root());
+
 	ASSERT_NE(nullptr, response.error);
-	ASSERT_EQ(42, json_integer_value(json_object_get(response.error, "code")));
+	ASSERT_EQ(42, wf_impl_jsonrpc_error_code(response.error));
 	ASSERT_EQ(42, response.id);
 	ASSERT_EQ(nullptr, response.result);
 	wf_impl_jsonrpc_response_cleanup(&response);
+}
 
-	// valid response
-	response_parse_str("{\"result\": true, \"id\": 42}", &response);
+TEST(response_parser, valid_response)
+{
+	JsonDoc doc("{\"result\": true, \"id\": 42}");
+	struct wf_jsonrpc_response response;
+	wf_impl_jsonrpc_response_init(&response, doc.root());
+
 	ASSERT_EQ(nullptr, response.error);
 	ASSERT_EQ(42, response.id);
 	ASSERT_NE(nullptr, response.result);

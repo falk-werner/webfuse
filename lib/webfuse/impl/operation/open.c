@@ -2,6 +2,7 @@
 #include "webfuse/impl/operation/context.h"
 
 #include "webfuse/impl/jsonrpc/proxy.h"
+#include "webfuse/impl/json/node.h"
 #include "webfuse/impl/util/util.h"
 #include "webfuse/status.h"
 #include "webfuse/impl/util/json_util.h"
@@ -11,8 +12,8 @@
 
 void wf_impl_operation_open_finished(
 	void * user_data,
-	json_t const * result,
-	json_t const * error)
+	struct wf_json const * result,
+	struct wf_jsonrpc_error const * error)
 {
 	wf_status status = wf_impl_jsonrpc_get_status(error);
 	fuse_req_t request = user_data;
@@ -21,10 +22,10 @@ void wf_impl_operation_open_finished(
 
 	if (NULL != result)
 	{
-        json_t * handle_holder = json_object_get(result, "handle");
-        if (json_is_integer(handle_holder))
+        struct wf_json const * handle_holder = wf_impl_json_object_get(result, "handle");
+        if (wf_impl_json_is_int(handle_holder))
         {
-            file_info.fh = json_integer_value(handle_holder);
+            file_info.fh = wf_impl_json_int_get(handle_holder);
         }
         else
         {

@@ -5,15 +5,15 @@
 #include <stdbool.h>
 #endif
 
-#include <jansson.h>
-
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
+struct wf_json;
+
 extern bool wf_impl_jsonrpc_is_response(
-    json_t * message);
+    struct wf_json const  * message);
 
 #ifdef __cplusplus
 }

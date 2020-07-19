@@ -39,7 +39,6 @@ After that, you will find the API documentation in the doc/api subdirectory.
 
 -   [libfuse3](https://github.com/libfuse/libfuse/)
 -   [libwebsockets](https://libwebsockets.org/)
--   [Jansson](https://jansson.readthedocs.io)
 -   [GoogleTest](https://github.com/google/googletest) *(optional)*
 
 ### Installation from source
@@ -60,17 +59,6 @@ After that, you will find the API documentation in the doc/api subdirectory.
     wget -O libwebsockets-4.0.10.tar.gz https://github.com/warmcat/libwebsockets/archive/v4.0.10.tar.gz
     tar -xf libwebsockets-4.0.10.tar.gz
     cd libwebsockets-4.0.10
-    mkdir .build
-    cd .build
-    cmake ..
-    make
-    sudo make install
-
-#### Jansson
-
-    wget -O libjansson-2.12.tar.gz https://github.com/akheron/jansson/archive/v2.12.tar.gz
-    tar -xf libjansson-2.12.tar.gz
-    cd jansson-2.12
     mkdir .build
     cd .build
     cmake ..

@@ -8,7 +8,6 @@
 #include <cstdarg>
 #endif
 
-#include <jansson.h>
 #include "webfuse/impl/jsonrpc/method_invoke_fn.h"
 #include "webfuse/impl/jsonrpc/send_fn.h"
 
@@ -18,6 +17,7 @@ extern "C"
 #endif
 
 struct wf_jsonrpc_server;
+struct wf_json;
 
 extern struct wf_jsonrpc_server *
 wf_impl_jsonrpc_server_create(void);
@@ -34,7 +34,7 @@ extern void wf_impl_jsonrpc_server_add(
 
 extern void wf_impl_jsonrpc_server_process(
     struct wf_jsonrpc_server * server,
-    json_t * request,
+    struct wf_json const * request,
     wf_jsonrpc_send_fn * send,
     void * user_data);
 

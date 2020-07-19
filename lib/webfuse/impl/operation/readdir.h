@@ -2,12 +2,14 @@
 #define WF_ADAPTER_IMPL_OPERATION_READDIR_H
 
 #include "webfuse/impl/fuse_wrapper.h"
-#include <jansson.h>
 
 #ifdef __cplusplus
 extern "C"
 {
 #endif
+
+struct wf_jsonrpc_error;
+struct wf_json;
 
 struct wf_impl_operation_readdir_context
 {
@@ -25,8 +27,8 @@ extern void wf_impl_operation_readdir (
 
 extern void wf_impl_operation_readdir_finished(
 	void * user_data,
-	json_t const * result,
-	json_t const * error);
+	struct wf_json const * result,
+	struct wf_jsonrpc_error const * error);
 
 #ifdef __cplusplus
 }

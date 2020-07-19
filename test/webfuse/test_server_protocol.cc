@@ -1,6 +1,8 @@
 #include "webfuse/test_util/server_protocol.hpp"
 #include "webfuse/test_util/ws_client.hpp"
 #include "webfuse/test_util/file.hpp"
+#include "webfuse/test_util/json_doc.hpp"
+#include "webfuse/impl/json/node.h"
 #include "webfuse/mocks/mock_invokation_handler.hpp"
 #include "webfuse/mocks/getattr_matcher.hpp"
 #include "webfuse/protocol_names.h"
@@ -8,6 +10,7 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
+using webfuse_test::JsonDoc;
 using webfuse_test::MockInvokationHander;
 using webfuse_test::WsClient;
 using webfuse_test::ServerProtocol;
@@ -33,24 +36,24 @@ TEST(server_protocol, add_filesystem)
 
     {
         std::string response_text = client.Invoke("{\"method\": \"authenticate\", \"params\": [\"username\", {\"username\": \"bob\", \"password\": \"secret\"}], \"id\": 23}");
-        json_t * response = json_loads(response_text.c_str(), 0, nullptr);
-        ASSERT_TRUE(json_is_object(response));
-        json_t * result = json_object_get(response, "result");
-        ASSERT_TRUE(json_is_object(result));
-        json_t * id = json_object_get(response, "id");
-        ASSERT_EQ(23, json_integer_value(id));
-        json_decref(response);
+        JsonDoc doc(response_text);
+        wf_json const * response = doc.root();
+        ASSERT_TRUE(wf_impl_json_is_object(response));
+        wf_json const * result = wf_impl_json_object_get(response, "result");
+        ASSERT_TRUE(wf_impl_json_is_object(result));
+        wf_json const * id = wf_impl_json_object_get(response, "id");
+        ASSERT_EQ(23, wf_impl_json_int_get(id));
     }
 
     {
         std::string response_text = client.Invoke("{\"method\": \"add_filesystem\", \"params\": [\"test\"], \"id\": 42}");
-        json_t * response = json_loads(response_text.c_str(), 0, nullptr);
-        ASSERT_TRUE(json_is_object(response));
-        json_t * result = json_object_get(response, "result");
-        ASSERT_TRUE(json_is_object(result));
-        json_t * id = json_object_get(response, "id");
-        ASSERT_EQ(42, json_integer_value(id));
-        json_decref(response);
+        JsonDoc doc(response_text);
+        wf_json const * response = doc.root();
+        ASSERT_TRUE(wf_impl_json_is_object(response));
+        wf_json const * result = wf_impl_json_object_get(response, "result");
+        ASSERT_TRUE(wf_impl_json_is_object(result));
+        wf_json const * id = wf_impl_json_object_get(response, "id");
+        ASSERT_EQ(42, wf_impl_json_int_get(id));
     }
 
     std::string base_dir = server.GetBaseDir();
@@ -76,13 +79,13 @@ TEST(server_protocol, add_filesystem_fail_without_authentication)
 
     {
         std::string response_text = client.Invoke("{\"method\": \"add_filesystem\", \"params\": [\"test\"], \"id\": 42}");
-        json_t * response = json_loads(response_text.c_str(), 0, nullptr);
-        ASSERT_TRUE(json_is_object(response));
-        json_t * error = json_object_get(response, "error");
-        ASSERT_TRUE(json_is_object(error));
-        json_t * id = json_object_get(response, "id");
-        ASSERT_EQ(42, json_integer_value(id));
-        json_decref(response);
+        JsonDoc doc(response_text);
+        wf_json const * response = doc.root();
+        ASSERT_TRUE(wf_impl_json_is_object(response));
+        wf_json const * error = wf_impl_json_object_get(response, "error");
+        ASSERT_TRUE(wf_impl_json_is_object(error));
+        wf_json const * id = wf_impl_json_object_get(response, "id");
+        ASSERT_EQ(42, wf_impl_json_int_get(id));
     }
 
     auto disconnected = client.Disconnect();
@@ -103,13 +106,13 @@ TEST(server_protocol, authenticate_fail_wrong_credentials)
 
     {
         std::string response_text = client.Invoke("{\"method\": \"authenticate\", \"params\": [\"username\", {\"username\": \"alice\", \"password\": \"cheshire\"}], \"id\": 23}");
-        json_t * response = json_loads(response_text.c_str(), 0, nullptr);
-        ASSERT_TRUE(json_is_object(response));
-        json_t * error = json_object_get(response, "error");
-        ASSERT_TRUE(json_is_object(error));
-        json_t * id = json_object_get(response, "id");
-        ASSERT_EQ(23, json_integer_value(id));
-        json_decref(response);
+        JsonDoc doc(response_text);
+        wf_json const * response = doc.root();
+        ASSERT_TRUE(wf_impl_json_is_object(response));
+        wf_json const * error = wf_impl_json_object_get(response, "error");
+        ASSERT_TRUE(wf_impl_json_is_object(error));
+        wf_json const * id = wf_impl_json_object_get(response, "id");
+        ASSERT_EQ(23, wf_impl_json_int_get(id));
     }
 
     auto disconnected = client.Disconnect();

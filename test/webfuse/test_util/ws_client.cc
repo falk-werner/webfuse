@@ -1,9 +1,10 @@
 #include "webfuse/test_util/ws_client.hpp"
 #include "webfuse/test_util/invokation_handler.hpp"
+#include "webfuse/test_util/json_doc.hpp"
+#include "webfuse/impl/json/node.h"
 #include "webfuse/status.h"
 
 #include <libwebsockets.h>
-#include <jansson.h>
 
 #include <cstring>
 #include <thread>
@@ -11,6 +12,7 @@
 #include <queue>
 #include <condition_variable>
 #include <chrono>
+#include <sstream>
 
 #define TIMEOUT (std::chrono::seconds(10))
 
@@ -225,52 +227,33 @@ public:
         {
             lock.unlock();
 
-            json_t * request = json_loadb(data, length, 0, nullptr);
-            if (nullptr != request)
+            JsonDoc doc(std::string(data, length));
+            wf_json const * request = doc.root();
+            wf_json const * method = wf_impl_json_object_get(request, "method");
+            wf_json const * params = wf_impl_json_object_get(request, "params");
+            wf_json const * id = wf_impl_json_object_get(request, "id");
+
+            std::ostringstream response;
+            response << "{";
+            try
             {
-                json_t * method = json_object_get(request, "method");
-                json_t * params = json_object_get(request, "params");
-                json_t * id = json_object_get(request, "id");
-
-                json_t * response = json_object();
-                try
-                {
-                    std::string result_text = handler_.Invoke(json_string_value(method), params);
-                    json_t * result = json_loads(result_text.c_str(), 0, nullptr);
-                    if (nullptr != result)
-                    {
-                        json_object_set_new(response, "result", result);
-                    }
-                    else
-                    {
-                        json_t * error = json_object();
-                        json_object_set_new(error, "code", json_integer(WF_BAD));
-                        json_object_set_new(response, "error",error);
-                    }
-                    
-                }
-                catch (...)
-                {
-                    json_t * error = json_object();
-                    json_object_set_new(error, "code", json_integer(WF_BAD));
-                    json_object_set_new(response, "error",error);
-                }
-
-                json_object_set(response, "id", id);
-
-                char * response_text = json_dumps(response, 0);
-                lock.lock();
-                send_queue.push(response_text);
-                commands.push(command::send);
-                lock.unlock();
-
-                lws_cancel_service(context);
-
-                free(response_text);
-
-                json_decref(response);
-                json_decref(request);
+                std::string result_text = handler_.Invoke(wf_impl_json_string_get(method), params);
+                if (result_text.empty()) { throw std::runtime_error("empty"); }
+                response << "\"result\": " << result_text;                    
             }
+            catch (...)
+            {
+                response << "\"error\": {\"code\": 1}";
+            }
+
+            response << ", \"id\": " << wf_impl_json_int_get(id) << "}";
+
+            lock.lock();
+            send_queue.push(response.str());
+            commands.push(command::send);
+            lock.unlock();
+
+            lws_cancel_service(context);
         }
     }
 

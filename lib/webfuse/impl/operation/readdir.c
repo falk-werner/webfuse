@@ -10,6 +10,7 @@
 #include <unistd.h> 
 
 #include "webfuse/impl/jsonrpc/proxy.h"
+#include "webfuse/impl/json/node.h"
 #include "webfuse/impl/util/util.h"
 #include "webfuse/impl/util/json_util.h"
 
@@ -68,8 +69,8 @@ static size_t wf_impl_min(size_t a, size_t b)
 
 void wf_impl_operation_readdir_finished(
 	void * user_data,
-	json_t const * result,
-	json_t const * error)
+	struct wf_json const * result,
+	struct wf_jsonrpc_error const * error)
 {
 	wf_status status = wf_impl_jsonrpc_get_status(error);
 	struct wf_impl_operation_readdir_context * context = user_data;
@@ -77,21 +78,21 @@ void wf_impl_operation_readdir_finished(
 	struct wf_impl_dirbuffer buffer;
 	wf_impl_dirbuffer_init(&buffer);
 
-	if (json_is_array(result)) 
+	if ((NULL != result) && (wf_impl_json_is_array(result)))
 	{
-		size_t const count = json_array_size(result);
+		size_t const count = wf_impl_json_array_size(result);
 		for(size_t i = 0; i < count; i++)
 		{
-			json_t * entry =json_array_get(result, i);
-			if (json_is_object(entry))
+			struct wf_json const * entry = wf_impl_json_array_get(result, i);
+			if (wf_impl_json_is_object(entry))
 			{
-				json_t * name_holder = json_object_get(entry, "name");
-				json_t * inode_holder = json_object_get(entry, "inode");
+				struct wf_json const * name_holder = wf_impl_json_object_get(entry, "name");
+				struct wf_json const * inode_holder = wf_impl_json_object_get(entry, "inode");
 
-				if ((json_is_string(name_holder)) && (json_is_integer(inode_holder)))
+				if ((wf_impl_json_is_string(name_holder)) && (wf_impl_json_is_int(inode_holder)))
 				{
-					char const * name = json_string_value(name_holder);
-					fuse_ino_t entry_inode = (fuse_ino_t) json_integer_value(inode_holder);
+					char const * name = wf_impl_json_string_get(name_holder);
+					fuse_ino_t entry_inode = (fuse_ino_t) wf_impl_json_int_get(inode_holder);
 					wf_impl_dirbuffer_add(context->request, &buffer, name, entry_inode);	
 				}
 				else

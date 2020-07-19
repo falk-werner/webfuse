@@ -8,7 +8,6 @@
 using std::size_t;
 #endif
 
-#include <jansson.h>
 #include "webfuse/impl/util/slist.h"
 
 struct wf_message
@@ -23,10 +22,13 @@ extern "C"
 {
 #endif
 
-extern struct wf_message * wf_impl_message_create(
-    json_t const * value);
+extern struct wf_message *
+wf_impl_message_create(
+    char * value,
+    size_t length);
 
-extern void wf_impl_message_dispose(
+extern void
+wf_impl_message_dispose(
     struct wf_message * message);
 
 #ifdef __cplusplus

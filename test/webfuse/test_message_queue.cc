@@ -1,18 +1,23 @@
-#include <gtest/gtest.h>
 #include "webfuse/impl/message_queue.h"
 #include "webfuse/impl/message.h"
 #include "webfuse/impl/util/slist.h"
+
+#include <gtest/gtest.h>
+
+#include <libwebsockets.h>
+#include <cstring>
+#include <cstdlib>
 
 namespace
 {
 
     struct wf_slist_item * create_message(char const * content)
     {
-        json_t * value = json_object();
-        json_object_set_new(value, "content", json_string(content));
-        struct wf_message * message = wf_impl_message_create(value);
+        std::string json = std::string("{\"content\": \"") + content + "\"}";
+        char * data = (char*) malloc(LWS_PRE + json.size());
+        memcpy(&(data[LWS_PRE]), json.c_str(), json.size());
+        struct wf_message * message = wf_impl_message_create(&(data[LWS_PRE]), json.size());
 
-        json_decref(value);
         return &message->item;
     }
 

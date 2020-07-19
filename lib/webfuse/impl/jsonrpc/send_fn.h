@@ -5,15 +5,16 @@
 #include <stdbool.h>
 #endif
 
-#include <jansson.h>
 
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
+struct wf_message;
+
 typedef bool wf_jsonrpc_send_fn(
-	json_t * request,
+	struct wf_message * request,
     void * user_data);
 
 #ifdef __cplusplus

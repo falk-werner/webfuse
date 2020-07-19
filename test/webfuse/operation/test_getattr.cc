@@ -1,13 +1,16 @@
 #include "webfuse/impl/operation/getattr.h"
+#include "webfuse/impl/jsonrpc/error.h"
 
 #include "webfuse/status.h"
 
+#include "webfuse/test_util/json_doc.hpp"
 #include "webfuse/mocks/mock_fuse.hpp"
 #include "webfuse/mocks/mock_operation_context.hpp"
 #include "webfuse/mocks/mock_jsonrpc_proxy.hpp"
 
 #include <gtest/gtest.h>
 
+using webfuse_test::JsonDoc;
 using webfuse_test::MockJsonRpcProxy;
 using webfuse_test::MockOperationContext;
 using webfuse_test::FuseMock;
@@ -79,16 +82,13 @@ TEST(wf_impl_operation_getattr, finished_file)
     FuseMock fuse;
     EXPECT_CALL(fuse, fuse_reply_attr(_,_,_)).Times(1).WillOnce(Return(0));
 
-    json_t * result = json_object();
-    json_object_set_new(result, "mode", json_integer(0755));
-    json_object_set_new(result, "type", json_string("file"));
+    JsonDoc result("{\"mode\": 493, \"type\": \"file\"}");
 
     auto * context = reinterpret_cast<wf_impl_operation_getattr_context*>(malloc(sizeof(wf_impl_operation_getattr_context)));
     context->inode = 1;
     context->gid = 0;
     context->uid = 0;
-    wf_impl_operation_getattr_finished(context, result, nullptr);
-    json_decref(result);
+    wf_impl_operation_getattr_finished(context, result.root(), nullptr);
 }
 
 TEST(wf_impl_operation_getattr, finished_dir)
@@ -96,16 +96,13 @@ TEST(wf_impl_operation_getattr, finished_dir)
     FuseMock fuse;
     EXPECT_CALL(fuse, fuse_reply_attr(_,_,_)).Times(1).WillOnce(Return(0));
 
-    json_t * result = json_object();
-    json_object_set_new(result, "mode", json_integer(0755));
-    json_object_set_new(result, "type", json_string("dir"));
+    JsonDoc result("{\"mode\": 493, \"type\": \"dir\"}");
 
     auto * context = reinterpret_cast<wf_impl_operation_getattr_context*>(malloc(sizeof(wf_impl_operation_getattr_context)));
     context->inode = 1;
     context->gid = 0;
     context->uid = 0;
-    wf_impl_operation_getattr_finished(context, result, nullptr);
-    json_decref(result);
+    wf_impl_operation_getattr_finished(context, result.root(), nullptr);
 }
 
 TEST(wf_impl_operation_getattr, finished_unknown_type)
@@ -113,16 +110,13 @@ TEST(wf_impl_operation_getattr, finished_unknown_type)
     FuseMock fuse;
     EXPECT_CALL(fuse, fuse_reply_attr(_,_,_)).Times(1).WillOnce(Return(0));
 
-    json_t * result = json_object();
-    json_object_set_new(result, "mode", json_integer(0755));
-    json_object_set_new(result, "type", json_string("unknown"));
+    JsonDoc result("{\"mode\": 493, \"type\": \"unknown\"}");
 
     auto * context = reinterpret_cast<wf_impl_operation_getattr_context*>(malloc(sizeof(wf_impl_operation_getattr_context)));
     context->inode = 1;
     context->gid = 0;
     context->uid = 0;
-    wf_impl_operation_getattr_finished(context, result, nullptr);
-    json_decref(result);
+    wf_impl_operation_getattr_finished(context, result.root(), nullptr);
 }
 
 TEST(wf_impl_operation_getattr, finished_fail_missing_mode)
@@ -131,15 +125,13 @@ TEST(wf_impl_operation_getattr, finished_fail_missing_mode)
     EXPECT_CALL(fuse, fuse_reply_open(_,_)).Times(0);
     EXPECT_CALL(fuse, fuse_reply_err(_, ENOENT)).Times(1).WillOnce(Return(0));
 
-    json_t * result = json_object();
-    json_object_set_new(result, "type", json_string("file"));
+    JsonDoc result("{\"type\": \"file\"}");
 
     auto * context = reinterpret_cast<wf_impl_operation_getattr_context*>(malloc(sizeof(wf_impl_operation_getattr_context)));
     context->inode = 1;
     context->gid = 0;
     context->uid = 0;
-    wf_impl_operation_getattr_finished(context, result, nullptr);
-    json_decref(result);
+    wf_impl_operation_getattr_finished(context, result.root(), nullptr);
 }
 
 TEST(wf_impl_operation_getattr, finished_fail_invalid_mode_type)
@@ -148,33 +140,28 @@ TEST(wf_impl_operation_getattr, finished_fail_invalid_mode_type)
     EXPECT_CALL(fuse, fuse_reply_open(_,_)).Times(0);
     EXPECT_CALL(fuse, fuse_reply_err(_, ENOENT)).Times(1).WillOnce(Return(0));
 
-    json_t * result = json_object();
-    json_object_set_new(result, "mode", json_string("0755"));
-    json_object_set_new(result, "type", json_string("file"));
+    JsonDoc result("{\"mode\": \"0755\", \"type\": \"file\"}");
 
     auto * context = reinterpret_cast<wf_impl_operation_getattr_context*>(malloc(sizeof(wf_impl_operation_getattr_context)));
     context->inode = 1;
     context->gid = 0;
     context->uid = 0;
-    wf_impl_operation_getattr_finished(context, result, nullptr);
-    json_decref(result);
+    wf_impl_operation_getattr_finished(context, result.root(), nullptr);
 }
 
-TEST(wf_impl_operation_getattr, finished_fail_type_mode)
+TEST(wf_impl_operation_getattr, finished_fail_missing_type)
 {
     FuseMock fuse;
     EXPECT_CALL(fuse, fuse_reply_open(_,_)).Times(0);
     EXPECT_CALL(fuse, fuse_reply_err(_, ENOENT)).Times(1).WillOnce(Return(0));
 
-    json_t * result = json_object();
-    json_object_set_new(result, "mode", json_integer(0755));
+    JsonDoc result("{\"mode\": 493}");
 
     auto * context = reinterpret_cast<wf_impl_operation_getattr_context*>(malloc(sizeof(wf_impl_operation_getattr_context)));
     context->inode = 1;
     context->gid = 0;
     context->uid = 0;
-    wf_impl_operation_getattr_finished(context, result, nullptr);
-    json_decref(result);
+    wf_impl_operation_getattr_finished(context, result.root(), nullptr);
 }
 
 TEST(wf_impl_operation_getattr, finished_fail_invalid_type_type)
@@ -183,16 +170,13 @@ TEST(wf_impl_operation_getattr, finished_fail_invalid_type_type)
     EXPECT_CALL(fuse, fuse_reply_open(_,_)).Times(0);
     EXPECT_CALL(fuse, fuse_reply_err(_, ENOENT)).Times(1).WillOnce(Return(0));
 
-    json_t * result = json_object();
-    json_object_set_new(result, "mode", json_integer(0755));
-    json_object_set_new(result, "type", json_integer(42));
+    JsonDoc result("{\"mode\": 493, \"type\": 42}");
 
     auto * context = reinterpret_cast<wf_impl_operation_getattr_context*>(malloc(sizeof(wf_impl_operation_getattr_context)));
     context->inode = 1;
     context->gid = 0;
     context->uid = 0;
-    wf_impl_operation_getattr_finished(context, result, nullptr);
-    json_decref(result);
+    wf_impl_operation_getattr_finished(context, result.root(), nullptr);
 }
 
 TEST(wf_impl_operation_getattr, finished_error)
@@ -201,13 +185,12 @@ TEST(wf_impl_operation_getattr, finished_error)
     EXPECT_CALL(fuse, fuse_reply_open(_,_)).Times(0);
     EXPECT_CALL(fuse, fuse_reply_err(_, ENOENT)).Times(1).WillOnce(Return(0));
 
-    json_t * error = json_object();
-    json_object_set_new(error, "code", json_integer(WF_BAD));
+    wf_jsonrpc_error * error = wf_impl_jsonrpc_error(WF_BAD, "");
 
     auto * context = reinterpret_cast<wf_impl_operation_getattr_context*>(malloc(sizeof(wf_impl_operation_getattr_context)));
     context->inode = 1;
     context->gid = 0;
     context->uid = 0;
     wf_impl_operation_getattr_finished(context, nullptr, error);
-    json_decref(error);
+    wf_impl_jsonrpc_error_dispose(error);
 }
