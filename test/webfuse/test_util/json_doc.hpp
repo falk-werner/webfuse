@@ -12,7 +12,7 @@ class JsonDoc
     JsonDoc(JsonDoc const&) = delete;
     JsonDoc& operator=(JsonDoc const&) = delete;
 public:
-    JsonDoc(std::string const & text);
+    explicit JsonDoc(std::string const & text);
     JsonDoc(JsonDoc && other);
     JsonDoc& operator=(JsonDoc && other);
     ~JsonDoc();
