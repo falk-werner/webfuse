@@ -1,5 +1,7 @@
 # webfuse changelog
 
+## 0.6.0 _(unknown)_
+
 ## 0.5.0 _(Sun Jul 19 2020)_
 
 *   __Feature:__ Remove dependency to libjansson
@@ -11,7 +13,7 @@
 *   __Breaking Change:__ Remove CMake support (change build system to meson)
 *   __Breaking Change:__ Make argument credentials const in `wf_authenticate_fn`
 *   __Breaking Change:__ Moved provider library into [separate project](https://github.com/falk-werner/webfuse-provider)
-*   __Breaking Change:__Renamed library (libwebfuse_adapter -> libwebfuse)
+*   __Breaking Change:__ Renamed library (libwebfuse_adapter -> libwebfuse)
 *   __Feature:__ Add adapter client implementation
 *   __Feature:__ Allow system to choose port of webfuse server (by setting port in `wf_server_config` to 0)
 *   __Fix:__ Fix meson build failure when gtest or jansson are not installed
