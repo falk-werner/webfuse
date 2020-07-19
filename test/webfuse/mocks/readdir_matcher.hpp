@@ -2,30 +2,30 @@
 #define WF_READDIR_MATCHER_HPP
 
 #include <gmock/gmock.h>
-#include <jansson.h>
+#include "webfuse/impl/json/node.h"
 
 namespace webfuse_test
 {
 
 MATCHER_P(ReadDir, inode, "")
 {
-    if (!json_is_array(arg))
+    if (!wf_impl_json_is_array(arg))
     {
         *result_listener << "json array expected";
         return false;
     }
 
-    json_t * inode_ = json_array_get(arg, 1);
-    if (!json_is_integer(inode_))
+    wf_json const * inode_ = wf_impl_json_array_get(arg, 1);
+    if (!wf_impl_json_is_int(inode_))
     {
         *result_listener << "inode is expectoed to an integer";
         return false;
     }
 
-    if (inode != json_integer_value(inode_))
+    if (inode != wf_impl_json_int_get(inode_))
     {
         *result_listener << "inode mismatch: expected" << inode 
-            << " but was " << json_integer_value(inode_);
+            << " but was " << wf_impl_json_int_get(inode_);
         return false;
     }
 

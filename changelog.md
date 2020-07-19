@@ -2,6 +2,10 @@
 
 ## 0.5.0 _(unknown)_
 
+### Features
+
+*   Removed dependency to libjansson
+
 ### Fixes
 
 *   Fix deadlock reading files larger that a few KBytes (Isseue #82)

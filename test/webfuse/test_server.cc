@@ -1,19 +1,20 @@
-#include <gtest/gtest.h>
-
-#include <jansson.h>
-
 #include "webfuse/server.h"
 #include "webfuse/server_config.h"
 #include "webfuse/test_util/server.hpp"
 #include "webfuse/test_util/ws_client.hpp"
 #include "webfuse/test_util/file.hpp"
+#include "webfuse/test_util/json_doc.hpp"
 #include "webfuse/mocks/mock_invokation_handler.hpp"
 #include "webfuse/protocol_names.h"
 #include "webfuse/mocks/open_matcher.hpp"
 #include "webfuse/mocks/getattr_matcher.hpp"
 #include "webfuse/mocks/lookup_matcher.hpp"
 #include "webfuse/mocks/readdir_matcher.hpp"
+#include "webfuse/impl/json/node.h"
 
+#include <gtest/gtest.h>
+
+using webfuse_test::JsonDoc;
 using webfuse_test::MockInvokationHander;
 using webfuse_test::WsClient;
 using webfuse_test::Server;
@@ -85,13 +86,13 @@ TEST(server, add_filesystem)
     ASSERT_TRUE(connected);
 
     std::string response_text = client.Invoke("{\"method\": \"add_filesystem\", \"params\": [\"test\"], \"id\": 42}");
-    json_t * response = json_loads(response_text.c_str(), 0, nullptr);
-    ASSERT_TRUE(json_is_object(response));
-    json_t * result = json_object_get(response, "result");
-    ASSERT_TRUE(json_is_object(result));
-    json_t * id = json_object_get(response, "id");
-    ASSERT_EQ(42, json_integer_value(id));
-    json_decref(response);
+    JsonDoc doc(response_text);
+    wf_json const * response = doc.root();
+    ASSERT_TRUE(wf_impl_json_is_object(response));
+    wf_json const * result = wf_impl_json_object_get(response, "result");
+    ASSERT_TRUE(wf_impl_json_is_object(result));
+    wf_json const * id = wf_impl_json_object_get(response, "id");
+    ASSERT_EQ(42, wf_impl_json_int_get(id));
 
     std::string base_dir = server.GetBaseDir();
     ASSERT_TRUE(File(base_dir).isDirectory());
@@ -112,13 +113,13 @@ TEST(server, add_filesystem_fail_missing_param)
     ASSERT_TRUE(connected);
 
     std::string response_text = client.Invoke("{\"method\": \"add_filesystem\", \"params\": [], \"id\": 42}");
-    json_t * response = json_loads(response_text.c_str(), 0, nullptr);
-    ASSERT_TRUE(json_is_object(response));
-    json_t * error = json_object_get(response, "error");
-    ASSERT_TRUE(json_is_object(error));
-    json_t * id = json_object_get(response, "id");
-    ASSERT_EQ(42, json_integer_value(id));
-    json_decref(response);
+    JsonDoc doc(response_text);
+    wf_json const * response = doc.root();
+    ASSERT_TRUE(wf_impl_json_is_object(response));
+    wf_json const * error = wf_impl_json_object_get(response, "error");
+    ASSERT_TRUE(wf_impl_json_is_object(error));
+    wf_json const * id = wf_impl_json_object_get(response, "id");
+    ASSERT_EQ(42, wf_impl_json_int_get(id));
 
     auto disconnected = client.Disconnect();
     ASSERT_TRUE(disconnected);
@@ -134,13 +135,13 @@ TEST(server, add_filesystem_fail_invalid_name_type)
     ASSERT_TRUE(connected);
 
     std::string response_text = client.Invoke("{\"method\": \"add_filesystem\", \"params\": [42], \"id\": 42}");
-    json_t * response = json_loads(response_text.c_str(), 0, nullptr);
-    ASSERT_TRUE(json_is_object(response));
-    json_t * error = json_object_get(response, "error");
-    ASSERT_TRUE(json_is_object(error));
-    json_t * id = json_object_get(response, "id");
-    ASSERT_EQ(42, json_integer_value(id));
-    json_decref(response);
+    JsonDoc doc(response_text);
+    wf_json const * response = doc.root();
+    ASSERT_TRUE(wf_impl_json_is_object(response));
+    wf_json const * error = wf_impl_json_object_get(response, "error");
+    ASSERT_TRUE(wf_impl_json_is_object(error));
+    wf_json const * id = wf_impl_json_object_get(response, "id");
+    ASSERT_EQ(42, wf_impl_json_int_get(id));
 
     auto disconnected = client.Disconnect();
     ASSERT_TRUE(disconnected);
@@ -156,13 +157,13 @@ TEST(server, add_filesystem_fail_invalid_name)
     ASSERT_TRUE(connected);
 
     std::string response_text = client.Invoke("{\"method\": \"add_filesystem\", \"params\": [\"invalid_1/name\"], \"id\": 42}");
-    json_t * response = json_loads(response_text.c_str(), 0, nullptr);
-    ASSERT_TRUE(json_is_object(response));
-    json_t * error = json_object_get(response, "error");
-    ASSERT_TRUE(json_is_object(error));
-    json_t * id = json_object_get(response, "id");
-    ASSERT_EQ(42, json_integer_value(id));
-    json_decref(response);
+    JsonDoc doc(response_text);
+    wf_json const * response = doc.root();
+    ASSERT_TRUE(wf_impl_json_is_object(response));
+    wf_json const * error = wf_impl_json_object_get(response, "error");
+    ASSERT_TRUE(wf_impl_json_is_object(error));
+    wf_json const * id = wf_impl_json_object_get(response, "id");
+    ASSERT_EQ(42, wf_impl_json_int_get(id));
 
     auto disconnected = client.Disconnect();
     ASSERT_TRUE(disconnected);
@@ -179,13 +180,13 @@ TEST(server, authenticate)
     ASSERT_TRUE(connected);
 
     std::string response_text = client.Invoke("{\"method\": \"authenticate\", \"params\": [\"username\", {\"username\": \"bob\", \"password\": \"secret\"}], \"id\": 42}");
-    json_t * response = json_loads(response_text.c_str(), 0, nullptr);
-    ASSERT_TRUE(json_is_object(response));
-    json_t * result = json_object_get(response, "result");
-    ASSERT_TRUE(json_is_object(result));
-    json_t * id = json_object_get(response, "id");
-    ASSERT_EQ(42, json_integer_value(id));
-    json_decref(response);
+    JsonDoc doc(response_text);
+    wf_json const * response = doc.root();
+    ASSERT_TRUE(wf_impl_json_is_object(response));
+    wf_json const * result = wf_impl_json_object_get(response, "result");
+    ASSERT_TRUE(wf_impl_json_is_object(result));
+    wf_json const * id = wf_impl_json_object_get(response, "id");
+    ASSERT_EQ(42, wf_impl_json_int_get(id));
 
     auto disconnected = client.Disconnect();
     ASSERT_TRUE(disconnected);
@@ -201,13 +202,13 @@ TEST(server, authenticate_fail_missing_params)
     ASSERT_TRUE(connected);
 
     std::string response_text = client.Invoke("{\"method\": \"authenticate\", \"params\": [], \"id\": 42}");
-    json_t * response = json_loads(response_text.c_str(), 0, nullptr);
-    ASSERT_TRUE(json_is_object(response));
-    json_t * error = json_object_get(response, "error");
-    ASSERT_TRUE(json_is_object(error));
-    json_t * id = json_object_get(response, "id");
-    ASSERT_EQ(42, json_integer_value(id));
-    json_decref(response);
+    JsonDoc doc(response_text);
+    wf_json const * response = doc.root();
+    ASSERT_TRUE(wf_impl_json_is_object(response));
+    wf_json const * error = wf_impl_json_object_get(response, "error");
+    ASSERT_TRUE(wf_impl_json_is_object(error));
+    wf_json const * id = wf_impl_json_object_get(response, "id");
+    ASSERT_EQ(42, wf_impl_json_int_get(id));
 
     auto disconnected = client.Disconnect();
     ASSERT_TRUE(disconnected);
@@ -223,13 +224,13 @@ TEST(server, authenticate_fail_invalid_type)
     ASSERT_TRUE(connected);
 
     std::string response_text = client.Invoke("{\"method\": \"authenticate\", \"params\": [42, {\"username\": \"bob\", \"password\": \"secret\"}], \"id\": 42}");
-    json_t * response = json_loads(response_text.c_str(), 0, nullptr);
-    ASSERT_TRUE(json_is_object(response));
-    json_t * error = json_object_get(response, "error");
-    ASSERT_TRUE(json_is_object(error));
-    json_t * id = json_object_get(response, "id");
-    ASSERT_EQ(42, json_integer_value(id));
-    json_decref(response);
+    JsonDoc doc(response_text);
+    wf_json const * response = doc.root();
+    ASSERT_TRUE(wf_impl_json_is_object(response));
+    wf_json const * error = wf_impl_json_object_get(response, "error");
+    ASSERT_TRUE(wf_impl_json_is_object(error));
+    wf_json const * id = wf_impl_json_object_get(response, "id");
+    ASSERT_EQ(42, wf_impl_json_int_get(id));
 
     auto disconnected = client.Disconnect();
     ASSERT_TRUE(disconnected);
@@ -245,13 +246,13 @@ TEST(server, authenticate_fail_invalid_credentials)
     ASSERT_TRUE(connected);
 
     std::string response_text = client.Invoke("{\"method\": \"authenticate\", \"params\": [\"username\", 42], \"id\": 42}");
-    json_t * response = json_loads(response_text.c_str(), 0, nullptr);
-    ASSERT_TRUE(json_is_object(response));
-    json_t * error = json_object_get(response, "error");
-    ASSERT_TRUE(json_is_object(error));
-    json_t * id = json_object_get(response, "id");
-    ASSERT_EQ(42, json_integer_value(id));
-    json_decref(response);
+    JsonDoc doc(response_text);
+    wf_json const * response = doc.root();
+    ASSERT_TRUE(wf_impl_json_is_object(response));
+    wf_json const * error = wf_impl_json_object_get(response, "error");
+    ASSERT_TRUE(wf_impl_json_is_object(error));
+    wf_json const * id = wf_impl_json_object_get(response, "id");
+    ASSERT_EQ(42, wf_impl_json_int_get(id));
 
     auto disconnected = client.Disconnect();
     ASSERT_TRUE(disconnected);
@@ -267,13 +268,13 @@ TEST(server, authenticate_fail_missing_credentials)
     ASSERT_TRUE(connected);
 
     std::string response_text = client.Invoke("{\"method\": \"authenticate\", \"params\": [\"username\"], \"id\": 42}");
-    json_t * response = json_loads(response_text.c_str(), 0, nullptr);
-    ASSERT_TRUE(json_is_object(response));
-    json_t * error = json_object_get(response, "error");
-    ASSERT_TRUE(json_is_object(error));
-    json_t * id = json_object_get(response, "id");
-    ASSERT_EQ(42, json_integer_value(id));
-    json_decref(response);
+    JsonDoc doc(response_text);
+    wf_json const * response = doc.root();
+    ASSERT_TRUE(wf_impl_json_is_object(response));
+    wf_json const * error = wf_impl_json_object_get(response, "error");
+    ASSERT_TRUE(wf_impl_json_is_object(error));
+    wf_json const * id = wf_impl_json_object_get(response, "id");
+    ASSERT_EQ(42, wf_impl_json_int_get(id));
 
     auto disconnected = client.Disconnect();
     ASSERT_TRUE(disconnected);
@@ -299,13 +300,13 @@ TEST(server, read)
     ASSERT_TRUE(connected);
 
     std::string response_text = client.Invoke("{\"method\": \"add_filesystem\", \"params\": [\"test\"], \"id\": 42}");
-    json_t * response = json_loads(response_text.c_str(), 0, nullptr);
-    ASSERT_TRUE(json_is_object(response));
-    json_t * result = json_object_get(response, "result");
-    ASSERT_TRUE(json_is_object(result));
-    json_t * id = json_object_get(response, "id");
-    ASSERT_EQ(42, json_integer_value(id));
-    json_decref(response);
+    JsonDoc doc(response_text);
+    wf_json const * response = doc.root();
+    ASSERT_TRUE(wf_impl_json_is_object(response));
+    wf_json const * result = wf_impl_json_object_get(response, "result");
+    ASSERT_TRUE(wf_impl_json_is_object(result));
+    wf_json const * id = wf_impl_json_object_get(response, "id");
+    ASSERT_EQ(42, wf_impl_json_int_get(id));
 
     std::string base_dir = server.GetBaseDir();
     ASSERT_TRUE(File(base_dir).isDirectory());
@@ -330,26 +331,21 @@ TEST(server, read_large_file_contents)
     EXPECT_CALL(handler, Invoke(StrEq("open"), Open(2))).Times(1)
         .WillOnce(Return("{\"handle\": 42}"));
     EXPECT_CALL(handler, Invoke(StrEq("read"), _)).Times(AnyNumber())
-        .WillRepeatedly(Invoke([](char const *, json_t * params) {
-            int offset = json_integer_value(json_array_get(params, 3));
-            int length = json_integer_value(json_array_get(params, 4));
+        .WillRepeatedly(Invoke([](char const *, wf_json const * params) {
+            int offset = wf_impl_json_int_get(wf_impl_json_array_get(params, 3));
+            int length = wf_impl_json_int_get(wf_impl_json_array_get(params, 4));
 
             int remaining = (offset < 4096) ? 4096 - offset : 0;
             int count = (length < remaining) ? length : remaining;
 
-            std::string data = std::string(count, '*');
+            std::ostringstream result;
+            result << "{"
+                << "\"data\": \"" << std::string(count, '*') << "\","
+                << "\"format\": \"identity\","
+                << "\"count\": " << count
+                << "}";
 
-            json_t * result = json_object();
-            json_object_set_new(result, "data", json_string(data.c_str()));
-            json_object_set_new(result, "format", json_string("identity"));
-            json_object_set_new(result, "count", json_integer(count));
-
-            char * result_text = json_dumps(result, 0);
-            std::string result_str = result_text;
-            free(result_text);
-            json_decref(result);
-
-            return result_str;
+            return result.str();
         })); 
     EXPECT_CALL(handler, Invoke(StrEq("close"), _)).Times(AtMost(1));
     WsClient client(handler, WF_PROTOCOL_NAME_PROVIDER_CLIENT);
@@ -358,13 +354,13 @@ TEST(server, read_large_file_contents)
     ASSERT_TRUE(connected);
 
     std::string response_text = client.Invoke("{\"method\": \"add_filesystem\", \"params\": [\"test\"], \"id\": 42}");
-    json_t * response = json_loads(response_text.c_str(), 0, nullptr);
-    ASSERT_TRUE(json_is_object(response));
-    json_t * result = json_object_get(response, "result");
-    ASSERT_TRUE(json_is_object(result));
-    json_t * id = json_object_get(response, "id");
-    ASSERT_EQ(42, json_integer_value(id));
-    json_decref(response);
+    JsonDoc doc(response_text);
+    wf_json const * response = doc.root();
+    ASSERT_TRUE(wf_impl_json_is_object(response));
+    wf_json const * result = wf_impl_json_object_get(response, "result");
+    ASSERT_TRUE(wf_impl_json_is_object(result));
+    wf_json const * id = wf_impl_json_object_get(response, "id");
+    ASSERT_EQ(42, wf_impl_json_int_get(id));
 
     std::string base_dir = server.GetBaseDir();
     ASSERT_TRUE(File(base_dir).isDirectory());
@@ -390,26 +386,21 @@ TEST(server, read_large_file)
     EXPECT_CALL(handler, Invoke(StrEq("open"), Open(2))).Times(1)
         .WillOnce(Return("{\"handle\": 42}"));
     EXPECT_CALL(handler, Invoke(StrEq("read"), _)).Times(AnyNumber())
-        .WillRepeatedly(Invoke([](char const *, json_t * params) {
-            int offset = json_integer_value(json_array_get(params, 3));
-            int length = json_integer_value(json_array_get(params, 4));
+        .WillRepeatedly(Invoke([](char const *, wf_json const * params) {
+            int offset = wf_impl_json_int_get(wf_impl_json_array_get(params, 3));
+            int length = wf_impl_json_int_get(wf_impl_json_array_get(params, 4));
 
             int remaining = (offset < 1024000) ? 1024000 - offset : 0;
             int count = (length < remaining) ? length : remaining;
 
-            std::string data = std::string(count, '*');
+            std::ostringstream result;
+            result << "{"
+                << "\"data\": \"" << std::string(count, '*') << "\","
+                << "\"format\": \"identity\","
+                << "\"count\": " << count
+                << "}";
 
-            json_t * result = json_object();
-            json_object_set_new(result, "data", json_string(data.c_str()));
-            json_object_set_new(result, "format", json_string("identity"));
-            json_object_set_new(result, "count", json_integer(count));
-
-            char * result_text = json_dumps(result, 0);
-            std::string result_str = result_text;
-            free(result_text);
-            json_decref(result);
-
-            return result_str;
+            return result.str();
         })); 
     EXPECT_CALL(handler, Invoke(StrEq("close"), _)).Times(AtMost(1));
     WsClient client(handler, WF_PROTOCOL_NAME_PROVIDER_CLIENT);
@@ -418,13 +409,13 @@ TEST(server, read_large_file)
     ASSERT_TRUE(connected);
 
     std::string response_text = client.Invoke("{\"method\": \"add_filesystem\", \"params\": [\"test\"], \"id\": 42}");
-    json_t * response = json_loads(response_text.c_str(), 0, nullptr);
-    ASSERT_TRUE(json_is_object(response));
-    json_t * result = json_object_get(response, "result");
-    ASSERT_TRUE(json_is_object(result));
-    json_t * id = json_object_get(response, "id");
-    ASSERT_EQ(42, json_integer_value(id));
-    json_decref(response);
+    JsonDoc doc(response_text);
+    wf_json const * response = doc.root();
+    ASSERT_TRUE(wf_impl_json_is_object(response));
+    wf_json const * result = wf_impl_json_object_get(response, "result");
+    ASSERT_TRUE(wf_impl_json_is_object(result));
+    wf_json const * id = wf_impl_json_object_get(response, "id");
+    ASSERT_EQ(42, wf_impl_json_int_get(id));
 
     std::string base_dir = server.GetBaseDir();
     ASSERT_TRUE(File(base_dir).isDirectory());
@@ -450,13 +441,13 @@ TEST(server, readdir)
     ASSERT_TRUE(connected);
 
     std::string response_text = client.Invoke("{\"method\": \"add_filesystem\", \"params\": [\"test\"], \"id\": 42}");
-    json_t * response = json_loads(response_text.c_str(), 0, nullptr);
-    ASSERT_TRUE(json_is_object(response));
-    json_t * result = json_object_get(response, "result");
-    ASSERT_TRUE(json_is_object(result));
-    json_t * id = json_object_get(response, "id");
-    ASSERT_EQ(42, json_integer_value(id));
-    json_decref(response);
+    JsonDoc doc(response_text);
+    wf_json const * response = doc.root();
+    ASSERT_TRUE(wf_impl_json_is_object(response));
+    wf_json const * result = wf_impl_json_object_get(response, "result");
+    ASSERT_TRUE(wf_impl_json_is_object(result));
+    wf_json const * id = wf_impl_json_object_get(response, "id");
+    ASSERT_EQ(42, wf_impl_json_int_get(id));
 
     std::string base_dir = server.GetBaseDir();
     ASSERT_TRUE(File(base_dir).isDirectory());

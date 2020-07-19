@@ -10,7 +10,7 @@ namespace webfuse_test
 class MockInvokationHander: public InvokationHandler
 {
 public:
-    MOCK_METHOD2(Invoke, std::string(char const * method, json_t * params));
+    MOCK_METHOD2(Invoke, std::string(char const * method, wf_json const * params));
 };
 
 }

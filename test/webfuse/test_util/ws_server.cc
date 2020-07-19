@@ -1,6 +1,8 @@
 #include "webfuse/test_util/ws_server.hpp"
 #include "webfuse/test_util/invokation_handler.hpp"
 #include "webfuse/impl/util/lws_log.h"
+#include "webfuse/impl/json/node.h"
+#include "webfuse/test_util/json_doc.hpp"
 
 #include <libwebsockets.h>
 #include <thread>
@@ -8,6 +10,8 @@
 #include <chrono>
 #include <sstream>
 #include <queue>
+
+using webfuse_test::JsonDoc;
 
 namespace
 {
@@ -85,7 +89,6 @@ public:
     void OnWritable(struct lws * wsi) override;
 
     void SendMessage(char const * message);
-    void SendMessage(json_t * message);
 private:
     static void Run(Private * self);
 
@@ -126,12 +129,6 @@ void WsServer::SendMessage(char const * message)
 {
     d->SendMessage(message);
 }
-
-void WsServer::SendMessage(json_t * message)
-{
-    d->SendMessage(message);
-}
-
 
 WsServer::Private::Private(
     InvokationHandler & handler,
@@ -264,45 +261,34 @@ void WsServer::Private::SendMessage(char const * message)
     }
 }
 
-void WsServer::Private::SendMessage(json_t * message)
-{
-    char* message_text = json_dumps(message, JSON_COMPACT);
-    SendMessage(message_text);
-    json_decref(message);
-    free(message_text);
-}
-
 void WsServer::Private::OnMessageReceived(struct lws * wsi, char const * data, size_t length)
 {
     (void) wsi;
 
-    json_t * request = json_loadb(data, length, JSON_DECODE_ANY, nullptr);
-    json_t * method = json_object_get(request, "method");
-    json_t * params = json_object_get(request, "params");
-    json_t * id = json_object_get(request, "id");
+    JsonDoc doc(std::string(data, length));
+    wf_json const * request = doc.root();
+    wf_json const * method = wf_impl_json_object_get(request, "method");
+    wf_json const * params = wf_impl_json_object_get(request, "params");
+    wf_json const * id = wf_impl_json_object_get(request, "id");
 
-    if (json_is_string(method) && json_is_array(params) && json_is_integer(id))
+    if (wf_impl_json_is_string(method) && wf_impl_json_is_array(params) && wf_impl_json_is_int(id))
     {
-        json_t * response = json_object();
+        std::ostringstream response;
 
+        response << "{";
         try 
         {
-            std::string result_text = handler_.Invoke(json_string_value(method), params);
-            json_t * result = json_loads(result_text.c_str(), JSON_DECODE_ANY, nullptr);
-            json_object_set_new(response, "result", result);
+            std::string result_text = handler_.Invoke(wf_impl_json_string_get(method), params);
+            response << "\"result\": " << result_text;
         }
         catch (...)
         {
-            json_t * error = json_object();
-            json_object_set_new(error, "code", json_integer(1));
-            json_object_set_new(response, "error", error);
+            response << "\"error\": {\"code\": 1}";
         }
+        response << ", \"id\": " << wf_impl_json_int_get(id) << "}";
 
-        json_object_set(response, "id", id);
-        SendMessage(response);
+        SendMessage(response.str().c_str());
     }
-
-    json_decref(request);
 }
 
 std::string const & WsServer::Private::GetUrl() const

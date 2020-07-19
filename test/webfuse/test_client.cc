@@ -1,6 +1,3 @@
-#include <gtest/gtest.h>
-#include <gmock/gmock.h>
-
 #include "webfuse/test_util/adapter_client.hpp"
 #include "webfuse/client_tlsconfig.h"
 #include "webfuse/credentials.h"
@@ -13,8 +10,12 @@
 #include "webfuse/mocks/open_matcher.hpp"
 #include "webfuse/mocks/getattr_matcher.hpp"
 
+#include <gtest/gtest.h>
+#include <gmock/gmock.h>
+
 #include <future>
 #include <chrono>
+#include <sstream>
 
 using webfuse_test::AdapterClient;
 using webfuse_test::WsServer;
@@ -148,8 +149,7 @@ TEST(AdapterClient, IgnoreInvalidJsonMessage)
     client.Connect();
     ASSERT_EQ(std::future_status::ready, connected.get_future().wait_for(TIMEOUT));
 
-    json_t * invalid_request = json_object();
-    server.SendMessage(invalid_request);
+    server.SendMessage("{}");
 
     client.Disconnect();
     ASSERT_EQ(std::future_status::ready, disconnected.get_future().wait_for(TIMEOUT));
@@ -566,26 +566,21 @@ TEST(AdapterClient, ReadFile)
     EXPECT_CALL(handler, Invoke(StrEq("open"), Open(2))).Times(1)
         .WillOnce(Return("{\"handle\": 42}"));
     EXPECT_CALL(handler, Invoke(StrEq("read"), _)).Times(AnyNumber())
-        .WillRepeatedly(Invoke([](char const *, json_t * params) {
-            int offset = json_integer_value(json_array_get(params, 3));
-            int length = json_integer_value(json_array_get(params, 4));
+        .WillRepeatedly(Invoke([](char const *, wf_json const * params) {
+            int offset = wf_impl_json_int_get(wf_impl_json_array_get(params, 3));
+            int length = wf_impl_json_int_get(wf_impl_json_array_get(params, 4));
 
             int remaining = (offset < 4096) ? 4096 - offset : 0;
             int count = (length < remaining) ? length : remaining;
 
-            std::string data = std::string(count, '*');
+            std::ostringstream result;
+            result << "{"
+                << "\"data\": \"" << std::string(count, '*') << "\","
+                << "\"format\": \"identity\","
+                << "\"count\": " << count
+                << "}";
 
-            json_t * result = json_object();
-            json_object_set_new(result, "data", json_string(data.c_str()));
-            json_object_set_new(result, "format", json_string("identity"));
-            json_object_set_new(result, "count", json_integer(count));
-
-            char * result_text = json_dumps(result, 0);
-            std::string result_str = result_text;
-            free(result_text);
-            json_decref(result);
-
-            return result_str;
+            return result.str();
         })); 
     EXPECT_CALL(handler, Invoke(StrEq("close"), _)).Times(AtMost(1));
 
@@ -641,26 +636,21 @@ TEST(AdapterClient, ReadLargeFile)
     EXPECT_CALL(handler, Invoke(StrEq("open"), Open(2))).Times(1)
         .WillOnce(Return("{\"handle\": 42}"));
     EXPECT_CALL(handler, Invoke(StrEq("read"), _)).Times(AnyNumber())
-        .WillRepeatedly(Invoke([](char const *, json_t * params) {
-            int offset = json_integer_value(json_array_get(params, 3));
-            int length = json_integer_value(json_array_get(params, 4));
+        .WillRepeatedly(Invoke([](char const *, wf_json const * params) {
+            int offset = wf_impl_json_int_get(wf_impl_json_array_get(params, 3));
+            int length = wf_impl_json_int_get(wf_impl_json_array_get(params, 4));
 
             int remaining = (offset < 102400) ? 102400 - offset : 0;
             int count = (length < remaining) ? length : remaining;
 
-            std::string data = std::string(count, '*');
+            std::ostringstream result;
+            result << "{"
+                << "\"data\": \"" << std::string(count, '*') << "\","
+                << "\"format\": \"identity\","
+                << "\"count\": " << count
+                << "}";
 
-            json_t * result = json_object();
-            json_object_set_new(result, "data", json_string(data.c_str()));
-            json_object_set_new(result, "format", json_string("identity"));
-            json_object_set_new(result, "count", json_integer(count));
-
-            char * result_text = json_dumps(result, 0);
-            std::string result_str = result_text;
-            free(result_text);
-            json_decref(result);
-
-            return result_str;
+            return result.str();
         })); 
     EXPECT_CALL(handler, Invoke(StrEq("close"), _)).Times(AtMost(1));
 

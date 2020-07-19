@@ -9,7 +9,6 @@ if not libwebsockets_dep.found()
 	libwebsockets_dep = libwebsockets.dependency('websockets_shared')
 endif
 
-jansson_dep = dependency('jansson', version: '>=2.11', fallback: ['jansson', 'jansson_dep'])
 libfuse_dep = dependency('fuse3', version: '>=3.8.0', fallback: ['fuse3', 'libfuse_dep'])
 
 pkg_config = import('pkgconfig')
@@ -68,31 +67,31 @@ webfuse_static = static_library('webfuse',
 	'lib/webfuse/impl/client_tlsconfig.c',
     c_args: ['-fvisibility=hidden'],
     include_directories: private_inc_dir,
-    dependencies: [libfuse_dep, libwebsockets_dep, jansson_dep])
+    dependencies: [libfuse_dep, libwebsockets_dep])
 
 webfuse_static_dep = declare_dependency(
 	include_directories: inc_dir,
 	link_with: [webfuse_static],
-	dependencies: [libfuse_dep, libwebsockets_dep, jansson_dep])
+	dependencies: [libfuse_dep, libwebsockets_dep])
 
 webfuse = shared_library('webfuse',
     'lib/webfuse/api.c',
     version: meson.project_version(),
     c_args: ['-fvisibility=hidden', '-DWF_API=WF_EXPORT'],
     include_directories: private_inc_dir,
-    dependencies: [webfuse_static_dep, libfuse_dep, libwebsockets_dep, jansson_dep],
+    dependencies: [webfuse_static_dep, libfuse_dep, libwebsockets_dep],
 	install: true)
 
 webfuse_dep = declare_dependency(
 	include_directories: inc_dir,
 	link_with: [webfuse],
-	dependencies: [libfuse_dep, libwebsockets_dep, jansson_dep])
+	dependencies: [libfuse_dep, libwebsockets_dep])
 
 install_subdir('include/webfuse', install_dir: 'include')
 
 pkg_config.generate(
     libraries: [webfuse],
-	requires: ['fuse3', 'libwebsockets', 'jansson'],
+	requires: ['fuse3', 'libwebsockets'],
     subdirs: '.',
     version: meson.project_version(),
     name: 'libwebfuse',
@@ -145,7 +144,6 @@ alltests = executable('alltests',
 	'test/webfuse/test_util/ws_client.cc',
 	'test/webfuse/test_util/adapter_client.cc',
 	'test/webfuse/test_util/file.cc',
-	'test/webfuse/test_util/jansson_test_environment.cc',
 	'test/webfuse/test_util/lws_test_environment.cc',
 	'test/webfuse/test_util/json_doc.cc',
 	'test/webfuse/mocks/mock_authenticator.cc',
@@ -203,7 +201,6 @@ alltests = executable('alltests',
 		webfuse_static_dep,
 		libwebsockets_dep,
 		libfuse_dep,
-		jansson_dep,
 		gtest_dep,
 		gmock_main_dep,
 		test_certs_dep

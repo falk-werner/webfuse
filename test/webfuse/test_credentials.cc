@@ -2,7 +2,6 @@
 #include "webfuse/impl/credentials.h"
 #include "webfuse/test_util/json_doc.hpp"
 
-#include <jansson.h>
 #include <gtest/gtest.h>
 
 using webfuse_test::JsonDoc;
