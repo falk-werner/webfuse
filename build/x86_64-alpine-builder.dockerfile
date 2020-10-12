@@ -25,7 +25,7 @@ RUN set -x \
        openssl \
        openssl-dev \
        linux-headers \
-   && pip3 install 'meson==0.54.3'
+   && pip3 install meson
 
 COPY src /usr/local/src
 
