@@ -51,7 +51,7 @@ RUN set -x \
   && rm -rf "$builddir" \
   && apk del .build-deps
 
-ARG FUSE_VERSION=3.9.2
+ARG FUSE_VERSION=3.10.0
 
 RUN set -x \
   && builddeps="eudev-dev" \
@@ -62,6 +62,17 @@ RUN set -x \
   && ninja "$PARALLELMFLAGS" -C "$builddir" install \
   && rm -rf "$builddir" \
   && apk del .build-deps
+
+ARG LWS_VERSION=4.1.3
+
+RUN set -x \
+  && builddir="/tmp/out" \
+  && mkdir -p "$builddir" \
+  && cd "$builddir" \
+  && cmake "/usr/local/src/libwebsockets-$LWS_VERSION" \
+  && make \
+  && make install \
+  && rm -rf "$builddir"
 
 ENV LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/usr/local/lib"
 ENV PKG_CONFIG_PATH=/usr/local/lib32/pkgconfig
