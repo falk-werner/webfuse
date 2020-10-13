@@ -2,14 +2,8 @@ project('webfuse', 'c', 'cpp', version: '0.6.0', license: 'LGPL-3.0+')
 
 without_tests = get_option('without_tests')
 
-libwebsockets_dep = dependency('libwebsockets', version: '>=4.0.0', required: false)
-if not libwebsockets_dep.found()
-	cmake = import('cmake')
-	libwebsockets = cmake.subproject('libwebsockets')
-	libwebsockets_dep = libwebsockets.dependency('websockets_shared')
-endif
-
-libfuse_dep = dependency('fuse3', version: '>=3.8.0', fallback: ['fuse3', 'libfuse_dep'])
+libwebsockets_dep = dependency('libwebsockets', version: '>=4.0.0')
+libfuse_dep = dependency('fuse3', version: '>=3.8.0')
 
 pkg_config = import('pkgconfig')
 

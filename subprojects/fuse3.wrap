@@ -1,7 +1,0 @@
-[wrap-file]
-directory = libfuse-fuse-3.9.2
-
-source_url = https://github.com/libfuse/libfuse/archive/fuse-3.9.2.tar.gz
-source_filename = fuse-3.9.2.tar.gz
-source_hash = b4409255cbda6f6975ca330f5b04cb335b823a95ddd8c812c3d224ec53478fc0
-

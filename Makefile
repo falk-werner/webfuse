@@ -41,11 +41,17 @@ FETCH_TARGETS += $(FETCHDIR)/dumb-init-$(DUMB_INIT_VERSION).tar.gz
 $(FETCHDIR)/dumb-init-$(DUMB_INIT_VERSION).tar.gz: URL := https://github.com/Yelp/dumb-init/archive/v${DUMB_INIT_VERSION}.tar.gz
 $(SKIP_MD5SUM)$(FETCHDIR)/dumb-init-$(DUMB_INIT_VERSION).tar.gz: MD5 := 6166084b05772cdcf615a762c6f3b32e
 
-FUSE_VERSION ?= 3.9.2
+FUSE_VERSION ?= 3.10.0
 IMAGE_BUILDARGS += FUSE_VERSION=$(FUSE_VERSION)
 FETCH_TARGETS += $(FETCHDIR)/libfuse-fuse-$(FUSE_VERSION).tar.gz
 $(FETCHDIR)/libfuse-fuse-$(FUSE_VERSION).tar.gz: URL := https://github.com/libfuse/libfuse/archive/fuse-$(FUSE_VERSION).tar.gz
-$(SKIP_MD5SUM)$(FETCHDIR)/libfuse-fuse-$(FUSE_VERSION).tar.gz: MD5 := 5a829d2fcaa19580adc56633721d323c
+$(SKIP_MD5SUM)$(FETCHDIR)/libfuse-fuse-$(FUSE_VERSION).tar.gz: MD5 := 22aec9bc9008eea6b17e203653d1b938
+
+LWS_VERSION ?= 4.1.3
+IMAGE_BUILDARGS += LWS_VERSION=$(LWS_VERSION)
+FETCH_TARGETS += $(FETCHDIR)/libwebsockets-$(LWS_VERSION).tar.gz
+$(FETCHDIR)/libwebsockets-$(LWS_VERSION).tar.gz: URL := https://github.com/warmcat/libwebsockets/archive/v$(LWS_VERSION).tar.gz
+$(SKIP_MD5SUM)$(FETCHDIR)/libwebsockets-$(LWS_VERSION).tar.gz: MD5 := 413cbe790ccb089001f53b2ee167b9c2
 
 QEMU_VERSION ?= v4.1.0-1
 IMAGE_BUILDARGS += QEMU_VERSION_=$(QEMU_VERSION)
