@@ -45,9 +45,9 @@ After that, you will find the API documentation in the doc/api subdirectory.
 
 #### libfuse
 
-    wget -O fuse-3.9.2.tar.gz https://github.com/libfuse/libfuse/archive/fuse-3.9.2.tar.gz
-    tar -xf fuse-3.9.2.tar.gz
-    cd libfuse-fuse-3.9.2
+    wget -O fuse-3.10.0.tar.gz https://github.com/libfuse/libfuse/archive/fuse-3.10.0.tar.gz
+    tar -xf fuse-3.10.0.tar.gz
+    cd libfuse-fuse-3.10.0
     mkdir .build
     cd .build
     meson ..
@@ -56,9 +56,9 @@ After that, you will find the API documentation in the doc/api subdirectory.
 
 #### libwebsockets
 
-    wget -O libwebsockets-4.0.10.tar.gz https://github.com/warmcat/libwebsockets/archive/v4.0.10.tar.gz
-    tar -xf libwebsockets-4.0.10.tar.gz
-    cd libwebsockets-4.0.10
+    wget -O libwebsockets-4.1.3.tar.gz https://github.com/warmcat/libwebsockets/archive/v4.1.3.tar.gz
+    tar -xf libwebsockets-4.1.3.tar.gz
+    cd libwebsockets-4.1.3
     mkdir .build
     cd .build
     cmake ..
