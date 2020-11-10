@@ -8,7 +8,7 @@ if not libwebsockets_dep.found()
 endif
 
 libfuse_dep = dependency('fuse3', version: '>=3.8.0', required: false)
-if (no libfuse_dep.found()
+if not libfuse_dep.found()
   thread_dep = dependency('threads')
   libfuse_dep = declare_dependency(
     link_with: ['fuse3'],
