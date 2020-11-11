@@ -1,6 +1,9 @@
 # webfuse changelog
 
-## 0.6.0 _(unknown)_
+## 0.6.0 _(Wed Nov 11 2020)_
+
+*   __Feature:__ Reduce version numbers of dependencies to required minimum
+*   __Fix:__ Remove obsolete ping_pong interval (compatibility with newer versions of libwebsockets) 
 
 ## 0.5.0 _(Sun Jul 19 2020)_
 
