@@ -3,7 +3,7 @@ project('webfuse', 'c', 'cpp', version: '0.6.0', license: 'LGPL-3.0+')
 without_tests = get_option('without_tests')
 
 libwebsockets_dep = dependency('libwebsockets', version: '>=4.0.0')
-libfuse_dep = dependency('fuse3', version: '>=3.8.0')
+libfuse_dep = dependency('fuse3', version: '>=3.1.0')
 
 pkg_config = import('pkgconfig')
 
