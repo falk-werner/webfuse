@@ -1,5 +1,7 @@
 # webfuse changelog
 
+## 0.7.0 _(unknown)_
+
 ## 0.6.0 _(Wed Nov 11 2020)_
 
 *   __Feature:__ Reduce version numbers of dependencies to required minimum
