@@ -145,7 +145,7 @@ public:
         lws_cancel_service(context);
         lock.lock();
 
-        convar.wait_for(lock, TIMEOUT, [&]() { 
+        convar.wait_for(lock, TIMEOUT, [&]() {
             return (conn_state != connection_state::connecting);
         });
 
@@ -162,7 +162,7 @@ public:
         lws_cancel_service(context);
         lock.lock();
 
-       convar.wait_for(lock, TIMEOUT, [&]() { 
+       convar.wait_for(lock, TIMEOUT, [&]() {
             return (conn_state != connection_state::disconnecting);
         });
 
@@ -239,7 +239,7 @@ public:
             {
                 std::string result_text = handler_.Invoke(wf_impl_json_string_get(method), params);
                 if (result_text.empty()) { throw std::runtime_error("empty"); }
-                response << "\"result\": " << result_text;                    
+                response << "\"result\": " << result_text;
             }
             catch (...)
             {
@@ -351,7 +351,7 @@ private:
                         if (nullptr != wsi)
                         {
                             lws_callback_on_writable(wsi);
-                        } 
+                        }
                     }
                     break;
                 default:
@@ -364,14 +364,14 @@ private:
     {
         std::unique_lock<std::mutex> lock(mutex);
 
-        command command = command::run;
+        command actual_command = command::run;
         if (!commands.empty())
         {
-            command = commands.front();
+            actual_command = commands.front();
             commands.pop();
         }
 
-        return command;
+        return actual_command;
     }
 
     lws * wsi_;
