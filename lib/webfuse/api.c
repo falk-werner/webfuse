@@ -140,7 +140,7 @@ void wf_server_config_add_authenticator(
     wf_impl_server_config_add_authenticator(config, type, authenticate, user_data);
 }
 
-// credentials 
+// credentials
 
 char const * wf_credentials_type(
     struct wf_credentials const * credentials)
@@ -179,14 +179,14 @@ wf_mountpoint_create(
     return wf_impl_mountpoint_create(path);
 }
 
-void 
+void
 wf_mountpoint_dispose(
     struct wf_mountpoint * mountpoint)
 {
     wf_impl_mountpoint_dispose(mountpoint);
 }
 
-char const * 
+char const *
 wf_mountpoint_get_path(
     struct wf_mountpoint const * mountpoint)
 {
@@ -200,6 +200,14 @@ wf_mountpoint_set_userdata(
     wf_mountpoint_userdata_dispose_fn * dispose)
 {
     wf_impl_mountpoint_set_userdata(mountpoint, user_data, dispose);
+}
+
+void
+wf_mountpoint_add_mountoption(
+    struct wf_mountpoint * mountpoint,
+    char const * option)
+{
+    wf_impl_mountpoint_add_mountoption(mountpoint, option);
 }
 
 // client
