@@ -2,10 +2,13 @@
 
 ## 0.7.0 _(unknown)_
 
+*   __Feature:__ Allow to pass mount options to fuse
+*   __Fix:__ Set C/C++ compiler version
+
 ## 0.6.0 _(Wed Nov 11 2020)_
 
 *   __Feature:__ Reduce version numbers of dependencies to required minimum
-*   __Fix:__ Remove obsolete ping_pong interval (compatibility with newer versions of libwebsockets) 
+*   __Fix:__ Remove obsolete ping_pong interval (compatibility with newer versions of libwebsockets)
 
 ## 0.5.0 _(Sun Jul 19 2020)_
 
