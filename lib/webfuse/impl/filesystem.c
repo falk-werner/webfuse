@@ -37,16 +37,15 @@ static void wf_impl_filesystem_cleanup(
 	fuse_session_reset(filesystem->session);
 	fuse_session_unmount(filesystem->session);
 	fuse_session_destroy(filesystem->session);
-	filesystem->session = NULL;		
+	filesystem->session = NULL;
 
 	free(filesystem->buffer.mem);
-	fuse_opt_free_args(&filesystem->args);    
+	fuse_opt_free_args(&filesystem->args);
 
 	wf_mountpoint_dispose(filesystem->mountpoint);
 
 	free(filesystem->user_data.name);
 }
-
 
 static bool wf_impl_filesystem_init(
     struct wf_impl_filesystem * filesystem,
@@ -56,10 +55,9 @@ static bool wf_impl_filesystem_init(
 	struct wf_mountpoint * mountpoint)
 {
 	bool result = false;
-	
-	char * argv[] = {"", NULL};
-	filesystem->args.argc = 1;
-	filesystem->args.argv = argv;
+
+	filesystem->args.argc = mountpoint->options.size;
+	filesystem->args.argv = mountpoint->options.items;
 	filesystem->args.allocated = 0;
 
 	filesystem->user_data.proxy = proxy;
@@ -90,7 +88,7 @@ static bool wf_impl_filesystem_init(
 		if (NULL == filesystem->wsi)
 		{
 			wf_impl_filesystem_cleanup(filesystem);
-			result = false; 
+			result = false;
 		}
 
 	}

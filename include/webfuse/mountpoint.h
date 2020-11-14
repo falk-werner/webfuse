@@ -45,7 +45,7 @@ wf_mountpoint_create(
 ///
 /// \param mountpoint pointer to the mountpoint
 //------------------------------------------------------------------------------
-extern WF_API void 
+extern WF_API void
 wf_mountpoint_dispose(
     struct wf_mountpoint * mountpoint);
 
@@ -55,7 +55,7 @@ wf_mountpoint_dispose(
 /// \param mountpoint pointer to the mountpoint
 /// \return local path of the mountpoint
 //------------------------------------------------------------------------------
-extern WF_API char const * 
+extern WF_API char const *
 wf_mountpoint_get_path(
     struct wf_mountpoint const * mountpoint);
 
@@ -75,6 +75,20 @@ wf_mountpoint_set_userdata(
     struct wf_mountpoint * mointpoint,
     void * user_data,
     wf_mountpoint_userdata_dispose_fn * dispose);
+
+//------------------------------------------------------------------------------
+/// \brief Adds a mount option.
+///
+/// Mount options are passed to libfuse when a filesystem is mounted.
+/// See libfuse documenation for allowed values.
+///
+/// \param mountpoint pointer to the mountpooint
+/// \param option value of the mount option
+//------------------------------------------------------------------------------
+extern WF_API void
+wf_mountpoint_add_mountoption(
+    struct wf_mountpoint * mountpoint,
+    char const * option);
 
 #ifdef __cplusplus
 }
