@@ -1,6 +1,6 @@
 # webfuse changelog
 
-## 0.7.0 _(Fri Nov 13 2020)_
+## 0.7.0 _(Sat Nov 14 2020)_
 
 *   __Feature:__ Allow to pass mount options to fuse
 *   __Fix:__ Set C/C++ compiler version
