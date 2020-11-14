@@ -1,5 +1,7 @@
 # webfuse changelog
 
+## 0.8.0 _(unknown)_
+
 ## 0.7.0 _(Sat Nov 14 2020)_
 
 *   __Feature:__ Allow to pass mount options to fuse
