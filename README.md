@@ -4,7 +4,7 @@
 
 # webfuse
 
-webfuse combines libwebsockets and libfuse. It allows ot attach a remote filesystem via websockets.
+webfuse combines libwebsockets and libfuse. It allows to attach a remote filesystem via websockets.
 
 ## Contents
 
