@@ -18,15 +18,26 @@ target_link_libraries(webfuse PRIVATE webfuse_static)
 
 if(NOT(WITHOUT_TEST))
 
-    pkg_check_modules(GTEST REQUIRED IMPORTED_TARGET gtest_main)
+    pkg_check_modules(GTEST REQUIRED gtest_main)
+    pkg_check_modules(GMOCK REQUIRED gmock)
 
     add_executable(alltests
         test/webfuse/test_app.cpp
     )
 
-    target_link_libraries(alltests PRIVATE webfuse_static PkgConfig::GTEST)
+    target_include_directories(alltests PRIVATE ${GTEST_INCLUDE_DIRS} ${GMOCK_INCLUDE_DIRS})
+    target_compile_options(alltests PRIVATE 
+        ${GTEST_CFLAGS} ${GTEST_CFLAGS_OTHER} 
+        ${GMOCK_CFLAGS} ${GMOCK_CFLAGS_OTHER}
+    )
+    target_link_libraries(alltests PRIVATE webfuse_static ${GTEST_LIBRARIES} ${GMOCK_LIBRARIES})
 
     enable_testing()
     add_test(NAME alltests COMMAND alltests)
+
+    find_program(VALGRIND valgrind REQUIRED)
+    if(VALGRIND)
+        add_custom_target(memcheck COMMAND valgrind --leak-check=full --error-exitcode=1 ./alltests)
+    endif()
 
 endif()
