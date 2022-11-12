@@ -1,0 +1,27 @@
+name: 'build'
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main, webfuse2 ]
+  pull_request:
+    branches: [ main, webfuse2 ]
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+    env:
+      BUILD_TYPE: Release
+
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Install APT dependencies
+        run: sudo apt install libfuse3-dev libwecksockets-dev
+      
+      - name: Configure CMake
+        run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+
+      - name: Build
+        run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
