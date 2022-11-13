@@ -2,6 +2,6 @@
 
 int main(int argc, char* argv[])
 {
-    webfuse::app app(argc, argv);
-    return app.run();
+    webfuse::app app;
+    return app.run(argc, argv);
 }

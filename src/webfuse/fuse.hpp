@@ -13,9 +13,9 @@ class fuse
 public:
     explicit fuse(filesystem_i & filesystem);
     ~fuse();
-    fuse (fuse &&) = delete;
-    fuse& operator=(fuse &&) = delete;
-    void run(int argc, char * argv[]);
+    fuse (fuse && other);
+    fuse& operator=(fuse && other);
+    int run(int argc, char * argv[]);
 private:
     class detail;
     detail * d;

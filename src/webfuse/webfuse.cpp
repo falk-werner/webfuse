@@ -1,27 +1,16 @@
 #include "webfuse/webfuse.hpp"
+#include "webfuse/fuse.hpp"
+#include "webfuse/filesystem/empty_filesystem.hpp"
 
 namespace webfuse
 {
 
-class app::detail
+int app::run(int argc, char * argv[])
 {
-    int dummy;
-};
+    empty_filesystem filesystem;
+    fuse fuse_fs(filesystem);
 
-app::app(int argc, char * argv[])
-: d(new detail)
-{
-
-}
-
-app::~app()
-{
-    delete d;
-}
-
-int app::run()
-{
-    return 0;
+    return fuse_fs.run(argc, argv);
 }
 
 }

@@ -32,7 +32,7 @@ public:
 
     virtual status rename(std::string const & old_path, std::string const & new_path) = 0;
     virtual status chmod(std::string const & path, filemode mode) = 0;
-    virtual status chown(std::string const & path, user_id uid, group_id gid);
+    virtual status chown(std::string const & path, user_id uid, group_id gid) = 0;
     virtual status truncate(std::string const & path, uint64_t offset, filehandle handle) = 0;
     virtual status fsync(std::string const & path, bool is_datasync, filehandle handle) = 0;
 
@@ -45,7 +45,8 @@ public:
     virtual status read(std::string const & path, char * buffer, size_t buffer_size, uint64_t offset, filehandle handle) = 0;
     virtual status write(std::string const & path, char const * buffer, size_t buffer_size, uint64_t offset, filehandle handle) = 0;
 
-    virtual status readdir(std::string const & path, std::vector<std::string> entries, filehandle handle) = 0;
+    virtual status mkdir(std::string const & path, filemode mode) = 0;
+    virtual status readdir(std::string const & path, std::vector<std::string> & entries, filehandle handle) = 0;
     virtual status rmdir(std::string const & path) = 0;
 
     virtual status statfs(std::string const & path, filesystem_statistics & statistics) = 0;

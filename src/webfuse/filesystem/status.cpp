@@ -117,4 +117,10 @@ int status::to_fusestatus() const
     }
 }
 
+bool status::is_good() const
+{
+    return (value_ == status::good);
+}
+
+
 }

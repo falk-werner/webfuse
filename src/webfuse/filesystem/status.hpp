@@ -53,6 +53,8 @@ public:
 
     static status from_fusestatus(int value);
     int to_fusestatus() const;
+
+    bool is_good() const;
 private:
     int32_t value_;
 };

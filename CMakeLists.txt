@@ -9,6 +9,7 @@ pkg_check_modules(LWS REQUIRED IMPORTED_TARGET libwebsockets)
 
 add_library(webfuse_static STATIC
     src/webfuse/webfuse.cpp
+    src/webfuse/fuse.cpp
     src/webfuse/filesystem/status.cpp
     src/webfuse/filesystem/accessmode.cpp
     src/webfuse/filesystem/openflags.cpp
@@ -17,6 +18,8 @@ add_library(webfuse_static STATIC
     src/webfuse/filesystem/filemode.cpp
     src/webfuse/filesystem/filetime.cpp
     src/webfuse/filesystem/fileattributes.cpp
+    src/webfuse/filesystem/filesystem_statistics.cpp
+    src/webfuse/filesystem/empty_filesystem.cpp
 )
 
 target_include_directories(webfuse_static PUBLIC src)
