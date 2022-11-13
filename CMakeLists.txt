@@ -6,7 +6,16 @@ pkg_check_modules(FUSE REQUIRED IMPORTED_TARGET fuse3)
 pkg_check_modules(LWS REQUIRED IMPORTED_TARGET libwebsockets)
 
 add_library(webfuse_static STATIC
-    src/webfuse/webfuse.cpp)
+    src/webfuse/webfuse.cpp
+    src/webfuse/filesystem/status.cpp
+    src/webfuse/filesystem/accessmode.cpp
+    src/webfuse/filesystem/openflags.cpp
+    src/webfuse/filesystem/userid.cpp
+    src/webfuse/filesystem/groupid.cpp
+    src/webfuse/filesystem/filemode.cpp
+    src/webfuse/filesystem/filetime.cpp
+    src/webfuse/filesystem/fileattributes.cpp
+)
 
 target_include_directories(webfuse_static PUBLIC src)
 target_link_libraries(webfuse_static PUBLIC PkgConfig::FUSE PkgConfig::LWS)
@@ -22,7 +31,14 @@ if(NOT(WITHOUT_TEST))
     pkg_check_modules(GMOCK REQUIRED gmock)
 
     add_executable(alltests
-        test/webfuse/test_app.cpp
+        test-src/webfuse/test_app.cpp
+        test-src/webfuse/filesystem/test_status.cpp
+        test-src/webfuse/filesystem/test_accessmode.cpp
+        test-src/webfuse/filesystem/test_openflags.cpp
+        test-src/webfuse/filesystem/test_filemode.cpp
+        test-src/webfuse/filesystem/test_userid.cpp
+        test-src/webfuse/filesystem/test_groupid.cpp
+        test-src/webfuse/filesystem/test_fileattributes.cpp
     )
 
     target_include_directories(alltests PRIVATE ${GTEST_INCLUDE_DIRS} ${GMOCK_INCLUDE_DIRS})
