@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.10)
 project(webfuse VERSION 2.0.0)
 
+set (CMAKE_CXX_STANDARD 17)
+
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(FUSE REQUIRED IMPORTED_TARGET fuse3)
 pkg_check_modules(LWS REQUIRED IMPORTED_TARGET libwebsockets)
