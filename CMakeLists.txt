@@ -20,6 +20,8 @@ add_library(webfuse_static STATIC
     src/webfuse/filesystem/fileattributes.cpp
     src/webfuse/filesystem/filesystem_statistics.cpp
     src/webfuse/filesystem/empty_filesystem.cpp
+    src/webfuse/ws/config.cpp
+    src/webfuse/ws/server.cpp
 )
 
 target_include_directories(webfuse_static PUBLIC src)
