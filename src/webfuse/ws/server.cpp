@@ -3,6 +3,8 @@
 #include <cstring>
 
 #include <iostream>
+#include <thread>
+#include <atomic>
 
 extern "C"
 {
@@ -48,6 +50,7 @@ class ws_server::detail
     detail& operator=(detail &&) = delete;
 public:
     detail(ws_config const & config)
+    : shutdown_requested(false)
     {
         memset(reinterpret_cast<void*>(protocols), 0, sizeof(protocols));
         protocols[0].name = "webfuse2";
@@ -65,13 +68,27 @@ public:
 
         lws_vhost * const vhost = lws_create_vhost(context, &info);
         // port = lws_get_vhost_port(vhost);
+
+
+        thread = std::thread([this]() {
+            while (!shutdown_requested)
+            {
+                lws_service(context, 0);
+            }
+
+        });
     }
 
     ~detail()
     {
+        shutdown_requested = true;
+        lws_cancel_service(context);
+        thread.join();
         lws_context_destroy(context);
     }
 
+    std::thread thread;
+    std::atomic<bool> shutdown_requested;
     lws_protocols protocols[2];
     lws_context_creation_info info;
     lws_context * context;
@@ -105,16 +122,5 @@ ws_server& ws_server::operator=(ws_server && other)
 
     return *this;
 }
-
-void ws_server::service()
-{
-    lws_service(d->context, 0);
-}
-
-void ws_server::interrupt()
-{
-    lws_cancel_service(d->context);
-}
-
 
 }

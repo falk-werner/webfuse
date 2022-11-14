@@ -15,8 +15,6 @@ public:
     ~ws_server();
     ws_server(ws_server && other);
     ws_server& operator=(ws_server && other);
-    void service();
-    void interrupt();
 private:
     class detail;
     detail * d;
