@@ -5,6 +5,7 @@
 #include <iostream>
 #include <thread>
 #include <atomic>
+#include <stdexcept>
 
 extern "C"
 {
@@ -122,5 +123,22 @@ ws_server& ws_server::operator=(ws_server && other)
 
     return *this;
 }
+
+std::future<std::string> ws_server::perform(std::string const & req)
+{
+    std::promise<std::string> resp;
+
+    try
+    {
+        throw std::runtime_error("not implemented");
+    }
+    catch (std::exception const & ex)
+    {
+        resp.set_exception(std::current_exception());
+    }
+    
+    return resp.get_future();
+}
+
 
 }

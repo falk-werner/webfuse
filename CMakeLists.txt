@@ -10,6 +10,7 @@ pkg_check_modules(LWS REQUIRED IMPORTED_TARGET libwebsockets)
 add_library(webfuse_static STATIC
     src/webfuse/webfuse.cpp
     src/webfuse/fuse.cpp
+    src/webfuse/filesystem.cpp
     src/webfuse/filesystem/status.cpp
     src/webfuse/filesystem/accessmode.cpp
     src/webfuse/filesystem/openflags.cpp
