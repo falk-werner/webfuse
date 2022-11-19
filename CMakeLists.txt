@@ -23,6 +23,7 @@ add_library(webfuse_static STATIC
     src/webfuse/filesystem/empty_filesystem.cpp
     src/webfuse/ws/config.cpp
     src/webfuse/ws/server.cpp
+    src/webfuse/ws/message.cpp
 )
 
 target_include_directories(webfuse_static PUBLIC src)

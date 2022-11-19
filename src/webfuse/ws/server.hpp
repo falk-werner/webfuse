@@ -2,8 +2,12 @@
 #define WEBFUSE_WSSERVER_HPP
 
 #include "webfuse/ws/config.hpp"
-#include <future>
+#include "webfuse/ws/message.hpp"
+
+#include <vector>
 #include <string>
+#include <memory>
+
 namespace webfuse
 {
 
@@ -16,7 +20,8 @@ public:
     ~ws_server();
     ws_server(ws_server && other);
     ws_server& operator=(ws_server && other);
-    std::future<std::string> perform(std::string const & req);
+    
+    void perform(message msg);
 private:
     class detail;
     detail * d;

@@ -18,8 +18,10 @@ status filesystem::access(std::string const & path, access_mode mode)
 {
     try
     {
-        std::string req;
-        auto resp = proxy.perform(req).get();
+        message req(message_type::access_req);
+        req.add_str(path);
+        req.add_i8(mode);
+        proxy.perform(std::move(req));
         return status::bad_enoent;
     }
     catch(...)
@@ -32,8 +34,8 @@ status filesystem::getattr(std::string const & path, file_attributes & attr)
 {
     try
     {
-        std::string req;
-        auto resp = proxy.perform(req).get();
+        message req(message_type::getattr_req);
+        proxy.perform(std::move(req));
         return status::bad_enoent;
     }
     catch(...)
@@ -46,8 +48,8 @@ status filesystem::readlink(std::string const & path, std::string & out)
 {
     try
     {
-        std::string req;
-        auto resp = proxy.perform(req).get();
+        message req(message_type::readlink_req);
+        proxy.perform(std::move(req));
         return status::bad_enoent;
     }
     catch(...)
@@ -60,8 +62,8 @@ status filesystem::symlink(std::string const & target, std::string const & linkp
 {
     try
     {
-        std::string req;
-        auto resp = proxy.perform(req).get();
+        message req(message_type::symlink_req);
+        proxy.perform(std::move(req));
         return status::bad_enoent;
     }
     catch(...)
@@ -74,8 +76,8 @@ status filesystem::link(std::string const & old_path, std::string const & new_pa
 {
     try
     {
-        std::string req;
-        auto resp = proxy.perform(req).get();
+        message req(message_type::link_req);
+        proxy.perform(std::move(req));
         return status::bad_enoent;
     }
     catch(...)
@@ -88,8 +90,8 @@ status filesystem::rename(std::string const & old_path, std::string const & new_
 {
     try
     {
-        std::string req;
-        auto resp = proxy.perform(req).get();
+        message req(message_type::rename_req);
+        proxy.perform(std::move(req));
         return status::bad_enoent;
     }
     catch(...)
@@ -102,8 +104,8 @@ status filesystem::chmod(std::string const & path, filemode mode)
 {
     try
     {
-        std::string req;
-        auto resp = proxy.perform(req).get();
+        message req(message_type::chmod_req);
+        proxy.perform(std::move(req));
         return status::bad_enoent;
     }
     catch(...)
@@ -116,8 +118,8 @@ status filesystem::chown(std::string const & path, user_id uid, group_id gid)
 {
     try
     {
-        std::string req;
-        auto resp = proxy.perform(req).get();
+        message req(message_type::chown_req);
+        proxy.perform(std::move(req));
         return status::bad_enoent;
     }
     catch(...)
@@ -130,8 +132,8 @@ status filesystem::truncate(std::string const & path, uint64_t offset, filehandl
 {
     try
     {
-        std::string req;
-        auto resp = proxy.perform(req).get();
+        message req(message_type::truncate_req);
+        proxy.perform(std::move(req));
         return status::bad_enoent;
     }
     catch(...)
@@ -144,8 +146,8 @@ status filesystem::fsync(std::string const & path, bool is_datasync, filehandle 
 {
     try
     {
-        std::string req;
-        auto resp = proxy.perform(req).get();
+        message req(message_type::fsync_req);
+        proxy.perform(std::move(req));
         return status::bad_enoent;
     }
     catch(...)
@@ -158,8 +160,8 @@ status filesystem::open(std::string const & path, openflags flags, filehandle & 
 {
     try
     {
-        std::string req;
-        auto resp = proxy.perform(req).get();
+        message req(message_type::open_req);
+        proxy.perform(std::move(req));
         return status::bad_enoent;
     }
     catch(...)
@@ -172,8 +174,8 @@ status filesystem::mknod(std::string const & path, filemode mode, uint64_t rdev)
 {
     try
     {
-        std::string req;
-        auto resp = proxy.perform(req).get();
+        message req(message_type::mknod_req);
+        proxy.perform(std::move(req));
         return status::bad_enoent;
     }
     catch(...)
@@ -186,8 +188,8 @@ status filesystem::create(std::string const & path, filemode mode, filehandle & 
 {
     try
     {
-        std::string req;
-        auto resp = proxy.perform(req).get();
+        message req(message_type::create_req);
+        proxy.perform(std::move(req));
         return status::bad_enoent;
     }
     catch(...)
@@ -200,8 +202,8 @@ status filesystem::release(std::string const & path, filehandle handle)
 {
     try
     {
-        std::string req;
-        auto resp = proxy.perform(req).get();
+        message req(message_type::release_req);
+        proxy.perform(std::move(req));
         return status::bad_enoent;
     }
     catch(...)
@@ -214,8 +216,8 @@ status filesystem::unlink(std::string const & path)
 {
     try
     {
-        std::string req;
-        auto resp = proxy.perform(req).get();
+        message req(message_type::unlink_req);
+        proxy.perform(std::move(req));
         return status::bad_enoent;
     }
     catch(...)
@@ -228,8 +230,8 @@ status filesystem::read(std::string const & path, char * buffer, size_t buffer_s
 {
     try
     {
-        std::string req;
-        auto resp = proxy.perform(req).get();
+        message req(message_type::read_req);
+        proxy.perform(std::move(req));
         return status::bad_enoent;
     }
     catch(...)
@@ -242,8 +244,8 @@ status filesystem::write(std::string const & path, char const * buffer, size_t b
 {
     try
     {
-        std::string req;
-        auto resp = proxy.perform(req).get();
+        message req(message_type::write_req);
+        proxy.perform(std::move(req));
         return status::bad_enoent;
     }
     catch(...)
@@ -256,8 +258,8 @@ status filesystem::mkdir(std::string const & path, filemode mode)
 {
     try
     {
-        std::string req;
-        auto resp = proxy.perform(req).get();
+        message req(message_type::mkdir_req);
+        proxy.perform(std::move(req));
         return status::bad_enoent;
     }
     catch(...)
@@ -270,8 +272,8 @@ status filesystem::readdir(std::string const & path, std::vector<std::string> & 
 {
     try
     {
-        std::string req;
-        auto resp = proxy.perform(req).get();
+        message req(message_type::readdir_req);
+        proxy.perform(std::move(req));
         return status::bad_enoent;
     }
     catch(...)
@@ -284,8 +286,8 @@ status filesystem::rmdir(std::string const & path)
 {
     try
     {
-        std::string req;
-        auto resp = proxy.perform(req).get();
+        message req(message_type::rmdir_req);
+        proxy.perform(std::move(req));
         return status::bad_enoent;
     }
     catch(...)
@@ -298,8 +300,8 @@ status filesystem::statfs(std::string const & path, filesystem_statistics & stat
 {
     try
     {
-        std::string req;
-        auto resp = proxy.perform(req).get();
+        message req(message_type::statfs_req);
+        proxy.perform(std::move(req));
         return status::bad_enoent;
     }
     catch(...)
