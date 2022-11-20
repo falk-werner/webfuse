@@ -2,6 +2,7 @@
 
 import asyncio
 import os
+import stat
 import websockets
 import errno
 
@@ -51,6 +52,18 @@ ERRNO = {
     -errno.EXDEV        :  -18
 }
 
+RENAME_NOREPLACE = 0x01
+RENAME_EXCHANGE  = 0x02
+
+MODE_REG  = 0o100000
+MODE_DIR  = 0o040000
+MODE_CHR  = 0o020000
+MODE_BLK  = 0o060000
+MODE_FIFO = 0o010000
+MODE_LNK  = 0o120000
+MODE_SOCK = 0o140000
+
+
 class MessageReader:
     def __init__(self, buffer):
         self.buffer = buffer
@@ -86,6 +99,22 @@ class MessageReader:
         mode += os.W_OK if W_OK == (value & W_OK) else 0
         mode += os.X_OK if X_OK == (value & X_OK) else 0
         return mode
+
+    def read_rename_flags(self):
+        return self.read_u8()
+    
+    def read_mode(self):
+        value = self.read_u32()
+        mode = value & 0o7777
+        mode += stat.S_IFREG  if MODE_REG  == (value & MODE_REG ) else 0
+        mode += stat.S_IFDIR  if MODE_DIR  == (value & MODE_DIR ) else 0
+        mode += stat.S_IFCHR  if MODE_CHR  == (value & MODE_CHR ) else 0
+        mode += stat.S_IFBLK  if MODE_BLK  == (value & MODE_BLK ) else 0
+        mode += stat.S_IFFIFO if MODE_FIFO == (value & MODE_FIFO) else 0
+        mode += stat.S_IFLNK  if MODE_LNK  == (value & MODE_LNK ) else 0
+        mode += stat.S_IFSOCK if MODE_SOCK == (value & MODE_SOCK) else 0
+        return mode
+
 
 
 class MessageWriter:
@@ -152,7 +181,25 @@ class FilesystemProvider:
         self.commands = {
             0x01: FilesystemProvider.access,
             0x02: FilesystemProvider.getattr,
-            0x13: FilesystemProvider.readdir
+            0x03: FilesystemProvider.readlink,
+            0x04: FilesystemProvider.symlink,
+            0x05: FilesystemProvider.link,
+            0x06: FilesystemProvider.rename, 
+            0x07: FilesystemProvider.chmod,  
+            0x08: FilesystemProvider.chown,  
+            0x09: FilesystemProvider.truncate,
+            0x0a: FilesystemProvider.fsync,  
+            0x0b: FilesystemProvider.open,   
+            0x0c: FilesystemProvider.mknod,  
+            0x0d: FilesystemProvider.create, 
+            0x0e: FilesystemProvider.release,
+            0x0f: FilesystemProvider.unlink, 
+            0x10: FilesystemProvider.read,   
+            0x11: FilesystemProvider.write,  
+            0x12: FilesystemProvider.mkdir,  
+            0x13: FilesystemProvider.readdir,
+            0x14: FilesystemProvider.rmdir,  
+            0x15: FilesystemProvider.statfs             
         }
     
     async def run(self):
@@ -205,7 +252,124 @@ class FilesystemProvider:
         writer.write_u32(attr.st_mtime_ns)
         writer.write_u64(int(attr.st_ctime))
         writer.write_u32(attr.st_ctime_ns)
-    
+
+    def readlink(self, reader, writer):
+        path = reader.read_path(self.root)
+        try:
+            link = os.readlink(path)
+        except OSError as ex:
+            writer.write_result(-ex.errno)
+            return
+        writer.write_result(0)
+        writer.write_str(link)
+
+    def symlink(self, reader, writer):
+        source = reader.read_str()
+        target = reader.read_path(self.root)
+        result = 0
+        try:
+            os.symlink(source, target)
+        except OSError as ex:
+            result = -ex.errno
+        writer.write_result(result)
+
+    def link(self, reader, writer):
+        source = reader.read_path(self.root)
+        target = reader.read_path(self.root)
+        result = 0
+        try:
+            os.link(source, target)
+        except OSError as ex:
+            result = -ex.errno
+        writer.write_result(result)
+
+    def rename(self, reader, writer):
+        source = reader.read_path(self.root)
+        target = reader.read_path(self.root)
+        flags = reader.read_rename_flags()
+        result = 0
+        try:
+            if RENAME_EXCHANGE == (flags & RENAME_EXCHANGE):
+                # exchange is not supported
+                result = -errno.EINVAL
+            elif RENAME_NOREPLACE == (flags & RENAME_NOREPLACE):
+                os.rename(source, target)
+            else:
+                os.replace(source, target)
+        except OSError as ex:
+            result = -ex.errno
+        writer.write_result(result)
+
+    def chmod(self, reader, writer):
+        path = reader.read_path(self.root)
+        mode = reader.read_mode()
+        result = 0
+        try:
+            os.chmod(path, mode)
+        except OSError as ex:
+            result = -ex.errno
+        writer.write_result(result)
+
+    def chown(self, reader, writer):
+        path = reader.read_path(self.root)
+        uid = reader.read_u32()
+        gid = reader.read_u32()
+        result = 0
+        try:
+            os.chown(path, uid, gid)
+        except OSError as ex:
+            result = -ex.errno
+        writer.write_result(result)
+
+    def truncate(self, reader, writer):
+        path = reader.read_path(self.root)
+        size = reader.read_u64()
+        fd = reader.read_u64()
+        result = 0
+        try:
+            if fd != 0xffffffffffffffff:
+                os.ftruncate(fd, size)
+            else:
+                os.truncate(path, size)
+        except OSError as ex:
+            result = -ex.errno
+        writer.write_result(result)
+
+    def fsync(self, reader, writer):
+        path = reader.read_path(self.root)
+        _ = reader.read_i32()
+        fd = reader.read_u64()
+        result = 0
+        try:
+            os.fsync(fd)
+        except OSError as ex:
+            result = -ex.errno
+        writer.write_result(result)
+
+    def open(self, reader, writer):
+        pass
+
+    def mknod(self, reader, writer):
+        pass
+
+    def create(self, reader, writer):
+        pass
+
+    def release(self, reader, writer):
+        pass
+
+    def unlink(self, reader, writer):
+        pass
+
+    def read(self, reader, writer):
+        pass
+
+    def write(self, reader, writer):
+        pass
+
+    def mkdir(self, reader, writer):
+        pass
+
     def readdir(self, reader, writer):
         path = reader.read_path(self.root)
         names = []
@@ -218,6 +382,12 @@ class FilesystemProvider:
             return
         writer.write_result(0)
         writer.write_strings(names)
+
+    def rmdir(self, reader, writer):
+        pass
+
+    def statfs(self, reader, writer):
+        pass      
         
 
 if __name__ == '__main__':
