@@ -2,7 +2,8 @@
 #define WEBFUSE_WSSERVER_HPP
 
 #include "webfuse/ws/config.hpp"
-#include "webfuse/ws/message.hpp"
+#include "webfuse/ws/messagewriter.hpp"
+#include "webfuse/ws/messagereader.hpp"
 
 #include <vector>
 #include <string>
@@ -21,7 +22,7 @@ public:
     ws_server(ws_server && other);
     ws_server& operator=(ws_server && other);
     
-    void perform(message msg);
+    messagereader perform(messagewriter writer);
 private:
     class detail;
     detail * d;

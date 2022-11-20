@@ -18,33 +18,33 @@ public:
     explicit filesystem(ws_server& server);
     ~filesystem() override;
 
-    status access(std::string const & path, access_mode mode) override;
-    status getattr(std::string const & path, file_attributes & attr) override;
+    int access(std::string const & path, int mode) override;
+    int getattr(std::string const & path, struct stat * attr) override;
 
-    status readlink(std::string const & path, std::string & out) override;
-    status symlink(std::string const & target, std::string const & linkpath) override;
-    status link(std::string const & old_path, std::string const & new_path) override;
+    int readlink(std::string const & path, std::string & out) override;
+    int symlink(std::string const & target, std::string const & linkpath) override;
+    int link(std::string const & old_path, std::string const & new_path) override;
 
-    status rename(std::string const & old_path, std::string const & new_path) override;
-    status chmod(std::string const & path, filemode mode) override;
-    status chown(std::string const & path, user_id uid, group_id gid) override;
-    status truncate(std::string const & path, uint64_t offset, filehandle handle) override;
-    status fsync(std::string const & path, bool is_datasync, filehandle handle) override;
+    int rename(std::string const & old_path, std::string const & new_path, int flags) override;
+    int chmod(std::string const & path, mode_t mode) override;
+    int chown(std::string const & path, uid_t uid, gid_t gid) override;
+    int truncate(std::string const & path, uint64_t size, uint64_t handle) override;
+    int fsync(std::string const & path, bool is_datasync, uint64_t handle) override;
 
-    status open(std::string const & path, openflags flags, filehandle & handle) override;
-    status mknod(std::string const & path, filemode mode, uint64_t rdev) override;
-    status create(std::string const & path, filemode mode, filehandle & handle) override;
-    status release(std::string const & path, filehandle handle) override;
-    status unlink(std::string const & path) override;
+    int open(std::string const & path, int flags, uint64_t & handle) override;
+    int mknod(std::string const & path, mode_t mode, dev_t rdev) override;
+    int create(std::string const & path, mode_t mode, uint64_t & handle) override;
+    int release(std::string const & path, uint64_t handle) override;
+    int unlink(std::string const & path) override;
 
-    status read(std::string const & path, char * buffer, size_t buffer_size, uint64_t offset, filehandle handle) override;
-    status write(std::string const & path, char const * buffer, size_t buffer_size, uint64_t offset, filehandle handle) override;
+    int read(std::string const & path, char * buffer, size_t buffer_size, uint64_t offset, uint64_t handle) override;
+    int write(std::string const & path, char const * buffer, size_t buffer_size, uint64_t offset, uint64_t handle) override;
 
-    status mkdir(std::string const & path, filemode mode) override;
-    status readdir(std::string const & path, std::vector<std::string> & entries, filehandle handle) override;
-    status rmdir(std::string const & path) override;
+    int mkdir(std::string const & path, mode_t mode) override;
+    int readdir(std::string const & path, std::vector<std::string> & entries, uint64_t handle) override;
+    int rmdir(std::string const & path) override;
 
-    status statfs(std::string const & path, filesystem_statistics & statistics) override;
+    int statfs(std::string const & path, struct statvfs * statistics) override;
 
 
 private:

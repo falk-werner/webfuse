@@ -98,11 +98,24 @@ class MessageWriter:
         self.buffer.append(value)
     
     def write_u32(self, value):
-        a = (value >> 24) & 0xff
-        b = (value >> 16) & 0xff
-        c = (value >>  8) & 0xff
-        d = value         & 0xff
-        self.buffer.extend([a, b, c, d])
+        self.buffer.extend([
+            (value >> 24) & 0xff,
+            (value >> 16) & 0xff,
+            (value >>  8) & 0xff,
+             value        & 0xff
+        ])
+
+    def write_u64(self, value):
+        self.buffer.extend([
+            (value >> 56) & 0xff,
+            (value >> 48) & 0xff,
+            (value >> 40) & 0xff,
+            (value >> 32) & 0xff,
+            (value >> 24) & 0xff,
+            (value >> 16) & 0xff,
+            (value >>  8) & 0xff,
+             value        & 0xff
+        ])
 
     def write_i32(self, value):
         self.write_u32(value & 0xffffffff)
@@ -113,7 +126,23 @@ class MessageWriter:
                 value = ERRNO[value]
         self.write_i32(value)
 
+    def write_str(self, value):
+        data = value.encode('utf-8')
+        self.write_bytes(data)
+    
+    def write_bytes(self, value):
+        size = len(value)
+        self.write_u32(size)
+        self.buffer.extend(value)
+    
+    def write_strings(self, values):
+        count = len(values)
+        self.write_u32(count)
+        for value in values:
+            self.write_str(value)
+
     def get_bytes(self):
+        print(self.buffer)
         return bytearray(self.buffer)
         
 
@@ -122,7 +151,9 @@ class FilesystemProvider:
         self.root = os.path.abspath(path)
         self.url = url
         self.commands = {
-            0x01: FilesystemProvider.access
+            0x01: FilesystemProvider.access,
+            0x02: FilesystemProvider.getattr,
+            0x13: FilesystemProvider.readdir
         }
     
     async def run(self):
@@ -132,6 +163,7 @@ class FilesystemProvider:
                 reader = MessageReader(request)
                 message_id = reader.read_u32()
                 message_type = reader.read_u8()
+                print("received message: id=%d, type=%d" % (message_id, message_type))
                 writer = MessageWriter(message_id, RESPONSE + message_type)
                 if message_type in self.commands:
                     method = self.commands[message_type]
@@ -151,6 +183,43 @@ class FilesystemProvider:
         except OSError as ex:
             result = -ex.errno
         writer.write_result(result)
+
+    def getattr(self, reader, writer):
+        path = reader.read_path(self.root)
+        try:
+            attr = os.lstat(path)
+        except OSError as ex:
+            writer.write_result(-ex.errno)
+            return
+        writer.write_result(0)
+        writer.write_u64(attr.st_ino)
+        writer.write_u64(attr.st_nlink)
+        writer.write_u32(attr.st_mode)
+        writer.write_i32(attr.st_uid)
+        writer.write_i32(attr.st_gid)
+        writer.write_u64(attr.st_dev)
+        writer.write_u64(attr.st_size)
+        writer.write_u64(attr.st_blocks)
+        writer.write_u64(int(attr.st_atime))
+        writer.write_u32(attr.st_atime_ns)
+        writer.write_u64(int(attr.st_mtime))
+        writer.write_u32(attr.st_mtime_ns)
+        writer.write_u64(int(attr.st_ctime))
+        writer.write_u32(attr.st_ctime_ns)
+    
+    def readdir(self, reader, writer):
+        path = reader.read_path(self.root)
+        names = []
+        try:
+            with os.scandir(path) as it:
+                for entry in it:
+                    names.append(entry.name)
+        except OSError as ex:
+            writer.write_result(-ex.errno)
+            return
+        writer.write_result(0)
+        writer.write_strings(names)
+        
 
 if __name__ == '__main__':
     provider = FilesystemProvider('.', 'ws://localhost:8081')

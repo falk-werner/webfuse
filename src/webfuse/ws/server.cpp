@@ -1,5 +1,4 @@
 #include "webfuse/ws/server.hpp"
-#include "webfuse/ws/message.hpp"
 
 #include <libwebsockets.h>
 
@@ -25,10 +24,12 @@ namespace
 struct user_data
 {
     struct lws * connection = nullptr;
+    std::string current_message;
 
     std::mutex mut;
-    std::queue<webfuse::message> requests;
-    std::unordered_map<uint32_t, std::promise<std::string>> pending_responses;
+    uint32_t id = 0;
+    std::queue<webfuse::messagewriter> requests;
+    std::unordered_map<uint32_t, std::promise<webfuse::messagereader>> pending_responses;
 };
 
 }
@@ -68,11 +69,49 @@ static int ws_server_callback(struct lws *wsi, enum lws_callback_reasons reason,
             break;
         case LWS_CALLBACK_RECEIVE:
             std::cout << "lws: receive "<< std::endl;
+            {
+                auto * fragment = reinterpret_cast<char*>(in);
+                data->current_message.append(fragment, len);
+                if (lws_is_final_fragment(wsi))
+                {
+                    try
+                    {
+                        webfuse::messagereader reader(data->current_message);
+                        uint32_t id = reader.read_u32();
+                        uint8_t message_type = reader.read_u8();
+
+                        std::lock_guard lock(data->mut);
+                        auto it = data->pending_responses.find(id);
+                        if (it != data->pending_responses.end())
+                        {
+                            std::cout << "propagate message" << std::endl;
+                            it->second.set_value(std::move(reader));
+                            data->pending_responses.erase(it);
+                        }
+                        else
+                        {
+                            // ToDo: log request not found
+                            std::cout << "warning: request not found: id=" << id << std::endl;
+                            for(auto const & entry: data->pending_responses)
+                            {
+                                std::cout << "\t" << entry.first << std::endl;
+                            }
+                        }
+                    }
+                    catch(...)
+                    {
+                        // ToDo: log invalid message
+                        std::cout << "warning: invalid message" << std::endl;
+                    }
+                    
+
+                }
+            }
             break;
         case LWS_CALLBACK_SERVER_WRITEABLE:
             std::cout << "lws: server writable "<< std::endl;
             {
-                webfuse::message msg(webfuse::message_type::access_req);
+                webfuse::messagewriter writer(webfuse::message_type::access_req);
                 bool has_msg = false;
                 bool has_more = false;
 
@@ -82,7 +121,7 @@ static int ws_server_callback(struct lws *wsi, enum lws_callback_reasons reason,
                     if (has_msg)
                     {
                         has_msg = true;
-                        msg = std::move(data->requests.front());
+                        writer = std::move(data->requests.front());
                         data->requests.pop();
 
                         has_more = !(data->requests.empty());
@@ -92,7 +131,7 @@ static int ws_server_callback(struct lws *wsi, enum lws_callback_reasons reason,
                 if (has_msg)
                 {
                     size_t size;
-                    unsigned char * raw_data = msg.get_data(size);
+                    unsigned char * raw_data = writer.get_data(size);
                     int const rc = lws_write(data->connection, raw_data, size, LWS_WRITE_BINARY);
                 }
 
@@ -148,11 +187,12 @@ public:
                     {
                         if (nullptr != data.connection)
                         {
+                            std::cout << "request write" << std::endl;
                             lws_callback_on_writable(data.connection);
                         }
                         else
                         {
-                            data.requests = std::move(std::queue<webfuse::message>());
+                            data.requests = std::move(std::queue<webfuse::messagewriter>());
                             data.pending_responses.clear();
                         }
                     }
@@ -170,6 +210,16 @@ public:
         lws_cancel_service(context);
         thread.join();
         lws_context_destroy(context);
+    }
+
+    uint32_t next_id()
+    {
+        data.id++;
+        if (0 == data.id)
+        {
+            data.id = 1;
+        }
+        return data.id;
     }
 
     std::thread thread;
@@ -209,26 +259,27 @@ ws_server& ws_server::operator=(ws_server && other)
     return *this;
 }
 
-void ws_server::perform(message msg)
+messagereader ws_server::perform(messagewriter writer)
 {
-    std::future<std::string> f;
+    std::future<messagereader> f;
     {
-        std::promise<std::string> p;
+        std::promise<messagereader> p;
         f = p.get_future();
 
         std::lock_guard lock(d->data.mut);
-        d->data.requests.emplace(std::move(msg));
-        d->data.pending_responses.emplace(42, std::move(p));
+        uint32_t id = d->next_id();
+        writer.set_id(id);
+        d->data.requests.emplace(std::move(writer));
+        d->data.pending_responses.emplace(id, std::move(p));
     }
 
     lws_cancel_service(d->context);
-    if(std::future_status::timeout == f.wait_for(std::chrono::seconds(1)))
+    if(std::future_status::timeout == f.wait_for(std::chrono::seconds(10)))
     {
         throw std::runtime_error("timeout");
     }
-    std::string resp = f.get();
 
-    throw std::runtime_error("not implemented");
+    return std::move(f.get());
 }
 
 

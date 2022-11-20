@@ -1,4 +1,5 @@
 #include "webfuse/filesystem.hpp"
+#include <errno.h>
 
 namespace webfuse
 {
@@ -14,15 +15,15 @@ filesystem::~filesystem()
 
 }
 
-status filesystem::access(std::string const & path, access_mode mode)
+int filesystem::access(std::string const & path, int mode)
 {
     try
     {
-        message req(message_type::access_req);
-        req.add_str(path);
-        req.add_i8(mode);
-        proxy.perform(std::move(req));
-        return status::bad_enoent;
+        messagewriter req(message_type::access_req);
+        req.write_str(path);
+        req.write_access_mode(mode);
+        auto reader = proxy.perform(std::move(req));
+        return reader.read_result();
     }
     catch(...)
     {
@@ -30,27 +31,34 @@ status filesystem::access(std::string const & path, access_mode mode)
     }
 }
 
-status filesystem::getattr(std::string const & path, file_attributes & attr)
+int filesystem::getattr(std::string const & path, struct stat * attr)
 {
     try
     {
-        message req(message_type::getattr_req);
-        proxy.perform(std::move(req));
-        return status::bad_enoent;
+        messagewriter req(message_type::getattr_req);
+        req.write_str(path);
+        auto reader = proxy.perform(std::move(req));
+        int const result = reader.read_result();
+        if (0 == result)
+        {
+            reader.read_attr(attr);
+        }
+        return result;
     }
     catch(...)
     {
+        puts("getattr: failed");
         return fallback.getattr(path, attr);
     }
 }
 
-status filesystem::readlink(std::string const & path, std::string & out)
+int filesystem::readlink(std::string const & path, std::string & out)
 {
     try
     {
-        message req(message_type::readlink_req);
+        messagewriter req(message_type::readlink_req);
         proxy.perform(std::move(req));
-        return status::bad_enoent;
+        return -ENOENT;
     }
     catch(...)
     {
@@ -58,13 +66,13 @@ status filesystem::readlink(std::string const & path, std::string & out)
     }
 }
 
-status filesystem::symlink(std::string const & target, std::string const & linkpath)
+int filesystem::symlink(std::string const & target, std::string const & linkpath)
 {
     try
     {
-        message req(message_type::symlink_req);
+        messagewriter req(message_type::symlink_req);
         proxy.perform(std::move(req));
-        return status::bad_enoent;
+        return -ENOENT;
     }
     catch(...)
     {
@@ -72,13 +80,13 @@ status filesystem::symlink(std::string const & target, std::string const & linkp
     }
 }
 
-status filesystem::link(std::string const & old_path, std::string const & new_path)
+int filesystem::link(std::string const & old_path, std::string const & new_path)
 {
     try
     {
-        message req(message_type::link_req);
+        messagewriter req(message_type::link_req);
         proxy.perform(std::move(req));
-        return status::bad_enoent;
+        return -ENOENT;
     }
     catch(...)
     {
@@ -86,27 +94,27 @@ status filesystem::link(std::string const & old_path, std::string const & new_pa
     }
 }
 
-status filesystem::rename(std::string const & old_path, std::string const & new_path)
+int filesystem::rename(std::string const & old_path, std::string const & new_path, int flags)
 {
     try
     {
-        message req(message_type::rename_req);
+        messagewriter req(message_type::rename_req);
         proxy.perform(std::move(req));
-        return status::bad_enoent;
+        return -ENOENT;
     }
     catch(...)
     {
-        return fallback.rename(old_path, new_path);
+        return fallback.rename(old_path, new_path, flags);
     }
 }
 
-status filesystem::chmod(std::string const & path, filemode mode)
+int filesystem::chmod(std::string const & path, mode_t mode)
 {
     try
     {
-        message req(message_type::chmod_req);
+        messagewriter req(message_type::chmod_req);
         proxy.perform(std::move(req));
-        return status::bad_enoent;
+        return -ENOENT;
     }
     catch(...)
     {
@@ -114,13 +122,13 @@ status filesystem::chmod(std::string const & path, filemode mode)
     }
 }
 
-status filesystem::chown(std::string const & path, user_id uid, group_id gid)
+int filesystem::chown(std::string const & path, uid_t uid, gid_t gid)
 {
     try
     {
-        message req(message_type::chown_req);
+        messagewriter req(message_type::chown_req);
         proxy.perform(std::move(req));
-        return status::bad_enoent;
+        return -ENOENT;
     }
     catch(...)
     {
@@ -128,27 +136,27 @@ status filesystem::chown(std::string const & path, user_id uid, group_id gid)
     }
 }
 
-status filesystem::truncate(std::string const & path, uint64_t offset, filehandle handle)
+int filesystem::truncate(std::string const & path, uint64_t size, uint64_t handle)
 {
     try
     {
-        message req(message_type::truncate_req);
+        messagewriter req(message_type::truncate_req);
         proxy.perform(std::move(req));
-        return status::bad_enoent;
+        return -ENOENT;
     }
     catch(...)
     {
-        return fallback.truncate(path, offset, handle);
+        return fallback.truncate(path, size, handle);
     }
 }
 
-status filesystem::fsync(std::string const & path, bool is_datasync, filehandle handle)
+int filesystem::fsync(std::string const & path, bool is_datasync, uint64_t handle)
 {
     try
     {
-        message req(message_type::fsync_req);
+        messagewriter req(message_type::fsync_req);
         proxy.perform(std::move(req));
-        return status::bad_enoent;
+        return -ENOENT;
     }
     catch(...)
     {
@@ -156,13 +164,13 @@ status filesystem::fsync(std::string const & path, bool is_datasync, filehandle 
     }
 }
 
-status filesystem::open(std::string const & path, openflags flags, filehandle & handle)
+int filesystem::open(std::string const & path, int flags, uint64_t & handle)
 {
     try
     {
-        message req(message_type::open_req);
+        messagewriter req(message_type::open_req);
         proxy.perform(std::move(req));
-        return status::bad_enoent;
+        return -ENOENT;
     }
     catch(...)
     {
@@ -170,13 +178,13 @@ status filesystem::open(std::string const & path, openflags flags, filehandle & 
     }
 }
 
-status filesystem::mknod(std::string const & path, filemode mode, uint64_t rdev)
+int filesystem::mknod(std::string const & path, mode_t mode, dev_t rdev)
 {
     try
     {
-        message req(message_type::mknod_req);
+        messagewriter req(message_type::mknod_req);
         proxy.perform(std::move(req));
-        return status::bad_enoent;
+        return -ENOENT;
     }
     catch(...)
     {
@@ -184,13 +192,13 @@ status filesystem::mknod(std::string const & path, filemode mode, uint64_t rdev)
     }
 }
 
-status filesystem::create(std::string const & path, filemode mode, filehandle & handle)
+int filesystem::create(std::string const & path, mode_t mode, uint64_t & handle)
 {
     try
     {
-        message req(message_type::create_req);
+        messagewriter req(message_type::create_req);
         proxy.perform(std::move(req));
-        return status::bad_enoent;
+        return -ENOENT;
     }
     catch(...)
     {
@@ -198,13 +206,13 @@ status filesystem::create(std::string const & path, filemode mode, filehandle & 
     }
 }
 
-status filesystem::release(std::string const & path, filehandle handle)
+int filesystem::release(std::string const & path, uint64_t handle)
 {
     try
     {
-        message req(message_type::release_req);
+        messagewriter req(message_type::release_req);
         proxy.perform(std::move(req));
-        return status::bad_enoent;
+        return -ENOENT;
     }
     catch(...)
     {
@@ -212,13 +220,13 @@ status filesystem::release(std::string const & path, filehandle handle)
     }
 }
 
-status filesystem::unlink(std::string const & path)
+int filesystem::unlink(std::string const & path)
 {
     try
     {
-        message req(message_type::unlink_req);
+        messagewriter req(message_type::unlink_req);
         proxy.perform(std::move(req));
-        return status::bad_enoent;
+        return -ENOENT;
     }
     catch(...)
     {
@@ -226,13 +234,13 @@ status filesystem::unlink(std::string const & path)
     }
 }
 
-status filesystem::read(std::string const & path, char * buffer, size_t buffer_size, uint64_t offset, filehandle handle)
+int filesystem::read(std::string const & path, char * buffer, size_t buffer_size, uint64_t offset, uint64_t handle)
 {
     try
     {
-        message req(message_type::read_req);
+        messagewriter req(message_type::read_req);
         proxy.perform(std::move(req));
-        return status::bad_enoent;
+        return -ENOENT;
     }
     catch(...)
     {
@@ -240,13 +248,13 @@ status filesystem::read(std::string const & path, char * buffer, size_t buffer_s
     }
 }
 
-status filesystem::write(std::string const & path, char const * buffer, size_t buffer_size, uint64_t offset, filehandle handle)
+int filesystem::write(std::string const & path, char const * buffer, size_t buffer_size, uint64_t offset, uint64_t handle)
 {
     try
     {
-        message req(message_type::write_req);
+        messagewriter req(message_type::write_req);
         proxy.perform(std::move(req));
-        return status::bad_enoent;
+        return -ENOENT;
     }
     catch(...)
     {
@@ -254,13 +262,13 @@ status filesystem::write(std::string const & path, char const * buffer, size_t b
     }
 }
 
-status filesystem::mkdir(std::string const & path, filemode mode)
+int filesystem::mkdir(std::string const & path, mode_t mode)
 {
     try
     {
-        message req(message_type::mkdir_req);
+        messagewriter req(message_type::mkdir_req);
         proxy.perform(std::move(req));
-        return status::bad_enoent;
+        return -ENOENT;
     }
     catch(...)
     {
@@ -268,13 +276,19 @@ status filesystem::mkdir(std::string const & path, filemode mode)
     }
 }
 
-status filesystem::readdir(std::string const & path, std::vector<std::string> & entries, filehandle handle)
+int filesystem::readdir(std::string const & path, std::vector<std::string> & entries, uint64_t handle)
 {
     try
     {
-        message req(message_type::readdir_req);
-        proxy.perform(std::move(req));
-        return status::bad_enoent;
+        messagewriter req(message_type::readdir_req);
+        req.write_str(path);        
+        auto resp = proxy.perform(std::move(req));
+        int result = resp.read_result();
+        if (0 == result)
+        {
+            resp.read_strings(entries);
+        }
+        return result;
     }
     catch(...)
     {
@@ -282,13 +296,13 @@ status filesystem::readdir(std::string const & path, std::vector<std::string> & 
     }
 }
 
-status filesystem::rmdir(std::string const & path)
+int filesystem::rmdir(std::string const & path)
 {
     try
     {
-        message req(message_type::rmdir_req);
+        messagewriter req(message_type::rmdir_req);
         proxy.perform(std::move(req));
-        return status::bad_enoent;
+        return -ENOENT;
     }
     catch(...)
     {
@@ -296,13 +310,13 @@ status filesystem::rmdir(std::string const & path)
     }
 }
 
-status filesystem::statfs(std::string const & path, filesystem_statistics & statistics)
+int filesystem::statfs(std::string const & path, struct statvfs * statistics)
 {
     try
     {
-        message req(message_type::statfs_req);
+        messagewriter req(message_type::statfs_req);
         proxy.perform(std::move(req));
-        return status::bad_enoent;
+        return -ENOENT;
     }
     catch(...)
     {

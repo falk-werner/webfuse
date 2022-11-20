@@ -1,134 +1,135 @@
 #include "webfuse/filesystem/empty_filesystem.hpp"
+#include <errno.h>
 
 namespace webfuse
 {
 
-status empty_filesystem::access(std::string const & path, access_mode mode)
+int empty_filesystem::access(std::string const & path, int mode)
 {
     if (path == "/")
     {
-        return status::good;
+        return 0;
     }
     else
     {
-        return status::bad_enoent;
+        return -ENOENT;
     }
 }
 
-status empty_filesystem::getattr(std::string const & path, file_attributes & attr)
+int empty_filesystem::getattr(std::string const & path, struct stat * attr)
 {
     if (path == "/")
     {
-        attr.inode = 1;
-        attr.nlink = 1;
-        attr.mode = filemode(filemode::dir | 0x444);
-        return status::good;
+        attr->st_ino = 1;
+        attr->st_nlink = 1;
+        attr->st_mode = S_IFDIR | 0x444;
+        return 0;
     }
     else
     {
-        return status::bad_enoent;
+        return -ENOENT;
     }
 }
 
-status empty_filesystem::readlink(std::string const & path, std::string & out)
+int empty_filesystem::readlink(std::string const & path, std::string & out)
 {
-    return status::bad_enoent;
+    return -ENOENT;
 }
 
-status empty_filesystem::symlink(std::string const & target, std::string const & linkpath)
+int empty_filesystem::symlink(std::string const & target, std::string const & linkpath)
 {
-    return status::bad_enoent;
+    return -ENOENT;
 }
 
-status empty_filesystem::link(std::string const & old_path, std::string const & new_path)
+int empty_filesystem::link(std::string const & old_path, std::string const & new_path)
 {
-    return status::bad_enoent;
+    return -ENOENT;
 }
 
-status empty_filesystem::rename(std::string const & old_path, std::string const & new_path)
+int empty_filesystem::rename(std::string const & old_path, std::string const & new_path, int flags)
 {
-    return status::bad_enoent;
+    return -ENOENT;
 }
 
-status empty_filesystem::chmod(std::string const & path, filemode mode)
+int empty_filesystem::chmod(std::string const & path, mode_t mode)
 {
-    return status::bad_eperm;
+    return -EPERM;
 }
 
-status empty_filesystem::chown(std::string const & path, user_id uid, group_id gid)
+int empty_filesystem::chown(std::string const & path, uid_t uid, gid_t gid)
 {
-    return status::bad_eperm;
+    return -EPERM;
 }
 
-status empty_filesystem::truncate(std::string const & path, uint64_t offset, filehandle handle)
+int empty_filesystem::truncate(std::string const & path, uint64_t size, uint64_t handle)
 {
-    return status::bad_eperm;
+    return -EPERM;
 }
 
-status empty_filesystem::fsync(std::string const & path, bool is_datasync, filehandle handle)
+int empty_filesystem::fsync(std::string const & path, bool is_datasync, uint64_t handle)
 {
-    return status::good;
+    return 0;
 }
 
-status empty_filesystem::open(std::string const & path, openflags flags, filehandle & handle)
+int empty_filesystem::open(std::string const & path, int flags, uint64_t & handle)
 {
-    return status::bad_enoent;
+    return -ENOENT;
 }
 
-status empty_filesystem::mknod(std::string const & path, filemode mode, uint64_t rdev)
+int empty_filesystem::mknod(std::string const & path, mode_t mode, dev_t rdev)
 {
-    return status::bad_eperm;
+    return -EPERM;
 
 }
-status empty_filesystem::create(std::string const & path, filemode mode, filehandle & handle)
+int empty_filesystem::create(std::string const & path, mode_t mode, uint64_t & handle)
 {
-    return status::bad_eperm;
+    return -EPERM;
 }
 
-status empty_filesystem::release(std::string const & path, filehandle handle)
+int empty_filesystem::release(std::string const & path, uint64_t handle)
 {
-    return status::good;
+    return 0;
 }
 
-status empty_filesystem::unlink(std::string const & path)
+int empty_filesystem::unlink(std::string const & path)
 {
-    return status::bad_eperm;
+    return -EPERM;
 }
 
-status empty_filesystem::read(std::string const & path, char * buffer, size_t buffer_size, uint64_t offset, filehandle handle)
+int empty_filesystem::read(std::string const & path, char * buffer, size_t buffer_size, uint64_t offset, uint64_t handle)
 {
-    return status::bad_ebadf;
+    return -EBADF;
 }
-status empty_filesystem::write(std::string const & path, char const * buffer, size_t buffer_size, uint64_t offset, filehandle handle)
+int empty_filesystem::write(std::string const & path, char const * buffer, size_t buffer_size, uint64_t offset, uint64_t handle)
 {
-    return status::bad_ebadf;
-}
-
-status empty_filesystem::mkdir(std::string const & path, filemode mode)
-{
-    return status::bad_eperm;
+    return -EBADF;
 }
 
-status empty_filesystem::readdir(std::string const & path, std::vector<std::string> & entries, filehandle handle)
+int empty_filesystem::mkdir(std::string const & path, mode_t mode)
+{
+    return -EPERM;
+}
+
+int empty_filesystem::readdir(std::string const & path, std::vector<std::string> & entries, uint64_t handle)
 {
     if (path == "/")
     {
-        return status::good;
+        return 0;
     }
     else
     {
-        return status::bad_enoent;
+        return -ENOENT;
     }
 }
 
-status empty_filesystem::rmdir(std::string const & path)
+int empty_filesystem::rmdir(std::string const & path)
 {
-    return status::bad_eperm;
+    return -EPERM;
 }
 
-status empty_filesystem::statfs(std::string const & path, filesystem_statistics & statistics)
+int empty_filesystem::statfs(std::string const & path, struct statvfs * statistics)
 {
-    return status::bad_enosys;
+    return -ENOSYS;
 }
 
 

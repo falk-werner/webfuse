@@ -1,24 +1,26 @@
-#include "message.hpp"
+#include "webfuse/ws/messagewriter.hpp"
+#include "webfuse/filesystem/accessmode.hpp"
+
 #include <libwebsockets.h>
 
 namespace webfuse
 {
 
-message::message(message_type msg_type)
+messagewriter::messagewriter(message_type msg_type)
 : id(0)
 , data(LWS_PRE)
 {
-    add_u32(0);
-    add_u8(static_cast<uint8_t>(msg_type));
+    write_u32(0);
+    write_u8(static_cast<uint8_t>(msg_type));
 }
 
-message::message(message && other)
+messagewriter::messagewriter(messagewriter && other)
 {
     this->id = other.id;
     this->data = std::move(other.data);
 }
 
-message& message::operator=(message && other)
+messagewriter& messagewriter::operator=(messagewriter && other)
 {
     if (this != &other)
     {
@@ -29,41 +31,41 @@ message& message::operator=(message && other)
     return *this;
 }
 
-void message::set_id(uint32_t value)
+void messagewriter::set_id(uint32_t value)
 {
-    id = id;
+    id = value;
     data[LWS_PRE    ] = (id >> 24) & 0xff;
     data[LWS_PRE + 1] = (id >> 16) & 0xff;
     data[LWS_PRE + 2] = (id >>  8) & 0xff;
     data[LWS_PRE + 3] =  id        & 0xff;
 }
 
-uint32_t message::get_id() const
+uint32_t messagewriter::get_id() const
 {
     return id;
 }
 
-void message::add_bool(bool value)
+void messagewriter::write_bool(bool value)
 {
     data.push_back(value ? 0x01 : 0x00);
 }
 
-void message::add_u8(uint8_t value)
+void messagewriter::write_u8(uint8_t value)
 {
     data.push_back(value);
 }
 
-void message::add_i8(int8_t value)
+void messagewriter::write_i8(int8_t value)
 {
     data.push_back(static_cast<uint8_t>(value));
 }
 
-void message::add_i32(int32_t value)
+void messagewriter::write_i32(int32_t value)
 {
-    add_u32((static_cast<uint32_t>(value)));
+    write_u32((static_cast<uint32_t>(value)));
 }
 
-void message::add_u32(uint32_t value)
+void messagewriter::write_u32(uint32_t value)
 {
     auto const offset = data.size(); 
     data.resize(offset + 4);
@@ -73,7 +75,7 @@ void message::add_u32(uint32_t value)
     data[offset + 3] =  value        & 0xff;
 }
 
-void message::add_u64(uint64_t value)
+void messagewriter::write_u64(uint64_t value)
 {
     auto const offset = data.size(); 
     data.resize(offset + 8);
@@ -87,15 +89,15 @@ void message::add_u64(uint64_t value)
     data[offset + 7] =  value        & 0xff;
 }
 
-void message::add_str(std::string const &value)
+void messagewriter::write_str(std::string const &value)
 {
-    add_data(value.data(), value.size());
+    write_data(value.data(), value.size());
 }
 
-void message::add_data(char const * buffer, size_t size)
+void messagewriter::write_data(char const * buffer, size_t size)
 {
     uint32_t const effective_size = size & 0xffffffff;
-    add_u32(effective_size);
+    write_u32(effective_size);
 
     if (size > 0)
     {
@@ -107,17 +109,24 @@ void message::add_data(char const * buffer, size_t size)
     }
 }
 
-void message::add_strings(std::vector<std::string> const & list)
+void messagewriter::write_strings(std::vector<std::string> const & list)
 {
     uint32_t const count = list.size() & 0xffffffff;
-    add_u32(count);
+    write_u32(count);
     for (auto const & item: list)
     {
-        add_str(item);
+        write_str(item);
     }
 }
 
-unsigned char * message::get_data(size_t &size)
+void messagewriter::write_access_mode(int value)
+{
+    access_mode mode = access_mode::from_int(value);
+    write_i8(mode);
+}
+
+
+unsigned char * messagewriter::get_data(size_t &size)
 {
     size = data.size() - LWS_PRE;
     void * result = reinterpret_cast<void *>(&data.data()[LWS_PRE]);
