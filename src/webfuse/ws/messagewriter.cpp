@@ -1,10 +1,15 @@
 #include "webfuse/ws/messagewriter.hpp"
 #include "webfuse/filesystem/accessmode.hpp"
+#include "webfuse/filesystem/filemode.hpp"
+#include "webfuse/filesystem/openflags.hpp"
 
 #include <libwebsockets.h>
 
 namespace webfuse
 {
+
+constexpr uint8_t const rename_noreplace = 0x01;
+constexpr uint8_t const rename_exchange  = 0x02;
 
 messagewriter::messagewriter(message_type msg_type)
 : id(0)
@@ -123,6 +128,37 @@ void messagewriter::write_access_mode(int value)
 {
     access_mode mode = access_mode::from_int(value);
     write_i8(mode);
+}
+
+void messagewriter::write_rename_flags(unsigned int value)
+{
+    uint8_t flags = 0;
+    if (RENAME_NOREPLACE == (value & RENAME_NOREPLACE)) { flags |= rename_noreplace; }
+    if (RENAME_EXCHANGE  == (value & RENAME_EXCHANGE )) { flags |= rename_exchange;  }
+
+    write_u8(flags);
+}
+
+void messagewriter::write_mode(mode_t value)
+{
+    filemode mode = filemode::from_mode(value);
+    write_u32(mode);
+}
+
+void messagewriter::write_uid(uid_t value)
+{
+    write_u32(static_cast<uint32_t>(value));
+}
+
+void messagewriter::write_gid(gid_t value)
+{
+    write_u32(static_cast<uint32_t>(value));
+}
+
+void messagewriter::write_openflags(int value)
+{
+    openflags flags = openflags::from_int(value);
+    write_i32(flags);
 }
 
 

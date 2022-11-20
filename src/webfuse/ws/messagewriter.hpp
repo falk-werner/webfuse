@@ -34,6 +34,11 @@ public:
     void write_strings(std::vector<std::string> const & list);
 
     void write_access_mode(int value);
+    void write_rename_flags(unsigned int value);
+    void write_mode(mode_t value);
+    void write_uid(uid_t value);
+    void write_gid(gid_t value);
+    void write_openflags(int value);
 
     unsigned char * get_data(size_t &size);
 

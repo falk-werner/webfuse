@@ -55,6 +55,19 @@ void messagereader::read_attr(struct stat * attr)
     attr->st_ctim.tv_nsec = static_cast<long>(read_u32());
 }
 
+void messagereader::read_statistics(struct statvfs * statistics)
+{
+    statistics->f_bsize = read_u64();
+    statistics->f_frsize = read_u64();
+    statistics->f_blocks = read_u64();
+    statistics->f_bfree = read_u64();
+    statistics->f_bavail = read_u64();
+    statistics->f_files = read_u64();
+    statistics->f_ffree = read_u64();
+    statistics->f_namemax = read_u64();
+}
+
+
 mode_t messagereader::read_mode()
 {
     filemode mode(read_u32());

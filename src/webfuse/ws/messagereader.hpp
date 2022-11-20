@@ -3,6 +3,7 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/statvfs.h>
 #include <unistd.h>
 
 #include <cinttypes>
@@ -24,6 +25,7 @@ public:
 
     int read_result();
     void read_attr(struct stat * attr);
+    void read_statistics(struct statvfs * statistics);
     mode_t read_mode();
 
     uint8_t read_u8();
