@@ -22,7 +22,7 @@ int empty_filesystem::getattr(std::string const & path, struct stat * attr)
     {
         attr->st_ino = 1;
         attr->st_nlink = 1;
-        attr->st_mode = S_IFDIR | 0x444;
+        attr->st_mode = S_IFDIR | 0555;
         return 0;
     }
     else
