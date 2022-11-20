@@ -142,7 +142,6 @@ class MessageWriter:
             self.write_str(value)
 
     def get_bytes(self):
-        print(self.buffer)
         return bytearray(self.buffer)
         
 

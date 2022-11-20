@@ -47,7 +47,6 @@ int filesystem::getattr(std::string const & path, struct stat * attr)
     }
     catch(...)
     {
-        puts("getattr: failed");
         return fallback.getattr(path, attr);
     }
 }
