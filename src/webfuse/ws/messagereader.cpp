@@ -1,6 +1,5 @@
 #include "webfuse/ws/messagereader.hpp"
 #include "webfuse/filesystem/status.hpp"
-#include "webfuse/filesystem/fileattributes.hpp"
 #include "webfuse/filesystem/filemode.hpp"
 
 #include <stdexcept>

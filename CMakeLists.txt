@@ -14,11 +14,7 @@ add_library(webfuse_static STATIC
     src/webfuse/filesystem/status.cpp
     src/webfuse/filesystem/accessmode.cpp
     src/webfuse/filesystem/openflags.cpp
-    src/webfuse/filesystem/userid.cpp
-    src/webfuse/filesystem/groupid.cpp
     src/webfuse/filesystem/filemode.cpp
-    src/webfuse/filesystem/filetime.cpp
-    src/webfuse/filesystem/fileattributes.cpp
     src/webfuse/filesystem/filesystem_statistics.cpp
     src/webfuse/filesystem/empty_filesystem.cpp
     src/webfuse/ws/config.cpp
@@ -46,9 +42,6 @@ if(NOT(WITHOUT_TEST))
         test-src/webfuse/filesystem/test_accessmode.cpp
         test-src/webfuse/filesystem/test_openflags.cpp
         test-src/webfuse/filesystem/test_filemode.cpp
-        test-src/webfuse/filesystem/test_userid.cpp
-        test-src/webfuse/filesystem/test_groupid.cpp
-        test-src/webfuse/filesystem/test_fileattributes.cpp
     )
 
     target_include_directories(alltests PRIVATE ${GTEST_INCLUDE_DIRS} ${GMOCK_INCLUDE_DIRS})
