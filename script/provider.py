@@ -456,20 +456,58 @@ class FilesystemProvider:
         except OSError as ex:
             writer.write_result(-ex.errno)
             return
-        print(result)
         writer.write_result(result)
 
     def unlink(self, reader, writer):
-        pass
+        path = reader.read_path(self.root)
+        result = 0
+        try:
+            os.unlink(path)
+        except OSError as ex:
+            result = -ex.errno
+        writer.write_result(result)
 
     def read(self, reader, writer):
-        pass
+        path = reader.read_path(self.root)
+        size = reader.read_u32()
+        offset = reader.read_u64()
+        fd = reader.read_u64()
+        try:
+            if fd != INVALID_FD:
+                buffer = os.pread(fd, size, offset)
+            else:
+                with os.open(path, os.O_RDONLY) as f:
+                    buffer = os.pread(f, size, offset)
+            writer.write_result(len(buffer))
+            writer.write_bytes(buffer)
+        except OSError as ex:
+            writer.write_result(-ex.errno)
 
     def write(self, reader, writer):
-        pass
+        path = reader.read_path(self.root)
+        data = reader.read_bytes()
+        offset = reader.read_u64()
+        fd = reader.read_u64()
+        result = 0
+        try:
+            if fd != INVALID_FD:
+                result = os.pwrite(fd, data, offset)
+            else:
+                with os.open(path, os.O_WRONLY) as f:
+                    result = os.pwrite(f, data, offset)
+        except OSError as ex:
+            result = -ex.errno
+        writer.write_result(result)
 
     def mkdir(self, reader, writer):
-        pass
+        path = reader.read_path(self.root)
+        mode = reader.read_u32()
+        result = 0
+        try:
+            os.mkdir(path, mode)
+        except OSError as ex:
+            result = -ex.errno
+        writer.write_result(result)
 
     def readdir(self, reader, writer):
         path = reader.read_path(self.root)
@@ -485,10 +523,30 @@ class FilesystemProvider:
         writer.write_strings(names)
 
     def rmdir(self, reader, writer):
-        pass
+        path = reader.read_path(self.root)
+        result = 0
+        try:
+            os.rmdir(path)
+        except OSError as ex:
+            result = -ex.errno
+        writer.write_result(result)
 
     def statfs(self, reader, writer):
-        pass      
+        path = self.get_path(reader)
+        try:
+            buffer = os.statvfs(path)
+        except OSError as ex:
+            writer.write_result(-ex.errno)
+            return
+        writer.write_result(0)
+        writer.write_u64(buffer.f_bsize)
+        writer.write_u64(buffer.f_frsize)
+        writer.write_u64(buffer.f_blocks)
+        writer.write_u64(buffer.f_bfree)
+        writer.write_u64(buffer.f_bavail)
+        writer.write_u64(buffer.f_files)
+        writer.write_u64(buffer.f_ffree)
+        writer.write_u64(buffer.f_namemax)
         
 
 if __name__ == '__main__':
