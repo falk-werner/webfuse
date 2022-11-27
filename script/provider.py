@@ -6,6 +6,8 @@ import stat
 import websockets
 import errno
 
+INVALID_FD = 0xffffffffffffffff
+
 F_OK = 0
 R_OK = 4
 W_OK = 2
@@ -63,6 +65,28 @@ MODE_FIFO = 0o010000
 MODE_LNK  = 0o120000
 MODE_SOCK = 0o140000
 
+O_RDONLY = 0o00
+O_WRONLY = 0o01
+O_RDWR   = 0o02
+
+O_APPEND    = 0o00002000
+O_ASYNC     = 0o00020000
+O_CLOEXEC   = 0o02000000
+O_CREAT     = 0o00000100
+O_DIRECT    = 0o00040000
+O_DIRECTORY = 0o00200000
+O_DSYNC     = 0o00010000
+O_EXCL      = 0o00000200
+O_LARGEFILE = 0o00100000
+O_NOATIME   = 0o01000000
+O_NOCTTY    = 0o00000400
+O_NOFOLLOW  = 0o00400000
+O_NONBLOCK  = 0o00004000
+O_NDELAY    = 0o00004000
+O_PATH      = 0o10000000
+O_SYNC      = 0o04010000
+O_TMPFILE   = 0o20200000
+O_TRUNC     = 0o00001000
 
 class MessageReader:
     def __init__(self, buffer):
@@ -78,6 +102,20 @@ class MessageReader:
         value = (self.buffer[self.offset] << 24) + (self.buffer[self.offset + 1] << 16) + (self.buffer[self.offset + 2] << 8) + self.buffer[self.offset + 3]
         self.offset += 4
         return value
+
+    def read_u64(self):
+        value = (
+            (self.buffer[self.offset    ] << 56) + 
+            (self.buffer[self.offset + 1] << 48) + 
+            (self.buffer[self.offset + 2] << 40) + 
+            (self.buffer[self.offset + 3] << 32) +
+            (self.buffer[self.offset + 4] << 24) + 
+            (self.buffer[self.offset + 5] << 16) + 
+            (self.buffer[self.offset + 6] <<  8) + 
+             self.buffer[self.offset + 7])
+        self.offset += 8
+        return value
+
 
     def read_str(self):
         return self.read_bytes().decode()
@@ -95,9 +133,9 @@ class MessageReader:
     def read_access_mode(self):
         value = self.read_u8()
         mode  = os.F_OK if F_OK == (value & F_OK) else 0
-        mode += os.R_OK if R_OK == (value & R_OK) else 0
-        mode += os.W_OK if W_OK == (value & W_OK) else 0
-        mode += os.X_OK if X_OK == (value & X_OK) else 0
+        mode |= os.R_OK if R_OK == (value & R_OK) else 0
+        mode |= os.W_OK if W_OK == (value & W_OK) else 0
+        mode |= os.X_OK if X_OK == (value & X_OK) else 0
         return mode
 
     def read_rename_flags(self):
@@ -106,14 +144,41 @@ class MessageReader:
     def read_mode(self):
         value = self.read_u32()
         mode = value & 0o7777
-        mode += stat.S_IFREG  if MODE_REG  == (value & MODE_REG ) else 0
-        mode += stat.S_IFDIR  if MODE_DIR  == (value & MODE_DIR ) else 0
-        mode += stat.S_IFCHR  if MODE_CHR  == (value & MODE_CHR ) else 0
-        mode += stat.S_IFBLK  if MODE_BLK  == (value & MODE_BLK ) else 0
-        mode += stat.S_IFFIFO if MODE_FIFO == (value & MODE_FIFO) else 0
-        mode += stat.S_IFLNK  if MODE_LNK  == (value & MODE_LNK ) else 0
-        mode += stat.S_IFSOCK if MODE_SOCK == (value & MODE_SOCK) else 0
+        mode |= stat.S_IFREG  if MODE_REG  == (value & MODE_REG ) else 0
+        mode |= stat.S_IFDIR  if MODE_DIR  == (value & MODE_DIR ) else 0
+        mode |= stat.S_IFCHR  if MODE_CHR  == (value & MODE_CHR ) else 0
+        mode |= stat.S_IFBLK  if MODE_BLK  == (value & MODE_BLK ) else 0
+        mode |= stat.S_IFFIFO if MODE_FIFO == (value & MODE_FIFO) else 0
+        mode |= stat.S_IFLNK  if MODE_LNK  == (value & MODE_LNK ) else 0
+        mode |= stat.S_IFSOCK if MODE_SOCK == (value & MODE_SOCK) else 0
         return mode
+
+    def read_openflags(self):
+        value = self.read_u32()
+        flags = 0
+        # Access Mode
+        flags |= os.O_RDONLY if O_RDONLY == (value & O_RDONLY) else 0
+        flags |= os.O_WRONLY if O_WRONLY == (value & O_WRONLY) else 0
+        flags |= os.O_RDWR   if O_RDWR   == (value & O_RDWR  ) else 0
+        # Flags
+        flags |= os.O_APPEND    if O_APPEND    == (value & O_APPEND   ) else 0
+        flags |= os.O_ASYNC     if O_ASYNC     == (value & O_ASYNC    ) else 0
+        flags |= os.O_CLOEXEC   if O_CLOEXEC   == (value & O_CLOEXEC  ) else 0
+        flags |= os.O_CREAT     if O_CREAT     == (value & O_CREAT    ) else 0
+        flags |= os.O_DIRECT    if O_DIRECT    == (value & O_DIRECT   ) else 0
+        flags |= os.O_DIRECTORY if O_DIRECTORY == (value & O_DIRECTORY) else 0
+        flags |= os.O_DSYNC     if O_DSYNC     == (value & O_DSYNC    ) else 0
+        flags |= os.O_EXCL      if O_EXCL      == (value & O_EXCL     ) else 0
+        flags |= os.O_LARGEFILE if O_LARGEFILE == (value & O_LARGEFILE) else 0
+        flags |= os.O_NOCTTY    if O_NOCTTY    == (value & O_NOCTTY   ) else 0
+        flags |= os.O_NOFOLLOW  if O_NOFOLLOW  == (value & O_NOFOLLOW ) else 0
+        flags |= os.O_NONBLOCK  if O_NONBLOCK  == (value & O_NONBLOCK ) else 0
+        flags |= os.O_NDELAY    if O_NDELAY    == (value & O_NDELAY   ) else 0
+        flags |= os.O_PATH      if O_PATH      == (value & O_PATH     ) else 0
+        flags |= os.O_SYNC      if O_SYNC      == (value & O_SYNC     ) else 0
+        flags |= os.O_TMPFILE   if O_TMPFILE   == (value & O_TMPFILE  ) else 0
+        flags |= os.O_TRUNC     if O_TRUNC     == (value & O_TRUNC    ) else 0
+        return flags
 
 
 
@@ -327,7 +392,7 @@ class FilesystemProvider:
         fd = reader.read_u64()
         result = 0
         try:
-            if fd != 0xffffffffffffffff:
+            if fd != INVALID_FD:
                 os.ftruncate(fd, size)
             else:
                 os.truncate(path, size)
@@ -347,16 +412,52 @@ class FilesystemProvider:
         writer.write_result(result)
 
     def open(self, reader, writer):
-        pass
+        path = reader.read_path(self.root)
+        flags = reader.read_openflags()
+        try:
+            fd = os.open(path, flags)
+        except OSError as ex:
+            writer.write_result(-ex.errno)
+            return
+        writer.write_result(0)
+        writer.write_u64(fd)
+        
 
     def mknod(self, reader, writer):
-        pass
+        path = reader.read_path(self.root)
+        mode = reader.read_mode()
+        rdev = reader.read_u64()
+        result = 0
+        try:
+            os.mknod(path, mode, rdev)
+        except OSError as ex:
+            result = -ex.errno            
+        writer.write_result(result)
 
     def create(self, reader, writer):
+        path = reader.read_path(self.root)
+        mode = reader.read_mode()
+        try:
+            flags = os.O_CREAT | os.O_WRONLY | os.O_TRUNC
+            fd = os.open(path, flags, mode)
+        except OSError as ex:
+            writer.write_result(-ex.errno)
+            return
+        writer.write_result(0)
+        writer.write_u64(fd)
         pass
 
     def release(self, reader, writer):
-        pass
+        path = reader.read_path(self.root)
+        fd = reader.read_u64()
+        result = 0
+        try:
+            os.close(fd)
+        except OSError as ex:
+            writer.write_result(-ex.errno)
+            return
+        print(result)
+        writer.write_result(result)
 
     def unlink(self, reader, writer):
         pass
