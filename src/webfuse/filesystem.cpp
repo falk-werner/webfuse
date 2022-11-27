@@ -190,6 +190,25 @@ int filesystem::fsync(std::string const & path, bool is_datasync, uint64_t handl
     }
 }
 
+int filesystem::utimens(std::string const &path, struct timespec tv[2], uint64_t handle)
+{
+    try
+    {
+        messagewriter req(message_type::utimens_req);
+        req.write_str(path);
+        req.write_time(tv[0]);
+        req.write_time(tv[1]);
+        req.write_u64(handle);
+        auto reader = proxy.perform(std::move(req));
+        return reader.read_result();
+    }
+    catch(...)
+    {
+        return fallback.utimens(path, tv, handle);
+    }
+}
+
+
 int filesystem::open(std::string const & path, int flags, uint64_t & handle)
 {
     try

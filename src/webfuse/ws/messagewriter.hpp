@@ -39,6 +39,7 @@ public:
     void write_uid(uid_t value);
     void write_gid(gid_t value);
     void write_openflags(int value);
+    void write_time(timespec const & value);
 
     unsigned char * get_data(size_t &size);
 

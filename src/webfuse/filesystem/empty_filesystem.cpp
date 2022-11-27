@@ -71,6 +71,11 @@ int empty_filesystem::fsync(std::string const & path, bool is_datasync, uint64_t
     return 0;
 }
 
+int empty_filesystem::utimens(std::string const &path, struct timespec tv[2], uint64_t handle)
+{
+    return -ENOSYS;
+}
+
 int empty_filesystem::open(std::string const & path, int flags, uint64_t & handle)
 {
     return -ENOENT;

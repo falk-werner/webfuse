@@ -161,6 +161,12 @@ void messagewriter::write_openflags(int value)
     write_i32(flags);
 }
 
+void messagewriter::write_time(timespec const & value)
+{
+    write_u64(static_cast<uint64_t>(value.tv_sec));
+    write_u32(static_cast<uint32_t>(value.tv_nsec));
+}
+
 
 unsigned char * messagewriter::get_data(size_t &size)
 {

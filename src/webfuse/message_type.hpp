@@ -28,7 +28,8 @@ enum class message_type: uint8_t
     mkdir_req    = 0x12,
     readdir_req  = 0x13,
     rmdir_req    = 0x14,
-    statfs_req   = 0x15 
+    statfs_req   = 0x15,
+    utimens_req  = 0x16
 };
 
 
