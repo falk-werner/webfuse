@@ -263,8 +263,9 @@ class FilesystemProvider:
             0x11: FilesystemProvider.write,  
             0x12: FilesystemProvider.mkdir,  
             0x13: FilesystemProvider.readdir,
-            0x14: FilesystemProvider.rmdir,  
-            0x15: FilesystemProvider.statfs             
+            0x14: FilesystemProvider.rmdir,
+            0x15: FilesystemProvider.statfs,
+            0x15: FilesystemProvider.utimens,
         }
     
     async def run(self):
@@ -410,6 +411,21 @@ class FilesystemProvider:
         except OSError as ex:
             result = -ex.errno
         writer.write_result(result)
+
+    def utimens(self, reader, writer):
+        path = reader.read_path(self.root)
+        atime = reader.read_u64()
+        atime_ns = reader.read_u32()
+        mtime = reader.read_u64()
+        mtime_ns = reader.read_u32()
+        fd = reader.read_u64()
+        result = 0
+        try:
+            os.utime(path, (atime, mtime), ns = (atime_ns, mtime_ns))
+        except OSError as ex:
+            result = -ex.errno
+        writer.write_result(result)
+
 
     def open(self, reader, writer):
         path = reader.read_path(self.root)
