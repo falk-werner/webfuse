@@ -105,7 +105,6 @@ static int ws_server_callback(struct lws *wsi, enum lws_callback_reasons reason,
             }
             break;
         case LWS_CALLBACK_SERVER_WRITEABLE:
-             << "lws: server writable "<< std::endl;
             {
                 webfuse::messagewriter writer(webfuse::message_type::access_req);
                 bool has_msg = false;
