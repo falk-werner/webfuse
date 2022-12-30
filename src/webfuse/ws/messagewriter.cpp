@@ -11,12 +11,20 @@ namespace webfuse
 constexpr uint8_t const rename_noreplace = 0x01;
 constexpr uint8_t const rename_exchange  = 0x02;
 
-messagewriter::messagewriter(message_type msg_type)
+messagewriter::messagewriter(request_type req_type)
 : id(0)
 , data(LWS_PRE)
 {
     write_u32(0);
-    write_u8(static_cast<uint8_t>(msg_type));
+    write_u8(static_cast<uint8_t>(req_type));
+}
+
+messagewriter::messagewriter(response_type res_type)
+: id(0)
+, data(LWS_PRE)
+{
+    write_u32(0);
+    write_u8(static_cast<uint8_t>(res_type));
 }
 
 messagewriter::messagewriter(messagewriter && other)

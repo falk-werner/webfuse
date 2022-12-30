@@ -1,7 +1,8 @@
 #ifndef WEBFUSE_MESSAGEWRITER_HPP
 #define WEBFUSE_MESSAGEWRITER_HPP
 
-#include "webfuse/message_type.hpp"
+#include "webfuse/request_type.hpp"
+#include "webfuse/response_type.hpp"
 
 #include <cinttypes>
 #include <string>
@@ -15,7 +16,8 @@ class messagewriter
     messagewriter(messagewriter const &) = delete;
     messagewriter& operator=(messagewriter const &) = delete;
 public:
-    explicit messagewriter(message_type msg_type);
+    explicit messagewriter(request_type req_type);
+    explicit messagewriter(response_type res_type);
     ~messagewriter() = default;
     messagewriter(messagewriter && other);
     messagewriter& operator=(messagewriter && other);

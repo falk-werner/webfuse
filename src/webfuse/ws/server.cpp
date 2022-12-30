@@ -106,7 +106,7 @@ static int ws_server_callback(struct lws *wsi, enum lws_callback_reasons reason,
             break;
         case LWS_CALLBACK_SERVER_WRITEABLE:
             {
-                webfuse::messagewriter writer(webfuse::message_type::access_req);
+                webfuse::messagewriter writer(webfuse::request_type::unknown);
                 bool has_msg = false;
                 bool has_more = false;
 

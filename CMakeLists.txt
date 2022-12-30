@@ -9,6 +9,7 @@ pkg_check_modules(LWS REQUIRED IMPORTED_TARGET libwebsockets)
 
 add_library(webfuse_static STATIC
     src/webfuse/webfuse.cpp
+    src/webfuse/provider.cpp
     src/webfuse/fuse.cpp
     src/webfuse/filesystem.cpp
     src/webfuse/filesystem/status.cpp
@@ -19,6 +20,7 @@ add_library(webfuse_static STATIC
     src/webfuse/filesystem/empty_filesystem.cpp
     src/webfuse/ws/config.cpp
     src/webfuse/ws/server.cpp
+    src/webfuse/ws/client.cpp
     src/webfuse/ws/messagewriter.cpp
     src/webfuse/ws/messagereader.cpp
 )
@@ -31,12 +33,23 @@ add_executable(webfuse
 
 target_link_libraries(webfuse PRIVATE webfuse_static)
 
+if(NOT(WITHOUT_PROVIDER))
+
+add_executable(webfuse_provider
+    src/provider_main.cpp)
+
+target_link_libraries(webfuse_provider PRIVATE webfuse_static)
+
+endif()
+
 if(NOT(WITHOUT_TEST))
 
     pkg_check_modules(GTEST REQUIRED gtest_main)
     pkg_check_modules(GMOCK REQUIRED gmock)
 
     add_executable(alltests
+        test-src/webfuse/test/thread.cpp
+        test-src/webfuse/test/tempdir.cpp
         test-src/webfuse/test_app.cpp
         test-src/webfuse/filesystem/test_status.cpp
         test-src/webfuse/filesystem/test_accessmode.cpp
@@ -44,7 +57,7 @@ if(NOT(WITHOUT_TEST))
         test-src/webfuse/filesystem/test_filemode.cpp
     )
 
-    target_include_directories(alltests PRIVATE ${GTEST_INCLUDE_DIRS} ${GMOCK_INCLUDE_DIRS})
+    target_include_directories(alltests PRIVATE test-src ${GTEST_INCLUDE_DIRS} ${GMOCK_INCLUDE_DIRS})
     target_compile_options(alltests PRIVATE 
         ${GTEST_CFLAGS} ${GTEST_CFLAGS_OTHER} 
         ${GMOCK_CFLAGS} ${GMOCK_CFLAGS_OTHER}

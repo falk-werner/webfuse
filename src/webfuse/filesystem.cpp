@@ -22,7 +22,7 @@ int filesystem::access(std::string const & path, int mode)
 {
     try
     {
-        messagewriter req(message_type::access_req);
+        messagewriter req(request_type::access);
         req.write_str(path);
         req.write_access_mode(mode);
         auto reader = proxy.perform(std::move(req));
@@ -38,7 +38,7 @@ int filesystem::getattr(std::string const & path, struct stat * attr)
 {
     try
     {
-        messagewriter req(message_type::getattr_req);
+        messagewriter req(request_type::getattr);
         req.write_str(path);
         auto reader = proxy.perform(std::move(req));
         int const result = reader.read_result();
@@ -58,7 +58,7 @@ int filesystem::readlink(std::string const & path, std::string & out)
 {
     try
     {
-        messagewriter req(message_type::readlink_req);
+        messagewriter req(request_type::readlink);
         req.write_str(path);
         auto reader = proxy.perform(std::move(req));
         int const result = reader.read_result();
@@ -78,7 +78,7 @@ int filesystem::symlink(std::string const & target, std::string const & linkpath
 {
     try
     {
-        messagewriter req(message_type::symlink_req);
+        messagewriter req(request_type::symlink);
         req.write_str(target);
         req.write_str(linkpath);
         auto reader = proxy.perform(std::move(req));        
@@ -94,7 +94,7 @@ int filesystem::link(std::string const & old_path, std::string const & new_path)
 {
     try
     {
-        messagewriter req(message_type::link_req);
+        messagewriter req(request_type::link);
         req.write_str(old_path);
         req.write_str(new_path);
         auto reader = proxy.perform(std::move(req));
@@ -110,7 +110,7 @@ int filesystem::rename(std::string const & old_path, std::string const & new_pat
 {
     try
     {
-        messagewriter req(message_type::rename_req);
+        messagewriter req(request_type::rename);
         req.write_str(old_path);
         req.write_str(new_path);
         req.write_rename_flags(flags);
@@ -127,7 +127,7 @@ int filesystem::chmod(std::string const & path, mode_t mode)
 {
     try
     {
-        messagewriter req(message_type::chmod_req);
+        messagewriter req(request_type::chmod);
         req.write_str(path);
         req.write_mode(mode);
         auto reader = proxy.perform(std::move(req));
@@ -143,7 +143,7 @@ int filesystem::chown(std::string const & path, uid_t uid, gid_t gid)
 {
     try
     {
-        messagewriter req(message_type::chown_req);
+        messagewriter req(request_type::chown);
         req.write_str(path);
         req.write_uid(uid);
         req.write_gid(gid);
@@ -160,7 +160,7 @@ int filesystem::truncate(std::string const & path, uint64_t size, uint64_t handl
 {
     try
     {
-        messagewriter req(message_type::truncate_req);
+        messagewriter req(request_type::truncate);
         req.write_str(path);
         req.write_u64(size);
         req.write_u64(handle);
@@ -177,7 +177,7 @@ int filesystem::fsync(std::string const & path, bool is_datasync, uint64_t handl
 {
     try
     {
-        messagewriter req(message_type::fsync_req);
+        messagewriter req(request_type::fsync);
         req.write_str(path);
         req.write_bool(is_datasync);
         req.write_u64(handle);
@@ -194,7 +194,7 @@ int filesystem::utimens(std::string const &path, struct timespec tv[2], uint64_t
 {
     try
     {
-        messagewriter req(message_type::utimens_req);
+        messagewriter req(request_type::utimens);
         req.write_str(path);
         req.write_time(tv[0]);
         req.write_time(tv[1]);
@@ -213,7 +213,7 @@ int filesystem::open(std::string const & path, int flags, uint64_t & handle)
 {
     try
     {
-        messagewriter req(message_type::open_req);
+        messagewriter req(request_type::open);
         req.write_str(path);
         req.write_openflags(flags);
         auto reader = proxy.perform(std::move(req));
@@ -234,7 +234,7 @@ int filesystem::mknod(std::string const & path, mode_t mode, dev_t rdev)
 {
     try
     {
-        messagewriter req(message_type::mknod_req);
+        messagewriter req(request_type::mknod);
         req.write_str(path);
         req.write_mode(mode);
         req.write_u64(rdev);
@@ -251,7 +251,7 @@ int filesystem::create(std::string const & path, mode_t mode, uint64_t & handle)
 {
     try
     {
-        messagewriter req(message_type::create_req);
+        messagewriter req(request_type::create);
         req.write_str(path);
         req.write_mode(mode);
         auto reader = proxy.perform(std::move(req));
@@ -272,7 +272,7 @@ int filesystem::release(std::string const & path, uint64_t handle)
 {
     try
     {
-        messagewriter req(message_type::release_req);
+        messagewriter req(request_type::release);
         req.write_str(path);
         req.write_u64(handle);
         auto reader = proxy.perform(std::move(req));
@@ -288,7 +288,7 @@ int filesystem::unlink(std::string const & path)
 {
     try
     {
-        messagewriter req(message_type::unlink_req);
+        messagewriter req(request_type::unlink);
         req.write_str(path);
         auto reader = proxy.perform(std::move(req));
         return reader.read_result();
@@ -303,7 +303,7 @@ int filesystem::read(std::string const & path, char * buffer, size_t buffer_size
 {
     try
     {
-        messagewriter req(message_type::read_req);
+        messagewriter req(request_type::read);
         req.write_str(path);
         req.write_u32(buffer_size);
         req.write_u64(offset);
@@ -334,7 +334,7 @@ int filesystem::write(std::string const & path, char const * buffer, size_t buff
 {
     try
     {
-        messagewriter req(message_type::write_req);
+        messagewriter req(request_type::write);
         req.write_str(path);
         req.write_data(buffer, buffer_size);
         req.write_u64(offset);
@@ -352,7 +352,7 @@ int filesystem::mkdir(std::string const & path, mode_t mode)
 {
     try
     {
-        messagewriter req(message_type::mkdir_req);
+        messagewriter req(request_type::mkdir);
         req.write_str(path);
         req.write_mode(mode);
         auto reader = proxy.perform(std::move(req));
@@ -368,7 +368,7 @@ int filesystem::readdir(std::string const & path, std::vector<std::string> & ent
 {
     try
     {
-        messagewriter req(message_type::readdir_req);
+        messagewriter req(request_type::readdir);
         req.write_str(path);        
         auto resp = proxy.perform(std::move(req));
         int result = resp.read_result();
@@ -388,7 +388,7 @@ int filesystem::rmdir(std::string const & path)
 {
     try
     {
-        messagewriter req(message_type::rmdir_req);
+        messagewriter req(request_type::rmdir);
         req.write_str(path);
         auto reader = proxy.perform(std::move(req));
         return reader.read_result();
@@ -403,7 +403,7 @@ int filesystem::statfs(std::string const & path, struct statvfs * statistics)
 {
     try
     {
-        messagewriter req(message_type::statfs_req);
+        messagewriter req(request_type::statfs);
         req.write_str(path);
         auto reader = proxy.perform(std::move(req));
         int result = reader.read_result();
