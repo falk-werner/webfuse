@@ -26,6 +26,7 @@ public:
     int read_result();
     void read_attr(struct stat * attr);
     void read_statistics(struct statvfs * statistics);
+    int read_access_mode();
     mode_t read_mode();
 
     uint8_t read_u8();

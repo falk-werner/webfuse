@@ -33,6 +33,8 @@ enum class request_type: uint8_t
     utimens  = 0x16
 };
 
+request_type get_request_type(uint8_t value);
+
 }
 
 #endif

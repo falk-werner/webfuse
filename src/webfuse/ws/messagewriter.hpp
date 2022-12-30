@@ -4,6 +4,8 @@
 #include "webfuse/request_type.hpp"
 #include "webfuse/response_type.hpp"
 
+#include <sys/stat.h>
+
 #include <cinttypes>
 #include <string>
 #include <vector>
@@ -35,6 +37,7 @@ public:
     void write_data(char const * buffer, size_t size);
     void write_strings(std::vector<std::string> const & list);
 
+    void write_attr(struct stat const * attr);
     void write_access_mode(int value);
     void write_rename_flags(unsigned int value);
     void write_mode(mode_t value);

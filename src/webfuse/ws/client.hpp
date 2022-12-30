@@ -21,8 +21,10 @@ public:
     ws_client(ws_client && other);
     ws_client& operator=(ws_client && other);
 
+    void set_connection_listener(std::function<void(bool)> listener);
     void connect(std::string url);
     void service();
+    void interrupt();
 private:
     class detail;
     detail * d;

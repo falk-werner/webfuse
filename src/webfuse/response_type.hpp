@@ -1,6 +1,7 @@
 #ifndef WEBFUSE_RESPONSE_TYPE
 #define WEBFUSE_RESPONSE_TYPE
 
+#include "request_type.hpp"
 #include <cinttypes>
 
 namespace webfuse
@@ -32,6 +33,8 @@ enum class response_type: uint8_t
     statfs   = 0x95,
     utimens  = 0x96
 };
+
+response_type get_response_type(request_type value);
 
 }
 

@@ -11,6 +11,8 @@ add_library(webfuse_static STATIC
     src/webfuse/webfuse.cpp
     src/webfuse/provider.cpp
     src/webfuse/fuse.cpp
+    src/webfuse/request_type.cpp
+    src/webfuse/response_type.cpp
     src/webfuse/filesystem.cpp
     src/webfuse/filesystem/status.cpp
     src/webfuse/filesystem/accessmode.cpp
@@ -51,6 +53,8 @@ if(NOT(WITHOUT_TEST))
         test-src/webfuse/test/thread.cpp
         test-src/webfuse/test/tempdir.cpp
         test-src/webfuse/test_app.cpp
+        test-src/webfuse/test_request_type.cpp
+        test-src/webfuse/test_response_type.cpp
         test-src/webfuse/filesystem/test_status.cpp
         test-src/webfuse/filesystem/test_accessmode.cpp
         test-src/webfuse/filesystem/test_openflags.cpp

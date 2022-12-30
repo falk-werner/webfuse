@@ -1,4 +1,9 @@
 #include "webfuse/provider.hpp"
+
+#include <unistd.h>
+#include <sys/stat.h>
+#include <dirent.h>
+
 #include <csignal>
 #include <iostream>
 
@@ -29,12 +34,20 @@ public:
 
     int access(std::string const & path, int mode) override
     {
-        return -ENOENT;
+        auto const full_path = get_full_path(path);
+        std::cout << "access: " << full_path << std::endl;
+
+        auto const result = ::access(full_path.c_str(), mode);
+        return (result == 0) ? 0 : -errno;
     }
 
     int getattr(std::string const & path, struct stat * attr) override
     {
-        return -ENOENT;
+        auto const full_path = get_full_path(path);
+        std::cout << "getattr: " << full_path << std::endl;
+
+        auto const result = lstat(full_path.c_str(), attr);
+        return (result == 0) ? 0 : -errno;
     }
 
     int readlink(std::string const & path, std::string & out) override
@@ -124,7 +137,27 @@ public:
 
     int readdir(std::string const & path, std::vector<std::string> & entries, uint64_t handle) override
     {
-        return -ENOENT;
+        auto const full_path = get_full_path(path);
+        std::cout << "readdir: " << full_path << std::endl;
+
+        int result = 0;
+        DIR * directory = opendir(full_path.c_str());
+        if (NULL != directory)
+        {
+            dirent * entry = ::readdir(directory);
+            while (entry != nullptr)
+            {
+                entries.push_back(std::string(entry->d_name));
+                entry = ::readdir(directory);
+            }
+            closedir(directory);
+        }
+        else
+        {
+            result = -errno;
+        }
+
+        return result;
     }
 
     int rmdir(std::string const & path) override
@@ -139,6 +172,11 @@ public:
 
 
 private:
+    std::string get_full_path(std::string const & path)
+    {
+        return base_path_ + path;
+    }
+
     std::string base_path_;
 };
 
@@ -153,6 +191,12 @@ int main(int argc, char* argv[])
 
     filesystem fs(".");
     webfuse::provider provider(fs);
+    provider.set_connection_listener([](bool connected) {
+        if (!connected)
+        {
+            shutdown_requested = true;
+        }
+    });
     provider.connect("ws://localhost:8080/");
     while (!shutdown_requested)
     {

@@ -132,6 +132,21 @@ void messagewriter::write_strings(std::vector<std::string> const & list)
     }
 }
 
+void messagewriter::write_attr(struct stat const * attr)
+{
+    write_u64(static_cast<uint64_t>(attr->st_ino));
+    write_u64(static_cast<uint64_t>(attr->st_nlink));
+    write_mode(filemode::from_mode(attr->st_mode));
+    write_u32(static_cast<uint32_t>(attr->st_uid));
+    write_u32(static_cast<uint32_t>(attr->st_gid));
+    write_u64(static_cast<uint64_t>(attr->st_rdev));
+    write_u64(static_cast<uint64_t>(attr->st_size));
+    write_u64(static_cast<uint64_t>(attr->st_blocks));
+    write_time(attr->st_atim);
+    write_time(attr->st_mtim);
+    write_time(attr->st_ctim);
+}
+
 void messagewriter::write_access_mode(int value)
 {
     access_mode mode = access_mode::from_int(value);

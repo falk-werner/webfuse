@@ -1,6 +1,7 @@
 #include "webfuse/ws/messagereader.hpp"
 #include "webfuse/filesystem/status.hpp"
 #include "webfuse/filesystem/filemode.hpp"
+#include "webfuse/filesystem/accessmode.hpp"
 
 #include <stdexcept>
 
@@ -35,6 +36,14 @@ int messagereader::read_result()
 {
     status value(read_i32());
     return value.to_fusestatus();
+}
+
+int messagereader::read_access_mode()
+{
+    auto const value = read_u8();
+    access_mode mode(static_cast<int8_t>(value));
+
+    return mode.to_int();
 }
 
 void messagereader::read_attr(struct stat * attr)
