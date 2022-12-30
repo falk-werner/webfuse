@@ -97,6 +97,9 @@ class MessageReader:
         value = self.buffer[self.offset]
         self.offset += 1
         return value
+
+    def read_bool(self):
+        return self.read_u8() == 1
     
     def read_u32(self):
         value = (self.buffer[self.offset] << 24) + (self.buffer[self.offset + 1] << 16) + (self.buffer[self.offset + 2] << 8) + self.buffer[self.offset + 3]
@@ -275,7 +278,6 @@ class FilesystemProvider:
                 reader = MessageReader(request)
                 message_id = reader.read_u32()
                 message_type = reader.read_u8()
-                print("received message: id=%d, type=%d" % (message_id, message_type))
                 writer = MessageWriter(message_id, RESPONSE + message_type)
                 if message_type in self.commands:
                     method = self.commands[message_type]
@@ -403,7 +405,7 @@ class FilesystemProvider:
 
     def fsync(self, reader, writer):
         path = reader.read_path(self.root)
-        _ = reader.read_i32()
+        _ = reader.read_bool()
         fd = reader.read_u64()
         result = 0
         try:
