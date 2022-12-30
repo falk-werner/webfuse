@@ -50,7 +50,6 @@ static int ws_server_callback(struct lws *wsi, enum lws_callback_reasons reason,
     switch(reason)
     {
         case LWS_CALLBACK_ESTABLISHED:
-            std::cout << "lws: established "<< std::endl;
             if (nullptr == data->connection)
             {
                 data->connection = wsi;
@@ -61,14 +60,12 @@ static int ws_server_callback(struct lws *wsi, enum lws_callback_reasons reason,
             }
             break;
         case LWS_CALLBACK_CLOSED:
-            std::cout << "lws: closed "<< std::endl;
             if (wsi == data->connection)
             {
                 data->connection = nullptr;
             }
             break;
         case LWS_CALLBACK_RECEIVE:
-            std::cout << "lws: receive "<< std::endl;
             {
                 auto * fragment = reinterpret_cast<char*>(in);
                 data->current_message.append(fragment, len);
@@ -84,7 +81,6 @@ static int ws_server_callback(struct lws *wsi, enum lws_callback_reasons reason,
                         auto it = data->pending_responses.find(id);
                         if (it != data->pending_responses.end())
                         {
-                            std::cout << "propagate message" << std::endl;
                             it->second.set_value(std::move(reader));
                             data->pending_responses.erase(it);
                         }
@@ -109,7 +105,7 @@ static int ws_server_callback(struct lws *wsi, enum lws_callback_reasons reason,
             }
             break;
         case LWS_CALLBACK_SERVER_WRITEABLE:
-            std::cout << "lws: server writable "<< std::endl;
+             << "lws: server writable "<< std::endl;
             {
                 webfuse::messagewriter writer(webfuse::message_type::access_req);
                 bool has_msg = false;
@@ -187,7 +183,6 @@ public:
                     {
                         if (nullptr != data.connection)
                         {
-                            std::cout << "request write" << std::endl;
                             lws_callback_on_writable(data.connection);
                         }
                         else
