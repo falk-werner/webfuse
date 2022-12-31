@@ -17,7 +17,13 @@ int fs_getattr (std::string const & path, struct stat * attr)
 {
     memset(reinterpret_cast<void*>(attr),0, sizeof(struct stat));
 
-    if (path == "/foo")
+    if (path == "/")
+    {
+        attr->st_nlink = 0;
+        attr->st_mode = S_IFDIR | 0755;
+        return 0;
+    }
+    else if (path == "/foo")
     {
         attr->st_nlink = 0;
         attr->st_mode = S_IFREG | 0755;
@@ -30,14 +36,14 @@ int fs_getattr (std::string const & path, struct stat * attr)
 }
 }
 
-TEST(access, ok)
+TEST(access, ok_NO_MEMCHECK)
 {
     webfuse::filesystem_mock fs;
-    webfuse::fixture fixture(fs);
-    std::cout << "setup" << std::endl;
-
+    EXPECT_CALL(fs, access("/",_)).Times(AnyNumber()).WillRepeatedly(Return(0));
     EXPECT_CALL(fs, access("/foo",_)).WillOnce(Return(0));
     EXPECT_CALL(fs, getattr(_,_)).WillRepeatedly(Invoke(fs_getattr));
+
+    webfuse::fixture fixture(fs);
     auto const path = fixture.get_path() + "/foo";
 
     int const rc = ::access(path.c_str(), F_OK);

@@ -76,7 +76,7 @@ if(NOT(WITHOUT_TEST))
 
     find_program(VALGRIND valgrind REQUIRED)
     if(VALGRIND)
-        add_custom_target(memcheck COMMAND valgrind --leak-check=full --error-exitcode=1 ./alltests)
+        add_custom_target(memcheck COMMAND valgrind --leak-check=full --error-exitcode=1 ./alltests --gtest_filter=-*_NO_MEMCHECK)
     endif()
 
 endif()
