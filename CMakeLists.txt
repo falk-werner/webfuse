@@ -50,11 +50,14 @@ if(NOT(WITHOUT_TEST))
     pkg_check_modules(GMOCK REQUIRED gmock)
 
     add_executable(alltests
-        test-src/webfuse/test/thread.cpp
         test-src/webfuse/test/tempdir.cpp
+        test-src/webfuse/test/fixture.cpp
+        test-src/webfuse/test/process.cpp
+        test-src/webfuse/test/daemon.cpp
         test-src/webfuse/test_app.cpp
         test-src/webfuse/test_request_type.cpp
         test-src/webfuse/test_response_type.cpp
+        test-src/webfuse/test_access.cpp
         test-src/webfuse/filesystem/test_status.cpp
         test-src/webfuse/filesystem/test_accessmode.cpp
         test-src/webfuse/filesystem/test_openflags.cpp

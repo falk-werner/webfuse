@@ -11,7 +11,7 @@ class tempdir
 public:
     tempdir();
     ~tempdir();
-    std::string const name() const;
+    std::string const & name() const;
 private:
     std::string path;
 

@@ -20,6 +20,7 @@ public:
     void set_connection_listener(std::function<void(bool)> listener);
     void connect(std::string const & url);
     void service();
+    void interrupt();
 private:
     class detail;
     detail * d;

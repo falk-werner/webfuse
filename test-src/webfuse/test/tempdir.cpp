@@ -15,7 +15,7 @@ tempdir::~tempdir()
     unlink(path.c_str());
 }
 
-std::string const tempdir::name() const
+std::string const & tempdir::name() const
 {
     return path;
 }

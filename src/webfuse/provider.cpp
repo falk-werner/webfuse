@@ -34,6 +34,11 @@ public:
         client.service();
     }
 
+    void interrupt()
+    {
+        client.interrupt();
+    }
+
     void set_connection_listener(std::function<void(bool)> listener)
     {
         client.set_connection_listener(listener);
@@ -142,6 +147,11 @@ void provider::connect(std::string const & url)
 void provider::service()
 {
     d->service();
+}
+
+void provider::interrupt()
+{
+    d->interrupt();
 }
 
 void provider::set_connection_listener(std::function<void(bool)> listener)
