@@ -61,6 +61,9 @@ public:
             case request_type::getattr:
                 fs_getattr(reader, writer);
                 break;
+            case request_type::readlink:
+                fs_readlink(reader, writer);
+                break;
             case request_type::readdir:
                 fs_readdir(reader, writer);
                 break;
@@ -104,6 +107,19 @@ private:
         if (0 == result)
         {
             writer.write_strings(entries);
+        }
+    }
+
+    void fs_readlink(messagereader & reader, messagewriter & writer)
+    {
+        auto const path = reader.read_str();
+        std::string out;
+
+        auto const result = fs_.readlink(path, out);
+        writer.write_i32(result);
+        if (0 == result)
+        {
+            writer.write_str(out);
         }
     }
 
