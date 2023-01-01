@@ -76,6 +76,9 @@ public:
             case request_type::chmod:
                 fs_chmod(reader, writer);
                 break;
+            case request_type::chown:
+                fs_chown(reader, writer);
+                break;
             case request_type::readdir:
                 fs_readdir(reader, writer);
                 break;
@@ -156,6 +159,16 @@ private:
         auto const mode = reader.read_mode();
 
         auto const result = fs_.chmod(path, mode);
+        writer.write_i32(result);
+    }
+
+    void fs_chown(messagereader & reader, messagewriter & writer)
+    {
+        auto const path = reader.read_str();
+        auto const uid = static_cast<uid_t>(reader.read_u32());
+        auto const gid = static_cast<gid_t>(reader.read_u32());
+
+        auto const result = fs_.chown(path, uid, gid);
         writer.write_i32(result);
     }
 
