@@ -30,18 +30,15 @@ extern "C" int webfuse_client_callback(lws * wsi, lws_callback_reasons reason, v
         switch(reason)
         {
             case LWS_CALLBACK_CLIENT_ESTABLISHED:
-                std::cout << "established" << std::endl;
                 context->connection_listener(true);
                 break;
             case LWS_CALLBACK_CLIENT_CONNECTION_ERROR:
-                std::cout << "connection error" << std::endl;
                 context->connection = nullptr;
                 context->requests = std::move(std::queue<webfuse::messagewriter>());
                 context->current_message.clear();
                 context->connection_listener(false);
                 break;
             case LWS_CALLBACK_CLIENT_CLOSED:
-                std::cout << "closed" << std::endl;
                 context->connection = nullptr;
                 context->requests = std::move(std::queue<webfuse::messagewriter>());
                 context->current_message.clear();
@@ -49,7 +46,6 @@ extern "C" int webfuse_client_callback(lws * wsi, lws_callback_reasons reason, v
                 break;
             case LWS_CALLBACK_CLIENT_RECEIVE:
                 {
-                    std::cout << "receive" << std::endl;
                     auto * fragment = reinterpret_cast<char*>(in);
                     context->current_message.append(fragment, length);
                     if (lws_is_final_fragment(wsi))
@@ -74,7 +70,6 @@ extern "C" int webfuse_client_callback(lws * wsi, lws_callback_reasons reason, v
                 // fall-through
             case LWS_CALLBACK_CLIENT_WRITEABLE:
                 {
-                    std::cout << "writable" << std::endl;
                     if (!context->requests.empty())
                     {
                         auto writer = std::move(context->requests.front());
