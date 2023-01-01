@@ -115,7 +115,7 @@ int empty_filesystem::mkdir(std::string const & path, mode_t mode)
     return -EPERM;
 }
 
-int empty_filesystem::readdir(std::string const & path, std::vector<std::string> & entries, uint64_t handle)
+int empty_filesystem::readdir(std::string const & path, std::vector<std::string> & entries)
 {
     if (path == "/")
     {

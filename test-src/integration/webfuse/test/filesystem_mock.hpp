@@ -36,7 +36,7 @@ public:
     MOCK_METHOD(int, write, (std::string const & path, char const * buffer, size_t buffer_size, uint64_t offset, uint64_t handle));
 
     MOCK_METHOD(int, mkdir, (std::string const & path, mode_t mode));
-    MOCK_METHOD(int, readdir, (std::string const & path, std::vector<std::string> & entries, uint64_t handle));
+    MOCK_METHOD(int, readdir, (std::string const & path, std::vector<std::string> & entries));
     MOCK_METHOD(int, rmdir, (std::string const & path));
 
     MOCK_METHOD(int, statfs, (std::string const & path, struct statvfs * statistics));

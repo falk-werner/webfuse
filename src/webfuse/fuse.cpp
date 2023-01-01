@@ -184,7 +184,7 @@ static int fs_readdir(char const * path, void * buffer,
     auto * const fs = fs_get_filesystem();
     auto handle = fs_get_handle(info);
     std::vector<std::string> names;
-    auto const result = fs->readdir(path, names, handle);
+    auto const result = fs->readdir(path, names);
     if (0 == result)
     {
         filler(buffer, ".", nullptr, 0, static_cast<fuse_fill_dir_flags>(0));

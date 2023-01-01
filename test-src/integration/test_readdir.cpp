@@ -33,7 +33,7 @@ TEST(readdir, existing_dir)
             return -ENOENT;
         }        
     }));
-    EXPECT_CALL(fs, readdir("/some_dir",_,_)).WillOnce(Invoke([](auto const & path, auto & entries, auto handle) {
+    EXPECT_CALL(fs, readdir("/some_dir",_)).WillOnce(Invoke([](auto const & path, auto & entries) {
         entries.push_back("foo");
         return 0;
     }));
@@ -85,7 +85,7 @@ TEST(readdir, non_existing_dir)
             return -ENOENT;
         }
     }));
-    EXPECT_CALL(fs, readdir("/some_dir",_,_)).Times(0);
+    EXPECT_CALL(fs, readdir("/some_dir",_)).Times(0);
 
     webfuse::fixture fixture(fs);
     auto const path = fixture.get_path() + "/some_dir";

@@ -135,7 +135,7 @@ public:
         return -ENOENT;
     }
 
-    int readdir(std::string const & path, std::vector<std::string> & entries, uint64_t handle) override
+    int readdir(std::string const & path, std::vector<std::string> & entries) override
     {
         auto const full_path = get_full_path(path);
         std::cout << "readdir: " << full_path << std::endl;

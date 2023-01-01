@@ -35,7 +35,7 @@ public:
     int write(std::string const & path, char const * buffer, size_t buffer_size, uint64_t offset, uint64_t handle) override;
 
     int mkdir(std::string const & path, mode_t mode) override;
-    int readdir(std::string const & path, std::vector<std::string> & entries, uint64_t handle) override;
+    int readdir(std::string const & path, std::vector<std::string> & entries) override;
     int rmdir(std::string const & path) override;
 
     int statfs(std::string const & path, struct statvfs * statistivs) override;

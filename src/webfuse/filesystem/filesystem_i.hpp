@@ -42,7 +42,7 @@ public:
     virtual int write(std::string const & path, char const * buffer, size_t buffer_size, uint64_t offset, uint64_t handle) = 0;
 
     virtual int mkdir(std::string const & path, mode_t mode) = 0;
-    virtual int readdir(std::string const & path, std::vector<std::string> & entries, uint64_t handle) = 0;
+    virtual int readdir(std::string const & path, std::vector<std::string> & entries) = 0;
     virtual int rmdir(std::string const & path) = 0;
 
     virtual int statfs(std::string const & path, struct statvfs * statistics) = 0;

@@ -139,7 +139,7 @@ private:
         auto const path = reader.read_str();
         std::vector<std::string> entries;
 
-        auto const result = fs_.readdir(path, entries, static_cast<uint64_t>(-1));
+        auto const result = fs_.readdir(path, entries);
         writer.write_i32(result);
         if (0 == result)
         {

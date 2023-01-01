@@ -364,7 +364,7 @@ int filesystem::mkdir(std::string const & path, mode_t mode)
     }
 }
 
-int filesystem::readdir(std::string const & path, std::vector<std::string> & entries, uint64_t handle)
+int filesystem::readdir(std::string const & path, std::vector<std::string> & entries)
 {
     try
     {
@@ -380,7 +380,7 @@ int filesystem::readdir(std::string const & path, std::vector<std::string> & ent
     }
     catch(...)
     {
-        return fallback.readdir(path, entries, handle);
+        return fallback.readdir(path, entries);
     }
 }
 
