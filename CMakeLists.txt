@@ -74,6 +74,7 @@ if(NOT(WITHOUT_TEST))
         test-src/integration/test_access.cpp
         test-src/integration/test_readdir.cpp
         test-src/integration/test_readlink.cpp
+        test-src/integration/test_symlink.cpp
     )
 
     target_include_directories(integration_tests PRIVATE test-src/integration ${GTEST_INCLUDE_DIRS} ${GMOCK_INCLUDE_DIRS})

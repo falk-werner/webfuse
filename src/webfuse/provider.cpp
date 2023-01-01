@@ -64,6 +64,9 @@ public:
             case request_type::readlink:
                 fs_readlink(reader, writer);
                 break;
+            case request_type::symlink:
+                fs_symlink(reader, writer);
+                break;
             case request_type::readdir:
                 fs_readdir(reader, writer);
                 break;
@@ -97,19 +100,6 @@ private:
         }
     }
 
-    void fs_readdir(messagereader & reader, messagewriter & writer)
-    {
-        auto const path = reader.read_str();
-        std::vector<std::string> entries;
-
-        auto const result = fs_.readdir(path, entries, static_cast<uint64_t>(-1));
-        writer.write_i32(result);
-        if (0 == result)
-        {
-            writer.write_strings(entries);
-        }
-    }
-
     void fs_readlink(messagereader & reader, messagewriter & writer)
     {
         auto const path = reader.read_str();
@@ -120,6 +110,28 @@ private:
         if (0 == result)
         {
             writer.write_str(out);
+        }
+    }
+
+    void fs_symlink(messagereader & reader, messagewriter & writer)
+    {
+        auto const from = reader.read_str();
+        auto const to = reader.read_str();
+
+        auto const result = fs_.symlink(from, to);
+        writer.write_i32(result);
+    }
+
+    void fs_readdir(messagereader & reader, messagewriter & writer)
+    {
+        auto const path = reader.read_str();
+        std::vector<std::string> entries;
+
+        auto const result = fs_.readdir(path, entries, static_cast<uint64_t>(-1));
+        writer.write_i32(result);
+        if (0 == result)
+        {
+            writer.write_strings(entries);
         }
     }
 

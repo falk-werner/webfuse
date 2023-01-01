@@ -2,6 +2,9 @@
 #include "webfuse/test/fixture.hpp"
 #include "webfuse/test/filesystem_mock.hpp"
 
+#include <gtest/gtest.h>
+
+
 using testing::_;
 using testing::Return;
 using testing::Invoke;
