@@ -63,6 +63,7 @@ public:
                 break;
             case request_type::readdir:
                 fs_readdir(reader, writer);
+                break;
             default:
                 std::cout << "unknown request: " << ((int) req_type) << std::endl;
                 break;
