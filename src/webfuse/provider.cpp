@@ -70,6 +70,9 @@ public:
             case request_type::link:
                 fs_link(reader, writer);
                 break;
+            case request_type::rename:
+                fs_rename(reader, writer);
+                break;
             case request_type::readdir:
                 fs_readdir(reader, writer);
                 break;
@@ -131,6 +134,16 @@ private:
         auto const to = reader.read_str();
 
         auto const result = fs_.link(from, to);
+        writer.write_i32(result);
+    }
+
+    void fs_rename(messagereader & reader, messagewriter & writer)
+    {
+        auto const from = reader.read_str();
+        auto const to = reader.read_str();
+        auto const flags = reader.read_u8();
+
+        auto const result = fs_.rename(from, to, flags);
         writer.write_i32(result);
     }
 
