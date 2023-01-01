@@ -130,6 +130,10 @@ static int ws_server_callback(struct lws *wsi, enum lws_callback_reasons reason,
                     int const rc = lws_write(data->connection, raw_data, size, LWS_WRITE_BINARY);
                 }
 
+                if (has_more)
+                {
+                    lws_callback_on_writable(data->connection);
+                }
             }
             break;
         default:
