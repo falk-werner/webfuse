@@ -56,7 +56,6 @@ static int fs_readlink(char const * path, char * buffer, size_t buffer_size)
     if (0 == result)
     {
         snprintf(buffer, buffer_size, "%s", out.c_str());
-        result = strlen(buffer);
     }
 
     return result;
