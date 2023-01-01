@@ -73,6 +73,9 @@ public:
             case request_type::rename:
                 fs_rename(reader, writer);
                 break;
+            case request_type::chmod:
+                fs_chmod(reader, writer);
+                break;
             case request_type::readdir:
                 fs_readdir(reader, writer);
                 break;
@@ -144,6 +147,15 @@ private:
         auto const flags = reader.read_u8();
 
         auto const result = fs_.rename(from, to, flags);
+        writer.write_i32(result);
+    }
+
+    void fs_chmod(messagereader & reader, messagewriter & writer)
+    {
+        auto const path = reader.read_str();
+        auto const mode = reader.read_mode();
+
+        auto const result = fs_.chmod(path, mode);
         writer.write_i32(result);
     }
 
