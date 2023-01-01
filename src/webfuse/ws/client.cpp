@@ -35,7 +35,11 @@ extern "C" int webfuse_client_callback(lws * wsi, lws_callback_reasons reason, v
                 break;
             case LWS_CALLBACK_CLIENT_CONNECTION_ERROR:
                 std::cout << "connection error" << std::endl;
-                // fall-through
+                context->connection = nullptr;
+                context->requests = std::move(std::queue<webfuse::messagewriter>());
+                context->current_message.clear();
+                context->connection_listener(false);
+                break;
             case LWS_CALLBACK_CLIENT_CLOSED:
                 std::cout << "closed" << std::endl;
                 context->connection = nullptr;
