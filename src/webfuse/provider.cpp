@@ -85,6 +85,9 @@ public:
             case request_type::fsync:
                 fs_fsync(reader, writer);
                 break;
+            case request_type::utimens:
+                fs_utimens(reader, writer);
+                break;
             case request_type::create:
                 fs_create(reader, writer);
                 break;
@@ -201,6 +204,18 @@ private:
         auto const handle = reader.read_u64();
 
         auto const result = fs_.fsync(path, is_datasync, handle);
+        writer.write_i32(result);
+    }
+
+    void fs_utimens(messagereader & reader, messagewriter & writer)
+    {
+        auto const path = reader.read_str();
+        struct timespec times[2];
+        reader.read_time(times[0]);
+        reader.read_time(times[1]);
+        auto const handle = reader.read_u64();
+
+        auto const result = fs_.utimens(path, times, handle);
         writer.write_i32(result);
     }
 

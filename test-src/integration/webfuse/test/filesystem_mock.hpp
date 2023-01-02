@@ -24,7 +24,7 @@ public:
     MOCK_METHOD(int, chown, (std::string const & path, uid_t uid, gid_t gid));
     MOCK_METHOD(int, truncate, (std::string const & path, uint64_t size, uint64_t handle));
     MOCK_METHOD(int, fsync, (std::string const & path, bool is_datasync, uint64_t handle));
-    MOCK_METHOD(int, utimens, (std::string const &path, struct timespec tv[2], uint64_t handle)); 
+    MOCK_METHOD(int, utimens, (std::string const &path, struct timespec const tv[2], uint64_t handle)); 
 
     MOCK_METHOD(int, open, (std::string const & path, int flags, uint64_t & handle));
     MOCK_METHOD(int, mknod, (std::string const & path, mode_t mode, dev_t rdev));

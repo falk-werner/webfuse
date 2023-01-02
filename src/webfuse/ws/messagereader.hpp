@@ -40,7 +40,7 @@ public:
     std::string read_bytes();
 
     void read_strings(std::vector<std::string> &entries);
-
+    void read_time(struct timespec &time);
 
 
 private:

@@ -90,7 +90,7 @@ public:
         return -ENOENT;
     }
 
-    int utimens(std::string const &path, struct timespec tv[2], uint64_t handle) override
+    int utimens(std::string const &path, struct timespec const tv[2], uint64_t handle) override
     {
         return -ENOENT;
     }

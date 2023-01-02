@@ -23,7 +23,7 @@ public:
     int chown(std::string const & path, uid_t uid, gid_t gid) override;
     int truncate(std::string const & path, uint64_t size, uint64_t handle) override;
     int fsync(std::string const & path, bool is_datasync, uint64_t handle) override;
-    int utimens(std::string const &path, struct timespec tv[2], uint64_t handle) override; 
+    int utimens(std::string const &path, struct timespec const tv[2], uint64_t handle) override; 
 
     int open(std::string const & path, int flags, uint64_t & handle) override;
     int mknod(std::string const & path, mode_t mode, dev_t rdev) override;

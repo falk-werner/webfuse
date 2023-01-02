@@ -180,5 +180,11 @@ void messagereader::read_strings(std::vector<std::string> &entries)
     } 
 }
 
+void messagereader::read_time(struct timespec &time)
+{
+    time.tv_sec = static_cast<time_t>(read_u64());
+    time.tv_nsec = static_cast<long>(read_u32());
+}
+
 
 }

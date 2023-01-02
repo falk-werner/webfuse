@@ -190,7 +190,7 @@ int filesystem::fsync(std::string const & path, bool is_datasync, uint64_t handl
     }
 }
 
-int filesystem::utimens(std::string const &path, struct timespec tv[2], uint64_t handle)
+int filesystem::utimens(std::string const &path, struct timespec const tv[2], uint64_t handle)
 {
     try
     {

@@ -210,6 +210,13 @@ static int fs_statfs(char const * path, struct statvfs * buffer)
     return fs->statfs(path, buffer);
 }
 
+static int fs_utimes(const char * path, const struct timespec tv[2], struct fuse_file_info * info)
+{    
+    auto * const fs = fs_get_filesystem();
+    auto handle = fs_get_handle(info);
+    return fs->utimens(path, tv, handle);
+}
+
 }
 
 namespace webfuse
@@ -277,6 +284,7 @@ int fuse::run(int argc, char * argv[])
     operations.readdir = fs_readdir;
     operations.rmdir = fs_rmdir;
     operations.statfs = fs_statfs;
+    operations.utimens = fs_utimes;
 
     return fuse_main(argc, argv, &operations, context);
 }
