@@ -29,6 +29,7 @@ public:
     int read_access_mode();
     mode_t read_mode();
 
+    bool read_bool();
     uint8_t read_u8();
     uint32_t read_u32();
     uint64_t read_u64();

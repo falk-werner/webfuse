@@ -83,6 +83,11 @@ mode_t messagereader::read_mode()
     return mode.to_mode();
 }
 
+bool messagereader::read_bool()
+{
+    return (1 == read_u8());
+}
+
 
 uint8_t messagereader::read_u8()
 {

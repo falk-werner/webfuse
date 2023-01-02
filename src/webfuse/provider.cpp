@@ -82,6 +82,15 @@ public:
             case request_type::truncate:
                 fs_truncate(reader, writer);
                 break;
+            case request_type::fsync:
+                fs_fsync(reader, writer);
+                break;
+            case request_type::create:
+                fs_create(reader, writer);
+                break;
+            case request_type::release:
+                fs_release(reader, writer);
+                break;
             case request_type::readdir:
                 fs_readdir(reader, writer);
                 break;
@@ -182,6 +191,39 @@ private:
         auto const handle = reader.read_u64();
 
         auto const result = fs_.truncate(path, size, handle);
+        writer.write_i32(result);
+    }
+
+    void fs_fsync(messagereader & reader, messagewriter & writer)
+    {
+        auto const path = reader.read_str();
+        auto const is_datasync = reader.read_bool();
+        auto const handle = reader.read_u64();
+
+        auto const result = fs_.fsync(path, is_datasync, handle);
+        writer.write_i32(result);
+    }
+
+    void fs_create(messagereader & reader, messagewriter & writer)
+    {
+        auto const path = reader.read_str();
+        auto const mode = reader.read_mode();
+        uint64_t handle = static_cast<uint64_t>(-1);
+
+        auto const result = fs_.create(path, mode, handle);
+        writer.write_i32(result);
+        if (result == 0)
+        {
+            writer.write_u64(handle);
+        }
+    }
+
+    void fs_release(messagereader & reader, messagewriter & writer)
+    {
+        auto const path = reader.read_str();
+        auto const handle = reader.read_u64();
+
+        auto const result = fs_.release(path, handle);
         writer.write_i32(result);
     }
 
