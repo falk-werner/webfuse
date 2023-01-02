@@ -79,6 +79,9 @@ public:
             case request_type::chown:
                 fs_chown(reader, writer);
                 break;
+            case request_type::truncate:
+                fs_truncate(reader, writer);
+                break;
             case request_type::readdir:
                 fs_readdir(reader, writer);
                 break;
@@ -169,6 +172,16 @@ private:
         auto const gid = static_cast<gid_t>(reader.read_u32());
 
         auto const result = fs_.chown(path, uid, gid);
+        writer.write_i32(result);
+    }
+
+    void fs_truncate(messagereader & reader, messagewriter & writer)
+    {
+        auto const path = reader.read_str();
+        auto const size = reader.read_u64();
+        auto const handle = reader.read_u64();
+
+        auto const result = fs_.truncate(path, size, handle);
         writer.write_i32(result);
     }
 
