@@ -12,7 +12,7 @@ tempdir::tempdir()
 
 tempdir::~tempdir()
 {
-    unlink(path.c_str());
+    rmdir(path.c_str());
 }
 
 std::string const & tempdir::name() const
