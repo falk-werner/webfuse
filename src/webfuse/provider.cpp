@@ -100,6 +100,9 @@ public:
             case request_type::release:
                 fs_release(reader, writer);
                 break;
+            case request_type::unlink:
+                fs_unlink(reader, writer);
+                break;
             case request_type::readdir:
                 fs_readdir(reader, writer);
                 break;
@@ -269,6 +272,14 @@ private:
         auto const handle = reader.read_u64();
 
         auto const result = fs_.release(path, handle);
+        writer.write_i32(result);
+    }
+
+    void fs_unlink(messagereader & reader, messagewriter & writer)
+    {
+        auto const path = reader.read_str();
+
+        auto const result = fs_.unlink(path);
         writer.write_i32(result);
     }
 

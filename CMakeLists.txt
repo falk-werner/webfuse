@@ -84,6 +84,7 @@ if(NOT(WITHOUT_TEST))
         test-src/integration/test_utimens.cpp
         test-src/integration/test_open.cpp
         test-src/integration/test_mknod.cpp
+        test-src/integration/test_unlink.cpp
     )
 
     target_include_directories(integration_tests PRIVATE test-src/integration ${GTEST_INCLUDE_DIRS} ${GMOCK_INCLUDE_DIRS})
