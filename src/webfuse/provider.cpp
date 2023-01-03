@@ -91,6 +91,9 @@ public:
             case request_type::open:
                 fs_open(reader, writer);
                 break;
+            case request_type::mknod:
+                fs_mknod(reader, writer);
+                break;
             case request_type::create:
                 fs_create(reader, writer);
                 break;
@@ -234,6 +237,16 @@ private:
         {
             writer.write_u64(handle);
         } 
+    }
+
+    void fs_mknod(messagereader & reader, messagewriter & writer)
+    {
+        auto const path = reader.read_str();
+        auto const mode = reader.read_mode();
+        auto const dev = reader.read_u32();
+
+        auto const result = fs_.mknod(path, mode, dev);
+        writer.write_i32(result);
     }
 
     void fs_create(messagereader & reader, messagewriter & writer)
