@@ -103,6 +103,9 @@ public:
             case request_type::unlink:
                 fs_unlink(reader, writer);
                 break;
+            case request_type::read:
+                fs_read(reader, writer);
+                break;
             case request_type::readdir:
                 fs_readdir(reader, writer);
                 break;
@@ -281,6 +284,23 @@ private:
 
         auto const result = fs_.unlink(path);
         writer.write_i32(result);
+    }
+
+    void fs_read(messagereader & reader, messagewriter & writer)
+    {
+        auto const path = reader.read_str();
+        auto const size = reader.read_u32();
+        auto const offset = reader.read_u64();
+        auto const handle = reader.read_u64();
+
+        std::vector<char> buffer(size);
+
+        auto const result = fs_.read(path, buffer.data(), size, offset, handle);        
+        writer.write_i32(result);
+        if (0 < result)
+        {
+            writer.write_data(buffer.data(), result);
+        }
     }
 
     void fs_readdir(messagereader & reader, messagewriter & writer)
