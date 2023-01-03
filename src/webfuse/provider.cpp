@@ -88,6 +88,9 @@ public:
             case request_type::utimens:
                 fs_utimens(reader, writer);
                 break;
+            case request_type::open:
+                fs_open(reader, writer);
+                break;
             case request_type::create:
                 fs_create(reader, writer);
                 break;
@@ -217,6 +220,20 @@ private:
 
         auto const result = fs_.utimens(path, times, handle);
         writer.write_i32(result);
+    }
+
+    void fs_open(messagereader & reader, messagewriter & writer)
+    {
+        auto const path = reader.read_str();
+        auto const flags = reader.read_openflags();
+        uint64_t handle = static_cast<uint64_t>(-1);
+
+        auto const result = fs_.open(path, flags, handle);
+        writer.write_i32(result);
+        if (result == 0)
+        {
+            writer.write_u64(handle);
+        } 
     }
 
     void fs_create(messagereader & reader, messagewriter & writer)

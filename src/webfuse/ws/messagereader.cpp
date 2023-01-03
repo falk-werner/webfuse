@@ -2,6 +2,7 @@
 #include "webfuse/filesystem/status.hpp"
 #include "webfuse/filesystem/filemode.hpp"
 #include "webfuse/filesystem/accessmode.hpp"
+#include "webfuse/filesystem/openflags.hpp"
 
 #include <stdexcept>
 
@@ -184,6 +185,14 @@ void messagereader::read_time(struct timespec &time)
 {
     time.tv_sec = static_cast<time_t>(read_u64());
     time.tv_nsec = static_cast<long>(read_u32());
+}
+
+int messagereader::read_openflags()
+{
+    auto const value = read_i32();
+    openflags flags(value);
+
+    return flags.to_int();
 }
 
 
