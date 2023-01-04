@@ -109,6 +109,9 @@ public:
             case request_type::write:
                 fs_write(reader, writer);
                 break;
+            case request_type::mkdir:
+                fs_mkdir(reader, writer);
+                break;
             case request_type::readdir:
                 fs_readdir(reader, writer);
                 break;
@@ -314,6 +317,15 @@ private:
         auto const handle = reader.read_u64();
 
         auto const result = fs_.write(path, buffer.c_str(), buffer.size(), offset, handle);        
+        writer.write_i32(result);
+    }
+
+    void fs_mkdir(messagereader & reader, messagewriter & writer)
+    {
+        auto const path = reader.read_str();
+        auto const mode = reader.read_mode();
+
+        auto const result = fs_.mkdir(path, mode);
         writer.write_i32(result);
     }
 
