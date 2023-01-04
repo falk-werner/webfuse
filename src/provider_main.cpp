@@ -1,17 +1,115 @@
 #include "webfuse/provider.hpp"
+#include "webfuse/version.hpp"
 
 #include <unistd.h>
 #include <sys/stat.h>
 #include <dirent.h>
 
+#include <getopt.h>
 #include <csignal>
 #include <iostream>
 
 namespace
 {
 
-static bool shutdown_requested = false;
+enum class command
+{
+    run,
+    show_help,
+    show_version
+};
 
+class context
+{
+public:
+    context(int argc, char* argv[])
+    : base_path(".")
+    , url("")
+    , cmd(command::run)
+    , exit_code()
+    {
+        struct option const long_options[] =
+        {
+            {"path"   , required_argument, nullptr, 'p'},
+            {"url"    , required_argument, nullptr, 'u'},
+            {"version", no_argument      , nullptr, 'v'},
+            {"help"   , no_argument      , nullptr, 'h'},
+            {nullptr  , 0                , nullptr, 0  }
+        };
+
+        optind = 0;
+        opterr = 0;
+        bool finished = false;
+        while (!finished)
+        {
+            int option_index = 0;
+            const int c = getopt_long(argc, argv, "p:u:vh", long_options, &option_index);
+            switch (c)
+            {
+                case -1:
+                    finished = true;
+                    break;
+                case 'p':
+                    base_path = optarg;
+                    break;
+                case 'u':
+                    url = optarg;
+                    break;
+                case 'h':
+                    cmd = command::show_help;
+                    break;
+                case 'v':
+                    cmd = command::show_version;
+                    break;                
+                default:
+                    std::cerr << "error: unknown option" << std::endl;
+                    cmd = command::show_help;
+                    exit_code = EXIT_FAILURE;
+                    finished = true;
+                    break;
+            }
+        }
+
+        if ((cmd == command::run) && (url.empty()))
+        {
+            std::cerr << "error: missing url" << std::endl;
+            cmd = command::show_help;
+            exit_code = EXIT_FAILURE;
+        }
+    }
+
+    std::string base_path;
+    std::string url;
+    command cmd;
+    int exit_code;
+};
+
+void print_usage()
+{
+    std::cout << R"(webfuse2 provider, (c) 2022 by Falk Werner
+expose a local directory via webfuse2
+
+Usage:
+    webfuse-provider -u <url> [-p <path>]
+
+Options:
+    --url, -u       set url of webfuse2 service
+    --path, -p      set path of directory to expose (default: .)
+    --version, -v   print version and quit
+    --help, -h      print this message and quit
+
+Examples:
+    webfuse-provider -u ws://localhost:8080/
+    webfuse-provider -u ws://localhost:8080/ -p /some/directory
+)";
+}
+
+void print_version()
+{
+    std::cout << webfuse::get_version() << std::endl;
+}
+
+static bool shutdown_requested = false;
 void on_signal(int _)
 {
     (void) _;
@@ -186,21 +284,39 @@ private:
 
 int main(int argc, char* argv[])
 {
-    signal(SIGINT, &on_signal);
-    signal(SIGTERM, &on_signal);
+    context ctx(argc, argv);
 
-    filesystem fs(".");
-    webfuse::provider provider(fs);
-    provider.set_connection_listener([](bool connected) {
-        if (!connected)
-        {
-            shutdown_requested = true;
-        }
-    });
-    provider.connect("ws://localhost:8080/");
-    while (!shutdown_requested)
+    switch (ctx.cmd)
     {
-        provider.service();
+        case command::run:
+            {
+                signal(SIGINT, &on_signal);
+                signal(SIGTERM, &on_signal);
+
+                filesystem fs(ctx.base_path);
+                webfuse::provider provider(fs);
+                provider.set_connection_listener([](bool connected) {
+                    if (!connected)
+                    {
+                        shutdown_requested = true;
+                    }
+                });
+                provider.connect(ctx.url);
+                while (!shutdown_requested)
+                {
+                    provider.service();
+                }
+            }
+            break;
+        case command::show_version:
+            print_version();
+            break;
+        case command::show_help:
+            // fall-through
+        default:
+            print_usage();
+            break;
     }
-    return EXIT_SUCCESS;
+
+    return ctx.exit_code;
 }

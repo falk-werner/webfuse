@@ -7,7 +7,10 @@ find_package(PkgConfig REQUIRED)
 pkg_check_modules(FUSE REQUIRED IMPORTED_TARGET fuse3)
 pkg_check_modules(LWS REQUIRED IMPORTED_TARGET libwebsockets)
 
+configure_file(src/webfuse/version.cpp.in version.cpp)
+
 add_library(webfuse_static STATIC
+    ${CMAKE_CURRENT_BINARY_DIR}/version.cpp
     src/webfuse/webfuse.cpp
     src/webfuse/provider.cpp
     src/webfuse/fuse.cpp
