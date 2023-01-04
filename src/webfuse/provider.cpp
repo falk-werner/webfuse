@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <sys/stat.h>
 
+#include <cstring>
 #include <iostream>
 
 namespace webfuse
@@ -117,6 +118,9 @@ public:
                 break;
             case request_type::rmdir:
                 fs_rmdir(reader, writer);
+                break;
+            case request_type::statfs:
+                fs_statfs(reader, writer);
                 break;
             default:
                 std::cout << "unknown request: " << ((int) req_type) << std::endl;
@@ -350,6 +354,20 @@ private:
         if (0 == result)
         {
             writer.write_strings(entries);
+        }
+    }
+
+    void fs_statfs(messagereader & reader, messagewriter & writer)
+    {
+        auto const path = reader.read_str();
+        struct statvfs statistics;
+        memset(reinterpret_cast<void*>(&statistics), 0, sizeof(statistics));
+
+        auto const result = fs_.statfs(path, &statistics);
+        writer.write_i32(result);
+        if (0 == result)
+        {
+            writer.write_statistics(&statistics);
         }
     }
 

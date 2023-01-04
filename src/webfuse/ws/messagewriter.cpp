@@ -190,6 +190,17 @@ void messagewriter::write_time(timespec const & value)
     write_u32(static_cast<uint32_t>(value.tv_nsec));
 }
 
+void messagewriter::write_statistics(struct statvfs const * statistics)
+{
+    write_u64(statistics->f_bsize);
+    write_u64(statistics->f_frsize);
+    write_u64(statistics->f_blocks);
+    write_u64(statistics->f_bfree);
+    write_u64(statistics->f_bavail);
+    write_u64(statistics->f_files);
+    write_u64(statistics->f_ffree);
+    write_u64(statistics->f_namemax);
+}
 
 unsigned char * messagewriter::get_data(size_t &size)
 {

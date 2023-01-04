@@ -5,6 +5,7 @@
 #include "webfuse/response_type.hpp"
 
 #include <sys/stat.h>
+#include <sys/statvfs.h>
 
 #include <cinttypes>
 #include <string>
@@ -45,6 +46,7 @@ public:
     void write_gid(gid_t value);
     void write_openflags(int value);
     void write_time(timespec const & value);
+    void write_statistics(struct statvfs const * statistics);
 
     unsigned char * get_data(size_t &size);
 
