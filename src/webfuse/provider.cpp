@@ -106,6 +106,9 @@ public:
             case request_type::read:
                 fs_read(reader, writer);
                 break;
+            case request_type::write:
+                fs_write(reader, writer);
+                break;
             case request_type::readdir:
                 fs_readdir(reader, writer);
                 break;
@@ -301,6 +304,17 @@ private:
         {
             writer.write_data(buffer.data(), result);
         }
+    }
+
+    void fs_write(messagereader & reader, messagewriter & writer)
+    {
+        auto const path = reader.read_str();
+        auto const buffer = reader.read_bytes();
+        auto const offset = reader.read_u64();
+        auto const handle = reader.read_u64();
+
+        auto const result = fs_.write(path, buffer.c_str(), buffer.size(), offset, handle);        
+        writer.write_i32(result);
     }
 
     void fs_readdir(messagereader & reader, messagewriter & writer)
