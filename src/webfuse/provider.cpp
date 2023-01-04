@@ -115,6 +115,9 @@ public:
             case request_type::readdir:
                 fs_readdir(reader, writer);
                 break;
+            case request_type::rmdir:
+                fs_rmdir(reader, writer);
+                break;
             default:
                 std::cout << "unknown request: " << ((int) req_type) << std::endl;
                 break;
@@ -326,6 +329,14 @@ private:
         auto const mode = reader.read_mode();
 
         auto const result = fs_.mkdir(path, mode);
+        writer.write_i32(result);
+    }
+
+    void fs_rmdir(messagereader & reader, messagewriter & writer)
+    {
+        auto const path = reader.read_str();
+
+        auto const result = fs_.rmdir(path);
         writer.write_i32(result);
     }
 
