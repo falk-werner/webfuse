@@ -13,6 +13,8 @@
 namespace webfuse
 {
 
+constexpr uint64_t const invalid_handle = static_cast<uint64_t>(-1);
+
 class filesystem_i
 {
 public:
