@@ -39,7 +39,7 @@ target_link_libraries(webfuse_static PUBLIC PkgConfig::FUSE PkgConfig::LWS)
 if(NOT(WITHOUT_CLANG_TIDY))
 set_property(
     TARGET webfuse_static
-    PROPERTY CXX_CLANG_TIDY clang-tidy -checks=-*,readability-*,-readability-identifier-length -warnings-as-errors=*)
+    PROPERTY CXX_CLANG_TIDY clang-tidy -checks=readability-*,-readability-identifier-length -warnings-as-errors=*)
 endif()
 
 

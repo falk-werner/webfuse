@@ -45,7 +45,7 @@ void do_receive(void * in, int len, lws* wsi, user_data * data)
         {
             webfuse::messagereader reader(data->current_message);
             uint32_t id = reader.read_u32();
-            uint8_t message_type = reader.read_u8();
+            reader.read_u8(); // read message type: ToDo: use it
 
             std::lock_guard<std::mutex> lock(data->mut);
             auto it = data->pending_responses.find(id);
@@ -132,7 +132,7 @@ static int ws_server_callback(struct lws *wsi, enum lws_callback_reasons reason,
                 {
                     size_t size;
                     unsigned char * raw_data = writer.get_data(size);
-                    int const rc = lws_write(data->connection, raw_data, size, LWS_WRITE_BINARY);
+                    lws_write(data->connection, raw_data, size, LWS_WRITE_BINARY);
                 }
 
                 if (has_more)
@@ -178,7 +178,8 @@ public:
 
         context = lws_create_context(&info);
 
-        lws_vhost * const vhost = lws_create_vhost(context, &info);
+        lws_create_vhost(context, &info);
+        // lws_vhost * const vhost = lws_create_vhost(context, &info);
         // port = lws_get_vhost_port(vhost);
 
 
