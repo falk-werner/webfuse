@@ -47,10 +47,13 @@ messagewriter& messagewriter::operator=(messagewriter && other)
 void messagewriter::set_id(uint32_t value)
 {
     id = value;
+
+    // NOLINTBEGIN(readability-magic-numbers)
     data[LWS_PRE    ] = (id >> 24) & 0xff;
     data[LWS_PRE + 1] = (id >> 16) & 0xff;
     data[LWS_PRE + 2] = (id >>  8) & 0xff;
     data[LWS_PRE + 3] =  id        & 0xff;
+    // NOLINTEND(readability-magic-numbers)
 }
 
 uint32_t messagewriter::get_id() const
@@ -81,16 +84,21 @@ void messagewriter::write_i32(int32_t value)
 void messagewriter::write_u32(uint32_t value)
 {
     auto const offset = data.size(); 
+
+    // NOLINTBEGIN(readability-magic-numbers)
     data.resize(offset + 4);
     data[offset    ] = (value >> 24) & 0xff;
     data[offset + 1] = (value >> 16) & 0xff;
     data[offset + 2] = (value >>  8) & 0xff;
     data[offset + 3] =  value        & 0xff;
+    // NOLINTEND(readability-magic-numbers)
 }
 
 void messagewriter::write_u64(uint64_t value)
 {
-    auto const offset = data.size(); 
+    auto const offset = data.size();
+
+    // NOLINTBEGIN(readability-magic-numbers)
     data.resize(offset + 8);
     data[offset    ] = (value >> 56) & 0xff;
     data[offset + 1] = (value >> 48) & 0xff;
@@ -100,6 +108,7 @@ void messagewriter::write_u64(uint64_t value)
     data[offset + 5] = (value >> 16) & 0xff;
     data[offset + 6] = (value >>  8) & 0xff;
     data[offset + 7] =  value        & 0xff;
+    // NOLINTEND(readability-magic-numbers)
 }
 
 void messagewriter::write_str(std::string const &value)
@@ -116,7 +125,7 @@ void messagewriter::write_data(char const * buffer, size_t size)
     {
         auto const offset = data.size();
         data.resize(offset + effective_size);
-        void * to = reinterpret_cast<void*>(&data.data()[offset]);
+        void * to = reinterpret_cast<void*>(&data[offset]);
         void const * from = reinterpret_cast<void const *>(buffer);
         memcpy(to, from, effective_size);
     }
@@ -205,7 +214,7 @@ void messagewriter::write_statistics(struct statvfs const * statistics)
 unsigned char * messagewriter::get_data(size_t &size)
 {
     size = data.size() - LWS_PRE;
-    void * result = reinterpret_cast<void *>(&data.data()[LWS_PRE]);
+    void * result = reinterpret_cast<void *>(&data[LWS_PRE]);
 
     return reinterpret_cast<unsigned char *>(result);
 }

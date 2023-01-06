@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.10)
 project(webfuse VERSION 2.0.0)
 
+option(WITHOUT_TEST "Disables unit and integration tests" OFF)
+option(WITHOUT_CLANG_TIDY "Disables clang tidy" OFF)
+
 set (CMAKE_CXX_STANDARD 17)
 
 find_package(PkgConfig REQUIRED)
@@ -32,6 +35,13 @@ add_library(webfuse_static STATIC
 
 target_include_directories(webfuse_static PUBLIC src)
 target_link_libraries(webfuse_static PUBLIC PkgConfig::FUSE PkgConfig::LWS)
+
+if(NOT(WITHOUT_CLANG_TIDY))
+set_property(
+    TARGET webfuse_static
+    PROPERTY CXX_CLANG_TIDY clang-tidy -checks=-*,readability-*,-readability-identifier-length -warnings-as-errors=*)
+endif()
+
 
 add_executable(webfuse
     src/main.cpp)

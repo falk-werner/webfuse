@@ -106,7 +106,7 @@ static int fs_truncate(char const * path, off_t size, fuse_file_info * info)
 static int fs_fsync(char const * path, int isdatasync, fuse_file_info * info)
 {
     auto * const fs = fs_get_filesystem();
-    bool const is_datasync = (is_datasync != 0);
+    bool const is_datasync = (isdatasync != 0);
     auto const handle = fs_get_handle(info);
 
     return fs->fsync(path, is_datasync, handle);

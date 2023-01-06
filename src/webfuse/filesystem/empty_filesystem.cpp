@@ -10,10 +10,8 @@ int empty_filesystem::access(std::string const & path, int mode)
     {
         return 0;
     }
-    else
-    {
-        return -ENOENT;
-    }
+
+    return -ENOENT;
 }
 
 int empty_filesystem::getattr(std::string const & path, struct stat * attr)
@@ -22,13 +20,11 @@ int empty_filesystem::getattr(std::string const & path, struct stat * attr)
     {
         attr->st_ino = 1;
         attr->st_nlink = 1;
-        attr->st_mode = S_IFDIR | 0555;
+        attr->st_mode = S_IFDIR | 0555; // NOLINT(readability-magic-numbers)
         return 0;
     }
-    else
-    {
-        return -ENOENT;
-    }
+
+    return -ENOENT;
 }
 
 int empty_filesystem::readlink(std::string const & path, std::string & out)
@@ -121,10 +117,8 @@ int empty_filesystem::readdir(std::string const & path, std::vector<std::string>
     {
         return 0;
     }
-    else
-    {
-        return -ENOENT;
-    }
+
+    return -ENOENT;
 }
 
 int empty_filesystem::rmdir(std::string const & path)

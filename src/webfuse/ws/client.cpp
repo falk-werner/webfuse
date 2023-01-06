@@ -48,7 +48,7 @@ extern "C" int webfuse_client_callback(lws * wsi, lws_callback_reasons reason, v
                 {
                     auto * fragment = reinterpret_cast<char*>(in);
                     context->current_message.append(fragment, length);
-                    if (lws_is_final_fragment(wsi))
+                    if (0 != lws_is_final_fragment(wsi))
                     {
                         try
                         {
@@ -137,7 +137,7 @@ public:
         lws_client_connect_info info;
         memset(reinterpret_cast<void*>(&info), 0, sizeof(lws_client_connect_info));
         info.context = context;
-        info.port = 8081;
+        info.port = 8081;  //NOLINT(readability-magic-numbers)
         info.address = "localhost";
         info.host = "localhost";
         info.path = "/";

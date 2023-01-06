@@ -98,14 +98,13 @@ uint8_t messagereader::read_u8()
         pos++;
         return value;
     }
-    else
-    {
-        throw std::runtime_error("out of bounds");
-    }
+
+    throw std::runtime_error("out of bounds");
 }
 
 uint32_t messagereader::read_u32()
 {
+    // NOLINTBEGIN(readability-magic-numbers)
     if ((pos + 3) < data.size())
     {
         uint32_t value = 
@@ -116,14 +115,14 @@ uint32_t messagereader::read_u32()
         pos += 4;
         return value;
     }
-    else
-    {
-        throw std::runtime_error("out of bounds");
-    }
+    // NOLINTEND(readability-magic-numbers)
+
+    throw std::runtime_error("out of bounds");
 }
 
 uint64_t messagereader::read_u64()
 {
+    // NOLINTBEGIN(readability-magic-numbers)
     if ((pos + 7) < data.size())
     {
         uint32_t value = 
@@ -138,10 +137,9 @@ uint64_t messagereader::read_u64()
         pos += 8;
         return value;
     }
-    else
-    {
-        throw std::runtime_error("out of bounds");
-    }
+    // NOLINTEND(readability-magic-numbers)
+
+    throw std::runtime_error("out of bounds");
 }
 
 
@@ -165,10 +163,8 @@ std::string messagereader::read_bytes()
         pos += size;
         return std::move(value);
     }
-    else
-    {
-        throw std::runtime_error("out of bounds");
-    }
+
+    throw std::runtime_error("out of bounds");
 }
 
 void messagereader::read_strings(std::vector<std::string> &entries)

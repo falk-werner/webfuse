@@ -38,7 +38,7 @@ public:
     int readdir(std::string const & path, std::vector<std::string> & entries) override;
     int rmdir(std::string const & path) override;
 
-    int statfs(std::string const & path, struct statvfs * statistivs) override;
+    int statfs(std::string const & path, struct statvfs * statistics) override;
 };
 
 }

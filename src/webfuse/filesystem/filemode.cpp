@@ -18,7 +18,7 @@ filemode::operator uint32_t() const
 
 filemode filemode::from_mode(mode_t value)
 {
-    uint32_t result = value & 07777;
+    uint32_t result = value & 07777; // NOLINT(readability-magic-numbers)
 
     if (S_ISREG(value) ) { result |= filemode::reg;  }
     if (S_ISDIR(value) ) { result |= filemode::dir;  }
@@ -33,7 +33,7 @@ filemode filemode::from_mode(mode_t value)
 
 mode_t filemode::to_mode() const
 {
-    mode_t result = value_ & 07777;
+    mode_t result = value_ & 07777; // NOLINT(readability-magic-numbers)
 
     if (is_reg() ) { result |= S_IFREG; }
     if (is_dir() ) { result |= S_IFDIR; }

@@ -21,6 +21,8 @@
 namespace
 {
 
+constexpr int64_t const timeout_secs = 10;
+
 struct user_data
 {
     struct lws * connection = nullptr;
@@ -31,6 +33,45 @@ struct user_data
     std::queue<webfuse::messagewriter> requests;
     std::unordered_map<uint32_t, std::promise<webfuse::messagereader>> pending_responses;
 };
+
+
+void do_receive(void * in, int len, lws* wsi, user_data * data)
+{
+    auto * fragment = reinterpret_cast<char*>(in);
+    data->current_message.append(fragment, len);
+    if (0 != lws_is_final_fragment(wsi))
+    {
+        try
+        {
+            webfuse::messagereader reader(data->current_message);
+            uint32_t id = reader.read_u32();
+            uint8_t message_type = reader.read_u8();
+
+            std::lock_guard<std::mutex> lock(data->mut);
+            auto it = data->pending_responses.find(id);
+            if (it != data->pending_responses.end())
+            {
+                it->second.set_value(std::move(reader));
+                data->pending_responses.erase(it);
+            }
+            else
+            {
+                // ToDo: log request not found
+                std::cout << "warning: request not found: id=" << id << std::endl;
+                for(auto const & entry: data->pending_responses)
+                {
+                    std::cout << "\t" << entry.first << std::endl;
+                }
+            }
+        }
+        catch(...)
+        {
+            // ToDo: log invalid message
+            std::cout << "warning: invalid message" << std::endl;
+        }
+    }
+}
+
 
 }
 
@@ -66,43 +107,7 @@ static int ws_server_callback(struct lws *wsi, enum lws_callback_reasons reason,
             }
             break;
         case LWS_CALLBACK_RECEIVE:
-            {
-                auto * fragment = reinterpret_cast<char*>(in);
-                data->current_message.append(fragment, len);
-                if (lws_is_final_fragment(wsi))
-                {
-                    try
-                    {
-                        webfuse::messagereader reader(data->current_message);
-                        uint32_t id = reader.read_u32();
-                        uint8_t message_type = reader.read_u8();
-
-                        std::lock_guard lock(data->mut);
-                        auto it = data->pending_responses.find(id);
-                        if (it != data->pending_responses.end())
-                        {
-                            it->second.set_value(std::move(reader));
-                            data->pending_responses.erase(it);
-                        }
-                        else
-                        {
-                            // ToDo: log request not found
-                            std::cout << "warning: request not found: id=" << id << std::endl;
-                            for(auto const & entry: data->pending_responses)
-                            {
-                                std::cout << "\t" << entry.first << std::endl;
-                            }
-                        }
-                    }
-                    catch(...)
-                    {
-                        // ToDo: log invalid message
-                        std::cout << "warning: invalid message" << std::endl;
-                    }
-                    
-
-                }
-            }
+            do_receive(in, len, wsi, data);
             break;
         case LWS_CALLBACK_SERVER_WRITEABLE:
             {
@@ -111,7 +116,7 @@ static int ws_server_callback(struct lws *wsi, enum lws_callback_reasons reason,
                 bool has_more = false;
 
                 {
-                    std::lock_guard lock(data->mut);
+                    std::lock_guard<std::mutex> lock(data->mut);
                     has_msg = !(data->requests.empty());
                     if (has_msg)
                     {
@@ -181,7 +186,7 @@ public:
             while (!shutdown_requested)
             {
                 {
-                    std::lock_guard lock(data.mut);
+                    std::lock_guard<std::mutex> lock(data.mut);
                     if (!data.requests.empty())
                     {
                         if (nullptr != data.connection)
@@ -264,7 +269,7 @@ messagereader ws_server::perform(messagewriter writer)
         std::promise<messagereader> p;
         f = p.get_future();
 
-        std::lock_guard lock(d->data.mut);
+        std::lock_guard<std::mutex> lock(d->data.mut);
         uint32_t id = d->next_id();
         writer.set_id(id);
         d->data.requests.emplace(std::move(writer));
@@ -272,7 +277,7 @@ messagereader ws_server::perform(messagewriter writer)
     }
 
     lws_cancel_service(d->context);
-    if(std::future_status::timeout == f.wait_for(std::chrono::seconds(10)))
+    if(std::future_status::timeout == f.wait_for(std::chrono::seconds(timeout_secs)))
     {
         throw std::runtime_error("timeout");
     }

@@ -6,7 +6,7 @@
 namespace webfuse
 {
 
-int app::run(int argc, char * argv[])
+int app::run(int argc, char * argv[]) // NOLINT(readability-convert-member-functions-to-static)
 {
     ws_config config;
     ws_server server(config);
