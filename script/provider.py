@@ -268,7 +268,7 @@ class FilesystemProvider:
             0x13: FilesystemProvider.readdir,
             0x14: FilesystemProvider.rmdir,
             0x15: FilesystemProvider.statfs,
-            0x15: FilesystemProvider.utimens,
+            0x16: FilesystemProvider.utimens,
         }
     
     async def run(self):
