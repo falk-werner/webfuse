@@ -2,34 +2,38 @@
 
 ## Scope
 
-This document describes the webfuse 2 communication protocol. The protocol is used to transfer messages between a `webfuse2 service` and a `webfuse2 provider`. In contrast to `legacy webfuse`, which is based on `JSON RPC` the `webfuse2 protocol` is a binary protocol.
+This document describes the webfuse 2 communication protocol. The protocol is used to transfer messages between a `webfuse service` and a `webfuse provider`. In contrast to `legacy webfuse`, which is based on `JSON RPC` the `webfuse2 protocol` is a binary protocol.
 
 ## Definitions
 
-### Webfuse2 Service
+### Webfuse Service
 
-A `webfuse2 service` is both,
-- a [websocket](https://en.wikipedia.org/wiki/WebSocket) service providing the `webfuse2` protocol
+A `webfuse service` is both,
+- a [websocket](https://en.wikipedia.org/wiki/WebSocket) service providing the `webfuse` protocol
 - a [fuse](https://github.com/libfuse/libfuse) filesystem attached to a local mountpoint
 
-The `webfuse2 service` awaits incoming connections from a `webfuse2 provider`. Once connected, it communicates all the filesystem requests originated by the `libfuse` to the connected `webfuse2 provider` using the `websocket`-based `webfuse2 protocol`.
+The `webfuse service` awaits incoming connections from a `webfuse provider`. Once connected, it communicates all the filesystem requests originated by the `libfuse` to the connected `webfuse provider` using the `websocket`-based `webfuse protocol`.
 
-By doing so, `webfuse2` allows to inject a filesystem to a remote device.
+By doing so, `webfuse` allows to inject a filesystem to a remote device.
 
-### Webfuse2 Provider
+### Webfuse Provider
 
-A `webfuse2 provider` provides a filesystem to a remote device using the `websocket`-based `webfuse2 protocol`. Therefore, a `webfuse2 provider` implements a `websocket` client.
+A `webfuse provider` provides a filesystem to a remote device using the `websocket`-based `webfuse protocol`. Therefore, a `webfuse provider` implements a `websocket` client.
+
+## Websocket protocol name
+
+The webfuse2 protocol uses the following websocket protocol name: `webfuse2`.
 
 ## Message exchange
 
 Once connected, the `webfuse2 protocol` implements a strict request-response scheme, where
-- all requests are send by the `webfuse2 service`,
+- all requests are send by the `webfuse service`,
 - all requests require a response and
-- all responses are send by the `webfuse2 provider`
+- all responses are send by the `webfuse provider`
 
-Note that this communication is reversed the typical client-server-communication scheme. In `webfuse2` the `webfuse2 serive` (server) sends all the requests and the `webfuse provider` (client) sends the responses.
+Note that this communication is reversed the typical client-server-communication scheme. In `webfuse` the `webfuse service` (server) sends all the requests and the `webfuse provider` (client) sends the responses.
 
-For message transfer, the [websocket](https://en.wikipedia.org/wiki/WebSocket) protocol is used. All messages are in binary form, plain text messages are never used by the `webfuse2 protocol`.
+For message transfer, the [websocket](https://en.wikipedia.org/wiki/WebSocket) protocol is used. All messages are in binary form, plain text messages are never used by the `webfuse protocol`.
 
 
 ## Endianness
@@ -259,27 +263,27 @@ _Note that the following numbers are in `octal` notation._
 | type    | u8   | Type of the message |
 | payload | u8[] | Payload according to the message type |
 
-The `id` is just a number without any meaning for the `webfuse2 provider`. It is set by the `webfuse2 service` of a request and is copied by the `webfuse2 provider` to the response. A `webfuse2 service` implementation might choose to keep track on pending requests using the `id`.
+The `id` is just a number without any meaning for the `webfuse provider`. It is set by the `webfuse service` of a request and is copied by the `webfuse provider` to the response. A `webfuse service` implementation might choose to keep track on pending requests using the `id`.
 
 ### Erroneous Responses
 
-Most responses contain a `result` encoding the status of the operation. While successful responses may contain additional data, erroneous responses must not be decoded by a `webfuse2 service` implementation beyond the `result` value.
+Most responses contain a `result` encoding the status of the operation. While successful responses may contain additional data, erroneous responses must not be decoded by a `webfuse service` implementation beyond the `result` value.
 
 ### Unknown requests
 
-There are two reserved message types in `webfuse2`:
+There are two reserved message types:
 - **0x00:** Unknown request
 - **0x80:** Unknown response
 
-A `webfuse2 service` may send a request of type `unknown request` for conformance testing reasons.
+A `webfuse service` may send a request of type `unknown request` for conformance testing reasons.
 
-Since each request requires a response, a `webfuse2 provider` must respond to any unknown requests with a message of `unknown response` type. This allows to add new request types in future.
+Since each request requires a response, a `webfuse provider` must respond to any unknown requests with a message of `unknown response` type. This allows to add new request types in future.
 
 ### Accept additional data in requests
 
-Both, a `webfuse2 provider` and a `webfuse service` must accept messages that contain more data than specified. This allows to add optional fields to existing requests and / or responses in future.
+Both, a `webfuse provider` and a `webfuse service` must accept messages that contain more data than specified. This allows to add optional fields to existing requests and / or responses in future.
 
-_Note there are no optional fields in the current revision of the `webfuse2 protocol`.
+_Note there are no optional fields in the current revision of the `webfuse2 protocol` yet._
 
 ### Message Types
 
@@ -312,7 +316,7 @@ _Note that the following numbers are in `hexadecimal` notation._
 
 ## Methods
 
-Since `webfuse2` aims to communicate the `libfuse API` over a `websocket` connection, `webfuse2` methods are tightly connected to [fuse operations](https://libfuse.github.io/doxygen/structfuse__operations.html) which itself have a tight connection to `posix filesystem operations`. Therefore, additional information about most `webfuse2` operations can be found in the [fuse operations documentation](https://libfuse.github.io/doxygen/structfuse__operations.html) and / or the [man pages](https://man7.org/index.html).
+Since `webfuse` aims to communicate the `libfuse API` over a `websocket` connection, `webfuse` methods are tightly connected to [fuse operations](https://libfuse.github.io/doxygen/structfuse__operations.html) which itself have a tight connection to `posix filesystem operations`. Therefore, additional information about most `webfuse` operations can be found in the [fuse operations documentation](https://libfuse.github.io/doxygen/structfuse__operations.html) and / or the [man pages](https://man7.org/index.html).
 
 ### access
 

@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 project(webfuse VERSION 2.0.0)
 
+option(WITHOUT_PROVIDER "Disabled build of webfuse provider" OFF)
 option(WITHOUT_TEST "Disables unit and integration tests" OFF)
 option(WITHOUT_CLANG_TIDY "Disables clang tidy" OFF)
 
@@ -43,17 +44,16 @@ set_property(
 endif()
 
 
-add_executable(webfuse
-    src/main.cpp)
-
+add_executable(webfuse src/main.cpp)
 target_link_libraries(webfuse PRIVATE webfuse_static)
+install(TARGETS webfuse DESTINATION bin)
+
 
 if(NOT(WITHOUT_PROVIDER))
 
-add_executable(webfuse_provider
-    src/provider_main.cpp)
-
+add_executable(webfuse_provider src/provider_main.cpp)
 target_link_libraries(webfuse_provider PRIVATE webfuse_static)
+install(TARGETS webfuse_provider DESTINATION bin)
 
 endif()
 
