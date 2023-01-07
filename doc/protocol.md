@@ -1,4 +1,4 @@
-# Webfuse 2 Protocol
+# Webfuse2 Protocol
 
 ## Scope
 
@@ -188,6 +188,7 @@ _Note that the following numbers are in `octal` notation._
 | Data Type  | Description           |
 | ---------- | --------------------- |
 | string     | UTF-8 string          |
+| strings    | list of strings       |
 | bytes      | array of bytes        |
 | timestamp  | date and time         |
 | attributes | file attributes       |
@@ -199,6 +200,13 @@ _Note that the following numbers are in `octal` notation._
 | ----- | --------- | ----------------------------- |
 | size  | u32       | length of the string in bytes |
 | data  | u8[]      | string data (UTF-8)           |
+
+#### strings
+
+| Field | Data Type | Description                       |
+| ----- | --------- | --------------------------------- |
+| size  | u32       | count of the elements in the list |
+| data  | string[]  | strings                           |
 
 #### bytes
 
@@ -232,6 +240,17 @@ _Note that the following numbers are in `octal` notation._
 
 #### statistics
 
+| Field  | Data Type  | Description                |
+| ------ | ---------- | -------------------------- |
+| bsize  | u64        | Filesystem block size      |
+| frsize | u64        | Fragment size              |
+| blocks | u64        | Size of the filesystem if `frsize` units |
+| bfree  | u64        | Number of free blocks      |
+| bavail | u64        | Number of free blocks for unprivileged users |
+| files  | u64        | Number of inodes           |
+| ffree  | u64        | Number of free inodes      |
+| namemax | u64       | Maximum filename length    |
+
 ## Messages
 
 | Field   | Type | Descripton |
@@ -245,6 +264,22 @@ The `id` is just a number without any meaning for the `webfuse2 provider`. It is
 ### Erroneous Responses
 
 Most responses contain a `result` encoding the status of the operation. While successful responses may contain additional data, erroneous responses must not be decoded by a `webfuse2 service` implementation beyond the `result` value.
+
+### Unknown requests
+
+There are two reserved message types in `webfuse2`:
+- **0x00:** Unknown request
+- **0x80:** Unknown response
+
+A `webfuse2 service` may send a request of type `unknown request` for conformance testing reasons.
+
+Since each request requires a response, a `webfuse2 provider` must respond to any unknown requests with a message of `unknown response` type. This allows to add new request types in future.
+
+### Accept additional data in requests
+
+Both, a `webfuse2 provider` and a `webfuse service` must accept messages that contain more data than specified. This allows to add optional fields to existing requests and / or responses in future.
+
+_Note there are no optional fields in the current revision of the `webfuse2 protocol`.
 
 ### Message Types
 
@@ -631,10 +666,14 @@ Read from a file description (see [man read(2)](https://man7.org/linux/man-pages
 | ------ | --------- | ----------- |
 | id     | u32       | message id |
 | type   | u8        | message type (0x90) |
-| result | result    | operation status |
+| result | result    | amount of byte read or error code |
 | data   | bytes     | requested data |
 
+_Note that results returns the amount of bytes read on success._
+
 ### write
+
+Write to a file (see [man write(2)](https://man7.org/linux/man-pages/man2/write.2.html), [man pread(2)](https://man7.org/linux/man-pages/man2/pread.2.html)).
 
 #### Request
 
@@ -642,6 +681,9 @@ Read from a file description (see [man read(2)](https://man7.org/linux/man-pages
 | ------ | --------- | ----------- |
 | id     | u32       | message id |
 | type   | u8        | message type (0x17) |
+| data   | bytes     | data to write |
+| offset | u64       | offset to write to |
+| handle | handle (u64) | handle of the file |
 
 #### Response
 
@@ -649,9 +691,13 @@ Read from a file description (see [man read(2)](https://man7.org/linux/man-pages
 | ------ | --------- | ----------- |
 | id     | u32       | message id |
 | type   | u8        | message type (0x91) |
-| result | result    | operation status |
+| result | result    | amount of bytes written or error code |
+
+_Note that results returns the amount of bytes written on success._
 
 ### mkdir
+
+Create a directory (see [man mkdir(2)](https://man7.org/linux/man-pages/man2/mkdir.2.html)).
 
 #### Request
 
@@ -659,6 +705,8 @@ Read from a file description (see [man read(2)](https://man7.org/linux/man-pages
 | ------ | --------- | ----------- |
 | id     | u32       | message id |
 | type   | u8        | message type (0x12) |
+| path   | string    | path of the directory |
+| mode   | mode (u32) | directory permissions |
 
 #### Response
 
@@ -670,12 +718,15 @@ Read from a file description (see [man read(2)](https://man7.org/linux/man-pages
 
 ### readdir
 
+Reads the contents of a directory.
+
 #### Request
 
 | Field  | Data Type | Description |
 | ------ | --------- | ----------- |
 | id     | u32       | message id |
 | type   | u8        | message type (0x13) |
+| path   | string    | path of the directory |
 
 #### Response
 
@@ -684,8 +735,11 @@ Read from a file description (see [man read(2)](https://man7.org/linux/man-pages
 | id     | u32       | message id |
 | type   | u8        | message type (0x93) |
 | result | result    | operation status |
+| items  | strings   | names of the directory entries |
 
 ### rmdir
+
+Delete a directory (see [man rmdir(2)](https://man7.org/linux/man-pages/man2/rmdir.2.html)).
 
 #### Request
 
@@ -693,6 +747,7 @@ Read from a file description (see [man read(2)](https://man7.org/linux/man-pages
 | ------ | --------- | ----------- |
 | id     | u32       | message id |
 | type   | u8        | message type (0x14) |
+| path   | string    | path of the directory |
 
 #### Response
 
@@ -704,12 +759,15 @@ Read from a file description (see [man read(2)](https://man7.org/linux/man-pages
 
 ### statfs
 
+Get filesystem statistics (see [man statvfs(3)](https://man7.org/linux/man-pages/man3/statvfs.3.html)).
+
 #### Request
 
 | Field  | Data Type | Description |
 | ------ | --------- | ----------- |
 | id     | u32       | message id |
 | type   | u8        | message type (0x15) |
+| path   | string    | path of the file |
 
 #### Response
 
@@ -718,6 +776,7 @@ Read from a file description (see [man read(2)](https://man7.org/linux/man-pages
 | id     | u32       | message id |
 | type   | u8        | message type (0x95) |
 | result | result    | operation status |
+| statistics | statistics | filesystem statistics |
 
 ### utimens
 
@@ -752,7 +811,8 @@ _Note that handle might be invalid (-1), even if the file is open._
 service  -> provider:
     00 00 00 01 # message id   = 1
     02          # message type = getattr request
-    01 '/'      # path         = "/"
+    00 00 00 01 # path.size    = 1
+    '/'         # path         = "/"
 
 provider -> service:
     00 00 00 01              # message id        = 1
@@ -781,10 +841,48 @@ _Note that attributs are skipped in case of an error._
 service  -> provider:
     00 00 00 01 # message id   = 1
     02          # message type = getattr request
-    04 "/foo"   # path         = "/foo"
+    00 00 00 04 # path.size    = 4
+    "/foo"      # path         = "/foo"
 
 provider -> service:
     00 00 00 01              # message id        = 1
     82                       # message type      = getattr response
     ff ff ff fe              # result            = -2 (ENOENT)
+````
+
+### List directory contents
+
+_Note that '.' and '..' should not be included in the response._
+
+````
+service -> provider:
+    00 00 00 02 # message id   = 2
+    13          # message type = readdir request
+    00 00 00 04 # path.size    = 4
+    '/dir'      # path         = "/dir"
+
+provider -> service:
+    00 00 00 02 # message id    = 2
+    93          # message type  = readdir response
+    00 00 00 00 # result        = 0 (OK)
+    00 00 00 03 # items.size    = 3
+    00 00 00 03 # items[0].size = 3
+    "foo"       # items[0]      = "foo"
+    00 00 00 03 # items[0].size = 3
+    "bar"       # items[0]      = "bar"
+    00 00 00 03 # items[0].size = 3
+    "baz"       # items[0]      = "baz"
+````
+
+### Unknown request
+
+````
+service -> provider:
+    00 00 00 23 # message id   = 0x23
+    42          # message type = ??? (not specified yet)
+    ...         # some more data
+
+provider -> service:
+    00 00 00 23 # message id   = 0x23
+    80          # message type = unknown response
 ````
