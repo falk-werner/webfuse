@@ -1,5 +1,4 @@
-[![Build Status](https://travis-ci.org/falk-werner/webfuse.svg?branch=master)](https://travis-ci.org/falk-werner/webfuse)
-[![codecov](https://codecov.io/gh/falk-werner/webfuse/branch/master/graph/badge.svg)](https://codecov.io/gh/falk-werner/webfuse)
+[![build](https://github.com/falk-werner/webfuse/actions/workflows/build.yml/badge.svg)](https://github.com/falk-werner/webfuse/actions/workflows/build.yml)
 
 # webfuse
 
