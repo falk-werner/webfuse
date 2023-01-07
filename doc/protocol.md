@@ -277,7 +277,11 @@ _Note that the following numbers are in `hexadecimal` notation._
 
 ## Methods
 
+Since `webfuse2` aims to communicate the `libfuse API` over a `websocket` connection, `webfuse2` methods are tightly connected to [fuse operations](https://libfuse.github.io/doxygen/structfuse__operations.html) which itself have a tight connection to `posix filesystem operations`. Therefore, additional information about most `webfuse2` operations can be found in the [fuse operations documentation](https://libfuse.github.io/doxygen/structfuse__operations.html) and / or the [man pages](https://man7.org/index.html).
+
 ### access
+
+Checks the user's permissions for a file (see [man access(2)](https://man7.org/linux/man-pages/man2/access.2.html)).
 
 #### Request
 
@@ -285,8 +289,8 @@ _Note that the following numbers are in `hexadecimal` notation._
 | ----- | ---------------- | ----------- |
 | id    | u32              | message id  |
 | type  | u8               | message type (0x01) |
-| path  | string           | |
-| mode  | access_mode (i8) |
+| path  | string           | path of file to check |
+| mode  | access_mode (i8) | access mode to check |
 
 #### Response
 
@@ -298,258 +302,337 @@ _Note that the following numbers are in `hexadecimal` notation._
 
 ### getattr
 
+Retrieve file attributes (see [man getattr(2)](https://man7.org/linux/man-pages/man2/getxattr.2.html)).
+
 #### Request
 
 | Field  | Data Type | Description |
 | ------ | --------- | ----------- |
 | id     | u32       | message id |
-| type   | u8        | message type (0x81) |
+| type   | u8        | message type (0x02) |
+| path   | string    | path |
+
 
 #### Response
 
-| Field  | Data Type | Description |
-| ------ | --------- | ----------- |
-| id     | u32       | message id |
-| type   | u8        | message type (0x81) |
-| result | result    | operation status |
+| Field     | Data Type  | Description |
+| --------- | ---------- | ----------- |
+| id        | u32        | message id |
+| type      | u8         | message type (0x82) |
+| result    | result     | operation status |
+| attibutes | attributes | attributes of file |
 
 ### readlink
 
+Read value of a symbolik link (see [man readlink(2)](https://man7.org/linux/man-pages/man2/readlink.2.html)).
+
 #### Request
 
 | Field  | Data Type | Description |
 | ------ | --------- | ----------- |
-| id     | u32       | message id |
-| type   | u8        | message type (0x81) |
+| id     | u32       | message id  |
+| type   | u8        | message type (0x03) |
+| path   | string    | path of link |
+
 
 #### Response
 
-| Field  | Data Type | Description |
-| ------ | --------- | ----------- |
-| id     | u32       | message id |
-| type   | u8        | message type (0x81) |
-| result | result    | operation status |
+| Field    | Data Type | Description |
+| -------- | --------- | ----------- |
+| id       | u32       | message id |
+| type     | u8        | message type (0x83) |
+| result   | result    | operation status |
+| resolved | string    | resolved path |
 
 ### symlink
 
+Make a new name of a file (see [man symlink(2)](https://man7.org/linux/man-pages/man2/symlink.2.html)).
+
 #### Request
 
-| Field  | Data Type | Description |
-| ------ | --------- | ----------- |
-| id     | u32       | message id |
-| type   | u8        | message type (0x81) |
+| Field    | Data Type | Description |
+| -------- | --------- | ----------- |
+| id       | u32       | message id |
+| type     | u8        | message type (0x04) |
+| target   | string    | target of link |
+| linkpath | string    | name of the link |
 
 #### Response
 
 | Field  | Data Type | Description |
 | ------ | --------- | ----------- |
 | id     | u32       | message id |
-| type   | u8        | message type (0x81) |
+| type   | u8        | message type (0x84) |
 | result | result    | operation status |
 
 ### link
 
+Make a new name for a file (see [man link(2)](https://man7.org/linux/man-pages/man2/link.2.html)).
+
 #### Request
 
-| Field  | Data Type | Description |
-| ------ | --------- | ----------- |
-| id     | u32       | message id |
-| type   | u8        | message type (0x81) |
+| Field    | Data Type | Description |
+| -------- | --------- | ----------- |
+| id       | u32       | message id |
+| type     | u8        | message type (0x05) |
+| old_path | string    | path of the existing file |
+| new_path | string    | new name of the file |
 
 #### Response
 
 | Field  | Data Type | Description |
 | ------ | --------- | ----------- |
 | id     | u32       | message id |
-| type   | u8        | message type (0x81) |
+| type   | u8        | message type (0x85) |
 | result | result    | operation status |
 
 ### rename
 
+Change the name of a file (see [man rename(2)](https://man7.org/linux/man-pages/man2/rename.2.html)).
+
 #### Request
 
-| Field  | Data Type | Description |
-| ------ | --------- | ----------- |
-| id     | u32       | message id |
-| type   | u8        | message type (0x81) |
+| Field    | Data Type | Description |
+| -------- | --------- | ----------- |
+| id       | u32       | message id |
+| type     | u8        | message type (0x06) |
+| old_path | string    | old name of the file |
+| new_path | string    | new name of the file |
+| flags    | rename_flags (u8) | flags to control the rename operation |
+
+The following `flags` are defined:
+- **0x00:** move the file from `old_path` to `new_path`
+- **0x01 (RENAME_NOREPLACE):** do not override `new_path`  
+  This results in an error, when `new_path` already exists.
+- **0x02 (RENAME_EXCHANGE):** atomically exchange the files
 
 #### Response
 
 | Field  | Data Type | Description |
 | ------ | --------- | ----------- |
 | id     | u32       | message id |
-| type   | u8        | message type (0x81) |
+| type   | u8        | message type (0x86) |
 | result | result    | operation status |
 
 ### chmod
 
+Change permissions of a file (see [man chmod(2)](https://man7.org/linux/man-pages/man2/chmod.2.html)).
+
 #### Request
 
-| Field  | Data Type | Description |
-| ------ | --------- | ----------- |
-| id     | u32       | message id |
-| type   | u8        | message type (0x81) |
+| Field  | Data Type  | Description |
+| ------ | ---------- | ----------- |
+| id     | u32        | message id |
+| type   | u8         | message type (0x07) |
+| path   | string     | path of the file |
+| mode   | mode (u32) | new file permissions |
 
 #### Response
 
 | Field  | Data Type | Description |
 | ------ | --------- | ----------- |
 | id     | u32       | message id |
-| type   | u8        | message type (0x81) |
+| type   | u8        | message type (0x87) |
 | result | result    | operation status |
 
 ### chown
 
+Change ownership of a file (see [man chown(2)](https://man7.org/linux/man-pages/man2/chown.2.html)).
+
 #### Request
 
 | Field  | Data Type | Description |
 | ------ | --------- | ----------- |
 | id     | u32       | message id |
-| type   | u8        | message type (0x81) |
+| type   | u8        | message type (0x08) |
+| path   | string    | path of the file |
+| uid    | uid (u32) | user id of the new owner |
+| gid    | gid (u32) | group id of the new owning group |
 
 #### Response
 
 | Field  | Data Type | Description |
 | ------ | --------- | ----------- |
 | id     | u32       | message id |
-| type   | u8        | message type (0x81) |
+| type   | u8        | message type (0x88) |
 | result | result    | operation status |
 
 ### truncate
 
+Truncate a file to a specified length (see [man truncate(2)](https://man7.org/linux/man-pages/man2/truncate64.2.html)).
+
 #### Request
 
-| Field  | Data Type | Description |
-| ------ | --------- | ----------- |
-| id     | u32       | message id |
-| type   | u8        | message type (0x81) |
+| Field  | Data Type    | Description |
+| ------ | ------------ | ----------- |
+| id     | u32          | message id |
+| type   | u8           | message type (0x09) |
+| path   | string       | path of the file |
+| size   | u64          | new file size |
+| handle | handle (u64) | handle of the file |
+
+_Note that handle might be invalid (-1), even if the file is open._
 
 #### Response
 
 | Field  | Data Type | Description |
 | ------ | --------- | ----------- |
 | id     | u32       | message id |
-| type   | u8        | message type (0x81) |
+| type   | u8        | message type (0x89) |
 | result | result    | operation status |
 
 ### fsync
 
+Sychronize a file's in-core state with storage device (see [man fsync(2)](https://man7.org/linux/man-pages/man2/fsync.2.html)).
+
 #### Request
 
 | Field  | Data Type | Description |
 | ------ | --------- | ----------- |
 | id     | u32       | message id |
-| type   | u8        | message type (0x81) |
+| type   | u8        | message type (0x0a) |
+| path   | string    | path of the file |
+| is_datasync | bool | if true, sync only user data |
+| handle | handle (u64) | handle of the file |
 
 #### Response
 
 | Field  | Data Type | Description |
 | ------ | --------- | ----------- |
 | id     | u32       | message id |
-| type   | u8        | message type (0x81) |
+| type   | u8        | message type (0x8a) |
 | result | result    | operation status |
 
 ### open
 
+Open and possibly create a file ([man open(2)](https://man7.org/linux/man-pages/man2/open.2.html)).
+
 #### Request
 
 | Field  | Data Type | Description |
 | ------ | --------- | ----------- |
 | id     | u32       | message id |
-| type   | u8        | message type (0x81) |
+| type   | u8        | message type (0x0b) |
+| path   | string    | path of the file |
+| flags  | open_flags (i32) | flags |
 
 #### Response
 
 | Field  | Data Type | Description |
 | ------ | --------- | ----------- |
 | id     | u32       | message id |
-| type   | u8        | message type (0x81) |
+| type   | u8        | message type (0x8b) |
 | result | result    | operation status |
+| handle | handle (u64) | handle of the file |
 
 ### mknod
 
+Create a special or ordinary file (see [man mknod(2)](https://man7.org/linux/man-pages/man2/mknod.2.html)).
+
 #### Request
 
 | Field  | Data Type | Description |
 | ------ | --------- | ----------- |
 | id     | u32       | message id |
-| type   | u8        | message type (0x81) |
+| type   | u8        | message type (0x0c) |
+| path   | string    | path of the file |
+| mode   | mode (u32) | mode of the file |
+| dev    | dev (64)  | device type |
 
 #### Response
 
 | Field  | Data Type | Description |
 | ------ | --------- | ----------- |
 | id     | u32       | message id |
-| type   | u8        | message type (0x81) |
+| type   | u8        | message type (0x8c) |
 | result | result    | operation status |
 
 ### create
 
+Create a new file or rewrite an existing one (see [man creat(3p)](https://man7.org/linux/man-pages/man3/creat.3p.html)).
+
 #### Request
 
 | Field  | Data Type | Description |
 | ------ | --------- | ----------- |
 | id     | u32       | message id |
-| type   | u8        | message type (0x81) |
+| type   | u8        | message type (0x0d) |
+| path   | string    | path of the file |
+| mode   | mode (u32) | mode of the file |
 
 #### Response
 
 | Field  | Data Type | Description |
 | ------ | --------- | ----------- |
 | id     | u32       | message id |
-| type   | u8        | message type (0x81) |
+| type   | u8        | message type (0x8d) |
 | result | result    | operation status |
+| handle | handle (u64) | handle of the file |
 
 ### release
 
+Releases a file handle (see [man close(2)](https://man7.org/linux/man-pages/man2/close.2.html)).
+
 #### Request
 
 | Field  | Data Type | Description |
 | ------ | --------- | ----------- |
 | id     | u32       | message id |
-| type   | u8        | message type (0x81) |
+| type   | u8        | message type (0x0e) |
+| path   | string    | path of the file |
+| handle | handle (u64) | handle of the file |
 
 #### Response
 
 | Field  | Data Type | Description |
 | ------ | --------- | ----------- |
 | id     | u32       | message id |
-| type   | u8        | message type (0x81) |
+| type   | u8        | message type (0x8e) |
 | result | result    | operation status |
 
 ### unlink
 
+Delete a name and possibly the file it refers to ([man unlink(2)](https://man7.org/linux/man-pages/man2/unlink.2.html)).
+
 #### Request
 
 | Field  | Data Type | Description |
 | ------ | --------- | ----------- |
 | id     | u32       | message id |
-| type   | u8        | message type (0x81) |
+| type   | u8        | message type (0x0f) |
+| path   | string    | path of the file |
 
 #### Response
 
 | Field  | Data Type | Description |
 | ------ | --------- | ----------- |
 | id     | u32       | message id |
-| type   | u8        | message type (0x81) |
+| type   | u8        | message type (0x8f) |
 | result | result    | operation status |
 
 ### read
 
+Read from a file description (see [man read(2)](https://man7.org/linux/man-pages/man2/read.2.html), [man pread(2)](https://man7.org/linux/man-pages/man2/pread.2.html)).
+
 #### Request
 
 | Field  | Data Type | Description |
 | ------ | --------- | ----------- |
 | id     | u32       | message id |
-| type   | u8        | message type (0x81) |
+| type   | u8        | message type (0x10) |
+| path   | string    | path of the file |
+| buffer_size | u32  | max. amount of bytes requested |
+| offset | u64       | offset of the file |
+| handle | handle (u64) | handle of the file |
 
 #### Response
 
 | Field  | Data Type | Description |
 | ------ | --------- | ----------- |
 | id     | u32       | message id |
-| type   | u8        | message type (0x81) |
+| type   | u8        | message type (0x90) |
 | result | result    | operation status |
+| data   | bytes     | requested data |
 
 ### write
 
@@ -558,14 +641,14 @@ _Note that the following numbers are in `hexadecimal` notation._
 | Field  | Data Type | Description |
 | ------ | --------- | ----------- |
 | id     | u32       | message id |
-| type   | u8        | message type (0x81) |
+| type   | u8        | message type (0x17) |
 
 #### Response
 
 | Field  | Data Type | Description |
 | ------ | --------- | ----------- |
 | id     | u32       | message id |
-| type   | u8        | message type (0x81) |
+| type   | u8        | message type (0x91) |
 | result | result    | operation status |
 
 ### mkdir
@@ -575,14 +658,14 @@ _Note that the following numbers are in `hexadecimal` notation._
 | Field  | Data Type | Description |
 | ------ | --------- | ----------- |
 | id     | u32       | message id |
-| type   | u8        | message type (0x81) |
+| type   | u8        | message type (0x12) |
 
 #### Response
 
 | Field  | Data Type | Description |
 | ------ | --------- | ----------- |
 | id     | u32       | message id |
-| type   | u8        | message type (0x81) |
+| type   | u8        | message type (0x92) |
 | result | result    | operation status |
 
 ### readdir
@@ -592,14 +675,14 @@ _Note that the following numbers are in `hexadecimal` notation._
 | Field  | Data Type | Description |
 | ------ | --------- | ----------- |
 | id     | u32       | message id |
-| type   | u8        | message type (0x81) |
+| type   | u8        | message type (0x13) |
 
 #### Response
 
 | Field  | Data Type | Description |
 | ------ | --------- | ----------- |
 | id     | u32       | message id |
-| type   | u8        | message type (0x81) |
+| type   | u8        | message type (0x93) |
 | result | result    | operation status |
 
 ### rmdir
@@ -609,14 +692,14 @@ _Note that the following numbers are in `hexadecimal` notation._
 | Field  | Data Type | Description |
 | ------ | --------- | ----------- |
 | id     | u32       | message id |
-| type   | u8        | message type (0x81) |
+| type   | u8        | message type (0x14) |
 
 #### Response
 
 | Field  | Data Type | Description |
 | ------ | --------- | ----------- |
 | id     | u32       | message id |
-| type   | u8        | message type (0x81) |
+| type   | u8        | message type (0x94) |
 | result | result    | operation status |
 
 ### statfs
@@ -626,29 +709,82 @@ _Note that the following numbers are in `hexadecimal` notation._
 | Field  | Data Type | Description |
 | ------ | --------- | ----------- |
 | id     | u32       | message id |
-| type   | u8        | message type (0x81) |
+| type   | u8        | message type (0x15) |
 
 #### Response
 
 | Field  | Data Type | Description |
 | ------ | --------- | ----------- |
 | id     | u32       | message id |
-| type   | u8        | message type (0x81) |
+| type   | u8        | message type (0x95) |
 | result | result    | operation status |
 
 ### utimens
+
+Change the file timestamps with nanosecond precision ([man utimesat(2)](https://man7.org/linux/man-pages/man2/utimensat.2.html)).
 
 #### Request
 
 | Field  | Data Type | Description |
 | ------ | --------- | ----------- |
 | id     | u32       | message id |
-| type   | u8        | message type (0x81) |
+| type   | u8        | message type (0x16) |
+| path   | string    | path of the file |
+| atime  | timestamp | new last access time |
+| mtime  | timestamp | new last modified time |
+| handle | handle (u64) | handle of the file |
+
+_Note that handle might be invalid (-1), even if the file is open._
 
 #### Response
 
 | Field  | Data Type | Description |
 | ------ | --------- | ----------- |
 | id     | u32       | message id |
-| type   | u8        | message type (0x81) |
+| type   | u8        | message type (0x96) |
 | result | result    | operation status |
+
+## Examples
+
+### Get file attributes
+
+````
+service  -> provider:
+    00 00 00 01 # message id   = 1
+    02          # message type = getattr request
+    01 '/'      # path         = "/"
+
+provider -> service:
+    00 00 00 01              # message id        = 1
+    82                       # message type      = getattr response
+    00 00 00 00              # result            = 0 (OK)
+    00 00 00 00 00 00 00 01  # attributes.inode  = 1
+    00 00 00 00 00 00 00 02  # attributes.nlink  = 2
+    00 00 41 a4              # attributes.mode   = 0o40644 (S_IDDIR | 0o0644)
+    00 00 03 e8              # attributes.uid    = 1000
+    00 00 03 e8              # attributes.gid    = 1000
+    00 00 00 00 00 00 00 00  # attributes.size   = 0
+    00 00 00 00 00 00 00 00  # attributes.blocks = 0
+    00 00 00 00 00 00 00 00  # attrbites.atime.sec  = 0
+    00 00 00 00 00           # attributs.atime.nsec = 0
+    00 00 00 00 00 00 00 00  # attrbites.mtime.sec  = 0
+    00 00 00 00 00           # attributs.mtime.nsec = 0
+    00 00 00 00 00 00 00 00  # attrbites.ctime.sec  = 0
+    00 00 00 00 00           # attributs.ctime.nsec = 0
+````
+
+### Get file attributes (Failure)
+
+_Note that attributs are skipped in case of an error._
+
+````
+service  -> provider:
+    00 00 00 01 # message id   = 1
+    02          # message type = getattr request
+    04 "/foo"   # path         = "/foo"
+
+provider -> service:
+    00 00 00 01              # message id        = 1
+    82                       # message type      = getattr response
+    ff ff ff fe              # result            = -2 (ENOENT)
+````
