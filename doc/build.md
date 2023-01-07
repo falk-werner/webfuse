@@ -4,8 +4,7 @@ To build webfuse from source, meson is needed.
 Please refer to [meson quick guide](https://mesonbuild.com/Quick-guide.html) for setup instructions.
 
     meson .build
-    cd .build
-    ninja build
+    meson compile -C .build
 
 ## Build options
 
