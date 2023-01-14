@@ -13,9 +13,9 @@ namespace webfuse
 class provider::detail
 {
 public:
-    detail(filesystem_i & fs)
+    detail(filesystem_i & fs, std::string const & ca_path)
     : fs_(fs)
-    , client([this](auto& reader) { return this->on_message(reader); })
+    , client(ca_path, [this](auto& reader) { return this->on_message(reader); })
     {
 
     }
@@ -375,8 +375,8 @@ private:
     ws_client client;
 };
 
-provider::provider(filesystem_i & fs)
-: d(new detail(fs))
+provider::provider(filesystem_i & fs, std::string const & ca_path)
+: d(new detail(fs, ca_path))
 {
 
 }

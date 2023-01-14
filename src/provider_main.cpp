@@ -33,6 +33,7 @@ public:
         {
             {"path"   , required_argument, nullptr, 'p'},
             {"url"    , required_argument, nullptr, 'u'},
+            {"ca-path", required_argument, nullptr, 'a'},
             {"version", no_argument      , nullptr, 'v'},
             {"help"   , no_argument      , nullptr, 'h'},
             {nullptr  , 0                , nullptr, 0  }
@@ -44,7 +45,7 @@ public:
         while (!finished)
         {
             int option_index = 0;
-            const int c = getopt_long(argc, argv, "p:u:vh", long_options, &option_index);
+            const int c = getopt_long(argc, argv, "p:u:a:vh", long_options, &option_index);
             switch (c)
             {
                 case -1:
@@ -55,6 +56,9 @@ public:
                     break;
                 case 'u':
                     url = optarg;
+                    break;
+                case 'a':
+                    ca_path = optarg;
                     break;
                 case 'h':
                     cmd = command::show_help;
@@ -81,6 +85,7 @@ public:
 
     std::string base_path;
     std::string url;
+    std::string ca_path;
     command cmd;
     int exit_code;
 };
@@ -91,11 +96,12 @@ void print_usage()
 expose a local directory via webfuse2
 
 Usage:
-    webfuse-provider -u <url> [-p <path>]
+    webfuse-provider -u <url> [-p <path>] [-a <ca_path>]
 
 Options:
     --url, -u       set url of webfuse2 service
     --path, -p      set path of directory to expose (default: .)
+    --ca-path, -a   set path of ca file (default: not set)
     --version, -v   print version and quit
     --help, -h      print this message and quit
 
@@ -439,7 +445,7 @@ int main(int argc, char* argv[])
                 signal(SIGTERM, &on_signal);
 
                 filesystem fs(ctx.base_path);
-                webfuse::provider provider(fs);
+                webfuse::provider provider(fs, ctx.ca_path);
                 provider.set_connection_listener([](bool connected) {
                     if (!connected)
                     {

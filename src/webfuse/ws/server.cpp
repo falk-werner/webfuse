@@ -164,6 +164,8 @@ public:
     detail(ws_config const & config)
     : shutdown_requested(false)
     {
+        lws_set_log_level(0, nullptr);
+
         memset(reinterpret_cast<void*>(protocols), 0, sizeof(protocols));
         protocols[0].name = "webfuse2";
         protocols[0].callback = &ws_server_callback;
@@ -173,15 +175,21 @@ public:
         memset(reinterpret_cast<void*>(&info), 0, sizeof(info));
         info.port = config.port;
         info.protocols = protocols;
-        info.vhost_name = "localhost";
+        info.vhost_name = config.vhost_name.c_str();
         info.options = LWS_SERVER_OPTION_HTTP_HEADERS_SECURITY_BEST_PRACTICES_ENFORCE | LWS_SERVER_OPTION_EXPLICIT_VHOSTS;
+
+        if (config.use_tls)
+        {
+            info.options |= LWS_SERVER_OPTION_DO_SSL_GLOBAL_INIT;
+            info.ssl_cert_filepath = config.cert_path.c_str();
+            info.ssl_private_key_filepath = config.key_path.c_str();
+        }
 
         context = lws_create_context(&info);
 
         lws_create_vhost(context, &info);
         // lws_vhost * const vhost = lws_create_vhost(context, &info);
-        // port = lws_get_vhost_port(vhost);
-
+        // int port = lws_get_vhost_port(vhost);
 
         thread = std::thread([this]() {
             while (!shutdown_requested)

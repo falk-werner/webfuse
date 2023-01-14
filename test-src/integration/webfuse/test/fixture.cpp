@@ -10,7 +10,7 @@ namespace webfuse
 fixture::fixture(filesystem_i & fs)
 : shutdown_requested(false)
 , provider_running(false)
-, fs_provider(fs)
+, fs_provider(fs, "")
 , app(working_dir.name())
 {
     fs_provider.set_connection_listener([this](bool is_connected) {

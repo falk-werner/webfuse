@@ -13,7 +13,7 @@ class provider
     provider(provider const &) = delete;
     provider& operator=(provider const &) = delete;
 public:
-    provider(filesystem_i & fs);
+    provider(filesystem_i & fs, std::string const & ca_path);
     ~provider();
     provider(provider && other);
     provider& operator=(provider && other);

@@ -34,6 +34,7 @@ add_library(webfuse_static STATIC
     src/webfuse/ws/client.cpp
     src/webfuse/ws/messagewriter.cpp
     src/webfuse/ws/messagereader.cpp
+    src/webfuse/ws/url.cpp
 )
 
 target_include_directories(webfuse_static PUBLIC src)

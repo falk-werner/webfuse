@@ -1,4 +1,6 @@
 #include "webfuse/ws/client.hpp"
+#include "webfuse/ws/url.hpp"
+
 #include <libwebsockets.h>
 #include <cstring>
 #include <iostream>
@@ -106,8 +108,10 @@ class ws_client::detail
     detail(detail &&) = delete;
     detail& operator=(detail &&) = delete;
 public:
-    detail(ws_client_handler handler)
+    detail(std::string const & ca_path, ws_client_handler handler)
     {
+        lws_set_log_level(0, nullptr);
+
         memset(reinterpret_cast<void*>(protocols), 0, sizeof(lws_protocols) * 2);
         protocols[0].callback = &webfuse_client_callback;
         protocols[0].name = "webfuse2-client";
@@ -119,12 +123,22 @@ public:
         info.protocols = protocols;
         info.uid = -1;
         info.gid = -1;
+        info.options = LWS_SERVER_OPTION_EXPLICIT_VHOSTS;
 
         data.handler = handler;
         data.connection_listener = [](bool){ };
         data.connection = nullptr;
 
         context = lws_create_context(&info);
+
+        struct lws_vhost * vhost = lws_create_vhost(context, &info);
+        info.options |= LWS_SERVER_OPTION_DO_SSL_GLOBAL_INIT;
+        if (!ca_path.empty())
+        {
+            info.client_ssl_ca_filepath = ca_path.c_str();
+        }
+
+        lws_init_vhost_client_ssl(&info, vhost);
     }
 
     ~detail()
@@ -134,15 +148,17 @@ public:
 
     void connect(std::string const & url)
     {
+        ws_url parsed_url(url);
+
         lws_client_connect_info info;
         memset(reinterpret_cast<void*>(&info), 0, sizeof(lws_client_connect_info));
         info.context = context;
-        info.port = 8081;  //NOLINT(readability-magic-numbers)
-        info.address = "localhost";
-        info.host = "localhost";
-        info.path = "/";
-        info.origin = "localhost";
-        info.ssl_connection = 0;
+        info.port = parsed_url.port;
+        info.address = parsed_url.hostname.c_str();
+        info.host = info.address;
+        info.path = parsed_url.path.c_str();
+        info.origin = info.address;
+        info.ssl_connection = (parsed_url.use_tls) ? LCCSCF_USE_SSL : 0;
         info.protocol = "webfuse2";
         info.local_protocol_name = "webfuse2-client";
         info.pwsi = &data.connection;
@@ -172,8 +188,8 @@ private:
     user_data data;
 };
 
-ws_client::ws_client(ws_client_handler handler)
-: d(new detail(handler))
+ws_client::ws_client(std::string const & ca_path, ws_client_handler handler)
+: d(new detail(ca_path, handler))
 {
 
 }

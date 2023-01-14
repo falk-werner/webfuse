@@ -16,7 +16,7 @@ class ws_client
     ws_client(ws_client const &) = delete;
     ws_client& operator=(ws_client const &) = delete;
 public:
-    ws_client(ws_client_handler handler);
+    ws_client(std::string const & ca_path, ws_client_handler handler);
     ~ws_client();
     ws_client(ws_client && other);
     ws_client& operator=(ws_client && other);
