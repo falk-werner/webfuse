@@ -16,6 +16,7 @@ public:
     fuse (fuse && other);
     fuse& operator=(fuse && other);
     int run(int argc, char * argv[]);
+    static void print_usage();
 private:
     class detail;
     detail * d;

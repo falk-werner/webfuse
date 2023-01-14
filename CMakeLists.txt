@@ -20,6 +20,8 @@ add_library(webfuse_static STATIC
     src/webfuse/fuse.cpp
     src/webfuse/request_type.cpp
     src/webfuse/response_type.cpp
+    src/webfuse/util/commandline_args.cpp
+    src/webfuse/util/commandline_reader.cpp
     src/webfuse/filesystem.cpp
     src/webfuse/filesystem/status.cpp
     src/webfuse/filesystem/accessmode.cpp

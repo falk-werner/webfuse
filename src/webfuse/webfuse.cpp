@@ -3,17 +3,43 @@
 #include "webfuse/filesystem.hpp"
 #include "webfuse/ws/server.hpp"
 
+#include <iostream>
+
 namespace webfuse
 {
 
 int app::run(int argc, char * argv[]) // NOLINT(readability-convert-member-functions-to-static)
 {
-    ws_config config;
-    ws_server server(config);
-    filesystem filesystem(server);
-    fuse fuse_fs(filesystem);
+    ws_config config(argc, argv);
 
-    return fuse_fs.run(argc, argv);
+    switch (config.cmd)
+    {
+        case command::run:
+            {
+                ws_server server(config);
+                filesystem filesystem(server);
+                fuse fuse_fs(filesystem);
+
+                config.exit_code = fuse_fs.run(config.args.get_argc(), config.args.get_argv());
+            }
+            break;
+        case command::show_help:
+            // fall-through
+        default:
+            {
+                fuse::print_usage();
+                std::cout << R"(
+WEBFUSE options:
+    --wf-port PORT      port number of websocket server (default: 8081)
+    --wf-vhost VHOST    name of the virtual host (default: localhost)
+    --wf-cert PATH      path of the server's public certificate (optional)
+    --wf-key  PATH      path of the server's private key (optional)
+)";
+            }
+            break;
+    }
+
+    return config.exit_code;
 }
 
 }

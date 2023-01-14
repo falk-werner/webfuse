@@ -288,4 +288,17 @@ int fuse::run(int argc, char * argv[])
     return fuse_main(argc, argv, &operations, context);
 }
 
+void fuse::print_usage()
+{
+    struct fuse_operations operations;
+    memset(reinterpret_cast<void*>(&operations), 0, sizeof(operations));
+
+    int const argc = 2;
+    char progname[] = "webfuse";
+    char show_help[] = "--help";
+    char * argv[] = { progname, show_help, nullptr};
+    fuse_main(argc, argv, &operations, nullptr);
+}
+
+
 }
