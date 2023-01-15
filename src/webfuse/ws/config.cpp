@@ -1,6 +1,8 @@
 #include "webfuse/ws/config.hpp"
 #include "webfuse/util/commandline_reader.hpp"
 
+#include <cctype>
+#include <algorithm>
 #include <iostream>
 
 namespace
@@ -85,6 +87,18 @@ ws_config::ws_config(int argc, char * argv[])
             if (get_arg(*this, reader, cert_path, "missing CERT_PATH"))
             {
                 use_tls = true;
+            }
+        }
+        else if (arg == "--wf-authenticator")
+        {
+            get_arg(*this, reader, authenticator, "missing AUTHENTICATOR");
+        }
+        else if (arg == "--wf-auth-header")
+        {
+            if (get_arg(*this, reader, auth_header, "missing AUTH_HEADER"))
+            {
+                std::transform(auth_header.begin(), auth_header.end(), auth_header.begin(),
+                    [](auto c) {return std::tolower(c); });
             }
         }
         else

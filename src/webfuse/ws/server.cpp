@@ -1,4 +1,5 @@
 #include "webfuse/ws/server.hpp"
+#include "webfuse/util/authenticator.hpp"
 
 #include <libwebsockets.h>
 
@@ -32,6 +33,9 @@ struct user_data
     uint32_t id = 0;
     std::queue<webfuse::messagewriter> requests;
     std::unordered_map<uint32_t, std::promise<webfuse::messagereader>> pending_responses;
+
+    std::string authenticator;
+    std::string auth_header;
 };
 
 
@@ -72,6 +76,75 @@ void do_receive(void * in, int len, lws* wsi, user_data * data)
     }
 }
 
+std::string get_auth_token_of_known_header(lws * wsi, lws_token_indexes header)
+{
+    std::string token;
+    int const length = lws_hdr_total_length(wsi, header);
+    if (length > 0)
+    {
+        std::vector<char> data(length + 1);
+        int const actual_length = lws_hdr_copy(wsi, data.data(), length + 1, header);
+        if (actual_length > 0)
+        {
+            token = data.data();
+        }
+    }        
+
+    return token;
+}
+
+std::string get_auth_token_from_custom_header(lws * wsi, std::string const & auth_header)
+{
+    std::string token;
+    int const length = lws_hdr_custom_length(wsi, auth_header.c_str(), auth_header.size());
+    if (length > 0)
+    {
+        std::vector<char> data(length + 1);
+        int const actual_length = lws_hdr_custom_copy(wsi, data.data(), length + 1, 
+            auth_header.c_str(), auth_header.size());
+        if (actual_length > 0)
+        {
+            token = data.data();
+        }
+    }        
+
+    return token;
+}
+
+std::string get_auth_token(lws * wsi, std::string const & auth_header)
+{
+    if (auth_header == "authorization")
+    {
+        return get_auth_token_of_known_header(wsi, WSI_TOKEN_HTTP_AUTHORIZATION);
+    }
+
+    if (auth_header == "x-auth-token")
+    {
+        return get_auth_token_of_known_header(wsi, WSI_TOKEN_X_AUTH_TOKEN);
+    }
+
+    return get_auth_token_from_custom_header(wsi, auth_header);
+}
+
+int do_authenticate(lws * wsi, std::string const & authenticator_app, std::string const & auth_header)
+{
+    int result = 0;
+    if ((!authenticator_app.empty()) && (!auth_header.empty()))
+    {
+        std::string token = get_auth_token(wsi, auth_header);
+        if (!token.empty())
+        {
+            webfuse::authenticator authenticator(authenticator_app);
+            result = authenticator.authenticate(token) ? 0 : -1;
+        }
+        else
+        {
+            result = -1;
+        }
+    }
+
+    return result;
+}
 
 }
 
@@ -90,6 +163,11 @@ static int ws_server_callback(struct lws *wsi, enum lws_callback_reasons reason,
     int result = 0;
     switch(reason)
     {
+        case LWS_CALLBACK_FILTER_PROTOCOL_CONNECTION:
+            {
+                result = do_authenticate(wsi, data->authenticator, data->auth_header);
+            }
+            break;
         case LWS_CALLBACK_ESTABLISHED:
             if (nullptr == data->connection)
             {
@@ -164,6 +242,9 @@ public:
     detail(ws_config const & config)
     : shutdown_requested(false)
     {
+        data.authenticator = config.authenticator;
+        data.auth_header = config.auth_header;
+
         lws_set_log_level(0, nullptr);
 
         memset(reinterpret_cast<void*>(protocols), 0, sizeof(protocols));

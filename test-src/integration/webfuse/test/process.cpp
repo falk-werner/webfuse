@@ -80,7 +80,7 @@ int process::wait()
     {
         int status = 0;
         int rc = waitpid(pid, &status, 0);
-        if (rc == 0)
+        if (rc == pid)
         {
             exit_code = WEXITSTATUS(status);
             pid = 0;

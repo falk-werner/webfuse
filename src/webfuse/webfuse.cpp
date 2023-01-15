@@ -30,10 +30,12 @@ int app::run(int argc, char * argv[]) // NOLINT(readability-convert-member-funct
                 fuse::print_usage();
                 std::cout << R"(
 WEBFUSE options:
-    --wf-port PORT      port number of websocket server (default: 8081)
-    --wf-vhost VHOST    name of the virtual host (default: localhost)
-    --wf-cert PATH      path of the server's public certificate (optional)
-    --wf-key  PATH      path of the server's private key (optional)
+    --wf-port PORT              port number of websocket server (default: 8081)
+    --wf-vhost VHOST            name of the virtual host (default: localhost)
+    --wf-cert PATH              path of the server's public certificate (optional)
+    --wf-key  PATH              path of the server's private key (optional)
+    --wf-authenticator PATH     path of authenticatior app (optional)
+    --wf-auth-header   NAME     name of the authentication header (optional)
 )";
             }
             break;

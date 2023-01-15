@@ -30,6 +30,9 @@ public:
     bool use_tls;
     std::string cert_path;
     std::string key_path;
+
+    std::string authenticator;
+    std::string auth_header;
 };
 
 }

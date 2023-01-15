@@ -272,7 +272,7 @@ class FilesystemProvider:
         }
     
     async def run(self):
-        async with websockets.connect(self.url) as connection:
+        async with websockets.connect(self.url, extra_headers=[("X-Auth-Token", "user:bob;token=foo")]) as connection:
             while True:
                 request = await connection.recv()
                 reader = MessageReader(request)
