@@ -57,7 +57,10 @@ Unlike webfuse, davfs2 mounts a remote filesystem locally, that is provided by a
 ## Further Documentation
 
 -   [Build instructions](doc/build.md)
+-   [Webfuse command line options](webfuse.md)
+-   [Webfuse provider command line options](webfuse_provider.md)
 -   [Webfuse Protocol](doc/protocol.md)
+-   [Authentication](authentication.md)
 
 ## webfuse legacy
 

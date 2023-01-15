@@ -96,7 +96,7 @@ void print_usage()
 expose a local directory via webfuse2
 
 Usage:
-    webfuse-provider -u <url> [-p <path>] [-a <ca_path>]
+    webfuse_provider -u <url> [-p <path>] [-a <ca_path>]
 
 Options:
     --url, -u       set url of webfuse2 service
