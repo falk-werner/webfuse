@@ -1,7 +1,10 @@
 #include "webfuse/ws/server_handler.hpp"
 #include "webfuse/util/authenticator.hpp"
 
+#include <exception>
+#include <stdexcept>
 #include <iostream>
+
 
 namespace
 {
@@ -48,6 +51,7 @@ namespace webfuse
 server_handler::server_handler(std::string const & auth_app, std::string const & auth_hdr)
 : connection(nullptr)
 , id(0)
+, is_authenticated(false)
 , authenticator(auth_app)
 , auth_header(auth_hdr)
 {
@@ -146,6 +150,7 @@ void server_handler::on_closed(lws * wsi)
     if (wsi == connection)
     {
         connection = nullptr;
+        is_authenticated = false;
     }
 }
 
@@ -169,16 +174,27 @@ void server_handler::poll()
 
 std::future<messagereader> server_handler::perform(messagewriter writer)
 {
-    std::future<messagereader> result;
+    std::promise<messagereader> p;
+    std::future<messagereader> result = p.get_future();
+    if (is_authenticated)
     {
-        std::promise<messagereader> p;
-        result = p.get_future();
-
         std::lock_guard<std::mutex> lock(mut);
         uint32_t id = next_id();
         writer.set_id(id);
         requests.emplace(std::move(writer));
         pending_responses.emplace(id, std::move(p));
+    }
+    else
+    {
+        try
+        {
+            throw std::runtime_error("unauthenticated");
+        }
+        catch(std::exception const &ex)
+        {
+            p.set_exception(std::current_exception());
+        }
+        
     }
 
     return result;
@@ -188,21 +204,32 @@ std::future<messagereader> server_handler::perform(messagewriter writer)
 
 int server_handler::authenticate_via_header(lws * wsi)
 {
-    int result = 0;
-    if ((!authenticator.empty()) && (!auth_header.empty()))
+    // authentication is disabled
+    if (authenticator.empty())
     {
-        std::string token = get_auth_token(wsi);
-        if (!token.empty())
-        {
-            webfuse::authenticator auth(authenticator);
-            result = auth.authenticate(token) ? 0 : -1;
-        }
-        else
-        {
-            result = -1;
-        }
+        is_authenticated = true;
+        return 0;
     }
 
+    // authentication is enabled, but not via HTTP header
+    if (auth_header.empty())
+    {
+        is_authenticated = false;
+        return 0;
+    }
+    
+    // delay authentication if HTTP header is not provided
+    std::string token = get_auth_token(wsi);
+    if (token.empty())
+    {
+        is_authenticated = false;
+        return 0;
+    }
+
+    // close connection, when authentication fails
+    webfuse::authenticator auth(authenticator);
+    int const result = auth.authenticate(token) ? 0 : -1;
+    is_authenticated = (result == 0);
     return result;
 }
 

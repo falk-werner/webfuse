@@ -11,6 +11,7 @@
 #include <unordered_map>
 #include <mutex>
 #include <future>
+#include <atomic>
 
 namespace webfuse
 {
@@ -38,6 +39,7 @@ private:
     struct lws * connection;
     uint32_t id;
 
+    std::atomic<bool> is_authenticated;
     std::string authenticator;
     std::string auth_header;
 
