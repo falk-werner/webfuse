@@ -32,6 +32,7 @@ add_library(webfuse_static STATIC
     src/webfuse/filesystem/empty_filesystem.cpp
     src/webfuse/ws/config.cpp
     src/webfuse/ws/server.cpp
+    src/webfuse/ws/server_handler.cpp
     src/webfuse/ws/client.cpp
     src/webfuse/ws/messagewriter.cpp
     src/webfuse/ws/messagereader.cpp

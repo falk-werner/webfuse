@@ -1,5 +1,5 @@
 #include "webfuse/ws/server.hpp"
-#include "webfuse/util/authenticator.hpp"
+#include "webfuse/ws/server_handler.hpp"
 
 #include <libwebsockets.h>
 
@@ -24,128 +24,6 @@ namespace
 
 constexpr int64_t const timeout_secs = 10;
 
-struct user_data
-{
-    struct lws * connection = nullptr;
-    std::string current_message;
-
-    std::mutex mut;
-    uint32_t id = 0;
-    std::queue<webfuse::messagewriter> requests;
-    std::unordered_map<uint32_t, std::promise<webfuse::messagereader>> pending_responses;
-
-    std::string authenticator;
-    std::string auth_header;
-};
-
-
-void do_receive(void * in, int len, lws* wsi, user_data * data)
-{
-    auto * fragment = reinterpret_cast<char*>(in);
-    data->current_message.append(fragment, len);
-    if (0 != lws_is_final_fragment(wsi))
-    {
-        try
-        {
-            webfuse::messagereader reader(data->current_message);
-            uint32_t id = reader.read_u32();
-            reader.read_u8(); // read message type: ToDo: use it
-
-            std::lock_guard<std::mutex> lock(data->mut);
-            auto it = data->pending_responses.find(id);
-            if (it != data->pending_responses.end())
-            {
-                it->second.set_value(std::move(reader));
-                data->pending_responses.erase(it);
-            }
-            else
-            {
-                // ToDo: log request not found
-                std::cout << "warning: request not found: id=" << id << std::endl;
-                for(auto const & entry: data->pending_responses)
-                {
-                    std::cout << "\t" << entry.first << std::endl;
-                }
-            }
-        }
-        catch(...)
-        {
-            // ToDo: log invalid message
-            std::cout << "warning: invalid message" << std::endl;
-        }
-    }
-}
-
-std::string get_auth_token_of_known_header(lws * wsi, lws_token_indexes header)
-{
-    std::string token;
-    int const length = lws_hdr_total_length(wsi, header);
-    if (length > 0)
-    {
-        std::vector<char> data(length + 1);
-        int const actual_length = lws_hdr_copy(wsi, data.data(), length + 1, header);
-        if (actual_length > 0)
-        {
-            token = data.data();
-        }
-    }        
-
-    return token;
-}
-
-std::string get_auth_token_from_custom_header(lws * wsi, std::string const & auth_header)
-{
-    std::string token;
-    int const length = lws_hdr_custom_length(wsi, auth_header.c_str(), auth_header.size());
-    if (length > 0)
-    {
-        std::vector<char> data(length + 1);
-        int const actual_length = lws_hdr_custom_copy(wsi, data.data(), length + 1, 
-            auth_header.c_str(), auth_header.size());
-        if (actual_length > 0)
-        {
-            token = data.data();
-        }
-    }        
-
-    return token;
-}
-
-std::string get_auth_token(lws * wsi, std::string const & auth_header)
-{
-    if (auth_header == "authorization")
-    {
-        return get_auth_token_of_known_header(wsi, WSI_TOKEN_HTTP_AUTHORIZATION);
-    }
-
-    if (auth_header == "x-auth-token")
-    {
-        return get_auth_token_of_known_header(wsi, WSI_TOKEN_X_AUTH_TOKEN);
-    }
-
-    return get_auth_token_from_custom_header(wsi, auth_header);
-}
-
-int do_authenticate(lws * wsi, std::string const & authenticator_app, std::string const & auth_header)
-{
-    int result = 0;
-    if ((!authenticator_app.empty()) && (!auth_header.empty()))
-    {
-        std::string token = get_auth_token(wsi, auth_header);
-        if (!token.empty())
-        {
-            webfuse::authenticator authenticator(authenticator_app);
-            result = authenticator.authenticate(token) ? 0 : -1;
-        }
-        else
-        {
-            result = -1;
-        }
-    }
-
-    return result;
-}
-
 }
 
 extern "C"
@@ -158,66 +36,25 @@ static int ws_server_callback(struct lws *wsi, enum lws_callback_reasons reason,
     if (nullptr == protocol) { return 0; }
     if (&ws_server_callback != protocol->callback) { return 0; }
 
-    auto * data = reinterpret_cast<user_data *>(protocol->user);
+    auto * handler = reinterpret_cast<webfuse::server_handler*>(protocol->user);
 
     int result = 0;
     switch(reason)
     {
         case LWS_CALLBACK_FILTER_PROTOCOL_CONNECTION:
-            {
-                result = do_authenticate(wsi, data->authenticator, data->auth_header);
-            }
+            result = handler->filter_connection(wsi);
             break;
         case LWS_CALLBACK_ESTABLISHED:
-            if (nullptr == data->connection)
-            {
-                data->connection = wsi;
-            }
-            else
-            {
-                result = -1;
-            }
+            result = handler->on_established(wsi);
             break;
         case LWS_CALLBACK_CLOSED:
-            if (wsi == data->connection)
-            {
-                data->connection = nullptr;
-            }
+            handler->on_closed(wsi);
             break;
         case LWS_CALLBACK_RECEIVE:
-            do_receive(in, len, wsi, data);
+            handler->on_receive(wsi, in, len);
             break;
         case LWS_CALLBACK_SERVER_WRITEABLE:
-            {
-                webfuse::messagewriter writer(webfuse::request_type::unknown);
-                bool has_msg = false;
-                bool has_more = false;
-
-                {
-                    std::lock_guard<std::mutex> lock(data->mut);
-                    has_msg = !(data->requests.empty());
-                    if (has_msg)
-                    {
-                        has_msg = true;
-                        writer = std::move(data->requests.front());
-                        data->requests.pop();
-
-                        has_more = !(data->requests.empty());
-                    }
-                }
-
-                if (has_msg)
-                {
-                    size_t size;
-                    unsigned char * raw_data = writer.get_data(size);
-                    lws_write(data->connection, raw_data, size, LWS_WRITE_BINARY);
-                }
-
-                if (has_more)
-                {
-                    lws_callback_on_writable(data->connection);
-                }
-            }
+            handler->on_writable();
             break;
         default:
             break;
@@ -241,10 +78,8 @@ class ws_server::detail
 public:
     detail(ws_config const & config)
     : shutdown_requested(false)
+    , data(config.authenticator, config.auth_header)
     {
-        data.authenticator = config.authenticator;
-        data.auth_header = config.auth_header;
-
         lws_set_log_level(0, nullptr);
 
         memset(reinterpret_cast<void*>(protocols), 0, sizeof(protocols));
@@ -275,22 +110,7 @@ public:
         thread = std::thread([this]() {
             while (!shutdown_requested)
             {
-                {
-                    std::lock_guard<std::mutex> lock(data.mut);
-                    if (!data.requests.empty())
-                    {
-                        if (nullptr != data.connection)
-                        {
-                            lws_callback_on_writable(data.connection);
-                        }
-                        else
-                        {
-                            data.requests = std::move(std::queue<webfuse::messagewriter>());
-                            data.pending_responses.clear();
-                        }
-                    }
-                }
-
+                data.poll();
                 lws_service(context, 0);
             }
 
@@ -305,22 +125,12 @@ public:
         lws_context_destroy(context);
     }
 
-    uint32_t next_id()
-    {
-        data.id++;
-        if (0 == data.id)
-        {
-            data.id = 1;
-        }
-        return data.id;
-    }
-
     std::thread thread;
     std::atomic<bool> shutdown_requested;
     lws_protocols protocols[2];
     lws_context_creation_info info;
     lws_context * context;
-    user_data data;
+    server_handler data;
 };
 
 ws_server::ws_server(ws_config const & config)
@@ -354,25 +164,15 @@ ws_server& ws_server::operator=(ws_server && other)
 
 messagereader ws_server::perform(messagewriter writer)
 {
-    std::future<messagereader> f;
-    {
-        std::promise<messagereader> p;
-        f = p.get_future();
-
-        std::lock_guard<std::mutex> lock(d->data.mut);
-        uint32_t id = d->next_id();
-        writer.set_id(id);
-        d->data.requests.emplace(std::move(writer));
-        d->data.pending_responses.emplace(id, std::move(p));
-    }
+    auto result = d->data.perform(std::move(writer));
 
     lws_cancel_service(d->context);
-    if(std::future_status::timeout == f.wait_for(std::chrono::seconds(timeout_secs)))
+    if(std::future_status::timeout == result.wait_for(std::chrono::seconds(timeout_secs)))
     {
         throw std::runtime_error("timeout");
     }
 
-    return std::move(f.get());
+    return std::move(result.get());
 }
 
 
