@@ -54,7 +54,7 @@ static int ws_server_callback(struct lws *wsi, enum lws_callback_reasons reason,
             handler->on_receive(wsi, in, len);
             break;
         case LWS_CALLBACK_SERVER_WRITEABLE:
-            handler->on_writable();
+            result = handler->on_writable();
             break;
         default:
             break;

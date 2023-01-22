@@ -419,4 +419,11 @@ int filesystem::statfs(std::string const & path, struct statvfs * statistics)
     }
 }
 
+// get credentials is handled internally
+std::string filesystem::get_credentials()
+{
+    throw std::runtime_error("not implemented");
+}
+
+
 }

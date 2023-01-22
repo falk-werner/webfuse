@@ -39,6 +39,8 @@ public:
     int rmdir(std::string const & path) override;
 
     int statfs(std::string const & path, struct statvfs * statistics) override;
+
+    std::string get_credentials() override;
 };
 
 }

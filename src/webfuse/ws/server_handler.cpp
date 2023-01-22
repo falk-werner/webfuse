@@ -51,6 +51,7 @@ namespace webfuse
 server_handler::server_handler(std::string const & auth_app, std::string const & auth_hdr)
 : connection(nullptr)
 , id(0)
+, shutdown_requested(false)
 , is_authenticated(false)
 , authenticator(auth_app)
 , auth_header(auth_hdr)
@@ -69,9 +70,26 @@ int server_handler::on_established(lws * wsi)
     if (nullptr == connection)
     {
         connection = wsi;
+        id = 0;
+
+        if ((!is_authenticated) && (!authenticator.empty()))
+        {
+            {
+                messagewriter writer(request_type::getcreds);
+                std::lock_guard<std::mutex> lock(mut);
+
+                uint32_t id = next_id();
+                writer.set_id(id);
+                requests.emplace(std::move(writer));
+            }
+
+            lws_callback_on_writable(wsi);
+        }
+
         return 0;
     }
 
+    // already connected: refuse
     return -1;
 }
 
@@ -86,22 +104,29 @@ void server_handler::on_receive(lws * wsi, void* in, int len)
         {
             webfuse::messagereader reader(current_message);
             uint32_t id = reader.read_u32();
-            reader.read_u8(); // read message type: ToDo: use it
+            auto const message_type = reader.read_u8(); // read message type: ToDo: use it
 
-            std::lock_guard<std::mutex> lock(mut);
-            auto it = pending_responses.find(id);
-            if (it != pending_responses.end())
+            if (static_cast<response_type>(message_type) == response_type::getcreds)
             {
-                it->second.set_value(std::move(reader));
-                pending_responses.erase(it);
+                finish_authentication(wsi, std::move(reader));
             }
             else
             {
-                // ToDo: log request not found
-                std::cout << "warning: request not found: id=" << id << std::endl;
-                for(auto const & entry: pending_responses)
+                std::lock_guard<std::mutex> lock(mut);
+                auto it = pending_responses.find(id);
+                if (it != pending_responses.end())
                 {
-                    std::cout << "\t" << entry.first << std::endl;
+                    it->second.set_value(std::move(reader));
+                    pending_responses.erase(it);
+                }
+                else
+                {
+                    // ToDo: log request not found
+                    std::cout << "warning: request not found: id=" << id << std::endl;
+                    for(auto const & entry: pending_responses)
+                    {
+                        std::cout << "\t" << entry.first << std::endl;
+                    }
                 }
             }
         }
@@ -113,8 +138,10 @@ void server_handler::on_receive(lws * wsi, void* in, int len)
     }
 }
 
-void server_handler::on_writable()
+int server_handler::on_writable()
 {
+    if (shutdown_requested) { return -1; }
+
     webfuse::messagewriter writer(webfuse::request_type::unknown);
     bool has_msg = false;
     bool has_more = false;
@@ -143,6 +170,8 @@ void server_handler::on_writable()
     {
         lws_callback_on_writable(connection);
     }
+
+    return 0;
 }
 
 void server_handler::on_closed(lws * wsi)
@@ -256,6 +285,23 @@ uint32_t server_handler::next_id()
         id = 1;
     }
     return id;
+}
+
+void server_handler::finish_authentication(lws * wsi, messagereader reader)
+{
+    auto const credentials = reader.read_str();
+
+    webfuse::authenticator auth(authenticator);
+    auto const result = auth.authenticate(credentials);
+    if (result)
+    {
+        is_authenticated = true;
+    }
+    else
+    {
+        shutdown_requested = true;
+        lws_callback_on_writable(wsi);
+    }
 }
 
 

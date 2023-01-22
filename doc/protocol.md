@@ -313,6 +313,7 @@ _Note that the following numbers are in `hexadecimal` notation._
 | rmdir    | 0x14    | 0x94     |
 | statfs   | 0x15    | 0x95     |
 | utimens  | 0x16    | 0x96     |
+| getcreds | 0x17    | 0x97     |
 
 ## Methods
 
@@ -806,6 +807,29 @@ _Note that handle might be invalid (-1), even if the file is open._
 | id     | u32       | message id |
 | type   | u8        | message type (0x96) |
 | result | result    | operation status |
+
+### getcreds
+
+Query credentials. When authentication is active and the in-protocol
+authentication mechanism is used, this is the first request a
+webfuse service sends to a provider.
+
+#### Request
+
+| Field  | Data Type | Description |
+| ------ | --------- | ----------- |
+| id     | u32       | message id |
+| type   | u8        | message type (0x17) |
+
+_Note that handle might be invalid (-1), even if the file is open._
+
+#### Response
+
+| Field  | Data Type | Description |
+| ------ | --------- | ----------- |
+| id     | u32       | message id |
+| type   | u8        | message type (0x97) |
+| creds  | str       | credentials |
 
 ## Examples
 

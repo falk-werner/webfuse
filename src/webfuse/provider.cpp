@@ -122,6 +122,9 @@ public:
             case request_type::statfs:
                 fs_statfs(reader, writer);
                 break;
+            case request_type::getcreds:
+                fs_get_credentials(reader, writer);
+                break;
             default:
                 std::cout << "unknown request: " << ((int) req_type) << std::endl;
                 break;
@@ -370,6 +373,13 @@ private:
             writer.write_statistics(&statistics);
         }
     }
+
+    void fs_get_credentials(messagereader & reader, messagewriter & writer)
+    {
+        std::string credentials = fs_.get_credentials();
+        writer.write_str(credentials);
+    }
+
 
     filesystem_i & fs_;
     ws_client client;

@@ -48,6 +48,8 @@ public:
     virtual int rmdir(std::string const & path) = 0;
 
     virtual int statfs(std::string const & path, struct statvfs * statistics) = 0;
+
+    virtual std::string get_credentials() = 0;
 };
 
 }

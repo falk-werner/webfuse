@@ -418,6 +418,11 @@ public:
         return (result == 0) ? 0 : -errno;
     }
 
+    std::string get_credentials() override
+    {
+        return getpass("credentials: ");
+    }
+
 
 private:
     std::string get_full_path(std::string const & path)

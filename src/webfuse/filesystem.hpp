@@ -47,6 +47,7 @@ public:
 
     int statfs(std::string const & path, struct statvfs * statistics) override;
 
+    std::string get_credentials() override;
 
 private:
     ws_server &proxy;

@@ -5,6 +5,7 @@ import os
 import stat
 import websockets
 import errno
+import getpass
 
 INVALID_FD = 0xffffffffffffffff
 
@@ -269,10 +270,12 @@ class FilesystemProvider:
             0x14: FilesystemProvider.rmdir,
             0x15: FilesystemProvider.statfs,
             0x16: FilesystemProvider.utimens,
+            0x17: FilesystemProvider.getcreds,
         }
     
     async def run(self):
-        async with websockets.connect(self.url, extra_headers=[("X-Auth-Token", "user:bob;token=foo")]) as connection:
+        extra_headers = [("X-Auth-Token", "user:bob;token=foo")]
+        async with websockets.connect(self.url, extra_headers=extra_headers) as connection:
             while True:
                 request = await connection.recv()
                 reader = MessageReader(request)
@@ -565,7 +568,11 @@ class FilesystemProvider:
         writer.write_u64(buffer.f_files)
         writer.write_u64(buffer.f_ffree)
         writer.write_u64(buffer.f_namemax)
-        
+
+    def getcreds(self, reader, writer):
+        credentials = getpass.getpass(prompt="credentials: ")
+        writer.write_str(credentials)
+
 
 if __name__ == '__main__':
     provider = FilesystemProvider('.', 'ws://localhost:8081')

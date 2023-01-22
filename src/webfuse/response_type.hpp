@@ -31,7 +31,8 @@ enum class response_type: uint8_t
     readdir  = 0x93,
     rmdir    = 0x94,
     statfs   = 0x95,
-    utimens  = 0x96
+    utimens  = 0x96,
+    getcreds = 0x97
 };
 
 response_type get_response_type(request_type value);

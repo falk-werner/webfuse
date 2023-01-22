@@ -25,7 +25,7 @@ public:
 
     int  on_established(lws* wsi);
     void on_receive(lws * wsi, void* in, int len);
-    void on_writable();
+    int on_writable();
     void on_closed(lws * wsi);
 
     std::future<messagereader> perform(messagewriter writer);
@@ -35,9 +35,11 @@ private:
     int authenticate_via_header(lws * wsi);
     std::string get_auth_token(lws * wsi) const;
     uint32_t next_id();
+    void finish_authentication(lws * wsi, messagereader reader);
 
     struct lws * connection;
     uint32_t id;
+    bool shutdown_requested;
 
     std::atomic<bool> is_authenticated;
     std::string authenticator;

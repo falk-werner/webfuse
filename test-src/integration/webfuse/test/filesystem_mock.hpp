@@ -40,6 +40,9 @@ public:
     MOCK_METHOD(int, rmdir, (std::string const & path));
 
     MOCK_METHOD(int, statfs, (std::string const & path, struct statvfs * statistics));
+
+    MOCK_METHOD(std::string, get_credentials, ());
+
 };
 
 }

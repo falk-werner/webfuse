@@ -131,5 +131,11 @@ int empty_filesystem::statfs(std::string const & path, struct statvfs * statisti
     return -ENOSYS;
 }
 
+std::string empty_filesystem::get_credentials()
+{
+    return "";
+}
+
+
 
 }

@@ -29,6 +29,7 @@ response_type get_response_type(request_type value)
         case request_type::rmdir: return response_type::rmdir;
         case request_type::statfs: return response_type::statfs;
         case request_type::utimens: return response_type::utimens;
+        case request_type::getcreds: return response_type::getcreds;
         default:
             return response_type::unknown;
     }

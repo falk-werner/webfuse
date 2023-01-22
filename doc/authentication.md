@@ -1,11 +1,20 @@
 # Authentication
 
-Webfuse supports token-based authentication using HTTP headers. To activate authentication, two command line option needs to be given:
+Webfuse supports two authentications mechanisms:
+
+- token-based authentication using HTTP headers
+- in-protocol authentication
+
+To activate authentication, two command line option needs to be given:
 
 - `--wf-authenticator PATH`  
   allows to specify an executable used for authentication
-- `--wf-auth-header HEADER`
+- `--wf-auth-header HEADER` _(optional)_
   allows to specify the HTTP header used for authentication
+
+When `--wf-auth-header` is not specifiend or the header is not contained
+in the HTTP request, the in-protocol solutions is used: Before any other
+operation, the credentials are queried via `getcreds`request.
 
 ## Authenticator
 

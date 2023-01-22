@@ -29,6 +29,7 @@ request_type get_request_type(uint8_t value)
         case static_cast<uint8_t>(request_type::rmdir): return request_type::rmdir;
         case static_cast<uint8_t>(request_type::statfs): return request_type::statfs;
         case static_cast<uint8_t>(request_type::utimens): return request_type::utimens;
+        case static_cast<uint8_t>(request_type::getcreds): return request_type::getcreds;
         default:
             return request_type::unknown;
     }
