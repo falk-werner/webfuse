@@ -137,5 +137,4 @@ std::string empty_filesystem::get_credentials()
 }
 
 
-
 }

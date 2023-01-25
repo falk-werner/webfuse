@@ -51,5 +51,4 @@ bool authenticator::authenticate(std::string const & token)
 }
 
 
-
 }
