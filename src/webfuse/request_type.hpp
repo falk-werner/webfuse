@@ -31,7 +31,7 @@ enum class request_type: uint8_t
     rmdir    = 0x14,
     statfs   = 0x15,
     utimens  = 0x16,
-    getcreds =0x17
+    getcreds = 0x17
 };
 
 request_type get_request_type(uint8_t value);
