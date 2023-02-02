@@ -1,0 +1,7 @@
+# Use unix authentication for webfuse authentication.
+#
+# NOTE:
+# - in order to use unix authentication, read access to /etc/shadow is required
+
+auth    required    pam_unix.so
+account required    pam_unix.so
