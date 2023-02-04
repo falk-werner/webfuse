@@ -180,6 +180,7 @@ void server_handler::on_closed(lws * wsi)
     {
         connection = nullptr;
         is_authenticated = false;
+        shutdown_requested = false;
     }
 }
 
