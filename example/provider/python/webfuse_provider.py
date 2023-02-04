@@ -7,6 +7,7 @@ import os
 import stat
 import errno
 import getpass
+import argparse
 import websockets
 
 INVALID_FD = 0xffffffffffffffff
@@ -252,9 +253,10 @@ class MessageWriter:
 class FilesystemProvider:
     """Webfuse filesystem provider."""
 
-    def __init__(self, path, url):
+    def __init__(self, path, url, token):
         self.root = os.path.abspath(path)
         self.url = url
+        self.token = token
         self.commands = {
             0x01: FilesystemProvider.access,
             0x02: FilesystemProvider.getattr,
@@ -282,7 +284,7 @@ class FilesystemProvider:
         }
 
     async def run(self):
-        extra_headers = [("X-Auth-Token", "user:bob;token=foo")]
+        extra_headers = [("X-Auth-Token", self.token)] if self.token != "" else []
         # pylint: disable-next=no-member
         async with websockets.connect(self.url, extra_headers=extra_headers) as connection:
             while True:
@@ -575,10 +577,24 @@ class FilesystemProvider:
         writer.write_u64(buffer.f_namemax)
 
     def getcreds(self, _, writer):
-        credentials = getpass.getpass(prompt="credentials: ")
+        credentials = self.token if self.token == "" else getpass.getpass(prompt="credentials: ")
         writer.write_str(credentials)
 
+def main():
+    parser = argparse.ArgumentParser(prog='webfuse_provider')
+    parser.add_argument('-p', '--path', type=str, required=False, default='.',
+        help='path to provide (default: \".\")')
+    parser.add_argument('-u', '--url', type=str, required=True,
+        help='URL of webfuse server, e.g. \"ws://localhost:8081\"')
+    parser.add_argument('-t', '--token', type=str, required=False, default='',
+        help='authentication token (default: contents of environment variable WEBFUSE_TOKEN)')
+    args = parser.parse_args()
+    token = args.token if args.token != "" else os.environ.get('WEBFUSE_TOKEN')
+    provider = FilesystemProvider(args.path, args.url, token)
+    try:
+        asyncio.run(provider.run())
+    except KeyboardInterrupt as _:
+        pass
 
 if __name__ == '__main__':
-    provider = FilesystemProvider('.', 'ws://localhost:8081')
-    asyncio.run(provider.run())
+    main()

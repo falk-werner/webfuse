@@ -2,7 +2,7 @@
 
 AUTH_TOKEN="$1"
 
-if [[ "$AUTH_TOKEN" == "user:bob;token=foo" ]]
+if [[ "$AUTH_TOKEN" == "simple_token" ]]
 then
     echo "$(date): webfuse: auth granted: $AUTH_TOKEN" >> /tmp/webfuse_auth.log
 else
