@@ -15,10 +15,13 @@ filesystem via fuse and exposes it's API via websockets.
 | --wf-vhost   | vhost    | localhost | Specify the name of the websocket server's virtual host |
 | --wf-cert    | path     | -         | Optional. Specify the file path of the server's public certificate |
 | --wf-key     | path     | -         | Optional. Specify the file path of the server's private key |
-| --wf- authenticator | path | -      | Optional. Specify the file path of the authenticator executable |
+| --wf-authenticator | path | -      | Optional. Specify the file path of the authenticator executable |
 | --wf-auth-header | name | -         | Optional. Specify the name of the HTTP header used for authentication |
+| --wf-docroot | path     | -         | Optional. Enabled HTTP server with given document root. |
 | --wf-timeout | timeout  | 10        | Optional. Specify the communication timeout. |
 | --wf-version | -        | -         | Print version and exit. |
+
+**Note:** All paths must be absolute _(this might be relaxed if future versions)_.
 
 ## Fuse options
 

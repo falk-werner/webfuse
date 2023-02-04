@@ -40,6 +40,7 @@ WEBFUSE options:
     --wf-key  PATH              path of the server's private key (optional)
     --wf-authenticator PATH     path of authenticatior app (optional)
     --wf-auth-header   NAME     name of the authentication header (optional)
+    --wf-docroot       PATH     enables HTTP server with given document root (optional)
     --wf-timeout       TIMEOUT  communication timeout in seconds (default: 10)
     --wf-version                print version and exit
 )";

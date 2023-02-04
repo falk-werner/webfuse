@@ -27,6 +27,7 @@ public:
 
     uint16_t port;
     std::string vhost_name;
+    std::string docroot;
 
     bool use_tls;
     std::string cert_path;

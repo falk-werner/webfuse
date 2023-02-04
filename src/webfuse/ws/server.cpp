@@ -71,20 +71,33 @@ class ws_server::detail
 public:
     detail(ws_config const & config)
     : shutdown_requested(false)
+    , docroot(config.docroot)
     , data(config.authenticator, config.auth_header)
     , timeout_secs(config.timeout_secs)
     {
         lws_set_log_level(0, nullptr);
 
+        memset(reinterpret_cast<void*>(&http_mount), 0, sizeof(http_mount));
+        http_mount.mount_next = nullptr;
+        http_mount.mountpoint = "/";
+        http_mount.origin = docroot.c_str();
+        http_mount.def = "index.html";
+        http_mount.origin_protocol = LWSMPRO_FILE;
+        http_mount.mountpoint_len = 1;
+
         memset(reinterpret_cast<void*>(protocols), 0, sizeof(protocols));
-        protocols[0].name = "webfuse2";
-        protocols[0].callback = &ws_server_callback;
-        protocols[0].per_session_data_size = 0;
-        protocols[0].user = reinterpret_cast<void*>(&data);
+        protocols[0].name = "http";
+        protocols[0].callback = lws_callback_http_dummy;
+
+        protocols[1].name = "webfuse2";
+        protocols[1].callback = &ws_server_callback;
+        protocols[1].per_session_data_size = 0;
+        protocols[1].user = reinterpret_cast<void*>(&data);
 
         memset(reinterpret_cast<void*>(&info), 0, sizeof(info));
         info.port = config.port;
-        info.protocols = protocols;
+        info.mounts = &http_mount;
+        info.protocols = (docroot.empty()) ? &protocols[1] : protocols;
         info.vhost_name = config.vhost_name.c_str();
         info.options = LWS_SERVER_OPTION_HTTP_HEADERS_SECURITY_BEST_PRACTICES_ENFORCE | LWS_SERVER_OPTION_EXPLICIT_VHOSTS;
 
@@ -121,9 +134,11 @@ public:
 
     std::thread thread;
     std::atomic<bool> shutdown_requested;
-    lws_protocols protocols[2];
+    lws_protocols protocols[3];
+    lws_http_mount http_mount;
     lws_context_creation_info info;
     lws_context * context;
+    std::string docroot;
     server_handler data;
     uint64_t timeout_secs;
 };
