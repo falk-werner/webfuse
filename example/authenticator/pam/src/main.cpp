@@ -133,54 +133,47 @@ bool authenticate(std::string const & username, std::string const & password)
 int main(int argc, char* argv[])
 {
     int exit_code = EXIT_FAILURE;
-    bool print_usage = true;
 
-    if (argc == 2)
+    if (argc == 1)
     {
-        std::string const token = argv[1];
-        if (("-h" != token) && ("--help" != token))
+        std::string token;
+        std::getline(std::cin, token);
+
+        openlog("webfuse_pam_auth", 0, LOG_AUTH);
+
+        std::string username;
+        std::string password;
+        auto const decode_valid = decode(token, username, password);
+        if (decode_valid)
         {
-            print_usage = false;
-
-            openlog("webfuse_pam_auth", 0, LOG_AUTH);
-
-            std::string username;
-            std::string password;
-            auto const decode_valid = decode(token, username, password);
-            if (decode_valid)
+            auto const is_authenticated = authenticate(username, password);
+            if (is_authenticated)
             {
-                auto const is_authenticated = authenticate(username, password);
-                if (is_authenticated)
-                {
-                    syslog(LOG_AUTH, "authenticate user \"%s\"", username.c_str());
-                    exit_code = EXIT_SUCCESS;
-                }
-                else
-                {
-                    syslog(LOG_AUTH, "failed to authenticate user \"%s\"", username.c_str());
-                }
+                syslog(LOG_AUTH, "authenticate user \"%s\"", username.c_str());
+                exit_code = EXIT_SUCCESS;
             }
             else
             {
-                syslog(LOG_AUTH, "failed to decode authentication token");
+                syslog(LOG_AUTH, "failed to authenticate user \"%s\"", username.c_str());
             }
-
-            closelog();
         }
+
+        closelog();
     }
-
-
-    if (print_usage)
+    else
     {
         std::cout << R"(webfuse_pam_authenticator, (c) 2023 Falk Werner
 webfuse PAM authenticator
 
 Usage:
-    webfuse_pam_authenticator <token>
+    webfuse_pam_authenticator [-h]
 
-Arguments:
-    <token> token used for authentication
-            token := base64(<username> ":" <password>)
+Options:
+    --help, -h      print this message and exit
+
+Credentials:
+    Credentials are passed as based64-encoded token via stdin:
+        token := base64(<username> ":" <password>)
 )";
     }
 

@@ -19,12 +19,7 @@ operation, the credentials are queried via `getcreds`request.
 ## Authenticator
 
 An authenticator is an executable or script used for token-based
-authentication. During HTTP handshake, webfuse will scan for the
-configured HTTP header and invoke the authenticator.
-
-    authenticator TOKEN
-
-The provided `token` contains the contents of the HTTP header.
+authentication. Credentials are passed to the authenticator via `stdin`.
 
 ## Header restrictions
 

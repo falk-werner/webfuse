@@ -577,7 +577,7 @@ class FilesystemProvider:
         writer.write_u64(buffer.f_namemax)
 
     def getcreds(self, _, writer):
-        credentials = self.token if self.token != "" else getpass.getpass(prompt="credentials: ")
+        credentials = self.token if self.token != None and self.token != "" else getpass.getpass(prompt="credentials: ")
         writer.write_str(credentials)
 
 def main():

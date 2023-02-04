@@ -1,6 +1,6 @@
 #!/usr/bin/bash
 
-AUTH_TOKEN="$1"
+read AUTH_TOKEN
 
 if [[ "$AUTH_TOKEN" == "simple_token" ]]
 then
