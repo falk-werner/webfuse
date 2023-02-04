@@ -2,6 +2,7 @@
 #include "webfuse/fuse.hpp"
 #include "webfuse/filesystem.hpp"
 #include "webfuse/ws/server.hpp"
+#include "webfuse/version.hpp"
 
 #include <iostream>
 
@@ -23,6 +24,9 @@ int app::run(int argc, char * argv[]) // NOLINT(readability-convert-member-funct
                 config.exit_code = fuse_fs.run(config.args.get_argc(), config.args.get_argv());
             }
             break;
+        case command::print_version:
+            std::cout << webfuse::get_version() << std::endl;
+            break;
         case command::show_help:
             // fall-through
         default:
@@ -37,6 +41,7 @@ WEBFUSE options:
     --wf-authenticator PATH     path of authenticatior app (optional)
     --wf-auth-header   NAME     name of the authentication header (optional)
     --wf-timeout       TIMEOUT  communication timeout in seconds (default: 10)
+    --wf-version                print version and exit
 )";
             }
             break;

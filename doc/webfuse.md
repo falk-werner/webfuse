@@ -18,6 +18,7 @@ filesystem via fuse and exposes it's API via websockets.
 | --wf- authenticator | path | -      | Optional. Specify the file path of the authenticator executable |
 | --wf-auth-header | name | -         | Optional. Specify the name of the HTTP header used for authentication |
 | --wf-timeout | timeout  | 10        | Optional. Specify the communication timeout. |
+| --wf-version | -        | -         | Print version and exit. |
 
 ## Fuse options
 

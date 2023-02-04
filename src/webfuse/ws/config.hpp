@@ -12,6 +12,7 @@ namespace webfuse
 enum class command
 {
     run,
+    print_version,
     show_help
 };
 

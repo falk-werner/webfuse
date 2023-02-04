@@ -112,6 +112,10 @@ ws_config::ws_config(int argc, char * argv[])
                 timeout_secs = static_cast<uint64_t>(std::stoi(timeout_str));
             }
         }
+        else if (arg == "--wf-version")
+        {
+            cmd = command::print_version;
+        }
         else
         {
             args.push(arg.c_str());
