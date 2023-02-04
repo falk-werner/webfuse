@@ -8,6 +8,8 @@
 
 #include <getopt.h>
 #include <csignal>
+#include <cstdlib>
+
 #include <iostream>
 
 namespace
@@ -29,11 +31,18 @@ public:
     , cmd(command::run)
     , exit_code()
     {
+        char const * const webfuse_token = getenv("WEBFUSE_TOKEN");
+        if (nullptr != webfuse_token)
+        {
+            token = webfuse_token;
+        }
+
         struct option const long_options[] =
         {
             {"path"   , required_argument, nullptr, 'p'},
             {"url"    , required_argument, nullptr, 'u'},
             {"ca-path", required_argument, nullptr, 'a'},
+            {"token"  , required_argument, nullptr, 't'},
             {"version", no_argument      , nullptr, 'v'},
             {"help"   , no_argument      , nullptr, 'h'},
             {nullptr  , 0                , nullptr, 0  }
@@ -45,7 +54,7 @@ public:
         while (!finished)
         {
             int option_index = 0;
-            const int c = getopt_long(argc, argv, "p:u:a:vh", long_options, &option_index);
+            const int c = getopt_long(argc, argv, "p:u:a:t:vh", long_options, &option_index);
             switch (c)
             {
                 case -1:
@@ -59,6 +68,9 @@ public:
                     break;
                 case 'a':
                     ca_path = optarg;
+                    break;
+                case 't':
+                    token = optarg;
                     break;
                 case 'h':
                     cmd = command::show_help;
@@ -86,6 +98,7 @@ public:
     std::string base_path;
     std::string url;
     std::string ca_path;
+    std::string token;
     command cmd;
     int exit_code;
 };
@@ -102,8 +115,16 @@ Options:
     --url, -u       set url of webfuse2 service
     --path, -p      set path of directory to expose (default: .)
     --ca-path, -a   set path of ca file (default: not set)
+    --token, -t     set authentication token (default: see below)
     --version, -v   print version and quit
     --help, -h      print this message and quit
+
+Authentication Token:
+    When requested by webfuse server, the authentication token
+    is determined as follows:
+    - if present, use contents of environment variable WEBFUSE_TOKEN
+    - else if specified, use the contents fo the -t option
+    - else query user for authentication token
 
 Examples:
     webfuse-provider -u ws://localhost:8080/
@@ -126,7 +147,8 @@ void on_signal(int _)
 class filesystem: public webfuse::filesystem_i
 {
 public:
-    explicit filesystem(std::string const & base_path)
+    filesystem(std::string const & base_path, std::string const & token)
+    : token_(token)
     {
         char buffer[PATH_MAX];
         char * resolved_path = ::realpath(base_path.c_str(), buffer);
@@ -420,7 +442,7 @@ public:
 
     std::string get_credentials() override
     {
-        return getpass("credentials: ");
+        return  (!token_.empty()) ? token_ : getpass("credentials: ");
     }
 
 
@@ -431,6 +453,7 @@ private:
     }
 
     std::string base_path_;
+    std::string token_;
 };
 
 }
@@ -449,7 +472,7 @@ int main(int argc, char* argv[])
                 signal(SIGINT, &on_signal);
                 signal(SIGTERM, &on_signal);
 
-                filesystem fs(ctx.base_path);
+                filesystem fs(ctx.base_path, ctx.token);
                 webfuse::provider provider(fs, ctx.ca_path);
                 provider.set_connection_listener([](bool connected) {
                     if (!connected)

@@ -15,6 +15,13 @@ Inject a remote filesystem via webfuse.
 | -p           | --path      | path     | path of local filesystem to inject (default: .) |
 | -u           | --url       | url      | url of webfuse server |
 | -a           | --ca-path   | path     | path of ca file |
+| -t           | --token     | token    | authentication token (overrides WEBFUSE_TOKEN) |
+
+## Environment variables
+
+| Variable | Description |
+| -------- | ----------- |
+| WEBFUSE_TOKEN | Default value of webfuse token | 
 
 ## Examples
 
@@ -28,3 +35,5 @@ Inject a remote filesystem via webfuse.
   `webfuse_provider -u wss://localhost/`
 - inject current diectory via TLS using a specific ca:  
   `webfuse_provider -u wss://localhost/ -a /path/to/server-cert.pem`
+- inject current directory, authenticate via token:  
+  `webfuse_provider -u wss://localhost/ -t my_token`
