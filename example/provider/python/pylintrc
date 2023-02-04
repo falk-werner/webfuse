@@ -1,0 +1,17 @@
+[BASIC]
+
+good-names=i,j,k,ex,Run,_,f,fd
+
+[MESSAGES CONTROL]
+
+
+disable=raw-checker-failed,
+        bad-inline-option,
+        locally-disabled,
+        file-ignored,
+        suppressed-message,
+        useless-suppression,
+        deprecated-pragma,
+        use-symbolic-message-instead,
+        missing-function-docstring
+

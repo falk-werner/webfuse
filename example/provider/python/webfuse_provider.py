@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 
+"""Example webfuse provider written in python."""
+
 import asyncio
 import os
 import stat
-import websockets
 import errno
 import getpass
+import websockets
 
 INVALID_FD = 0xffffffffffffffff
 
@@ -90,6 +92,8 @@ O_TMPFILE   = 0o20200000
 O_TRUNC     = 0o00001000
 
 class MessageReader:
+    """Reads webfuse messages from buffer."""
+
     def __init__(self, buffer):
         self.buffer = buffer
         self.offset = 0
@@ -101,21 +105,22 @@ class MessageReader:
 
     def read_bool(self):
         return self.read_u8() == 1
-    
+
     def read_u32(self):
-        value = (self.buffer[self.offset] << 24) + (self.buffer[self.offset + 1] << 16) + (self.buffer[self.offset + 2] << 8) + self.buffer[self.offset + 3]
+        value = (self.buffer[self.offset] << 24) + (self.buffer[self.offset + 1] << 16) + \
+            (self.buffer[self.offset + 2] << 8) + self.buffer[self.offset + 3]
         self.offset += 4
         return value
 
     def read_u64(self):
         value = (
-            (self.buffer[self.offset    ] << 56) + 
-            (self.buffer[self.offset + 1] << 48) + 
-            (self.buffer[self.offset + 2] << 40) + 
+            (self.buffer[self.offset    ] << 56) +
+            (self.buffer[self.offset + 1] << 48) +
+            (self.buffer[self.offset + 2] << 40) +
             (self.buffer[self.offset + 3] << 32) +
-            (self.buffer[self.offset + 4] << 24) + 
-            (self.buffer[self.offset + 5] << 16) + 
-            (self.buffer[self.offset + 6] <<  8) + 
+            (self.buffer[self.offset + 4] << 24) +
+            (self.buffer[self.offset + 5] << 16) +
+            (self.buffer[self.offset + 6] <<  8) +
              self.buffer[self.offset + 7])
         self.offset += 8
         return value
@@ -144,7 +149,7 @@ class MessageReader:
 
     def read_rename_flags(self):
         return self.read_u8()
-    
+
     def read_mode(self):
         value = self.read_u32()
         mode = value & 0o7777
@@ -152,7 +157,7 @@ class MessageReader:
         mode |= stat.S_IFDIR  if MODE_DIR  == (value & MODE_DIR ) else 0
         mode |= stat.S_IFCHR  if MODE_CHR  == (value & MODE_CHR ) else 0
         mode |= stat.S_IFBLK  if MODE_BLK  == (value & MODE_BLK ) else 0
-        mode |= stat.S_IFFIFO if MODE_FIFO == (value & MODE_FIFO) else 0
+        mode |= stat.S_IFIFO  if MODE_FIFO == (value & MODE_FIFO) else 0
         mode |= stat.S_IFLNK  if MODE_LNK  == (value & MODE_LNK ) else 0
         mode |= stat.S_IFSOCK if MODE_SOCK == (value & MODE_SOCK) else 0
         return mode
@@ -187,14 +192,16 @@ class MessageReader:
 
 
 class MessageWriter:
+    """"Writes webfuse messages into buffer."""
+
     def __init__(self, message_id, message_type):
         self.buffer = []
         self.write_u32(message_id)
         self.write_u8(message_type)
-    
+
     def write_u8(self, value):
         self.buffer.append(value)
-    
+
     def write_u32(self, value):
         self.buffer.extend([
             (value >> 24) & 0xff,
@@ -217,22 +224,21 @@ class MessageWriter:
 
     def write_i32(self, value):
         self.write_u32(value & 0xffffffff)
-    
+
     def write_result(self, value):
         if 0 > value:
-            if value in ERRNO:
-                value = ERRNO[value]
+            value = ERRNO.get(value, value)
         self.write_i32(value)
 
     def write_str(self, value):
         data = value.encode('utf-8')
         self.write_bytes(data)
-    
+
     def write_bytes(self, value):
         size = len(value)
         self.write_u32(size)
         self.buffer.extend(value)
-    
+
     def write_strings(self, values):
         count = len(values)
         self.write_u32(count)
@@ -241,9 +247,11 @@ class MessageWriter:
 
     def get_bytes(self):
         return bytearray(self.buffer)
-        
 
+# pylint: disable=too-many-public-methods
 class FilesystemProvider:
+    """Webfuse filesystem provider."""
+
     def __init__(self, path, url):
         self.root = os.path.abspath(path)
         self.url = url
@@ -253,28 +261,29 @@ class FilesystemProvider:
             0x03: FilesystemProvider.readlink,
             0x04: FilesystemProvider.symlink,
             0x05: FilesystemProvider.link,
-            0x06: FilesystemProvider.rename, 
-            0x07: FilesystemProvider.chmod,  
-            0x08: FilesystemProvider.chown,  
+            0x06: FilesystemProvider.rename,
+            0x07: FilesystemProvider.chmod,
+            0x08: FilesystemProvider.chown,
             0x09: FilesystemProvider.truncate,
-            0x0a: FilesystemProvider.fsync,  
-            0x0b: FilesystemProvider.open,   
-            0x0c: FilesystemProvider.mknod,  
-            0x0d: FilesystemProvider.create, 
+            0x0a: FilesystemProvider.fsync,
+            0x0b: FilesystemProvider.open,
+            0x0c: FilesystemProvider.mknod,
+            0x0d: FilesystemProvider.create,
             0x0e: FilesystemProvider.release,
-            0x0f: FilesystemProvider.unlink, 
-            0x10: FilesystemProvider.read,   
-            0x11: FilesystemProvider.write,  
-            0x12: FilesystemProvider.mkdir,  
+            0x0f: FilesystemProvider.unlink,
+            0x10: FilesystemProvider.read,
+            0x11: FilesystemProvider.write,
+            0x12: FilesystemProvider.mkdir,
             0x13: FilesystemProvider.readdir,
             0x14: FilesystemProvider.rmdir,
             0x15: FilesystemProvider.statfs,
             0x16: FilesystemProvider.utimens,
             0x17: FilesystemProvider.getcreds,
         }
-    
+
     async def run(self):
         extra_headers = [("X-Auth-Token", "user:bob;token=foo")]
+        # pylint: disable-next=no-member
         async with websockets.connect(self.url, extra_headers=extra_headers) as connection:
             while True:
                 request = await connection.recv()
@@ -286,7 +295,7 @@ class FilesystemProvider:
                     method = self.commands[message_type]
                     method(self, reader, writer)
                 else:
-                    print("unknown message type: %d" % message_type)
+                    print(f"unknown message type: {message_type}")
                 response = writer.get_bytes()
                 await connection.send(response)
 
@@ -295,7 +304,7 @@ class FilesystemProvider:
         mode = reader.read_access_mode()
         result = -errno.EACCES
         try:
-            if os.access(path, mode) == True:
+            if os.access(path, mode) is True:
                 result = 0
         except OSError as ex:
             result = -ex.errno
@@ -407,7 +416,7 @@ class FilesystemProvider:
         writer.write_result(result)
 
     def fsync(self, reader, writer):
-        path = reader.read_path(self.root)
+        _ = reader.read_path(self.root)
         _ = reader.read_bool()
         fd = reader.read_u64()
         result = 0
@@ -423,14 +432,12 @@ class FilesystemProvider:
         atime_ns = reader.read_u32()
         mtime = reader.read_u64()
         mtime_ns = reader.read_u32()
-        fd = reader.read_u64()
         result = 0
         try:
             os.utime(path, (atime, mtime), ns = (atime_ns, mtime_ns))
         except OSError as ex:
             result = -ex.errno
         writer.write_result(result)
-
 
     def open(self, reader, writer):
         path = reader.read_path(self.root)
@@ -442,7 +449,6 @@ class FilesystemProvider:
             return
         writer.write_result(0)
         writer.write_u64(fd)
-        
 
     def mknod(self, reader, writer):
         path = reader.read_path(self.root)
@@ -452,7 +458,7 @@ class FilesystemProvider:
         try:
             os.mknod(path, mode, rdev)
         except OSError as ex:
-            result = -ex.errno            
+            result = -ex.errno
         writer.write_result(result)
 
     def create(self, reader, writer):
@@ -466,10 +472,9 @@ class FilesystemProvider:
             return
         writer.write_result(0)
         writer.write_u64(fd)
-        pass
 
     def release(self, reader, writer):
-        path = reader.read_path(self.root)
+        _ = reader.read_path(self.root)
         fd = reader.read_u64()
         result = 0
         try:
@@ -534,8 +539,8 @@ class FilesystemProvider:
         path = reader.read_path(self.root)
         names = []
         try:
-            with os.scandir(path) as it:
-                for entry in it:
+            with os.scandir(path) as entries:
+                for entry in entries:
                     names.append(entry.name)
         except OSError as ex:
             writer.write_result(-ex.errno)
@@ -553,7 +558,7 @@ class FilesystemProvider:
         writer.write_result(result)
 
     def statfs(self, reader, writer):
-        path = self.get_path(reader)
+        path = reader.read_path(self.root)
         try:
             buffer = os.statvfs(path)
         except OSError as ex:
@@ -569,7 +574,7 @@ class FilesystemProvider:
         writer.write_u64(buffer.f_ffree)
         writer.write_u64(buffer.f_namemax)
 
-    def getcreds(self, reader, writer):
+    def getcreds(self, _, writer):
         credentials = getpass.getpass(prompt="credentials: ")
         writer.write_str(credentials)
 
