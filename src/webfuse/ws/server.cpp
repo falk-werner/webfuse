@@ -19,13 +19,6 @@
 #include <unordered_map>
 
 
-namespace
-{
-
-constexpr int64_t const timeout_secs = 10;
-
-}
-
 extern "C"
 {
 
@@ -79,6 +72,7 @@ public:
     detail(ws_config const & config)
     : shutdown_requested(false)
     , data(config.authenticator, config.auth_header)
+    , timeout_secs(config.timeout_secs)
     {
         lws_set_log_level(0, nullptr);
 
@@ -131,6 +125,7 @@ public:
     lws_context_creation_info info;
     lws_context * context;
     server_handler data;
+    uint64_t timeout_secs;
 };
 
 ws_server::ws_server(ws_config const & config)
@@ -167,7 +162,7 @@ messagereader ws_server::perform(messagewriter writer)
     auto result = d->data.perform(std::move(writer));
 
     lws_cancel_service(d->context);
-    if(std::future_status::timeout == result.wait_for(std::chrono::seconds(timeout_secs)))
+    if(std::future_status::timeout == result.wait_for(std::chrono::seconds(d->timeout_secs)))
     {
         throw std::runtime_error("timeout");
     }

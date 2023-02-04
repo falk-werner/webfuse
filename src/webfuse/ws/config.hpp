@@ -33,6 +33,8 @@ public:
 
     std::string authenticator;
     std::string auth_header;
+
+    uint64_t timeout_secs;
 };
 
 }

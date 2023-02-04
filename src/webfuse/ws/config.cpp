@@ -10,6 +10,7 @@ namespace
 
 constexpr int const default_port = 8081;
 constexpr char const default_vhost_name[] = "localhost";
+constexpr uint64_t const default_timeout_secs = 10;
 
 void verify(webfuse::ws_config & config)
 {
@@ -46,6 +47,7 @@ bool get_arg(webfuse::ws_config & config, webfuse::commandline_reader& reader, s
 namespace webfuse
 {
 
+// NOLINTNEXTLINE
 ws_config::ws_config(int argc, char * argv[])
 : exit_code(EXIT_SUCCESS)
 , args(argv[0], argc)
@@ -53,6 +55,7 @@ ws_config::ws_config(int argc, char * argv[])
 , port(default_port)
 , vhost_name(default_vhost_name)
 , use_tls(false)
+, timeout_secs(default_timeout_secs)
 {
     commandline_reader reader(argc, argv);
 
@@ -99,6 +102,14 @@ ws_config::ws_config(int argc, char * argv[])
             {
                 std::transform(auth_header.begin(), auth_header.end(), auth_header.begin(),
                     [](auto c) {return std::tolower(c); });
+            }
+        }
+        else if (arg == "--wf-timeout")
+        {
+            std::string timeout_str;
+            if (get_arg(*this, reader, timeout_str, "missing TIMEOUT"))
+            {
+                timeout_secs = static_cast<uint64_t>(std::stoi(timeout_str));
             }
         }
         else
