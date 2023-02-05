@@ -27,15 +27,19 @@ class BaseFileSystem {
     }
 
     chmod(path, mode) {
-        return ERRNO.ENOENT;
+        return ERRNO.EPERM;
     }
 
     chown(path, uid, gid) {
-        return ERRNO.ENOENT;
+        return ERRNO.EPERM;
     }
 
     truncate(path, size, fd) {
-        return ERRNO.ENOENT;
+        return ERRNO.EPERM;
+    }
+
+    fsync(path, isDataSync, fd) {
+        return 0;
     }
 
     open(path, flags) {
@@ -43,31 +47,31 @@ class BaseFileSystem {
     }
 
     mknod(path, mode, rdev) {
-        return ERRNO.ENOENT;
+        return ERRNO.EPERM;
     }
 
     create(path, mode) {
-        return [ERNNO.ENOEND, 0];
+        return [ERRNO.EPERM, 0];
     }
 
     release(path, fd) {
-        return ERRNO.ENOENT;
+        return 0;
     }
 
     unlink(path) {
-        return ERRNO.ENOENT;
+        return ERRNO.EPERM;
     }
 
     read(path, size, offset, fd) {
-        return ERRNO.ENOENT;
+        return ERRNO.EBADF;
     }
 
     write(path, data, offset, fd) {
-        return ERRNO.ENOENT;
+        return ERRNO.EBADF;
     }
 
     mkdir(path, mode) {
-        return ERRNO.ENOENT;
+        return ERRNO.EPERM;
     }
 
     readdir(path) {
@@ -75,15 +79,23 @@ class BaseFileSystem {
     }
 
     rmdir(path)  {
-        return ERRNO.ENOENT;
+        return ERRNO.EPERM;
     }
 
     statfs(path) {
-        return ERRNO.ENOENT;
+        return ERRNO.ENOSYS;
+    }
+
+    utimens(path, atime, mtime) {
+        return ERRNO.ENOSYS;
     }
 
     getcreds() {
         return "";
+    }
+
+    connectionstatechanged(state) {
+        // pass
     }
 }
 

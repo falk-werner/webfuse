@@ -1,7 +1,6 @@
 class MessageReader {
     
     constructor(data) {
-        // console.log(new Uint8Array(data));
         this.raw = data;
         this.data = new DataView(data);
         this.pos = 0;

@@ -2,6 +2,7 @@ import { MessageWriter } from "./messagewriter.js";
 import { MessageReader } from "./messagereader.js";
 import { ERRNO } from "./errno.js";
 import { AccessMode } from "./accessmode.js";
+import { OpenFlags } from "./openflags.js";
 import { BaseFileSystem } from "./basefilesystem.js";
 
 
@@ -20,7 +21,7 @@ const Mode = {
 function fs_access(reader, writer, filesystem) {
     const path = reader.read_str();
     const mode = reader.read_u8();
-    result = filesystem.access(path, mode);
+    const result = filesystem.access(path, mode);
     writer.write_i32(result);
 }
 
@@ -156,7 +157,7 @@ function fs_read(reader, writer, filesystem) {
     const fd = reader.read_u64();
     const result = filesystem.read(path, size, offset, fd);
     if (typeof(result) != "number") {
-        writer.write_i32(0);
+        writer.write_i32(result.length);
         writer.write_bytes(result);
     }
     else {
@@ -259,10 +260,9 @@ const commands = new Map([
 class Webfuse {
 
     constructor(url, filesystem) {
-        console.log('webfuse: ctor')
-
         this.ws = new WebSocket(url, ["webfuse2"]);
         this.ws.binaryType = 'arraybuffer';
+        this.ws.addEventListener('open', (event) => this.on_connected(event));
         this.ws.addEventListener('close', (event) => this.on_closed(event));
         this.ws.addEventListener('error', (event) => this.on_error(event));
         this.ws.addEventListener('message', (event) => this.on_message(event));
@@ -285,21 +285,25 @@ class Webfuse {
             command(reader, writer, this.filesystem);
         }
         else {
-            console.error(`unknow message type: ${message_type}`);
+            console.warn(`unknow message type: ${message_type}`);
         }
 
         this.ws.send(writer.get_data());
     }
 
+    on_connected(event) {
+        this.filesystem.connectionstatechanged("connected");
+    }
+
     on_error(event) {
-        console.log('error', event);
+        console.info("connection error");
         this.ws.close();
     }
 
     on_closed(event) {
-        console.log('closed', event);
+        this.filesystem.connectionstatechanged("closed");
     }
 
 }
 
-export { Webfuse, BaseFileSystem, ERRNO, Mode, AccessMode }
+export { Webfuse, BaseFileSystem, ERRNO, Mode, AccessMode, OpenFlags }

@@ -1,0 +1,28 @@
+html, body {
+    background-color: #c0c0c0;
+}
+
+h1 {
+    background-color: black;
+    color: white;
+}
+
+label {
+    display: inline-block;
+    width: 150px;
+}
+
+input {
+    width: 150px;
+}
+
+#stats {
+    display: inline-block;
+    text-align: right;
+    width: 150px;
+}
+
+textarea {
+    width: 300px;
+    height: 300px;
+}

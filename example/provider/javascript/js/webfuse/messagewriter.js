@@ -67,7 +67,6 @@ class MessageWriter {
     }
 
     get_data() {
-        // console.log(this.data)
         return new Uint8Array(this.data);
     }
 
