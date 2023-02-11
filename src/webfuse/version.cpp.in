@@ -1,0 +1,11 @@
+#include "webfuse/version.hpp"
+
+namespace webfuse
+{
+
+char const * get_version()
+{
+    return "@webfuse_VERSION@";
+}
+
+}

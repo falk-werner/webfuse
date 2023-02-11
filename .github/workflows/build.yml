@@ -18,10 +18,16 @@ jobs:
       - uses: actions/checkout@v3
       
       - name: Install APT dependencies
-        run: sudo apt install libfuse3-dev libwecksockets-dev
+        run: sudo apt install libfuse3-dev libwebsockets-dev libgtest-dev libgmock-dev clang-tidy valgrind
       
       - name: Configure CMake
         run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
 
       - name: Build
         run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+
+      - name: Unit Test
+        run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} --target test
+
+      - name: Memcheck
+        run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} --target memcheck

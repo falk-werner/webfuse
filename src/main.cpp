@@ -1,6 +1,7 @@
-#include <iostream>
+#include "webfuse/webfuse.hpp"
 
 int main(int argc, char* argv[])
 {
-    return EXIT_SUCCESS;
+    webfuse::app app;
+    return app.run(argc, argv);
 }

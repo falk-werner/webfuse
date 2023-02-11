@@ -1,0 +1,37 @@
+<!doctype html>
+<html>
+<head>
+    <title>Webfuse Example</title>
+    <script type="module" src="js/startup.js"></script>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <h1>Webfuse Example</h1>
+
+    <p>
+        This example provides a single file "README.md", which
+        contents can be altered below.
+    </p>
+
+    <h2>Connection</h2>
+    <p>
+        <label for="url">Url:</label>
+        <input type="text" id="url" value="ws://localhost:8081"/>
+    </p>
+    <p>
+        <label for="token">Token:</label>
+        <input type="text" id="token" value="" />
+    </p>
+    <p>
+        <input type="button" id="connect" value="Connect"/>
+        <span id="state">disconnected</span>
+    </p>
+
+    <h2>README.md</h2>
+    <p>
+        <textarea id="contents"># Webfuse
+This is a sample text.
+</textarea>
+    </p>
+</body>
+</html>

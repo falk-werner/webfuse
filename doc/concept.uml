@@ -1,0 +1,26 @@
+@startuml
+participant "webfuse provider" as provider
+participant "webfuse service" as service
+actor "user" as user
+
+group startup
+service -> service : fuse_mount
+service -> service : start websocket server
+end
+...
+
+group connect
+provider -> service : connect
+end
+...
+
+
+group directory listing
+user     -> service : ls
+service   -> provider : readdir request
+provider --> service : readdir response
+service   --> user : [., ..]
+end
+...
+
+@enduml
