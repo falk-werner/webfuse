@@ -72,4 +72,4 @@ But `webfuse2` marks also some breaking changes:
 - `webfuse` does not provide an API nor a library to program against  
   _(if you are interested in an API or a library for webfuse2 feel free to create an issue)_
 
-When you are interested in the original `webfuse` implementation take a look at this [branch](https://github.com/falk-werner/webfuse/tree/master).
+When you are interested in the original `webfuse` implementation take a look at this [branch](https://github.com/falk-werner/webfuse/tree/webfuse-legacy).
