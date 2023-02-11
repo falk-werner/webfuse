@@ -3,9 +3,9 @@ name: 'build'
 on:
   workflow_dispatch:
   push:
-    branches: [ main, webfuse2 ]
+    branches: [ main ]
   pull_request:
-    branches: [ main, webfuse2 ]
+    branches: [ main ]
 
 jobs:
 
