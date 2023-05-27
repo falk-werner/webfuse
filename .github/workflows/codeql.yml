@@ -12,6 +12,8 @@ jobs:
   analyze:
     name: Analyze
     runs-on: 'ubuntu-latest'
+    env:
+      BUILD_TYPE: Release
     permissions:
       actions: read
       contents: read
