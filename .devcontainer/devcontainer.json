@@ -1,0 +1,23 @@
+{
+    "build": {
+        "dockerfile": "Dockerfile",
+        "context": ".."
+    },
+    "capAdd": "SYS_ADMIN",
+    "runArgs":["--device", "/dev/fuse"], 
+    "mounts": [{"source": "${localEnv:HOME}/.ssh", "target": "/home/user/.ssh", "type": "bind"}],
+    
+    "remoteUser": "user",
+
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ms-vscode.cpptools-extension-pack",
+                "ms-vscode.cmake-tools"
+            ],
+            "settings": {
+                "terminal.integrated.defaultProfile.linux": "bash"
+            }
+        }
+    }
+}
