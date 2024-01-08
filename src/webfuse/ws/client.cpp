@@ -126,7 +126,7 @@ public:
         info.options = LWS_SERVER_OPTION_EXPLICIT_VHOSTS;
 
         data.handler = handler;
-        data.connection_listener = [](bool){ };
+        data.connection_listener = [](bool /*unused*/){ };
         data.connection = nullptr;
 
         context = lws_create_context(&info);
