@@ -9,6 +9,23 @@
 
 #include <stdexcept>
 
+#ifndef closefrom
+namespace
+{
+
+void closefrom(int fd)
+{
+    int const max_fd = sysconf(_SC_OPEN_MAX);
+    for(int i = fd; i < max_fd; i++)
+    {
+        close(i);
+    }
+}
+
+}
+#endif
+
+
 namespace webfuse
 {
 
