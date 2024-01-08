@@ -4,7 +4,8 @@
 #include <sys/wait.h>
 #include <fcntl.h>
 
-#ifndef closefrom
+// closefrom was introduced in glibc 2.34
+#if  __GLIBC__ <= 2 && __GLIBC_MINOR__ < 34
 namespace
 {
 
