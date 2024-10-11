@@ -186,11 +186,11 @@ static int fs_readdir(char const * path, void * buffer,
     auto const result = fs->readdir(path, names);
     if (0 == result)
     {
-        filler(buffer, ".", nullptr, 0, static_cast<fuse_fill_dir_flags>(0));
-        filler(buffer, "..", nullptr, 0, static_cast<fuse_fill_dir_flags>(0));
+        filler(buffer, ".", nullptr, 0, static_cast<fuse_fill_dir_flags>(0));  // NOLINT
+        filler(buffer, "..", nullptr, 0, static_cast<fuse_fill_dir_flags>(0)); // NOLINT
         for (auto const & name: names)
         {
-            filler(buffer, name.c_str(), nullptr, 0, static_cast<fuse_fill_dir_flags>(0));
+            filler(buffer, name.c_str(), nullptr, 0, static_cast<fuse_fill_dir_flags>(0)); // NOLINT
         }
     }
 
