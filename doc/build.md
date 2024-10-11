@@ -1,6 +1,18 @@
 # webfuse build instructions
 
-## Build
+## Build using Docker bake
+
+Use Docker bake to build without installing dependencies (aside of docker).
+
+```
+docker buildx bake
+```
+
+Find the build results in the `out` directory.
+
+## Build using CMake
+
+Please install the dependencies listed below before building using CMake.
 
 ````
 cmake -B build

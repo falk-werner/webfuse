@@ -1,0 +1,23 @@
+{
+    "name": "webfuse",
+    "build": {
+        "dockerfile": "../Dockerfile",
+        "context": "..",
+        "target": "devcontainer"
+    },
+    "remoteUser": "user",
+    "mounts": [{
+        "source": "${localEnv:HOME}/.ssh",
+        "target": "/home/user/.ssh",
+        "type": "bind"
+    }],
+    
+    "customizations": {
+        "vscode": {
+            "extensions": [],
+            "settings": {
+                "terminal.integrated.defaultProfile.linux": "bash"
+            }
+        }
+    }
+}
