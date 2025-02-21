@@ -118,6 +118,7 @@ if(NOT(WITHOUT_TEST))
     target_link_libraries(integration_tests PRIVATE webfuse_static ${GTEST_LIBRARIES} ${GMOCK_LIBRARIES})
 
     enable_testing()
+    include(CTest)
     add_test(NAME unit_tests COMMAND unit_tests)
     add_test(NAME integration_tests COMMAND integration_tests)
 
