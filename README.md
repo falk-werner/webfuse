@@ -54,6 +54,11 @@ A `webfuse provider` provides a filesystem to a remote device using the `websock
 
 Unlike webfuse, davfs2 mounts a remote filesystem locally, that is provided by a WebDAV server. In contrast, webfuse starts a server awaiting client connections to attach the remote file system.
 
+### websocketfs
+
+[websocketfs](https://github.com/sagemathinc/websocketfs) is another fuse based filesystem with websocket transport. The project describes itself as
+"like sshfs, but entirely over a websocket that doesn't use ssh at all".
+
 ## Further Documentation
 
 -   [Build instructions](doc/build.md)
