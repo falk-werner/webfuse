@@ -20,7 +20,7 @@ jobs:
       BUILD_TYPE: Release
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       
       - name: Install APT dependencies
         run: |
