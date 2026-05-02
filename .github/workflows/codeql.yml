@@ -35,7 +35,9 @@ jobs:
 
 
     - name: Install APT dependencies
-      run: sudo apt install libfuse3-dev libwebsockets-dev clang-tidy
+      run: |
+        sudo apt update
+        sudo apt install libfuse3-dev libwebsockets-dev clang-tidy
     
     - name: Configure CMake
       run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DWITHOUT_TEST=ON
