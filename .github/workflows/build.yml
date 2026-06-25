@@ -12,10 +12,7 @@ on:
 jobs:
 
   build:
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     env:
       BUILD_TYPE: Release
 
